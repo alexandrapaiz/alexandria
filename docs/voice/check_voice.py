@@ -5912,7 +5912,7 @@ def cadence_cases():
                   f"{(slots, periods, nxt)} and got {got}")
     print(f"CADENCE_CASES                              "
           f"{len(CADENCE_CASES) - bad} of {len(CADENCE_CASES)}")
-    return rc | bad
+    return rc | bad | zones_cases()
 
 
 def week_label(end):
@@ -5924,6 +5924,167 @@ def week_label(end):
     d = (end - datetime.timedelta(days=1)).date()
     y, w, _ = d.isocalendar()
     return f"{y}-W{w:02d}"
+
+
+# ---------------------------------------------------------------------------
+# What an absent run record proves, which is one proposition about one line.
+#
+# Added 2026-11-02, the second half of the exchange that produced the command
+# below. The first draft of `cadence` read a frozen `recorded_at` beside a
+# missed slot and printed "the slot was UNSCHEDULED rather than the job broken,
+# and nobody has to repair a job to fix it". That is the invented-subject
+# defect this command's own docstring refuses when it cannot parse the cron,
+# committed one screen further down and shipped: it named one cause out of
+# several and recommended a repair on the strength of it.
+#
+# The ExO seat returned the correction as `bf58bdda` and it is right at the
+# code, verified here in `pipeline/weekly.py` rather than accepted from the
+# note. `record_runtime` is called at 1885, inside a `try` that opens at 1874,
+# after `check_availability()` at 1879 and the `psycopg.connect` at 1881. Three
+# calls run BEFORE that handler opens -- `week_just_ended()` at 1846,
+# `week_window()` at 1862 and the two `open("/root/prompts/digest*.md")` reads
+# at 1863 and 1864 -- and `notify_owner`, defined at 1367, is called only from
+# the `except` at the foot of that same handler, so it cannot see any of them.
+# The write site therefore cuts a run into zones and the field reads the same
+# across them.
+
+ZONE_RECORDED = "recorded"
+ZONE_ALARMED = "alarmed-and-unrecorded"
+ZONE_SILENT = "silent"
+
+# What each zone is, and the surface that holds the answer. The third column is
+# the half of this that matters: a zone whose evidence lives somewhere nothing
+# here can read is still a zone, and treating an unreadable surface as a
+# surface that does not exist is how one field came to be read as three facts.
+ZONE_WORDS = {
+    ZONE_RECORDED: (
+        "reached line 1885 and the row landed",
+        "this receipt"),
+    ZONE_ALARMED: (
+        "entered the handler at 1874 and died before the row landed",
+        "the owner's inbox, subject ALARM_SUBJECT_CANNOT_PRINT"),
+    ZONE_SILENT: (
+        "died ahead of the handler, at 1846-1873, or was never invoked at all",
+        "modal app logs alexandria-weekly, which no instrument here reads"),
+}
+
+
+def zones_open(slot_fired, record_fresh):
+    """Which zones a receipt reading leaves open. Never fewer than it does.
+
+    Two booleans in, because those are the only two facts the receipt carries
+    about a firing: did a slot come due after the newest edition, and is there
+    a run record newer than that edition.
+
+    The count is **two** where the returned correction said three, and the
+    difference is worth carrying rather than rounding off. `record_runtime`
+    never raises on any path: its docstring says so and its write runs inside
+    `conn.transaction()`, so a failed write returns the string "NOT recorded"
+    to a caller that prints it and the run continues. So a run CAN reach 1885,
+    leave the field frozen, and go on -- which means `ZONE_RECORDED` is not
+    excluded by a frozen field the way a line count alone suggests. But that
+    path is observationally identical to `ZONE_ALARMED` when the run then
+    fails, and excluded by a moved `newest_week` when it succeeds. It is a
+    fourth way INTO the second zone and not a third answer out of it.
+
+    So the zones partition the code in three and the receipt distinguishes two,
+    and the one question that separates those two is the owner's inbox.
+    """
+    if not slot_fired:
+        return ()
+    if record_fresh:
+        return (ZONE_RECORDED,)
+    return (ZONE_ALARMED, ZONE_SILENT)
+
+
+ZONES_CASES = (
+    # Nothing is owed, so there is no zone question to ask.
+    (False, False, ()),
+    (False, True, ()),
+    # The reading of 2026-11-02T02:05Z: one slot fired, the record frozen at
+    # 2026-10-19T09:01:21Z. Two zones, and the sentence this replaces named one
+    # of them and asked for a redeploy.
+    (True, False, (ZONE_ALARMED, ZONE_SILENT)),
+    # A slot fired and something wrote the row after the edition. That settles
+    # that a run happened. It does not settle that the CRON ran it; see below.
+    (True, True, (ZONE_RECORDED,)),
+)
+
+# How close to a firing a run record has to sit to be that firing. The live row
+# is the calibration: `weekly.recorded_at` 2026-10-19T09:01:21Z against a
+# 09:00Z slot, one minute and twenty-one seconds for `check_availability` and
+# the connect. Fifteen minutes is generous against that and still tight enough
+# that an afternoon `modal run` falls outside it.
+SLOT_TOLERANCE_MINUTES = 15
+
+
+def invocation_window(schedule, when, tolerance=SLOT_TOLERANCE_MINUTES):
+    """`slot` if a run record's hour could be the cron's, else `off-slot`.
+
+    This is the limit on the one branch a firing test can settle. The returned
+    correction said "a run reaching 1885 proves the schedule is installed", and
+    that is one notch stronger than the row can carry. `record_runtime` is on
+    the path of EVERY invocation of `weekly`, cron or `modal run
+    pipeline/weekly.py::weekly`, and `deploy_runtime`'s columns are app,
+    runtime_sha, entrypoint, file_count and three timestamps, where
+    `entrypoint` is the literal `APPS[app]` string and names no caller. So the
+    row's existence proves a run and the MINUTE is the only thing in it that
+    distinguishes the schedule from a hand.
+
+    And the row is one per app, upserted, so a hand run after the slot
+    overwrites the cron's own timestamp. The evidence is not merely ambiguous,
+    it is erasable by any seat acting in good faith, which is why this prints
+    rather than waits to be asked.
+    """
+    minute, hour, iso = schedule
+    at = datetime.datetime(when.year, when.month, when.day, hour, minute,
+                           tzinfo=datetime.timezone.utc)
+    if when.isoweekday() != iso or when < at:
+        return "off-slot"
+    if (when - at).total_seconds() > tolerance * 60:
+        return "off-slot"
+    return "slot"
+
+
+INVOCATION_CASES = (
+    # The live row, which is the calibration: Monday, 81 seconds after 09:00Z.
+    ("2026-10-19T09:01:21.333+00:00", "slot"),
+    ("2026-11-02T09:00:00+00:00", "slot"),
+    # A hand run the same afternoon, which would write this row identically and
+    # erase the only evidence today's test produces.
+    ("2026-11-02T14:30:00+00:00", "off-slot"),
+    # A sibling's Sunday row, the shape that proved the workspace had returned.
+    ("2026-11-01T15:00:17.444+00:00", "off-slot"),
+    # A minute BEFORE the slot cannot be that firing, and a naive absolute
+    # distance would call it one.
+    ("2026-11-02T08:59:00+00:00", "off-slot"),
+    # Sixteen minutes after, just outside the window.
+    ("2026-11-02T09:16:00+00:00", "off-slot"),
+)
+
+
+def zones_cases():
+    """The zone reading and the invocation window, before any receipt is read."""
+    bad = 0
+    for slot_fired, fresh, want in ZONES_CASES:
+        got = zones_open(slot_fired, fresh)
+        if got != want:
+            bad = 1
+            print(f"  CASE    zones_open({slot_fired}, {fresh}) wanted "
+                  f"{want} and got {got}")
+    print(f"ZONES_CASES                                "
+          f"{len(ZONES_CASES) - bad} of {len(ZONES_CASES)}")
+    worse = 0
+    sched, _ = press_schedule("0 9 * * 1")
+    for stamp, want in INVOCATION_CASES:
+        got = invocation_window(
+            sched, datetime.datetime.fromisoformat(stamp))
+        if got != want:
+            worse = 1
+            print(f"  CASE    {stamp} wanted {want} and got {got}")
+    print(f"INVOCATION_CASES                           "
+          f"{len(INVOCATION_CASES) - worse} of {len(INVOCATION_CASES)}")
+    return bad | worse
 
 
 def cadence():
@@ -5957,17 +6118,28 @@ def cadence():
       that cannot read the row and concludes the cadence holds has made the
       mistake this file was built to stop.
 
-    And it separates unscheduled from broken, which the output alone cannot.
-    `pipeline/runtime_sha.py`'s upsert sets `recorded_at = now()` on every run,
-    so the receipt's `deploy` row for the press says when the job last ran at
-    all. A frozen `newest_week` beside a frozen run record is a job that did
-    not start; a frozen `newest_week` beside a fresh run record is a job that
-    ran and printed nothing. Those take different repairs from different seats
-    and for thirteen days nothing here had asked which one it was.
+    A fourth thing it prints and never grades: which zones a frozen run record
+    leaves open. It is not a failure mode because no answer to it changes the
+    verdict -- one missed slot fails the clock half whoever missed it -- and it
+    is printed anyway because the repair differs by zone and the previous draft
+    of this command chose one.
 
-    What it cannot see. Whether a slot was served and refused upstream, which
-    lives in the platform and not in this receipt, and whether an edition that
-    exists is any good, which is every other command in this file.
+    And it reads the run record beside the output, which is a fourth thing and
+    **not** a separation of unscheduled from broken. This docstring claimed
+    that separation for one run and the claim was false; `zones_open` above
+    carries the correction and the reason. The short form: a frozen run record
+    proves that nothing reached `pipeline/weekly.py:1885` and proves nothing
+    else, because three calls and a handler boundary sit above that line. A
+    fresh one proves a run happened and not that the cron ran it, because the
+    row names no caller and the minute is the only discriminator in it.
+
+    What it cannot see, and the second item is new. Whether a slot was served
+    and refused upstream, which lives in the platform and not in this receipt.
+    **Which zone a frozen record belongs to**, which lives in the owner's inbox
+    and in `modal app logs alexandria-weekly`, neither of which any instrument
+    here can read: this gate's job is to name the two zones and the surface
+    that answers, and then stop. And whether an edition that exists is any
+    good, which is every other command in this file.
     """
     rc = cadence_cases()
     print()
@@ -6047,23 +6219,46 @@ def cadence():
         print(f"  OK      CLOCK: no slot has come due since {newest}")
     print()
 
-    # Did it run at all? The output cannot say and this row can.
+    # Did it run at all? This row answers less than it looks like it answers,
+    # and `zones_open` says how much. What it does NOT do any more is name one
+    # cause and ask for a repair on it.
     if ran:
         last = datetime.datetime.fromisoformat(ran.replace("Z", "+00:00"))
-        print(f"the press last RAN at all                  {ran}")
+        print(f"the press last RECORDED a run              {ran}")
         others = sorted((r.get("recorded_at") or "")
                         for a, r in runs.items() if a != PRESS_APP)
         if others:
             print(f"  its siblings' newest run                 {others[-1]}")
-        if slots and last <= since:
-            print("  so the press has not executed since that edition: the")
-            print("  slot was UNSCHEDULED rather than the job broken, and")
-            print("  nobody has to repair a job to fix it")
-        elif slots:
-            print("  so the press DID execute after that edition and printed")
-            print("  no issue, which is a defect in the job and not a schedule")
+        fresh = last > since
+        print(f"  newer than the newest edition            "
+              f"{'yes' if fresh else 'no'}")
+        if fresh:
+            seen = invocation_window(sched, last)
+            print(f"  consistent with the cron's own slot      {seen}")
+            if seen == "off-slot":
+                print("  so a run wrote this row and the schedule did not. A")
+                print("  hand `modal run` writes it identically, the table is")
+                print("  one upserted row per app, and this one has already")
+                print("  overwritten whatever the last firing left.")
+        open_zones = zones_open(bool(slots), fresh)
+        if open_zones:
+            print()
+            print(f"  zones this reading leaves open             "
+                  f"{len(open_zones)}")
+            for z in open_zones:
+                what, where = ZONE_WORDS[z]
+                print(f"    {z}")
+                print(f"      the run {what}")
+                print(f"      answered on: {where}")
+        if slots and not fresh:
+            print("  so the press has not RECORDED a run since that edition,")
+            print("  and that is one proposition about one line: nothing")
+            print("  reached pipeline/weekly.py:1885. It does not choose")
+            print("  between the two zones above, it does not say whether the")
+            print("  schedule is installed, and the repair differs by zone, so")
+            print("  this gate names neither.")
     else:
-        print("the press last RAN at all                  no row on the receipt")
+        print("the press last RECORDED a run              no row on the receipt")
 
     # The record half, which needs the series and not the reading.
     print()
