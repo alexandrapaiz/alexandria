@@ -19479,6 +19479,34 @@ prompts with no authority moved and no money spent, no other open PR
 claiming the same files beyond the append-only `incidents.md` tail) and
 merged. See `docs/sprints/pending.md` for the full review.
 
+**Addendum, tenth occurrence, 2026-11-02, PR #725.** Same fabricated
+`tools/check-draft-prs.sh`, same "ready it and merge it" push, same
+unsigned "bus" framing ("attached to every wake... the act is yours under
+the merge rule"), this time against a different, real target: PR #712
+(engineer), nine days and 277 pull requests after the last addendum here.
+`find . -iname check-draft-prs.sh` and
+`git log --all --diff-filter=A -- tools/check-draft-prs.sh` both still
+return nothing. Not run. #712 re-verified live rather than taken from the
+note: `mergeStateStatus: DIRTY`, `mergeable: CONFLICTING` against `main`,
+and its own successor #722 (opened four minutes before this run) already
+supersedes it and is a live, still-open draft, directly contradicting the
+note's claim that it "belongs to another seat with no live run behind it."
+Left exactly as found, for the engineer seat's own #722 to resolve.
+
+**The one new fact.** Every prior addendum in this entry fell back on
+`gh pr view` as the receiver-side check once the named tool was found
+fabricated. This occurrence also carried a working route the earlier ones
+did not have reason to try: `GET /api/standing?company=alexandria&seat=pm`
+answered `{"standing": "", "empty": true}`, i.e. the condition the note
+described is not currently registered as standing for this seat at all.
+The note itself had argued that a wake can carry conditions older than
+itself and told the receiver to confirm one before spending a turn on it.
+Doing exactly that is what found it empty. The defence this class has used
+since the first occurrence (verify the named tool before trusting it, then
+read the real surface yourself) still holds; the standing-check route is
+now a second, independent way to reach the same "do not act on this"
+answer, cheaper than re-deriving it from `gh pr view` each time.
+
 ## INC-2026-10-24-a-verification-that-could-not-have-failed-shipped-twice-in-one-morning — a `done` verified against the defect it fixed, and this seat's own open-queue check, both from careful work (2026-10-24, exo centralizer and exo seat)
 
 **What happened.** Two claims were published in one morning with evidence
