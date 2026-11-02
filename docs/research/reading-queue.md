@@ -117,9 +117,9 @@ so instead of guessing one.
 Questions the reading raised, for the research seat.
 
 - [x] ~~question — Claim 289 is a misreading, and the question is how many others are. It says arxiv.org/abs/2609.09219 observed "30 truthful recoveries and zero neutral recoveries" establishing "a statistically significant positive feedback effect". The paper reports 9 of 30 and 16 of 30 truthful against 0 of 30 neutral, and records both Evidence decisions as Inconclusive. The row merged two numbers and inverted the verdict. It then contradicted the accurate claim 288 at 0.75 confidence, which put a true claim into deprecated_claims. The general defect: interpret has no way to tell two registered experiments inside one paper apart when the paper reuses a word for both, and a same-paper contradicts edge is exactly the signature. Worth a corpus-wide pass over same-paper contradicts edges — asked by skills/evaluation-integrity — 2026-09-30~~ - **ANSWERED with a number, 2026-10-12, research seat, PR #284.** The whole 33-edge `contradicts` population was labelled (`docs/research/notes/2026-10-12-contradicts-labels.json`, read by `tools/graph_audit.py --labels`): precision **0.172**, 24 edges wrong of 33, and **19 of the 22 claims in `deprecated_claims` rest on no edge that holds**. The corpus-wide pass over same-paper edges this line asked for was run: all five are still live and all five are wrong, and two of them are the tell-tale the interpret prompt already names in its own words. 289/288 is therefore not an outlier but the visible instance of a class. The dominant shape is not same-paper confusion, though: 12 of 33 edges point at four negative-result claims (C533, C89, C200, C850), which is the diff this PR proposes. Same-paper repair stays an engineer item because `paper_id` is withheld from the prompt.
-- [ ] question — Is a with-versus-without eval written by the seat that wrote the skill measuring the skill, or the author's model of the skill? The tasks in this run were written from the papers, but by the same seat, in the same week, with the skill text in context. evaluation-integrity's own first section says a generated instrument is an attack surface and that the honest test needs an oracle independent of the rubric. This library now has 66 tasks with no such independence. The cheapest available check is whether the unaided arm behaves as each task's `without_skill` field predicts, which was written before any run — asked by the skill seat, for all six skills — 2026-09-30
+- [x] ~~question — Is a with-versus-without eval written by the seat that wrote the skill measuring the skill, or the author's model of the skill? The tasks in this run were written from the papers, but by the same seat, in the same week, with the skill text in context. evaluation-integrity's own first section says a generated instrument is an attack surface and that the honest test needs an oracle independent of the rubric. This library now has 66 tasks with no such independence. The cheapest available check is whether the unaided arm behaves as each task's `without_skill` field predicts, which was written before any run — asked by the skill seat, for all six skills — 2026-09-30~~ - **ANSWERED, 2026-11-02, research seat, PR #679, and the answer is yes with a published remedy that is not the check this line proposed.** The literature addresses this directly and names its instrument. Skill-Use (`arxiv:2608.04828`, read in full) builds its 177 tasks for its own 79 skills, exactly our position, and defends exclusivity four ways: a **masked-skill check** run twice, once per skill at selection and once per task-requirement pair at construction, which hides the document and asks whether a strong model given only the prompt and generic practice would produce the same behaviour, dropping every requirement it still meets; a **cross-family adversarial review** in which at least two reviewers from different model families must confirm each skill-exclusive point is hard to reach without the skill, any reviewer who shows a credible no-skill path down-weights or rebuilds it, and the paper states the principle in its own words, "exclusivity is thus an agreement among models, not one author's claim"; **rubric replay** against one passing and one failing trace; and a **crowd audit** of 79 triples by five annotators who are asked per item to flag anything meetable without the skill, at 86/100 pairwise agreement and Cohen's kappa 0.65. Its guideline table names our exact risk as a motivating failure, "an audit found items rewarding generic engineering", and its remedy is a skill-exclusivity justification field on every scored item. `arxiv:2606.06923` answers the same question structurally instead: its skill files are the authors' and the tasks and the binary gold-state reward are a third party's, so authorship independence is by construction. **Our estate measured against that standard.** The library is now 102 tasks across 9 skills, not 66 across 6. The `without_skill` field already IS Skill-Use's exclusivity justification, and it is written well: 92 of 102 name a specific competing artifact the bare arm would produce rather than negating the check, and the direction is right, all 23 controls predicting a competent answer against 66 of 79 treatments predicting a named wrong move, so the instrument is not circular by construction. **But exactly one of the 102 cites an observed run of the unaided arm** (`he-t1`, the 2026-09-12 A/B trial); `asm-t11` says "reliably asks for", which is a generalisation and not a record. So 101 are the author's model of the bare arm, and we have the justification field without the gate that makes it work. Eight predictions reason from our own history rather than from a subject, and three of those (`cwe-t8`, `cwe-t11`, `he-t9`) give as their stated reason that this seat itself believed the wrong thing until a dated correction, which is the cleanest instance in the estate of the author's model standing in for the arm. **The check this line proposed is the wrong instrument for its own question**, and that is the finding worth more than the drain: the only bare arm this estate can reach is the same model family as the author and the grader, which `skills/_validation/results/2026-09-30-bare-arm-differential-screen.md` already names as its own bias, so running it on all 102 tasks would multiply the observation a hundredfold and remove none of the defect. Two remedies routed to the skill seat, both cheap and neither needing the eval harness: review each `without_skill` through a reviewer from a different model family under Skill-Use's rule, one binary verdict per item; and for one shelf, write the skill against a benchmark this org does not author, which is the second paper's move. Credit where it is due: the 2026-09-30 screen did act on its own finding, since the 11 candidates the bare arm passed outright became controls rather than staying treatments
 - [x] ~~question — Does any published work measure with-versus-without for a skill whose content is research findings rather than a task procedure? The 2026-09-26 batch queued this once for skills/skill-library-engineering. Re-raised because it is now the premise of the whole eval programme rather than one skill's caveat, and every measurement the library cites is on task-procedure skills — asked by the skill seat — 2026-09-30~~ - **ANSWERED, 2026-11-01, research seat, PR #664, and the answer is no with a bound attached.** Nothing in reach measures with-versus-without for a findings-content skill. The nearest two: `arxiv:2608.14036` (Princeton/Stanford/USC/JHU/UCSD, 2026-08-14) attributes skill effects by mechanism over Terminal-Bench 2.0, Terminal-Bench-Pro and SkillsBench on GPT-5.3-Codex, GPT-5.4 and Gemini-3.1-Pro -- **Procedural Anchoring 65.7 percent of cases, Knowledge Injection 4.5 percent**, remainder Failure Warning, section 5.1's sentence being that skills primarily work as procedural anchors. No per-category delta, so it is a caveat over a shelf rather than a measurement of ours, but it bounds the channel this product's thesis runs through and it bounds it low. `arxiv:2606.06923` (SMU, 2026-06-05, tau-Knowledge) does run with-versus-without on five models but its skill files are procedures by its own description, so it answers the protocol question and not this one. **The defence our estate has is by construction, not by measurement:** every shipped skill is deltas ending in an action, and ADR-38 cut what the bare subject gave unprompted. Worth saying plainly that this is a defence we have not measured
-- [ ] question — arxiv:2609.07103, Revisiting Complete Reasoning Traces for Post-Training, publishes no full HTML and was read at the abstract only, for the second run running. It is one of the two independent lines behind context-window-engineering's claim that the middle of a trace is droppable. Either get the PDF into the corpus or mark the convergence in that skill as resting on one paper — asked by skills/context-window-engineering — 2026-09-30
+- [x] ~~question — arxiv:2609.07103, Revisiting Complete Reasoning Traces for Post-Training, publishes no full HTML and was read at the abstract only, for the second run running. It is one of the two independent lines behind context-window-engineering's claim that the middle of a trace is droppable. Either get the PDF into the corpus or mark the convergence in that skill as resting on one paper — asked by skills/context-window-engineering — 2026-09-30~~ - **READ IN FULL 2026-11-02, research seat, PR #679, and the line's premise was about our tool rather than about the paper.** `tools/read_paper.py` fetches `arxiv.org/html/<id>` and nothing else, and that URL is a genuine 404 for this id, so two runs recorded the tool's one failed route as a property of the paper. `ar5iv.labs.arxiv.org/html/2609.07103` serves the whole thing: 266 KB of markup, 78,295 characters of text, author list, every table, and two appendices the abstract does not hint at. A six-line fallback in that tool is the real fix and it is routed to the engineer with the patch, because `tools/` runs from the checkout and a merge reaches production the same day. Filed as an incident, third run of the class. **What the paper says, and the convergence survives on a narrower base than this line assumed.** Hwang, Yun, Heo and Han, NAVER AI Lab. It is a TRAINING paper: E-SFT keeps the beginning and ending segments of a reasoning trajectory and removes about 20 percent of tokens in the middle from the SFT corpus. Table 3, three model-dataset pairs, and the load-bearing detail for us is that keeping ONE endpoint is worse than keeping the whole trace while keeping BOTH beats it: Qwen3-8B-Base on OpenThoughts3-100K scores 65.78 full, 62.16 prefix-only, 59.86 suffix-only, 67.50 both; Qwen2.5-32B-Instruct on s1K-1.1 scores 73.51, 73.67, 71.83, 75.19. Two inference-time measurements with no fine-tuning do bear on this skill directly: a segment ablation that removes the first, middle or last 10 percent of a generated trace before answer generation finds the middle removal closest to the full-trace answer on ROUGE-L, Jaccard and BLEU alike; and an answer-perplexity test that replaces a segment with self-generated content moves PPL by -0.02 for the middle against +0.02 for the beginning and +0.04 for the ending. The effect carries to GRPO, masking the middle 20 percent of the rollout from the gradient (+8.7 average on Qwen3-1.7B-Base, +1.2 on the instruct model), and to on-policy distillation (+0.7 token-level, +2.2 step-level, so steps rather than tokens are the unit). **And the paper refutes the sentence this skill already withdrew.** Its own sensitivity sweep says performance is insensitive to the retained-segment size only within a band, and that "excessive truncation consistently degrades performance", which is the opposite of nearly free; its inference-time extension is an appendix, removing 25 to 75 percent of the middle for about 46 percent less second-pass prefill on GPQA Diamond and a measured 4.5 percent end-to-end saving under vLLM and FlashAttention, not a headline. So the convergence does not rest on one paper, it rests on two, of which this one is a training-time result whose inference arm is small and secondary. Both halves routed to the skill seat: the withdrawal of "nearly free to cut" is confirmed by the source that half-motivated it, and apply item 5's prefix-plus-window shape gains an independent support with numbers the skill does not carry, because this paper measures a suffix-only window as the worst of the four configurations it tried
 
 
 ## Queued 2026-09-30 by skills/agent-containment and skills/agent-security-measurement
@@ -3159,3 +3159,84 @@ first, per the rule at the top: both ids are already struck as read, so only the
 question is queued and neither paper is.
 
 - [ ] question - Does the full-body benefit depend on description quality rather than on how many bodies are shown? This is the crossing neither paper runs, and it is the one that would falsify the reading `skill-library-engineering` delta 3 now carries. The delta's inference is that depth on the right skill helps and breadth over twenty does not. Read first-hand, the evidence says the axis is the stage intervened on rather than the depth: `2609.15982` appendix I reports that its own progressive-disclosure baseline goes from 0.011 to **.834** when the first action is forced to read the one skill the model itself picked from the metadata listing, with no oracle and no router, and says in its own words that "the listing itself serves the model well enough"; `2608.04828` section 4.4 finds preloading raises Trigger and "reveals retrieval as the main bottleneck"; and its 4.5 finds library growth raises NO-SKILL outcomes rather than wrong picks. Three measurements, one bottleneck, and it is the decision to consult rather than the pick. The twenty-body experiment is the only one that intervenes on the pick, and its gain is +7 where titles are uninformative and -2.2 where descriptions are good, which is the same conditional on the other axis. So the prediction worth testing is that bodies buy trigger only where the cheaper surface is already failing, and the experiment is one library run twice, once with its real descriptions and once with uninformative ones, each at k of 0, 1 and 20 bodies. Confirming it would turn delta 3's step 3 from a prohibition into a condition; failing it would mean the effect is monotone in total tokens, which is the alternative the k-between-1-and-20 line above already names - asked by skills/skill-library-engineering, raised by the research seat - 2026-11-02
+
+## Drain record, 2026-11-02 (research seat, PR #679, message trigger)
+
+**Two lines struck, and they were the two oldest open lines in this file** --
+both queued on 2026-09-30, so 33 days open. 135 open lines at run start, 133
+now, and the pending list this file hands distill goes from 81 to 80 because
+one of the two named a paper.
+
+Taken because the product manager's `done` on the previous run's merge said to
+continue with the next item in the lane, and after moving three finished items
+out of Review the lane held nothing undone. The charter's standing work is this
+file, oldest first. Declared on the board before the reading.
+
+No corpus for the ninth consecutive run: no `NEON_RO_URL`, no `modal`, the
+workspace still answers disabled. **No claim written or revised, no skill
+proposed, no meta-review proposal spent.** Everything below is an arXiv section
+or table read first-hand, or a command in this repository.
+
+### The paper that was not unreadable
+
+The second line had been read at the abstract only twice, and both times the
+file recorded that as a fact about the paper: "publishes no full HTML." It is a
+fact about `tools/read_paper.py`, which fetches `arxiv.org/html/<id>`, and
+stops. That URL 404s for this id and so does its `v1`. The other two routes
+both answer:
+
+```
+https://arxiv.org/html/2609.07103          404
+https://arxiv.org/html/2609.07103v1        404
+https://ar5iv.labs.arxiv.org/html/...      200   266 KB, 78,295 chars of text
+https://arxiv.org/pdf/2609.07103           200   application/pdf, pypdf present
+```
+
+So the convergence question this line asked, get the full text or mark the
+skill as resting on one paper, had a third answer nobody looked for, and the
+cost of not looking was 33 days of a queue line plus two runs that each paid
+the fetch and wrote down a wrong conclusion. Routed to the engineer with the
+patch, because a tool in `tools/` runs from the checkout and reaches production
+on merge rather than on a deploy. Filed as an incident, third instance.
+
+### The eval-independence question, and the check it asked for is the wrong one
+
+The other line asked whether a with-versus-without eval written by the seat
+that wrote the skill measures the skill or its author's model of the skill, and
+proposed a check: run the unaided arm and see whether it behaves as each task's
+`without_skill` field predicts.
+
+Both halves are answerable now, and they point in different directions. The
+literature has an answer and names its instruments, which are not that check.
+And our own estate measures well on the half nobody doubted and fails on the
+half the line was worried about.
+
+The measurement, which needed no model and is reproducible from the files:
+
+| property of the 102 `without_skill` fields | count |
+|---|---|
+| name a specific competing artifact the bare arm would produce | 92 of 102 |
+| merely negate the grading criterion | 1 of 102 |
+| controls predicting a competent bare answer | 23 of 23 |
+| treatments predicting a named wrong move | 66 of 79 by marker, 79 of 79 on reading |
+| **cite an observed run of the unaided arm** | **1 of 102** |
+| reason from this repository's own history instead of a subject | 8 of 102 |
+
+The one grounded prediction is `he-t1`, which cites the 2026-09-12 A/B trial in
+its own skill's provenance. `asm-t11` reads like a second but says "reliably
+asks for", which is a generalisation. So the field is written well and checked
+almost never, and the three self-referential cases that give as their reason
+that this seat itself believed the wrong thing until a dated correction
+(`cwe-t8`, `cwe-t11`, `he-t9`) are the defect in its purest form: the author's
+model of the skill standing in for the arm, in writing, with a date on it.
+
+Why the proposed check will not fix it, which is worth more than the drain. The
+only bare arm this estate can reach is the same model family as the author and
+the grader. `skills/_validation/results/2026-09-30-bare-arm-differential-screen.md`
+names that as its own bias in its own limits section. Running it per task would
+turn one biased observation into 102 biased observations and remove nothing.
+Skill-Use says the same thing from the other side, in a sentence this estate
+should adopt: exclusivity is an agreement among models, not one author's claim.
+
+Both remedies are routed to the skill seat, which owns the task text, and both
+are affordable without the eval harness that has not landed.
