@@ -25762,3 +25762,11 @@ ingestion target rather than a skill target.
   That distinction is why the writer seat's gate can grade the issue at all,
   and it is the reason this seat's version of the idea is worth more than the
   one it was taken from.
+- First step, which is the part still open after today: sweep the three
+  generator prompts for the rest of this shape, a rule carrying a factual
+  question a function could answer, and list them. Law 8 was found because the
+  writer seat's structure-watch step counts wordings, so it was found at six.
+  Nothing counts the others, and the count is the signal rather than any one
+  rewording being wrong.
+- Cost: $0
+- Status: proposed
