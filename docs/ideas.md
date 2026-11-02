@@ -23081,3 +23081,56 @@ ingestion target rather than a skill target.
   should, because a rejection quoted to warn against it is not a candidate.
 - Cost: $0.
 - Status: proposed
+
+### 2026-11-02 - the pre-send gate blocks on none of the three laws this week's issue breaks, and both of its warnings are false (writer seat)
+- Trigger: `2026-W42` is live right now printing `## What to read`, one kind of
+  block over thirty-five paragraphs, and seven `abs` links where arXiv serves
+  `html`. Run against that same file, `tools/check_digest_quality.py` returns
+  `0 blocking, 4 warnings`. It is the one machine in the product that can stop
+  a send, and it stopped nothing, on an edition whose generator already held
+  every rule it broke. Graded in full in
+  `docs/voice/reviews/2026-11-02-message-ask-clocks.md`.
+- Why this is the lever rather than another prompt wording: the three defects
+  are already computed on this seat's own surface, by `check_voice.py
+  slotheads`, `measure` and `links`, and this seat's instruments run in a
+  writer's run hours or days after a reader has the issue. The gate runs
+  before the send. The computation exists and is pointed at the wrong moment.
+- Why it is a ledger entry and not a diff: `tools/` is pipeline code and the
+  writer charter's boundary forbids this seat writing it. The three readings
+  are a writer-seat surface and are not moving.
+- What the gate's own docstring already commits it to, which is why this is a
+  defect and not a feature request. It reserves `block` for "defects that are
+  unambiguous from the text alone, that the owner has already had to report,
+  or that make the issue wrong rather than weak". The framework heading is a
+  defect the owner has reported twice and canon law 12 and incident 20 both
+  record. The one-shape page is a count of kinds of block. The `abs` link is
+  one HTTP request against `arxiv.org/html/`. All three clear that bar in the
+  gate's own words.
+- **And all four warnings it did return are false, which is the sharper half.**
+  Two are `bare-number` on figures carrying a comparison in the same sentence.
+  The other two are `empty-intensifier`: `INTENSIFIERS` at line 99 holds
+  `"very "` with a trailing space and no leading one, and the test at line 224
+  is `if word in low` while its neighbour at line 218 is
+  `re.search(rf"\b{word}\b", low)`. So "every " matches, and one of the two
+  hits is `**Accelerate every builder and agent to frontier speed.**`, the
+  standing close canon law 10 requires in every issue this product will ever
+  send. The gate therefore emits at least one false warning on every edition
+  by construction, and has since the rule was written.
+- First step, and it is one character before it is anything else: give the
+  intensifier test the word boundary its neighbour two lines up already uses.
+  That is verifiable in isolation against any issue in `site/content/issues/`
+  and it costs no judgment.
+- Second step, the three blocks, cheapest first. `links` is deterministic and
+  has one correct answer, which is the half run 51 filed when it reverted its
+  own law 8 prompt patch rather than writing a fourth wording of it. The
+  heading ban is a phrase list the engineer's gate and this seat's canon do not
+  share, which writer run 61 measured at four live headings and routed then.
+  The shape count is a count of kinds of block and is the one that needs a
+  reading of what counts as a kind, so it goes last and may stay a warning.
+- Whose call: the engineer owns `tools/` and `pipeline/`. This seat owns the
+  three readings and will keep them answering. The decision worth taking first
+  is whether the gate's `block` level is allowed to hold Monday's issue on a
+  heading, because a gate that blocks and a press that sends weekly are a
+  product decision and not a lint setting.
+- Cost: $0.
+- Status: proposed
