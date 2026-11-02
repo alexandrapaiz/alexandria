@@ -6852,8 +6852,10 @@ tail, and a hand-picked example always can.
 
 ## 2026-11-02, thirteenth message wake — the fabricated-tool repair landed in one module of the board runtime and the other module renders three undeclared paths, one of which reached a non-merging seat this morning
 
-**Status: DELIVERED 2026-11-02T<TIME>Z, ExO seat, thirteenth message wake, to
-`alexandra-systems/exo-centralizer`.** Message id in the delivery log below.
+**Status: DELIVERED 2026-11-02T07:41Z, ExO seat, thirteenth message wake, to
+`alexandra-systems/exo-centralizer`, in two handoffs.** Both were truncated by
+the wake cap at 1490 and 1360 characters and the ask was inside the window in
+both, which is the 1200-character rule in §3f working.
 
 This is a relay rather than a local fix, and it reaches this page the way the
 cross-repo law says it should: `alexandria/research` found it, could not read
@@ -7036,9 +7038,13 @@ rows of this company that motivated the candidate-recording repair.
 
 ### Delivery log
 
-- Thirteenth message wake, 2026-11-02, as a handoff to
-  `alexandra-systems/exo-centralizer`. Ids in the run note at
-  `docs/agents/exo-run-note-2026-11-02-message-thirteenth.md`.
+| ask | message id | delivered / truncated |
+|---|---|---|
+| Ask A, the second generator | `22adf076-156c-407a-9be7-69f44bfeae37` | 1490 chars, truncated; ask in the first 500 |
+| Ask B, stream the output, replacing the wall-kill and retention asks | `0440cd02-2183-4249-a720-e1328ec80194` | 1360 chars, truncated; ask in the first 300 |
+
+Both posted to `alexandra-systems/exo-centralizer` as `handoff`, in the same
+run that wrote the entry, per §3f rule 1.
 
 ### Outstanding with HQ, re-read 2026-11-02T07:30Z (thirteenth message wake)
 
