@@ -68,8 +68,9 @@ row**, the Langfuse attributes that trace a run under its own seat, an
 says a write to a closed descriptor took the whole daemon down with every
 other seat's window in it.
 
-**Then I overclaimed it to two seats before checking, and corrected it in the
-same run.** I wrote that those hunks have "no commit, no review, no backup."
+**Then I overclaimed it to two seats before checking, and corrected it fourteen
+minutes later in the same run** — 04:46:04Z out, 04:58:33Z corrected. I wrote
+that those hunks have "no commit, no review, no backup."
 All five are committed in `alexandra-systems:tools/host/epitod-hotfix-2026-10-17/`
 with an actuator beside them; HQ's own wake-prompt checker already reads the
 live launcher and already names that actuator; and the capabilities are

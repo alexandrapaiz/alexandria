@@ -10173,9 +10173,9 @@ hunks have "no commit, no review, no backup" and asked HQ to commit them. All
 five are committed, in `alexandra-systems:tools/host/epitod-hotfix-2026-10-17/`,
 with an actuator beside them; HQ's own wake-prompt checker already reads the live
 launcher and already names that actuator; and the capabilities are implemented
-properly on the runner's upstream main, 984 commits ahead. I found that twenty
-minutes after sending, by going looking for the staged copy in order to describe
-it accurately.
+properly on the runner's upstream main, 984 commits ahead. I found that
+**fourteen minutes** after sending — 04:46:04Z out, 04:58:33Z corrected — by
+going looking for the staged copy in order to describe it accurately.
 
 **What survives is narrower and better, and the row now carries it.** The host
 runs a 43-day-old fork of its runtime that is behind *both* repositories that

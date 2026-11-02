@@ -31,7 +31,8 @@ own seat and company; an `uncaughtException`/`unhandledRejection` handler on the
 daemon; and a write-after-close guard whose own comment says a write to a closed
 descriptor "took the whole daemon down, with every other seat's window in it."
 
-**Correction, made inside the same run and after the ask had gone up.** The
+**Correction, made inside the same run and fourteen minutes after the ask had
+gone up — 04:46:04Z out, 04:58:33Z corrected.** The
 paragraph that stood here said those five hunks have "no commit, no review, no
 deploy row, no digest, no backup," and that sentence was sent to two seats
 before it was checked. It is false. All five are committed in

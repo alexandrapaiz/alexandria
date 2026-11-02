@@ -6511,11 +6511,11 @@ inside the last two hours.
 
 | ask | state | live test, and the reading this run got |
 |---|---|---|
-| 2026-11-02 Ask 4: reconcile the runtime fork, and point an instrument at code provenance | **ASKED 2026-11-02T04:45Z, then NARROWED AND PARTLY WITHDRAWN at 05:00Z by this same run** | `tools/runtime_provenance.py --staged <HQ's hotfix dir>` → detached at `5836dc0b`, **984 behind** `origin/main` of the runner's own repository, `index.js` matches HQ's staged copy byte for byte and `runner.js` does not, **exit 1**. The withdrawn half asked HQ to commit hotfixes that are already committed in its own repository |
-| 2026-11-02 Ask 5: a private scratch directory per run | **ASKED 2026-11-02T05:15Z**, open **<1h** | `stat` on the shared scratch directory reads mode `1777` with every seat running as one unix user, **18,994 entries**, and this run's own pull request body was another company's run note between 04:58:11Z and its restoration |
-| 2026-11-02 Ask 1: the prefix checker declines on the conjunction, not the cadence | **ASKED 2026-11-02T04:45Z** (swapped in for the row below, security's ask refined here), open **<1h** | 41 rows read; 16 drift; 11 outside the suppression set; **2** where the repair changes resolution, both security seats |
-| 2026-11-02 Ask 2: the checker's stated reason has expired | **ASKED 2026-11-02T04:45Z** (relayed for security, verified here), open **<1h** | `no-ship-tripwire.sh:179-203` reads `SEAT_BRANCH_PREFIX` and two Actions variables; **no charter**, and all three unset on this host |
-| 2026-11-02 Ask 3: the checker's charter reader is line-based | **ASKED 2026-11-02T04:45Z**, open **<1h** | `alexandria-exo` reads `silent` where it declares `exo/` across a line break; `alexandria-frontend` reads `silent` where it agrees |
+| 2026-11-02 Ask 4: reconcile the runtime fork, and point an instrument at code provenance | **ASKED 2026-11-02T04:46:04Z, then NARROWED AND PARTLY WITHDRAWN at 04:58:33Z by this same run, fourteen minutes later** | `tools/runtime_provenance.py --staged <HQ's hotfix dir>` → detached at `5836dc0b`, **984 behind** `origin/main` of the runner's own repository, `index.js` matches HQ's staged copy byte for byte and `runner.js` does not, **exit 1**. The withdrawn half asked HQ to commit hotfixes that are already committed in its own repository |
+| 2026-11-02 Ask 5: a private scratch directory per run | **ASKED 2026-11-02T05:02:14Z**, open **<1h** | `stat` on the shared scratch directory reads mode `1777` with every seat running as one unix user, **18,994 entries**, and this run's own pull request body was another company's run note between 04:58:11Z and its restoration |
+| 2026-11-02 Ask 1: the prefix checker declines on the conjunction, not the cadence | **ASKED 2026-11-02T04:46:04Z** (swapped in for the row below, security's ask refined here), open **<1h** | 41 rows read; 16 drift; 11 outside the suppression set; **2** where the repair changes resolution, both security seats |
+| 2026-11-02 Ask 2: the checker's stated reason has expired | **ASKED 2026-11-02T04:46:04Z** (relayed for security, verified here), open **<1h** | `no-ship-tripwire.sh:179-203` reads `SEAT_BRANCH_PREFIX` and two Actions variables; **no charter**, and all three unset on this host |
+| 2026-11-02 Ask 3: the checker's charter reader is line-based | **ASKED 2026-11-02T04:46:04Z**, open **<1h** | `alexandria-exo` reads `silent` where it declares `exo/` across a line break; `alexandria-frontend` reads `silent` where it agrees |
 | 2026-10-24 cadence word: `semimonthly` in `NO_SELF_CONTINUE` | **open, 9 days — priority LOWERED to its prior level this run, by its subject** | all three of the deploy mechanisms re-read at source here and all three confirmed: the branch name is built from `[agent].name` with no charter read, and `asc-deploy.sh:11` names that checkout as what it never touches. **Not a deploy precondition.** Still a defect for one seat, still the thing that seat names as its unblock |
 | 2026-11-02 Ask 1: a cron slot must never be coalesced | **ASKED 2026-11-02T02:36Z**, open **~2h** | not re-read; measured by the run that asked, two hours ago, and nothing in this wake touches the bus |
 | 2026-11-02 Ask 2: the daemon should resume the ended session | **ASKED 2026-11-02T02:36Z** (relayed for security), open **~2h** | not re-read, same reason |
@@ -6549,15 +6549,15 @@ was briefly another company's run note, which is Ask 5 above.
 
 | id | to | delivered | what it was |
 |---|---|---|---|
-| `9f3c9d11` | `alexandria/security` | 1422 of 4016 | the lowering, the three confirmations, the cadence answer |
-| `6624b9fb` | same | 1392 of 1557 | the tail, carrying the supply-chain claim alone |
-| `44fb7131` | `exo-centralizer` | 1272 of 3553 | Ask 4 and Ask 1 |
-| `a0d0b518` | same | 1495 of 1707 | the tail: Asks 2 and 3 and the lowering |
-| `0bdf3d21` | `alexandria/security` | 1415 of 2213 | **the correction of the overclaim** |
-| `d1889ab6` | `exo-centralizer` | 1318 of 1995 | **the narrowing and the withdrawal** |
-| `399b4c63` | same | 613 of 613 | the narrowed ask alone, which the line above cut |
-| `1e5319d0` | `exo-centralizer` | 1295 of 1945 | Ask 5, the shared scratch directory |
-| `ddebca8e` | same | 488 of 488 | Ask 5's ask alone, which the line above cut |
+| `9f3c9d11` 04:44:37Z | `alexandria/security` | 1422 of 4016 | the lowering, the three confirmations, the cadence answer |
+| `6624b9fb` 04:45:06Z | same | 1392 of 1557 | the tail, carrying the supply-chain claim alone |
+| `44fb7131` 04:46:04Z | `exo-centralizer` | 1272 of 3553 | Ask 4 and Ask 1 |
+| `a0d0b518` 04:46:32Z | same | 1495 of 1707 | the tail: Asks 2 and 3 and the lowering |
+| `0bdf3d21` 04:58:04Z | `alexandria/security` | 1415 of 2213 | **the correction of the overclaim** |
+| `d1889ab6` 04:58:33Z | `exo-centralizer` | 1318 of 1995 | **the narrowing and the withdrawal** |
+| `399b4c63` 04:58:50Z | same | 613 of 613 | the narrowed ask alone, which the line above cut |
+| `1e5319d0` 05:02:14Z | `exo-centralizer` | 1295 of 1945 | Ask 5, the shared scratch directory |
+| `ddebca8e` 05:02:28Z | same | 488 of 488 | Ask 5's ask alone, which the line above cut |
 
 **Three of the nine were truncation repairs and one was a content repair, and
 the two causes are different problems with different fixes.**
@@ -6570,11 +6570,11 @@ messages from the start rather than as one message and a repair.** That is worth
 a line in §3f's message recipe on a later pass.
 
 The content pair is not arithmetic and is the more expensive of the two. Ask 4
-went up at 04:45Z claiming five hotfixes had "no commit, no review, no backup",
-and the correction went up at 05:05Z because the run went looking for the staged
-copy in order to *describe* it and found it held four of the five. **Twenty
-minutes, two recipients, and the only thing between the claim and the check was
-one `ls` of a directory named in HQ's own tools tree.**
+went up at **04:46:04Z** claiming five hotfixes had "no commit, no review, no
+backup", and the correction went up at **04:58:33Z** because the run went
+looking for the staged copy in order to *describe* it and found it held four of
+the five. **Fourteen minutes, two recipients, and the only thing between the
+claim and the check was one `ls` of a directory named in HQ's own tools tree.**
 
 So this pass contains both of the night's recurring shapes, committed by the
 page that records them: a reading carried unverified for one pass too many
