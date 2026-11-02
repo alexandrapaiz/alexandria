@@ -111,7 +111,7 @@ from datetime import date
 # ---------------------------------------------------------------------------
 FLOOR = 0.05            # sanity floor: below this, nothing in the prompt matched
 NARROW_MARGIN = 0.02    # lead under which a win is reported as narrow, not failed
-USE_WHEN_BOOST = 1.25   # NOT supported by evidence; see the block below
+USE_WHEN_BOOST = 1.25   # rests on NO published weight; see the block below
 ENGINE_VERSION = "lexical/2.2"
 ALPHA = 0.05            # 95% intervals
 
@@ -171,13 +171,26 @@ PANEL_TERMSET_TOLERANCE = 1.20  # library:decoy mean distinct-stem ratio
 #     it; the field its authors drop is example-usage. HAVING the clause is
 #     supported. Its section 4.1 is the finding, and its 2.2 carries a
 #     sentence naming the wrong field that reverses it.
-#   arXiv:2602.05366 is the only source that measures a WEIGHT on the field
-#     rather than its presence. The usage-scenario field's learned weight runs
-#     0.269x to 1.363x of the description field's across six dataset and
-#     retriever cells, median 0.695x, and sits BELOW the description in five
-#     of the six. Ours is a fixed 1.25x ABOVE it.
-# So the literature supports the clause, rules out a constant in either
-# direction, and runs the opposite way on central tendency.
+#   arXiv:2602.05366 publishes learned per-field weights, and this library
+#     cited them against USE_WHEN_BOOST until 2026-11-02. **That magnitude
+#     citation is WITHDRAWN.** The row is Table 5's `examples`, and the
+#     research seat settled the field identification by fetching both papers:
+#     `examples` is 22670's `example_usage`, which holds query text, and not
+#     its `when_to_use`, which holds the activation clause. The per-field
+#     definition says "representative user intents", the query side aligns the
+#     field with "a concrete user utterance", and Table 4's cells hold strings
+#     like "clean up podcast recordings by removing background noise". So the
+#     0.269x-1.363x range (median 0.695x, below description in five of six) is
+#     a weight on somebody else's field. It could not have transferred even if
+#     the fields had matched, because MFTR scores `examples` against the
+#     query's own intent field, making part of that weight query-to-query
+#     homophily, and an activation condition is not query text.
+# So the literature supports HAVING the clause and rules out a constant in
+# either direction on 05366's own methodological conclusion. **There is no
+# published weight for this field at all, so 1.25 is undefended rather than
+# contradicted**, and the reason not to retune it is the sweep measurement
+# below rather than the literature. Full reconciliation:
+# docs/research/notes/2026-11-02-field-identification.md.
 #
 # The coefficient is NOT retuned here, and the reason is a measurement rather
 # than caution. Swept over the published range, this suite's pass rate runs 48

@@ -62,11 +62,38 @@ the original documentation )", while `function` and `tags` are always
 required. All 17 clauses in this panel run 82 to 132 words, which is 4.1x to
 6.6x that cap.
 
-Ours is a fixed 1.25x above it. So the literature supports the clause, rules
-out a constant in either direction, and runs the opposite way on central
-tendency. This file measures what our own suite does across the range the
-literature actually publishes, so the coefficient stops being defended by
-intuition alone.
+**Fourth correction, 2026-11-02, and it resolves the third one against us.**
+The research seat fetched both papers rather than reasoning from this seat's
+note, and the identification above goes the other way: 05366's `examples` IS
+22670's `example_usage` and is NOT its `when_to_use`. Three things decide it,
+and none of them is the four-word gloss this file leaned on. The per-field
+definition says "representative user intents". The query side of the same
+paper aligns that field with "a concrete user utterance". Table 4's cells hold
+strings like "clean up podcast recordings by removing background noise". Those
+are queries. 22670 keeps BOTH fields and defines them separately: `when_to_use`
+is "<20 words, actual usage scenarios" rendered as a when-clause, while
+`example_usage` is {query, api_call} pairs, and the content match is the query
+half of the latter.
+
+So this is a wrong-FIELD citation and not a wrong number. **Presence survives
+and magnitude is withdrawn: `USE_WHEN_BOOST`'s 1.25x now rests on no published
+weight at all.** Everything below that compares 1.25 to 0.269-1.363 is
+comparing our activation clause to somebody else's query text, and it is kept
+in the output under that label rather than deleted, because a withdrawal a
+reader cannot see next to the number it withdraws is how the number comes back.
+
+The stronger half, and it is the research seat's: the comparison could not have
+transferred even if the fields had matched. MFTR scores `examples` against the
+query's own User Intent field, which is the same genre of text, so part of that
+weight is query-to-query homophily. An activation condition is not query text,
+so a weight learned on one does not carry to the other in either direction.
+
+What survives, stated plainly. HAVING the clause is supported by 22670's
+ablation. No published weight for the clause exists, so the coefficient is
+undefended rather than contradicted, and the reason not to retune it is this
+file's own sweep measurement below rather than the literature. This file still
+measures what our suite does across 0.269-1.363, now labelled as a range from
+a different field and used only as a plausible span to sweep.
 
 It also measures the two corrections the research seat landed on this seat's
 own prose, because both were accepted in a pull request body and neither
@@ -101,19 +128,40 @@ sys.path.insert(0, HERE)
 
 import trigger_test as tt  # noqa: E402
 
-# The six cells arXiv:2602.05366 publishes for the usage-scenario field's
-# weight, as a multiple of the description field's. Recorded here as the
-# literature's own range rather than as a recommendation, because the paper's
-# own conclusion is that no constant is right. The row these come from is
-# Table 5's `examples`, which that paper glosses as its usage-scenario field
-# and which shares a name with the field the OTHER paper's ablation drops. See
-# the second correction in this module's docstring: the ambiguity rides along
-# with the number and is not resolved by either paper.
+# The six cells arXiv:2602.05366 publishes for its `examples` field's weight,
+# as a multiple of the description field's. **These do NOT measure our field,
+# and the identification that said they did is withdrawn (2026-11-02, fourth
+# correction in this module's docstring).** `examples` is 2510.22670's
+# `example_usage`, which holds query text, and not its `when_to_use`, which
+# holds the activation clause. The range is kept here because the withdrawal
+# is only legible next to the number it withdraws, and because the paper's
+# own conclusion that no constant is right is a methodological finding that
+# survives the misidentification.
 LIT_CELLS = (0.269, 1.363)
 LIT_MEDIAN = 0.695
 LIT_BELOW_DESCRIPTION = 5          # of six cells
 LIT_WEIGHT_PAPER = "arXiv:2602.05366"
 LIT_PRESENCE_PAPER = "arXiv:2510.22670"
+
+# What those cells are a weight ON, stated so no later reader has to re-derive
+# it. The per-field definition says "representative user intents", the query
+# side of the same paper aligns the field with "a concrete user utterance", and
+# Table 4's cells hold strings like "clean up podcast recordings by removing
+# background noise". Those are queries.
+LIT_WEIGHT_FIELD = "examples == example_usage (query text)"
+LIT_OUR_FIELD = "when_to_use (activation clause)"
+
+# So this is the honest state of the coefficient after the identification was
+# settled: there is no published weight for our field at all.
+LIT_WEIGHT_FOR_OUR_FIELD = None
+
+# A seventh cell both seats missed on the first pass, recorded because it cuts
+# against the coefficient harder than Table 5 does rather than for it: Table 4,
+# Gorilla on BM25, `examples` 42.3 against `description` 21.4, so 1.977x. It is
+# NOT commensurable with Table 5's learned-weight distributions, and those
+# weights are adaptive PER QUERY, which is the part that matters. (Research
+# seat, 2026-11-02, docs/research/notes/2026-11-02-field-identification.md.)
+LIT_TABLE4_GORILLA_BM25 = (42.3, 21.4)
 
 # The 2026-09-30 length-bias experiment, held fixed so the decomposition is
 # the published one. The candidate, prompt and topic are the same; only the
@@ -381,9 +429,20 @@ def measure(skills_dir, decoys_path):
             "weight_median": LIT_MEDIAN,
             "cells_below_description": LIT_BELOW_DESCRIPTION,
             "cells_total": 6,
+            # The two comparisons below are NOT commensurable with our
+            # coefficient and are reported under that label, because the field
+            # identification was settled against us on 2026-11-02. See
+            # LIT_WEIGHT_FIELD.
+            "weight_cells_measure_field": LIT_WEIGHT_FIELD,
+            "our_field": LIT_OUR_FIELD,
+            "published_weight_for_our_field": LIT_WEIGHT_FOR_OUR_FIELD,
+            "magnitude_citation_withdrawn": True,
             "ours_is_above_description": tt.USE_WHEN_BOOST > 1.0,
             "ours_inside_published_range":
                 LIT_CELLS[0] <= tt.USE_WHEN_BOOST <= LIT_CELLS[1],
+            "table4_gorilla_bm25_examples_over_description":
+                round(LIT_TABLE4_GORILLA_BM25[0]
+                      / LIT_TABLE4_GORILLA_BM25[1], 3),
         },
         "asymmetry": asymmetry,
         "arms": {k: summarise(v) for k, v in arms.items()},
@@ -409,20 +468,38 @@ def render(r):
              f"description's,")
     L.append(f"    median {lit['weight_median']}x, below the description in "
              f"{lit['cells_below_description']} of {lit['cells_total']} cells.")
-    L.append("    That row is Table 5's `examples`, which this paper calls its "
-             "usage-scenario")
-    L.append("    field and which shares a name with the field the other "
-             "paper's ablation")
-    L.append("    DROPS. The identification is the step the comparison rests "
-             "on, and neither")
-    L.append("    paper settles it.")
+    L.append("    That row is Table 5's `examples`, and the identification is "
+             "SETTLED as of")
+    L.append("    2026-11-02, against us: `examples` is the other paper's "
+             "`example_usage`,")
+    L.append(f"    which holds query text, not its {lit['our_field']}. So the "
+             "MAGNITUDE citation")
+    L.append("    is WITHDRAWN and the range above is a weight on somebody "
+             "else's field.")
+    L.append(f"    Published weight for our field: "
+             f"{lit['published_weight_for_our_field'] or 'NONE'}.")
+    L.append("    It could not have transferred even if the fields matched: "
+             "that weight is")
+    L.append("    scored against the query's own intent field, so part of it "
+             "is query-to-")
+    L.append("    query homophily, and an activation condition is not query "
+             "text.")
+    L.append(f"    A seventh cell, Table 4 Gorilla/BM25: "
+             f"{lit['table4_gorilla_bm25_examples_over_description']}x, not "
+             f"commensurable")
+    L.append("    with Table 5 and adaptive per query, so it cuts the same way "
+             "harder.")
     L.append(f"  ours: {r['use_when_boost_shipped']}x, which is "
              f"{'ABOVE' if lit['ours_is_above_description'] else 'below'} the "
              f"description and "
              f"{'inside' if lit['ours_inside_published_range'] else 'outside'} "
              f"the published range.")
-    L.append("    So the clause is supported, a constant is ruled out in either")
-    L.append("    direction, and central tendency runs the opposite way.")
+    L.append("    So the clause is supported, a constant is ruled out in "
+             "either direction")
+    L.append("    on this paper's own methodological conclusion, and the "
+             "central-tendency")
+    L.append("    claim this file used to make is withdrawn with the "
+             "identification.")
 
     a = r["asymmetry"]
     L.append("")

@@ -15,6 +15,26 @@
 > (3) The idf-mass ratio was computed by rounding each candidate's share and
 > then meaning the rounded values. It is now exact until print, which moves it
 > by one in the fourth decimal.
+>
+> **Amended again, later on 2026-11-02, and this one withdraws a number rather
+> than correcting one.** The open queue line in (2) was answered by the research
+> seat from both papers' full text, and it resolved AGAINST this file.
+> 05366's `examples` is 22670's `example_usage`, which holds query text, and not
+> its `when_to_use`, which holds the activation clause: the per-field definition
+> says "representative user intents", the query side aligns the field with "a
+> concrete user utterance", and Table 4's cells hold strings like "clean up
+> podcast recordings by removing background noise". So this is a wrong-FIELD
+> citation and not a wrong number. **Presence survives, magnitude is withdrawn,
+> and `USE_WHEN_BOOST`'s 1.25x rests on no published weight at all.** Every
+> sentence below that compares 1.25 to 0.269-1.363, or that says central
+> tendency runs the opposite way, is withdrawn and left standing so the
+> withdrawal is legible next to what it withdraws. Two things survive it: the
+> paper's own methodological conclusion that no constant is right, and this
+> file's sweep, which is the actual reason the coefficient was not retuned. One
+> cell both seats missed is added by the same note, Table 4 Gorilla on BM25,
+> `examples` 42.3 against `description` 21.4 for 1.977x, not commensurable with
+> Table 5 and adaptive per query. Reconciliation:
+> `docs/research/notes/2026-11-02-field-identification.md`.
 
 2026-11-02, skill seat. Instrument `skills/_validation/use_when_evidence.py`,
 machine-readable bundle `2026-11-02-use-when-coefficient.json`, console form
