@@ -208,6 +208,12 @@ image = (
     # docs/agents/registers.md says the read gate is the one the org forgets.
     .add_local_file("tools/check_digest_quality.py",
                     "/root/check_digest_quality.py")
+    # Canon law 8's url, resolved on the payload before the generator reads it.
+    # This list is a hand list, so a module this file imports and the image does
+    # not carry is an ImportError on the next cron and nowhere earlier.
+    # `tests/test_law8_url.py::test_the_modal_image_carries_this_module` is the
+    # check that fires at merge instead.
+    .add_local_file("pipeline/arxiv_html.py", "/root/arxiv_html.py")
 )
 
 app = modal.App("alexandria-weekly", image=image)
@@ -279,7 +285,7 @@ def check_citations(conn, max_papers: int = MAX_PAPERS_PER_RUN) -> int:
 
 # ---------------- digest ----------------
 
-def gather(conn, window: dict | None = None) -> dict:
+def gather(conn, window: dict | None = None, law8_probe=None) -> dict:
     """Fixed queries; the model never chooses what to retrieve.
 
     `window` is the span of time the issue reports on, as
@@ -304,6 +310,16 @@ def gather(conn, window: dict | None = None) -> dict:
     before itself underneath it. An issue labelled 2026-W41 and filled with
     the week of 2026-10-18 is a worse artifact than one labelled wrongly,
     because nothing downstream can tell.
+
+    `law8_probe` is the arXiv HEAD request `pipeline/arxiv_html.py` makes, and
+    it is a parameter so this is testable without a network. Canon law 8's url
+    is resolved here, on the payload, rather than in `ingest`. Both were
+    candidates and the difference is three orders of magnitude: `ingest` writes
+    up to 16,000 rows a day across eight categories, and one payload names at
+    most 74 rows, deduplicated per identifier by the probe's own cache. The
+    link is also a property of the issue rather than of the corpus, so a paper
+    that gains an HTML version after it was ingested gets the right link in the
+    next issue that cites it instead of keeping the one its ingest day decided.
     """
     window = window or {"since": None, "until": None}
     # The five numbers the pipeline can honestly account for, one per step.
@@ -497,7 +513,7 @@ def gather(conn, window: dict | None = None) -> dict:
         window,
     ).fetchall()
 
-    return {
+    payload = {
         "stats": {
             "papers_ingested": stats[0],
             "papers_triaged": stats[1],
@@ -539,6 +555,31 @@ def gather(conn, window: dict | None = None) -> dict:
         ],
         "deep_reads": [{"paper": r[0], "url": r[1], "why": (r[2] or "")[:200]} for r in deep_reads],
     }
+
+    # Law 8's url, decided before the generator sees the payload. The counts go
+    # to the log because an issue that happens to carry no `abs` link is
+    # indistinguishable from this step never running.
+    probe = law8_probe or arxiv_html().html_full_text
+    print(arxiv_html().summarise(arxiv_html().resolve_payload(payload, probe=probe)))
+    return payload
+
+
+def arxiv_html():
+    """`pipeline/arxiv_html.py`, imported the way `budget` imports its own.
+
+    Modal drops the pipeline's modules at /root; a local run finds them beside
+    this file. Same reason and same mechanism as `budget` below, so read that
+    docstring for why this is a function rather than a module-level import.
+    """
+    import sys
+
+    here = str(pathlib.Path(__file__).resolve().parent)
+    for path in ("/root", here):
+        if path not in sys.path:
+            sys.path.insert(0, path)
+    import arxiv_html as module
+
+    return module
 
 
 def budget():

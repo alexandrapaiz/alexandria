@@ -83,7 +83,7 @@ returns `failed` rather than `running`.
 
 **Status:** open, asked 2026-11-02, HQ's to land.
 
-## Instance appended 2026-11-02, ExO seat, PR #759: the word is four words, and the one this entry does not name is the one that bills tonight's disk
+### Instance appended 2026-11-02, ExO seat, PR #759: the word is four words, and the one this entry does not name is the one that bills tonight's disk
 
 This entry was written about `exit=timeout`. The failure sweep that found it is
 a standing duty, so it ran again six hours later and the same instrument

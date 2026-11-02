@@ -116,6 +116,12 @@ FENCE = re.compile(r"^\s*(```|~~~)")
 
 INBOX_FILENAME = re.compile(r"^(INC-\d{4}-\d{2}-\d{2}-[a-z0-9][a-z0-9-]*)\.md$")
 
+#: An inbox file's own id heading, at either level. `#` as well as `##` because
+#: three of the files on `main` on 2026-11-02 title themselves at level one and
+#: section themselves at level two, which is ordinary Markdown and was never
+#: wrong; only this gate's proxy for "one entry per file" said it was.
+INBOX_ID_HEADING = re.compile(r"^#{1,2}(?!#)\s+(INC-\S.*\S)\s*$")
+
 # Measured on the register at the commit that added this file. Nine legacy
 # numbers answer to more than one entry and twelve entries are the excess
 # copies, all of them from the sequential allocator L-A18 retired on
@@ -410,22 +416,44 @@ def check(register_text: str, inbox: list[tuple[str, str]], require_folded: bool
         for number in conflict_lines(text):
             problems.append(f"{name}:{number}: a conflict marker in an inbox entry")
 
-        found = split_entries(text, name)
-        if not found:
+        # One ENTRY per file is the invariant. Counting level-two headings was
+        # the proxy for it, and the proxy was wrong about three files on `main`
+        # on 2026-11-02: two were a seat appending a new instance under an
+        # `## Instance appended ...` heading, which is precisely what this
+        # register's standing rule asks a seat to do when a thing repeats, and
+        # the third titles itself at level one and sections itself at level two.
+        # So this gate reported a collision for the correct act and for ordinary
+        # Markdown, and `tests/test_incidents.py::test_the_live_register_passes
+        # _its_own_gate` was red on `main` for all three, which is the class this
+        # register itself files as testing a proxy instead of the mechanism.
+        #
+        # The mechanism is the id. Two entries collide when two headings in one
+        # file carry two different INC ids; a section heading and an appended
+        # instance carry none, so they cannot collide with anything.
+        id_headings = [m.group(1) for m in
+                       (INBOX_ID_HEADING.match(line) for line in text.splitlines())
+                       if m]
+        ids = []
+        for heading in id_headings:
+            match = INC_ID.match(heading)
+            if match and match.group(1) not in ids:
+                ids.append(match.group(1))
+        if not id_headings:
             problems.append(
-                f"{name}: no level-two heading, so the fold has no entry to move. "
-                "An inbox file starts with `## INC-...`"
+                f"{name}: no heading carries an INC id, so the fold has no entry "
+                "to move. An inbox file titles itself `# INC-...` or `## INC-...`"
             )
             continue
-        if len(found) > 1:
+        if len(ids) > 1:
             problems.append(
-                f"{name}: {len(found)} level-two headings. One entry per file is the "
-                "whole point: two entries in one file collide again on the next filing"
+                f"{name}: {len(ids)} INC ids in one file ({', '.join(ids)}). One "
+                "entry per file is the whole point: two entries in one file "
+                "collide again on the next filing"
             )
-        heading_id = found[0].inc_id
+        heading_id = ids[0] if ids else None
         if heading_id is None:
             problems.append(
-                f"{name}: the heading does not start with an INC id: {found[0].heading!r}"
+                f"{name}: the heading does not start with an INC id: {id_headings[0]!r}"
             )
         elif heading_id != from_name:
             problems.append(
