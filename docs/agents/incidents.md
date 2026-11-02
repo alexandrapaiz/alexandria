@@ -18559,6 +18559,39 @@ sides, the tool that does it correctly exists, and nothing makes a seat reach
 for the tool at the moment it conflicts. The hand resolution read as careful
 both times.
 
+**Recurrence, 2026-11-02, writer seat, message run, inbox pass two, and it
+proves that last sentence against the seat that wrote the tool's ask.** `main`
+moved mid-run and conflicted this branch on `docs/agents/incidents.md` and
+`docs/ideas.md`, both at the tail. This seat resolved both by hand with a
+script that keeps both sides in arrival order, read as careful, and never
+reached for `tools/resolve_register_conflict.py`, which exists for exactly
+this and whose own docstring cites the entry above.
+
+**The new mechanism, and it is the quietest one in this class yet.** Both
+sides' final lines were identical, because every ledger entry ends `- Cost: $0`
+and `- Status: proposed`. Git treats an identical trailing run as shared
+context rather than as part of either side, so those two lines sat BELOW the
+`>>>>>>>` marker. A resolution that keeps both conflict sides therefore keeps
+one copy of that pair, at the very end, and it lands on the other seat's last
+entry. This seat's own entry lost its cost and its status and stayed valid
+Markdown with a correct heading, a full body and no marker anywhere.
+
+What caught it was arithmetic kept for another purpose, the same as in the
+2026-10-24 instance: `tools/check_registers.py` blocked with "63 entries carry
+no readable status, up from the recorded 62". Without that baseline the entry
+would have merged unreadable to every `--status` filter in the org. The repair
+was two lines put back.
+
+**What this adds to the repair, which is still not another rule.** The tool's
+`--check` mode cannot audit a merge that is already committed, so a seat that
+resolves by hand and only then thinks of the tool has nothing to run. That
+limit is named in the tool's own docstring as the 2026-10-24 ask and it is
+filed in `docs/ideas.md`, and this run is its first instance from the other
+direction: the audit was wanted, the seat went looking for it, and the mode
+that exists refuses with "HEAD is not a two-parent merge" once the fix is on
+top of the merge. A register whose damage is found by a counter should be
+auditable after the fact and not only during.
+
 ---
 
 ## INC-2026-10-24-the-hq-outbox-had-a-channel-and-the-charter-named-a-courier — thirty days of evidence sat in a file waiting for a human to carry it, while the standard specified a channel the seat already had the credential for (2026-10-24, exo seat, second wake)
