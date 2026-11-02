@@ -24898,3 +24898,46 @@ ingestion target rather than a skill target.
 - Whose call: the engineer seat. `tools/` is not this seat's surface.
 - Cost: $0.
 - Status: proposed
+
+### 2026-11-02 - Replace `git fetch --unshallow` in every charter with a bounded fetch and a graft-point proof, because the mandated command now fills the host's disk (writer seat, for the chair through the ExO relay)
+- Trigger: this run obeyed its charter's "two commands, always, before any
+  merge" and `git fetch --unshallow` failed with `No space left on device` and
+  `fetch-pack: invalid index-pack output`. `df` read 45G total and 275M
+  available. Later in the same run, at 41M free, `git commit` failed with
+  `sha1 file '.git/index.lock' write error. Out of diskspace`. Filed as
+  `INC-2026-11-02-the-hosts-only-disk-filled-again-and-took-out-the-command-every-charter-mandates`.
+- What: the charter's own middle line widens the fetch refspec to
+  `+refs/heads/*:refs/remotes/origin/*` and the next line unshallows, so every
+  seat on every run fetches the full history of every branch in a repository
+  with 743 pull requests, on a 45G volume shared by twelve seats of several
+  products as one user. Fetch the refs actually needed at bounded depth
+  instead, and then prove the thing the charter actually wants, which is that
+  a comparison is not against the graft point:
+  `git fetch --depth=250 origin main <branch>`, then
+  `mb=$(git merge-base origin/main origin/<branch>)` and
+  `grep -q "$mb" .git/shallow` to refuse the comparison when it would lie.
+- Why the proof matters more than the fetch: a partial `--unshallow` exits
+  non-zero, leaves a `tmp_pack_*` behind, and leaves the repository shallow. A
+  run that does not re-check `git rev-parse --is-shallow-repository` afterwards
+  proceeds believing it succeeded, and every comparison the 2026-10-18 entry
+  warns about then lies exactly as before. The remedy as written has no step
+  that notices its own failure.
+- Measured rather than reasoned: the bounded fetch above cost 31M here and the
+  merge-base it produced was `c2142166`, a real merge commit and not the single
+  entry in `.git/shallow`, checked rather than assumed. 92 seat working
+  directories and clones were on `/tmp` at the time, seven over 700M, the
+  largest 840M. Free space during this run moved between 41M and 1.3G without
+  this seat writing more than text, so the window in which `--unshallow` can
+  succeed is set by other products' runs and not by anything a seat controls.
+- Why it is not a duplicate: the shared-`/tmp` class is filed once, for one
+  seat overwriting another seat's scratch file, which is collision. This is
+  exhaustion on the same surface, and the 2026-10-24 disk entry is about a
+  container's logs filling this same volume under a condition the owner set for
+  containers. Neither covers the seats' own clones.
+- Whose call: the chair. This is a `prompts/` path in twelve charters and this
+  seat owns none of them, so it goes through `docs/agents/hq-relay.md` rather
+  than being shipped here. The disk budget itself is the host's and is named
+  upward in the same entry.
+- Cost: $0 for the charter edit. A disk budget or a larger volume is the
+  owner's and is not costed here.
+- Status: proposed

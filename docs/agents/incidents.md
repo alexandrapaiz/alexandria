@@ -24834,3 +24834,83 @@ invisible to the tree that check passes on**, and no cases table can reach
 them, because the table runs inside the thing it would have to audit. Naming it
 here is the honest disposition. A gate asserting its own presence would be the
 dishonest one.
+
+---
+
+## INC-2026-11-02-the-hosts-only-disk-filled-again-and-took-out-the-command-every-charter-mandates (2026-11-02, writer seat, closing-url run)
+
+**Repeat of** `INC-2026-10-24-the-observability-runtime-was-retired-with-no-local-record`,
+whose upstream cause was this same single 45G volume filling. The owner's
+standing condition there is that Langfuse stays stopped until it is rebuilt
+with a disk budget. **That condition was written for a container's logs. The
+thing filling the disk today is the seats themselves, and no condition covers
+them.**
+
+**What happened, in order.** This run obeyed its charter's "two commands,
+always, before any merge" and ran `git fetch --unshallow`. It failed:
+
+```
+fatal: write error: No space left on device
+fatal: fetch-pack: invalid index-pack output
+```
+
+`df` at that moment read **45G total, 275M available, 100 percent**. The next
+`pwd` in the same shell also failed to write. Later in the same run, with 41M
+free, `git commit` failed with `fatal: sha1 file '.git/index.lock' write
+error. Out of diskspace`, which leaves a lock file behind that no retry clears
+on its own.
+
+**What was on the disk.** **92** seat working directories and clones under
+`/tmp`, seven of them over 700M, the largest at 840M. Twelve seats of several
+products share one filesystem as one user, which is the condition
+`INC-2026-10-18-twelve-seats-now-share-one-tmp-and-one-overwrote-another-seats-artifact`
+already recorded for *collisions* between seats. This is the same shared
+surface and the other failure mode on it, which is *exhaustion*, and it was
+not filed.
+
+**Why it is worse than a slow run.** `--unshallow` on this repository fetches
+every branch's full history, because the charter's own middle line widens the
+fetch refspec to `+refs/heads/*` first. So the mandated remedy for a shallow
+clone is now the single largest write any seat performs, it is performed by
+every seat on every run, and it is performed immediately after the step that
+makes it as large as possible. The charter made the command bigger in
+2026-10-26 to fix a real defect, and nothing measured what it then cost on a
+shared 45G volume.
+
+**It also fails quietly in the direction that matters.** A partial fetch leaves
+a `tmp_pack_*` in `.git/objects/pack/` and exits non-zero, and the repository
+stays shallow. A run that does not check `git rev-parse
+--is-shallow-repository` afterwards proceeds believing it unshallowed, and
+every comparison the charter warns about then lies exactly as it did before
+the remedy existed. The 2026-10-18 entry's whole argument is that those
+comparisons produce garbage that commits cleanly.
+
+**What this run did instead, offered as the cheaper remedy.** Fetch only the
+refs actually needed, at bounded depth, and then prove the comparison is sound
+rather than assume it:
+
+```bash
+git config --add remote.origin.fetch '+refs/heads/*:refs/remotes/origin/*'
+git fetch --depth=250 origin main <the-branch-you-are-superseding>
+mb=$(git merge-base origin/main origin/<the-branch>)
+grep -q "$mb" .git/shallow && echo "LIES: merge-base is the graft point" \
+                           || echo "OK: merge-base is a real commit"
+```
+
+That cost 31M here against a full unshallow's failure at 44G used, and the
+last two lines are a stronger guarantee than `--unshallow` ever gave, because
+they check the property the charter actually wants rather than the command
+believed to produce it. A deep chain is the case that needs the depth, and
+this run's chain was ten links, well inside 250.
+
+**Disposition.** The remedy above is a `prompts/` path in twelve charters and
+this seat owns none of them, so it is filed as a ledger entry for relay rather
+than shipped here. The disk itself is nobody's in this repository. It is named
+upward because at **129M free** on a 45G volume the next seat to run
+`--unshallow` fails the same way, and the one after that fails its commit.
+
+**Blameless note.** No seat failed here. Every seat ran the command its
+charter gives it, on a host where that command had become the most expensive
+thing in the run. This is `docs/agents/runtime-changes.md`'s class again: the
+remedy was correct on the day it was written and the runtime underneath it
+changed, which is the third time that pairing appears in this file.
