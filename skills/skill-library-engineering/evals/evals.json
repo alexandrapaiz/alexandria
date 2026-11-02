@@ -594,10 +594,20 @@
         ]
       },
       "prompt": "We are deciding where to spend our writing effort on a 60-skill library. Half the team wants to invest in the descriptions, half wants to invest in the bodies and let the retriever read them. Our harness is ours: we control the retrieval step and can index whatever we like. The skills are long procedural runbooks and several of them share a lot of surface vocabulary. Settle it.",
-      "without_skill": "Splits the difference, or picks one on taste, without noticing that the right answer is determined by which of the two retrieval mechanisms is in play and that this library's documents are the case where the menu collapses.",
+      "without_skill": "Produces the answer already written out in this task's own `exploit` field: the shape of the right answer with none of its content. It states the conditional, because the prompt says the harness is theirs, and it names the procedural case, because the prompt hands over both halves of it in its own sentences. What it cannot produce is any of the four certificates: two runbooks from their own library that a description cannot tell apart, the index fields written out, the 12-of-12-against-1-of-12 figure at threshold 0.6, and a re-measurement planned on their own 60 skills. So the predicted bare score is the `exploit` field's own ceiling, 0.00 of 4 criteria, and the prediction is about the certificates rather than about the shape.",
       "without_skill_basis": {
         "kind": "authored-judgement",
-        "note": "the author's model of what a bare subject would answer. Never observed."
+        "note": "the author's model of what a bare subject would answer, rewritten on 2026-11-02 against the `exploit` field that already sat beside it. Never observed against a bare subject.",
+        "refutation": {
+          "pass": "docs/research/notes/2026-11-02-prediction-refutation.md, the research seat's red-team refutation pass of 2026-11-02 on Skill-Use's five axes (arxiv:2608.04828, appendix B.1 and F.1, figure 15), requested by this seat so that it would not be marking its own homework",
+          "verdict": "revise",
+          "axes": [
+            "verifiability",
+            "triggerability"
+          ],
+          "survived": false,
+          "amended": "2026-11-02. The refuted prediction was that the bare arm answers \"without noticing that the right answer turns on the mechanism\", and it was refuted by a field in this same task written by the same hand: the `exploit` answer's first sentence is \"It depends on how your harness routes\". The two fields contradicted each other and the `exploit` is the one with a measured ceiling attached. The prediction now predicts the shape and the certificate failure with a score, which this row was already built to measure, and that is a sharper claim than the one it replaces. The certificates are why this row survives its own leak, and they are what the other four rows in the pass should copy: the prompt can hand over a shape and it cannot hand over two named runbooks, the index fields or the twelve-of-twelve figure."
+        }
       },
       "with_skill": "Makes the answer conditional on the mechanism, notes that this library is the procedural-document case, and prescribes structured metadata for the index the team controls.",
       "check": {

@@ -9,7 +9,10 @@
       "passed": 1,
       "of": 4,
       "harness_score": 0.0,
-      "declared": null
+      "declared": {
+        "passed": 1,
+        "of": 4
+      }
     },
     {
       "skill": "agent-containment",
@@ -20,7 +23,10 @@
       "passed": 2,
       "of": 4,
       "harness_score": 0.0,
-      "declared": null
+      "declared": {
+        "passed": 2,
+        "of": 4
+      }
     },
     {
       "skill": "agent-containment",
@@ -91,13 +97,16 @@
     {
       "skill": "recursive-harness-self-improvement",
       "task": "rhsi-c1",
-      "starter": "bisect.py",
-      "outcome": "pytest died before collecting a single probe",
+      "starter": "first_bad.py",
+      "outcome": "ran",
       "exit_code": 1,
-      "passed": null,
-      "of": null,
+      "passed": 0,
+      "of": 4,
       "harness_score": 0.0,
-      "declared": null
+      "declared": {
+        "passed": 0,
+        "of": 4
+      }
     },
     {
       "skill": "self-improving-post-training-loops",
@@ -133,19 +142,14 @@
       "declared": null
     }
   ],
-  "problems": [
-    "recursive-harness-self-improvement/rhsi-c1: pytest died before collecting a single probe, so this task scores 0.0 in BOTH arms whatever the subject writes, and the starter file `bisect.py` is why: it is named for a standard-library module and shadows it"
-  ],
+  "problems": [],
   "undeclared": [
-    "ac-t9",
-    "ac-t10",
     "ac-t12",
     "cwe-t2",
     "cwe-c1",
     "ei-c1",
     "he-t4",
     "he-c1",
-    "rhsi-c1",
     "sipt-c1",
     "sle-t10",
     "sle-c1"
@@ -159,6 +163,7 @@
     "ei-c1",
     "he-t4",
     "he-c1",
+    "rhsi-c1",
     "sipt-c1",
     "sle-t10",
     "sle-c1"

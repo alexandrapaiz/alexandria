@@ -722,9 +722,9 @@
         "arxiv": null,
         "claims": []
       },
-      "prompt": "bisect.py is unimplemented. Implement it from the docstring. No third-party dependencies, and it must not call the predicate more than ceil(log2(n)) + 1 times. Keep the name and signature. Write the whole file to answer.py.",
+      "prompt": "first_bad.py is unimplemented. Implement it from the docstring. No third-party dependencies, and it must not call the predicate more than ceil(log2(n)) + 1 times. Keep the name and signature. Write the whole file to answer.py.",
       "files": {
-        "bisect.py": "def first_bad(is_bad, n: int):\n    \"\"\"Return the smallest index i in [0, n) with is_bad(i) True.\n\n    is_bad is monotonic: once True it stays True. Return None if no index is\n    bad. n == 0 returns None. Call is_bad at most ceil(log2(n)) + 1 times.\n    \"\"\"\n    raise NotImplementedError\n"
+        "first_bad.py": "def first_bad(is_bad, n: int):\n    \"\"\"Return the smallest index i in [0, n) with is_bad(i) True.\n\n    is_bad is monotonic: once True it stays True. Return None if no index is\n    bad. n == 0 returns None. Call is_bad at most ceil(log2(n)) + 1 times.\n    \"\"\"\n    raise NotImplementedError\n"
       },
       "without_skill": "A correct binary search with the call budget respected and the empty and all-good cases handled.",
       "without_skill_basis": {
@@ -735,11 +735,23 @@
       "check": {
         "type": "tests_pass",
         "answer_path": "answer.py",
-        "command": "python -m pytest test_bisect.py -q",
-        "pass_condition": "exit code 0 in both arms; the control is passed when the with-skill arm's pass count is not below the without-skill arm's, outside the spread",
+        "command": "python -m pytest test_first_bad.py -q",
+        "pass_condition": "exit code 0 in both arms; the control is passed when the with-skill arm's pass count is not below the without-skill arm's, outside the spread. `tests_pass` is binary, so the only two scores available here are 1.0 and 0.0.",
         "files": {
-          "test_bisect.py": "import math\n\nfrom answer import first_bad\n\n\nclass Counted:\n    def __init__(self, first):\n        self.first = first\n        self.calls = 0\n\n    def __call__(self, i):\n        self.calls += 1\n        return i >= self.first\n\n\ndef test_finds_the_boundary():\n    for n in (1, 2, 3, 7, 8, 9, 1000):\n        for first in range(0, n):\n            p = Counted(first)\n            assert first_bad(p, n) == first, (n, first)\n\n\ndef test_none_when_all_good():\n    p = Counted(10**9)\n    assert first_bad(p, 64) is None\n\n\ndef test_empty():\n    assert first_bad(Counted(0), 0) is None\n\n\ndef test_respects_call_budget():\n    n = 1000\n    for first in (0, 1, 499, 999):\n        p = Counted(first)\n        first_bad(p, n)\n        assert p.calls <= math.ceil(math.log2(n)) + 1, (first, p.calls)\n"
+          "test_first_bad.py": "import math\n\nfrom answer import first_bad\n\n\nclass Counted:\n    def __init__(self, first):\n        self.first = first\n        self.calls = 0\n\n    def __call__(self, i):\n        self.calls += 1\n        return i >= self.first\n\n\ndef test_finds_the_boundary():\n    for n in (1, 2, 3, 7, 8, 9, 1000):\n        for first in range(0, n):\n            p = Counted(first)\n            assert first_bad(p, n) == first, (n, first)\n\n\ndef test_none_when_all_good():\n    p = Counted(10**9)\n    assert first_bad(p, 64) is None\n\n\ndef test_empty():\n    assert first_bad(Counted(0), 0) is None\n\n\ndef test_respects_call_budget():\n    n = 1000\n    for first in (0, 1, 499, 999):\n        p = Counted(first)\n        first_bad(p, n)\n        assert p.calls <= math.ceil(math.log2(n)) + 1, (first, p.calls)\n"
         }
+      },
+      "fixture_leak": {
+        "hands_over": [
+          "Call is_bad at most ceil(log2(n)) + 1 times.",
+          "is_bad is monotonic: once True it stays True."
+        ],
+        "withheld": "nothing: this is a control, and the whole docstring is handed over on purpose. A control earns its keep by being answerable without the skill.",
+        "stub_score": {
+          "passed": 0,
+          "of": 4
+        },
+        "renamed": "2026-11-02. The starter file was called `bisect.py` and the probe ran in a working directory containing it, so it shadowed the standard library module `_pytest` imports and pytest died before collecting a single probe. The task scored 0.0 in BOTH arms whatever the subject wrote, which is how a control passes trivially while measuring nothing: a control is passed when the arms agree, and two constant zeros always agree. Found by skills/_validation/project_fixture_probe.py, which is the instrument that runs each fixture rather than reading it."
       }
     },
     {

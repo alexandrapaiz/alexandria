@@ -2,31 +2,28 @@
 Each starter file run unchanged as its own answer:
 
   task                                           floor  harness score  declared
-  agent-containment/ac-t9                       1 of 4            0.0  -
-  agent-containment/ac-t10                      2 of 4            0.0  -
+  agent-containment/ac-t9                       1 of 4            0.0  1 of 4
+  agent-containment/ac-t10                      2 of 4            0.0  2 of 4
   agent-containment/ac-t12                      2 of 5            0.0  -
   context-window-engineering/cwe-t2             2 of 8            0.0  -
   context-window-engineering/cwe-c1             0 of 6            0.0  -
   evaluation-integrity/ei-c1                    0 of 7            0.0  -
   harness-engineering/he-t4                     3 of 6            0.0  -
   harness-engineering/he-c1                     4 of 6            0.0  -
-  recursive-harness-self-improvement/rhsi-c1         -            0.0  -
+  recursive-harness-self-improvement/rhsi-c1    0 of 4            0.0  0 of 4
   self-improving-post-training-loops/sipt-c1    0 of 7            0.0  -
   skill-library-engineering/sle-t10             2 of 6            0.0  -
   skill-library-engineering/sle-c1              3 of 5            0.0  -
 
-11 of these 12 tasks have a floor short of a clean sweep, and
+12 of these 12 tasks have a floor short of a clean sweep, and
 every one of them is scored 0.0 by `tests_pass`, which is binary. A subject that
 fixes most of a fixture and a subject that changes nothing are the same number
 to this harness, so none of these rows can show the partial improvement its
 own prediction implies.
 
-12 of 12 declare no `fixture_leak`, so what their starter file hands the
+9 of 12 declare no `fixture_leak`, so what their starter file hands the
 subject is unrecorded. That is the backlog this instrument exists to shrink, and
 it is reported rather than failed: a gate that failed here would fail on work
 nobody has done yet, which is how a register stops being read.
 
-failing: recursive-harness-self-improvement/rhsi-c1: pytest died before collecting a single probe, so this task scores 0.0 in BOTH arms whatever the subject writes, and the starter file `bisect.py` is why: it is named for a standard-library module and shadows it
-
-1 of these rows cannot be read as written: either a declared stub score
-disagrees with the measurement, or the probe never ran at all.
+Every declared stub score matches what the starter file just scored.
