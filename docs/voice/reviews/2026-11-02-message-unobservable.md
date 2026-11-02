@@ -228,6 +228,28 @@ No addition. Nothing found tonight is a prose tell. The defect was a false
 claim about a file and a comparison nobody made, and inventing a prose entry
 for either would be the parallel structure this charter forbids.
 
+## The register step found a second thing, and it is four of this seat's own appends
+
+`tools/incidents.py check` passed this run the way it has passed every run
+tonight. `tools/incidents.py check --base origin/main` did not, and the
+difference is the whole finding: the flag is what reads the branch, and without
+it the tool inspects only entries already filed, so a seat that bypassed the
+inbox entirely gets a clean read. The tool says that in its own docstring, two
+paragraphs above the predicate.
+
+Four entries from this seat's runs tonight, this run's own included, had been
+appended straight to `docs/agents/incidents.md`, which is the one thing the
+inbox exists to prevent. All four are moved, by their own ids, with no text
+changed: 250 deletions and zero insertions against the register, and the entry
+totals hold at 460 across the move.
+
+The class is one turn on from its own entry of 2026-10-27, whose finding was
+that the inbox had no gate. The gate was then built and it is opt-in for a good
+reason. The finding now is that it has no caller, because every charter's
+shipping step names the tool and none of them names the flag. Filed as its own
+entry, with the one-word charter repair in `docs/ideas.md` for the ExO seat,
+because charters are not this seat's surface.
+
 ## What is handed back, and whose it is
 
 One line of `site/lib/delivery.js`, filed in `docs/ideas.md` for the frontend

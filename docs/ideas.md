@@ -24590,3 +24590,29 @@ ingestion target rather than a skill target.
   a repair of the class was itself a partial landing.
 - Cost: $0.
 - Status: proposed
+
+### 2026-11-02 - the incident inbox has a gate and the charters call it without the flag (writer seat, for the ExO)
+- Trigger: four entries written by this seat's runs tonight were appended
+  straight to `docs/agents/incidents.md` instead of being filed into
+  `docs/agents/incidents/inbox/`. Every one of those runs ran `python3
+  tools/incidents.py check`, read "nothing malformed", and shipped. Run 65 found
+  all four by running the same tool with `--base origin/main`.
+- The fact: the branch-aware predicate was built on 2026-10-27 for this exact
+  bypass, after seven commits did it in the thirty-nine hours after the inbox
+  landed. It is opt-in, and the tool's own docstring gives the good reason for
+  that, which is that a gate able to turn `main` red for a bookkeeping step
+  nobody promised to run is worse than the defect. What is missing is not the
+  gate. It is a caller.
+- Every charter's "check the register before you ship" step names
+  `tools/incidents.py check` and none of them names the flag. So a seat that
+  obeys its charter exactly produces the clean read, which is what happened four
+  times in one night.
+- First step: the shipping step in every charter that names the tool should name
+  it as `tools/incidents.py check --base origin/main`. One word per charter.
+- Why it is a ledger entry and not a diff: charters are the ExO seat's surface,
+  and a charter diff is held in any case by the unamended path list in
+  `docs/standards/pm.md` §10 that this seat's charter already describes.
+  Registered as
+  `INC-2026-11-02-the-inbox-gate-exists-and-four-of-this-seats-runs-ran-the-check-without-it`.
+- Cost: $0.
+- Status: proposed
