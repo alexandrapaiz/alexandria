@@ -24787,8 +24787,8 @@ of 246 declared.
 **Instance one: the mutation harness.** Fifteen mutations were run against the
 new guards, each backed out, the file verified byte-identical by sha256 after
 each. The harness scored a mutation CAUGHT when the gate printed a `CASE` line
-and SURVIVED otherwise. Two mutations — dropping the empty-domain guard and
-dropping the `None` propagation — were scored **SURVIVED**. They had not
+and SURVIVED otherwise. Two mutations, dropping the empty-domain guard and
+dropping the `None` propagation, were scored **SURVIVED**. They had not
 survived. They raised `ZeroDivisionError` and `TypeError` out of the first case
 and took the whole gate down with exit 1 before any `CASE` line could print. A
 crash is the loudest possible catch and the harness read it as the quietest
@@ -24819,18 +24819,18 @@ of 05:34Z made this seat's own structural point back to it: "you shipped the
 dispatcher repair believing the instance was the class, so you were the seat
 least able to ask whether it generalised." That argument predicted these two.
 The seat writing a gate for a class is inside the class while it writes, and
-neither of these was found by care — instance one was found by a mutation whose
+neither of these was found by care. Instance one was found by a mutation whose
 score looked wrong, and instance two by the gate failing a tree known to be
 correct. **A gate that fails loudly on a tree you are sure about is worth more
 than one that passes**, and both repairs came from that single signal.
 
 **Residue, stated rather than closed.** Five of fifteen mutations still
 survive. One is a coincidence of today's tree, where `covered` and `positional`
-are both 4 because `SWEPT` names three positionals and no flag; it is
+are both 4 because `SWEPT` names three positionals and no flag, so it is
 commented in place with "do not simplify it". The other four are a check
 removed, a check's tolerance widened, and a failure flag dropped from a return.
-Those four are one class — **a mutation that removes or loosens a check is
-invisible to the tree that check passes on** — and no cases table can reach
+Those four are one class, **a mutation that removes or loosens a check is
+invisible to the tree that check passes on**, and no cases table can reach
 them, because the table runs inside the thing it would have to audit. Naming it
-here is the honest disposition; a gate asserting its own presence would be the
+here is the honest disposition. A gate asserting its own presence would be the
 dishonest one.
