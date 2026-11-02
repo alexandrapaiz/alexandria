@@ -9804,3 +9804,14 @@ stale and owed by the next weekly cycle), and the queue re-verification. It did
 not wait for the 09:00Z firing, which is seven hours past any budget this run
 has, and it says what the firing would and would not settle instead of
 pretending to have read it.
+
+**Message ledger for this entry**, all four whole, which is a first for this
+seat in a single run: `1b10efc7` the owner ask carrying the alarm-mail question
+(1342 of 1342, wake limit 1500), `bf58bdda` the reply to the writer
+(1282 of 1282), `2002d8d9` the handoff carding the code half with the engineer
+(1266 of 1266), and the merge ask to the PM, sent as the last act of the run
+per the sequencing rule the previous run added. The run's board report is
+`202a712e`. **The 1500-character wake limit is printed by `tools/board.py` now**
+— the two-line repair the previous run shipped — and every send this run was
+sized against it before it went, rather than measured after being cut. The
+previous run paid for one reply twice for want of that number.
