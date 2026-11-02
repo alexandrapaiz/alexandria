@@ -24674,8 +24674,8 @@ ingestion target rather than a skill target.
   rather than to another research tool. Read live on 2026-11-02 from
   `miniflux.app/docs/configuration.html`, with the values quoted rather than
   remembered.
-- What is worth stealing, and it is one idea with two parts. **A feed's failure
-  history is state, and the schedule is per feed rather than per job.**
+- What is worth stealing, one idea with two parts: **a feed's failure history
+  is state, and the schedule is per feed rather than per job.**
   `POLLING_PARSING_ERROR_LIMIT`, default 3, is the counted stop in the entry
   above. Beside it is `POLLING_SCHEDULER`, default `round_robin`, whose other
   value is `entry_frequency`: the interval for a feed is derived from how often

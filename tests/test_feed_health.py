@@ -586,6 +586,14 @@ def fake_ingest(monkeypatch):
     # silently loses its cursor takes the whole window back to the two-day
     # floor, and this fixture is the only test that sees the two wired together.
     monkeypatch.setattr(ingest, "read_arxiv_cursor", lambda: "2026-10-23")
+    # `record_invocation`, the sixth, is deliberately NOT stubbed, 2026-11-02.
+    # It is the first statement of `ingest` now, and the claim it makes is that
+    # it cannot cost a run, so stubbing it would take that claim out of every
+    # test here. It fails in this sandbox for the most basic possible reason,
+    # which is that `psycopg` is not installed, and each test below therefore
+    # exercises the real soft path. The first draft of that function had its
+    # imports above its own `try` and these six cases went red at once, which
+    # is the whole argument for leaving it in.
 
     def configure(arxiv_counts, feed_counts, hf_count):
         def paper(name, n):
@@ -686,6 +694,39 @@ def test_a_day_with_nothing_new_is_not_a_failure(fake_ingest, monkeypatch):
     ingest, state = fake_ingest([10] * 8, [5] * 44, 50)
     monkeypatch.setattr(ingest, "upsert_papers", lambda rows: 0)
     assert ingest.ingest() == 0
+
+
+def test_a_record_that_cannot_be_written_does_not_cost_the_days_papers(
+        fake_ingest, capsys):
+    """The invocation record is evidence about a run, never a reason to lose one.
+
+    `record_invocation` moved to the first statement of `ingest` on 2026-11-02,
+    which means every way it can fail is now a way the whole day can fail. So
+    the softness is the load-bearing half of that repair and it gets its own
+    case rather than riding on the fixture.
+
+    Three failures, all of them real: no `psycopg` in this sandbox, no
+    `DATABASE_URL` in the environment, and no database at the other end of one.
+    The first is what this process actually hits, and it is the one the first
+    draft of the function got wrong, because the import sat above the `try`.
+    """
+    ingest, state = fake_ingest([10] * 8, [5] * 44, 50)
+
+    assert ingest.ingest() == 350, (
+        "a run whose record cannot be written still has to ingest the day's "
+        "papers, or the repair traded a missing row for a missing corpus")
+    assert len(state["upserted"]) == 350
+
+    printed = capsys.readouterr().out
+    assert "runtime: not recorded" in printed, (
+        "a record that silently does not happen is worse than one that fails "
+        "loudly, because the row's absence then has no explanation anywhere")
+    assert "the drift guard is blind to this run" in printed
+
+    # And it is reached directly, so the assertion is about the function rather
+    # than about `ingest` happening to swallow something.
+    ingest.record_invocation()
+    assert "runtime: not recorded" in capsys.readouterr().out
 
 # ------- the second transport, after INC-2026-10-17 ------------------------
 #

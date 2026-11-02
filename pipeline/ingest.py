@@ -547,12 +547,22 @@ def record_invocation() -> None:
     that fails here is reported and dropped rather than costing the day's
     papers, which is the judgment `read_arxiv_cursor` already makes one
     function up for the same reason.
+
+    **The imports are inside the `try` and that is not tidiness.** The first
+    draft of this function had them above it, and `tests/test_feed_health.py`
+    went red on six cases immediately: `psycopg` is not installed in the test
+    sandbox, so a statement this function runs *before* its own error handling
+    was a `ModuleNotFoundError` raised from the first line of the daily job.
+    The docstring above it claimed softness on every path while the code had
+    one path that was not soft, which is the same defect as the one being
+    repaired, one level in. A missing module is now reported and dropped like
+    any other failure to record.
     """
-    import os
-
-    import psycopg
-
     try:
+        import os
+
+        import psycopg
+
         with psycopg.connect(os.environ["DATABASE_URL"]) as conn:
             print(runtime_guard().record_runtime(conn, "ingest", __file__)[1])
     except Exception as exc:
