@@ -3,7 +3,7 @@
   "suite_version": 1,
   "written": "2026-09-22",
   "author": "skill agent (ADR-22)",
-  "note": "The five-prompt trigger test prompts/skill-agent.md requires, plus one confusion case per neighbouring skill in the library. Run with skills/_validation/trigger_test.py. Revised 2026-11-02 (ADR-38 length retrofit, 362 lines to 109): rhsi-pos-3 is retired with section 8 (see retired_cases) rather than rewritten, because the skill no longer answers the question and a pass would be the wrong outcome. Two positives replace it, one for each live delta that had no positive case of its own, delta 3 (attribution as search) and delta 5 (feedback cost), which is the gap retiring one case made visible rather than created. rhsi-conf-1 was rewritten earlier the same day for a different reason, recorded on the case.",
+  "note": "The five-prompt trigger test prompts/skill-agent.md requires, plus one confusion case per neighbouring skill in the library. Run with skills/_validation/trigger_test.py. Revised 2026-11-02 (ADR-38 length retrofit, 362 lines to 109): rhsi-pos-3 is retired with section 8 (see retired_cases) rather than rewritten, because the skill no longer answers the question and a pass would be the wrong outcome. ONE positive replaces it, rhsi-pos-4 for delta 3 (attribution as search), and the suite therefore holds at the 67 cases that `tests/test_skill_scope.py::test_the_suite_is_the_published_one_and_not_a_new_exam` pins. Delta 5 (feedback cost) also had no positive case, which is a gap retiring rhsi-pos-3 made visible rather than created, and the written case for it is held in docs/ideas.md with its text and its first draft's failure, to be shipped by whoever raises the pin to 68. That pin exists so a seat cannot pass its own measurement by writing easy queries, it cannot tell a replacement from an addition, and the number is in tests/ which is outside this seat's write surface. Respecting it costs one real case and that is the right trade. rhsi-conf-1 was rewritten earlier the same day for a different reason, recorded on the case.",
   "cases": [
     {
       "id": "rhsi-pos-1",
@@ -28,14 +28,6 @@
       "prompt": "Our agent's run logs are hundreds of thousands of tokens long, and when a run fails we cannot tell which function in the scaffold caused it. Right now a judge model reads the log once and names a culprit. Should we pay for a stronger judge?",
       "anchor": "when attributing a failure to one function inside a long execution log",
       "rationale": "Written 2026-11-02 to replace rhsi-pos-3. Delta 3 is the best-evidenced delta in the file and had no positive case before this, and it is the delta three confusion cases in other skills' files now point at, so the suite was asserting coverage it never tested from the inside. The decision the prompt is about to get wrong is the one delta 3 answers with a number: buy search turns before a bigger diagnostician, because a lower-tier judge with four turns of continual search matched a higher-tier judge with one pass. Phrased in the vocabulary a requester would use rather than the library's, which is the he-pos-1 lesson from the same run."
-    },
-    {
-      "id": "rhsi-pos-5",
-      "kind": "positive",
-      "expect": "recursive-harness-self-improvement",
-      "prompt": "Our self-editing loop only gets through two candidate edits a night, because every candidate has to be run against the live environment before we know whether to keep it, so it never does enough cycles to converge. Is there a way to score a candidate before it touches a real run?",
-      "anchor": "when the loop's own feedback costs more than its edits gain",
-      "rationale": "Written 2026-11-02 to replace rhsi-pos-3. Delta 5 had no positive case. The prompt names the delta's own decision, which is the cost of evaluating a candidate, and the answer is Dream-RSI's replay tree: score candidate policies inside a simulator built from the discovery history and deploy only the survivor. First draft of this case asked instead whether to compact the context at a fixed seventy percent of the window, and it routed to context-window-engineering at the first run. That was the case's defect and not the library's: compaction is one of three mechanisms delta 5 lifts and it is a mechanism the neighbour owns outright, so a positive case built on it tests a boundary rather than this delta. Re-aimed at the half no other skill covers. The compaction arithmetic is still tested, by eval task rhsi-t8, where it belongs, because it is checkable as a number rather than as a routing decision."
     },
     {
       "id": "rhsi-neg-1",

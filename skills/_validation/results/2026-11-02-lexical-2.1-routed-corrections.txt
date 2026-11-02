@@ -1,5 +1,5 @@
 trigger test — engine lexical/2.1, floor 0.05, 8 decoys (policy pre-registered)
-library: 9 skills, 68 cases
+library: 9 skills, 67 cases
 
 ## agent-containment  (skills/agent-containment/triggers.json)
   [PASS] ac-pos-1     positive  expect agent-containment -> agent-containment
@@ -83,12 +83,11 @@ library: 9 skills, 68 cases
   [PASS] rhsi-pos-1   positive  expect recursive-harness-self-improvement -> recursive-harness-self-improvement
   [PASS] rhsi-pos-2   positive  expect recursive-harness-self-improvement -> recursive-harness-self-improvement
   [PASS] rhsi-pos-4   positive  expect recursive-harness-self-improvement -> recursive-harness-self-improvement
-  [PASS] rhsi-pos-5   positive  expect recursive-harness-self-improvement -> recursive-harness-self-improvement
   [PASS] rhsi-neg-1   negative  expect (silence) -> (silence, best fit decoy-incident-response)
   [PASS] rhsi-neg-2   negative  expect (silence) -> (silence, best fit decoy-api-integration)
   [PASS] rhsi-conf-1  confusion expect harness-engineering -> harness-engineering
   [PASS] rhsi-conf-2  confusion expect self-improving-post-training-loops -> self-improving-post-training-loops
-  8/8 passed (positives 4/4, negatives 2/2, confusion 2/2, narrow 0); 95% CI [0.63, 1.00]
+  7/7 passed (positives 3/3, negatives 2/2, confusion 2/2, narrow 0); 95% CI [0.59, 1.00]
 
 ## self-improving-post-training-loops  (skills/self-improving-post-training-loops/triggers.json)
   [PASS] pt-pos-1     positive  expect self-improving-post-training-loops -> self-improving-post-training-loops
@@ -114,6 +113,6 @@ library: 9 skills, 68 cases
   [PASS] sle-conf-4   confusion expect self-improving-post-training-loops -> self-improving-post-training-loops
   9/9 passed (positives 3/3, negatives 2/2, confusion 4/4, narrow 1); 95% CI [0.66, 1.00]
 
-TOTAL 62/68 — reliability 0.91, 95% CI [0.82, 0.97]
+TOTAL 61/67 — reliability 0.91, 95% CI [0.82, 0.97]
 
 wrote skills/_validation/results/2026-11-02-lexical-2.1-routed-corrections.json
