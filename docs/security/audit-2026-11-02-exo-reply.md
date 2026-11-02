@@ -307,3 +307,72 @@ means setup or teardown, the full run was executing while the volume sat at
 100%, and this run has already seen `tempfile` refuse outright at that moment.
 That is a reading rather than a proof: the detail lines for it were lost from
 the captured output. It is stated as unresolved rather than as passing.
+
+## Finding 6: two gates were red on this branch, and fixing the visible one is what exposed the other
+
+This is the most useful thing this run found about itself, and it is an
+instance of the general shape the charter's own prefix paragraph states.
+
+The register heading fixed above separated its id from its summary with a
+comma, so `INC_ID` did not match and `heading_key` fell through to keying the
+entry on its whole heading. Correcting the separator made the id parse. On the
+next run of the suite, a second gate went red:
+`tests/test_incidents.py::test_the_live_branch_files_every_incident_it_adds_through_the_inbox`.
+That entry had been appended straight into `docs/agents/incidents.md` rather
+than filed through `docs/agents/incidents/inbox/`, which the gate requires so
+that two seats filing between merges cannot collide on the register's append
+anchor. That is incident 6's class.
+
+**The gate could not see the misfiling while the separator was broken**,
+because it looks for appended `INC-` ids and the id was not parsing as one. So
+the first defect was the only reason the second had never fired. The charter
+says it this way: a one-line repair that reads as obviously correct is the
+place to look for a second defect, because the thing you are about to fix may
+be the only reason the second one has never fired. It was written about the
+branch prefix. It is reproduced here by this seat, on this seat, inside one
+file, within one hour.
+
+Both are fixed. The entry is moved into the inbox verbatim, text and id
+unchanged. A third gate, `tests/test_ledger.py`'s contract check, was red on an
+entry this run itself added with no `Trigger` field, and that is fixed too.
+
+**What that says about the CI gap, and it is why the ledger entry above was
+revised rather than repeated.** None of these three gates runs on a pull
+request here. `tests/test_incidents.py`, `tests/test_ledger.py`,
+`tools/incidents.py` and the two registers they read are all absent from
+`.github/workflows/checks.yml`'s `paths` list. Three real defects, all of them
+this seat's own, all of them in registers whose entire purpose is to be cited
+later, and the only thing that found them was a seat running the full suite by
+hand on a host that was simultaneously refusing to allocate temporary
+directories.
+
+## The suite is not reproducible on this host right now, and that is a finding rather than a caveat
+
+Two full runs of the same suite, 16 minutes apart, on trees differing by one
+heading separator:
+
+| Run | Result | Wall time |
+|---|---|---|
+| 05:46Z | 1 failed, 2474 passed, 2 skipped, 1 error | 14m54s |
+| 06:02Z | 4 failed, 2463 passed, 2 skipped, 9 errors | 13m05s |
+
+One heading does not move eleven results. The second run's extra errors are in
+`tests/test_latest_links.py` (seven of them), `tests/test_drift_watch.py` and
+`tests/test_panel_provenance.py`, and `tests/test_check_helper_is_enforced.py`
+failed in the second run and passes on rerun. Errors rather than failures means
+setup or teardown, both runs executed while `/dev/sda1` sat between 97 and 100
+percent, and this run has already watched `tempfile` refuse outright at that
+pressure.
+
+So the honest statement of test health on this branch is two statements. The
+four failures that reproduce on rerun were real, were this chain's own, and are
+fixed: the register id parse, the register inbox gate, and the two ledger
+contract checks. Everything that did not reproduce is unresolved and is
+attributed to the volume rather than to the code, which is a reading and not a
+proof.
+
+**The consequence for anybody reading a green run on this host is the part
+worth keeping.** A suite that returns a different answer every quarter hour
+cannot be used to clear a change, and nothing in the run output says which
+answer you got. That is a stronger version of Finding 5: the disk does not only
+stop a sweep, it can let one finish and report the wrong thing.
