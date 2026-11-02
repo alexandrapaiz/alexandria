@@ -527,6 +527,80 @@ def test_a_credential_that_does_not_work_falls_through_to_the_receipt():
 
 # ------------------------------------------------- the deploy surface by proxy
 
+def test_the_column_reader_sees_a_migrated_column_and_not_only_the_create():
+    """The half of `columns_of` the live schema cannot exercise.
+
+    `deploy_runtime` has no `alter table` against it today, so the gate below
+    would be green on a `columns_of` that read `create table` alone, and it
+    would stay green through exactly the migration it exists to catch: half this
+    schema's columns arrive as `add column`, and a carded one is the case in
+    hand. Supplied here rather than waited for.
+    """
+    schema = ("create table if not exists t (\n  a text primary key,\n"
+              "  b integer not null\n);\n"
+              "alter table t add column if not exists c text;\n"
+              "create table if not exists other (\n  d text\n);\n")
+    check("create and alter columns both arrive, in order",
+          q.columns_of("t", schema) == ["a", "b", "c"],
+          str(q.columns_of("t", schema)))
+    check("and another table's columns are not mixed in",
+          q.columns_of("other", schema) == ["d"], str(q.columns_of("other", schema)))
+    check("a table the schema does not have is empty rather than an error",
+          q.columns_of("absent", schema) == [])
+
+
+def test_the_receipt_publishes_every_column_the_schema_gives_deploy_runtime():
+    """The reader every seat can actually run, checked against the table.
+
+    On 2026-11-02 the writer seat corrected a claim I had shipped on their word:
+    `deploy_facts` in tools/delivery_health.py is **not** the only reader of
+    `deploy_runtime` outside the pipeline. `site/lib/delivery.js` is the second,
+    it names all seven columns by hand, and it is the one that builds the
+    `deploy` array of `/api/delivery`. That matters more than the arithmetic,
+    because `deploy_facts` needs `DATABASE_URL` and no agent seat holds one, so
+    the column widening landed in the reader no seat can run and the reader every
+    seat does run stayed a hand list. `press` and `cadence` both read
+    `doc["deploy"]` off that URL and neither has ever called `deploy_facts`.
+
+    The command that found it, named here because a finding that names a file and
+    not the command that found it is a claim rather than a check:
+
+        grep -rn deploy_runtime --include=*.py --include=*.js . | grep -v ^./pipeline/
+
+    This gate is forward-looking on purpose. The hand list is complete today, so
+    there is nothing to fix in it; what there is to fix is that nothing anywhere
+    would notice the day it stopped being complete. A receipt that republishes a
+    run record is a pass-through and not a projection, so a column the schema has
+    and the receipt does not is a column no consumer can see, and the consumers
+    are two surfaces in tools/delivery_health.py that cannot reach the table any
+    other way. `invoked_by` is carded; on the day it lands this goes red here
+    rather than going quiet in production.
+
+    `test_every_statement_resolves_against_the_schema` above checks the other
+    direction, a column named by the query and absent from the schema. Both
+    directions are needed and only one of them existed.
+    """
+    want = q.columns_of("deploy_runtime")
+    if not want:
+        print("  skip deploy_runtime columns: pglast absent or table renamed")
+        return
+    statements = q.literals(READER)
+    reads = {name: sql for name, sql in statements.items()
+             if re.search(r"\bfrom\s+deploy_runtime\b", sql)}
+    check("the receipt still reads deploy_runtime at all", len(reads) == 1,
+          sorted(statements))
+    for name, sql in reads.items():
+        selected = set(re.findall(r"[a-z_][a-z0-9_]*", sql.lower()))
+        missing = [c for c in want if c not in selected]
+        check(f"{name} publishes every column db/schema.sql gives deploy_runtime",
+              not missing,
+              f"missing {missing} in site/lib/delivery.js. The schema is the "
+              f"authority (db/schema.sql, create table deploy_runtime); add the "
+              f"column to this select and to the row the receipt serves, or the "
+              f"only readers a seat can run will never see it.")
+
+
+
 def test_a_receipt_with_no_deploy_rows_at_all_is_unknown_not_an_alarm():
     """The site sends null when it could not run that query, which happens
     while `apply_schema` is still a pending hand step. Reading that as three
