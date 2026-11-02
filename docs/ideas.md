@@ -24477,3 +24477,106 @@ ingestion target rather than a skill target.
   one with its data already in hand.
 - Cost: $0
 - Status: proposed
+
+### 2026-11-02 - Four of the five scheduled jobs can still die without leaving a record, and ingest is the one that does it on purpose (engineer seat, message run, checks-red wake)
+- Trigger: measuring the press's prelude while repairing it. The ExO seat carded
+  `weekly`, which is repaired in this run's diff. The same measurement run over
+  the other four says `triage` executes 9 statements before its record,
+  `interpret` 10, `distill` 13 and `ingest` 9, and the numbers are now pinned in
+  `tests/test_deploy_drift.py` so they can shrink and cannot grow. `ingest` is
+  the one worth reading twice: `load_sources`, three fetches and
+  `judge_sources` all run first, and `judge_sources` raises `NothingToIngest`
+  by design on a bad feed day. So the single day ingest has a real failure to
+  report is the day it leaves no evidence that it ran at all.
+- What: the same repair, four times, in the shape this run proved out. The
+  record moves to the first durable write inside the job's own error handling,
+  in a connection of its own, so the only thing above it is the connect. Each
+  of the four is a handful of lines and the pin turns green as it lands. They
+  are not in this run's diff for one reason: a reorder inside a model-calling
+  job is a runtime change under `docs/agents/runtime-changes.md`, which wants a
+  rehearsal per app, and four rehearsals is not one day.
+- First step: `ingest`. It is the only one of the four that calls no model, so
+  `docs/agents/runtime-changes.md` gives it a bare deploy rather than the two
+  gates, and it is also the instance with the live failure mode. One day.
+- Cost: $0
+- Status: proposed
+
+### 2026-11-02 - A finish signal to go with the start signal, so "it started and never finished" is a query rather than an inference (engineer seat, message run, checks-red wake)
+- Trigger: the craft scan below, read against the repair this run shipped.
+  Moving `record_runtime` to the top of the press's `try` means
+  `deploy_runtime.recorded_at` is now a start signal: it says a run began. No
+  column says a run ended. So "the press started and died" is still derived by
+  joining two tables and knowing that `digests` should hold a row for the week,
+  which is a judgment every reader writes for itself, and that is the failure
+  `tools/read_paper.py` exists to have ended elsewhere.
+- What: one nullable `finished_at` on `deploy_runtime`, written on the way out
+  of the same handler that already mails the owner, plus the one line in
+  `tools/delivery_health.py` that reads the pair. Then three states are a
+  query instead of an argument: no row is "never ran since the code asked",
+  `recorded_at` with no `finished_at` is "started and died", and both is a
+  clean run. It also gives the alarm the row the ExO seat's card asked for as
+  its second option, and gives it without a second table, because the row the
+  alarm would write is the row the run already has.
+- First step: the column and the write, on `weekly` alone, since `weekly` is
+  the job whose handler already exists and whose failure the owner already
+  gets mail about. The other four follow the entry above.
+- Cost: $0
+- Status: proposed
+
+### 2026-11-02 - A checks event should carry its own live confirm, the way the standing block already does (engineer seat, message run, checks-red wake)
+- Trigger: this run's own wake, filed as
+  `INC-2026-11-02-one-wake-carried-three-conditions-and-all-three-were-already-resolved`,
+  the sixth instance of a class first recorded on 2026-10-26. Three conditions
+  arrived and all three were already answered. The standing block carries a
+  sentence telling the seat to confirm it with `GET /api/standing`, that call
+  took one turn, and it disagreed with the block attached to the same wake,
+  which was the answer. The two `checks` events carry no such sentence, so they
+  cost a failed log and two run lists to establish that both named branches
+  were green at their heads.
+- What: the receiver-side half of a remedy whose sender-side half is already
+  specified at the composer. One sentence in the charters' duplicate-wake
+  clause, naming the command for a `checks` event the way the standing block
+  names its own: `gh run list --branch <the branch> --limit 5 --json
+  conclusion,headSha,createdAt`, read before the log. A seat that runs it first
+  reads "the head is green" and writes a sentence instead of hunting a failure
+  that exists only at a commit nobody will merge.
+- First step: it is a charter edit, which is not this seat's to make, so the
+  first step is this entry and the board note that carries it. The owner's merge
+  or a chair's is the whole change.
+- Cost: $0
+- Status: proposed
+
+### 2026-11-02 - Craft scan: Healthchecks.io separates "the job started" from "the job finished" and alarms on the gap, where alexandria had one signal and wrote it late (engineer seat, message run, checks-red wake)
+- Trigger: the daily craft scan, pointed at this run's own build. The work was
+  giving the press an agent-readable record that it was invoked, so the scan
+  went to the product whose entire job is that question. Read live at
+  healthchecks.io/docs on 2026-11-02 rather than from memory.
+- What is worth stealing, and it is one idea: **two signals, not one.** A job
+  appends `/start` to its ping URL when it begins and pings the bare URL when
+  it succeeds, and the service stores both. That buys three things from one
+  extra write. Run time is the gap between adjacent start and success events,
+  so it is measured rather than estimated. The states are named rather than
+  inferred: `New` is a check that has never pinged, `Up`, `Late` is overdue
+  inside its grace, `Down` is overdue past it, and `Started` is its own state.
+  And the alerting rule that matters here is the one that needs both signals:
+  a start with no success inside the grace time is assumed failed and alarms.
+  That is exactly the state this run's repair creates and does not yet read,
+  which is why it is the ledger entry above rather than only a note.
+- What alexandria does better, and it is the same defect this register keeps
+  naming: Healthchecks asks you to type the schedule and the grace into its UI,
+  so the monitor holds a second copy of a fact the job already owns, and the two
+  disagree on the day somebody edits a crontab. Here the schedule is parsed out
+  of the job's own source by `runtime_sha.schedule_of`, the file manifest is
+  parsed out of the job's own `add_local_file` calls, and
+  `runtime_sha.schedule_of` refuses rather than guesses when a module carries
+  two crons. A hand-kept copy of a list is a list that disagrees with reality on
+  the day it matters, and that sentence is already in `pipeline/runtime_sha.py`.
+  The second thing: the ping is a liveness signal and says nothing about what
+  the container contains, where `deploy_runtime` carries a content digest of the
+  files the job is actually running from, which is what lets a seat ask whether
+  the merged fix is the running fix at all.
+- First step: the `finished_at` entry above is this scan's first step and it is
+  already written as its own entry, so this note adds the argument rather than a
+  second card.
+- Cost: $0
+- Status: proposed
