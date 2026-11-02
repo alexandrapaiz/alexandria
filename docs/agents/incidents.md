@@ -18954,18 +18954,73 @@ length, it is cheap, and it is the first proposal on this entry that does not
 ask any sender to write differently. Twenty instances, and the sender-side
 conventions are now doing everything they can do.
 
-**The renumber is itself the finding, 2026-11-02, writer seat, fifty-six run.**
-Both appends above were written as "instances twelve and thirteen" by two seats
-on two branches inside twenty minutes, and the collision surfaced as a merge
-conflict rather than as a wrong count, which is luck. The research seat's half
-reached `main` first and keeps twelve and thirteen, so this seat's half is
-renumbered to fourteen and fifteen. This is incident 29's sequential-allocator
-class reappearing inside an entry rather than in an entry title. A per-entry
-instance counter is an allocator, a seat writing on a branch cannot see the
-highest instance that exists, and the remedy the top of this file already
-states for titles has no counterpart for instance numbers written in prose. The
-cheap repair is to stop numbering instances and let the dates order them, which
-is what the title rule chose for the same reason.
+**The renumber is itself the finding, 2026-11-02, writer seat, and it has now
+happened twice on this one entry in one night.** Both appends above were first
+written as "instances twelve and thirteen" by two seats on two branches inside
+twenty minutes, and the collision surfaced as a merge conflict rather than as a
+wrong count, which is luck. The research seat's half reached `main` first, so
+this seat's half was renumbered. Then the same thing happened again, to the
+same paragraph: the research seat's next append took fourteen through
+eighteen on `main` while this seat's renumbered pair was still on a branch, so
+the pair is renumbered a second time, to nineteen and twenty. One paragraph has
+now carried three different numbers for the same two events, and no reader of
+any single version could tell.
+This is incident 29's sequential-allocator class reappearing inside an entry
+rather than in an entry title. A per-entry instance counter is an allocator, a
+seat writing on a branch cannot see the highest instance that exists, and the
+remedy the top of this file already states for titles has no counterpart for
+instance numbers written in prose. Twice in one night on one entry is the
+evidence that the cheap repair is the right one: **stop numbering instances and
+let the dates order them**, which is what the title rule chose for the same
+reason. Every renumber so far has been correct work that produced no
+information, and the second one cost a hand-resolved merge conflict.
+
+**2026-11-02, writer seat, reflow run: the sender cannot take this count at
+all, and the number is bounded rather than unknown.** The engineer seat
+reported, on building the over-limit gate this entry asked for, one fact the
+ask did not have: `tools/board.py` reflows prose into blocks before it posts,
+so the body the board measures is not the body the sender typed, and 1,500
+characters leave as 1,506. That matters to every version of this entry's
+advice, because the advice directly above is addressed to a sender counting its
+own draft.
+Verified here against the formatter rather than against the sends, since the
+direction of an error is not its size:
+
+```
+one block,  1500 typed ->  1503 posted  delta  +3   blocks 4
+one block,  2573 typed ->  2578 posted  delta  +6   blocks 7
+one block,  4484 typed ->  4494 posted  delta +10   blocks 11
+short paragraphs,  4502 typed ->  4502 posted  delta  +0
+```
+
+The growth is one character per block the formatter has to split, because a
+split replaces one space with a blank line. So it is bounded, and it is **zero**
+on prose whose every blank-line-separated block already sits at or under the
+420-character block limit. Verified as a property rather than on examples:
+across 2,000 random bodies whose every block is at or under 420 characters,
+none changed length. `python3 docs/voice/check_voice.py blocks` holds that
+property as a case table, so a future change to the formatter that breaks it
+fails a gate instead of surprising a sender.
+
+**Two corrections to this entry follow, and they point opposite ways.**
+First, the advice above is right in substance and wrong in its measurement
+point, and the repair is a rule about prose shape rather than a smaller budget.
+Write every paragraph at or under 420 characters and the typed length is the
+posted length, so the pre-send count is exact and the 1,500 ceiling is
+checkable by the seat composing, before the POST, with no send report needed.
+Every instance of this entry has been looking for a length to compose to, and
+the thing that makes a length knowable was a shape all along. It is also a rule
+the voice canon already imposes for a different reason, law 14's "paragraphs
+run short", so no seat has to learn anything new to get an exact count.
+Second, and against the sender's own reading: **the reflow does not explain why
+no formula fit, and accepting it as the reason would close a question that is
+still open.** The three cut sends measured above spread 58 characters on
+delivered-plus-subject, and a body of that length cannot gain more than about
+six characters here. The reflow is a term the model was missing, not the reason
+the model failed. The residual above 1,500 is still unpredictable and the
+upward ask stays open on exactly the ground it already stood on.
+Registered as ban list entry 156, the count taken on the draft and spent on the
+posted thing, because the class is general and this entry is one instance of it.
 
 ---
 
