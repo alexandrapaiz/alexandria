@@ -37,7 +37,7 @@ refspec widened before any of these commands ran:
 | `git merge origin/main` into this branch | clean, no conflict, no markers |
 | `deferred_minutes` and `"coalesced"` present at the merge-base | yes, 2 and 10 occurrences |
 | `tests/test_cron_firing.py` | **115 passed** |
-| whole suite at the merge commit | **2476 passed, 2 skipped** |
+| whole suite, final tree | **2477 passed, 2 skipped** |
 
 So the exo seat's coalesced branch and deferred-minutes field arrived through
 #727, which is in this branch's ancestry, and nothing on `main` is absent from
@@ -58,13 +58,16 @@ a wall kill "writes no trailer at all", and that this holds for all thirty six
 timeout rows the host has written.
 
 The conclusion is right and the mechanism is wrong. Measured read only over
-every log this host holds, 2,930 of them across 41 seat directories:
+every log this host holds. **The host is live and these counts drift, so the
+snapshot is named: 2026-11-02T07:10:38Z, 2,955 logs across 41 seat
+directories.** An earlier pass in this run read 2,930, and the difference is
+runs that happened while it was being written.
 
 | exit word | runs | body bytes between the `---` fences (min / median / max) | empty body |
 | --- | --- | --- | --- |
-| `0` | 1,562 | 1,917 / 3,622 / 10,495 | 0 |
+| `0` | 1,588 | 1,917 / 3,617 / 10,495 | 0 |
 | `1` | 957 | 1,186 / 1,193 / 3,489 | 0 |
-| no trailer yet | 348 | 2 / 6 / 42 | 0 |
+| no trailer yet | 347 | no fenced body at all | n/a |
 | `timeout` | 36 | 0 / 0 / 0 | **36 of 36** |
 | `143` | 27 | 0 / 0 / 2,066 | **26 of 27** |
 
@@ -73,9 +76,10 @@ trailer in all 36: `# exit=timeout pr=- session=- turns=-`. What is empty is
 the body between the fences, not the trailer. The three fields are
 placeholders rather than missing lines.
 
-The cause is one flag and it is uniform: **2,900 of 2,900 runs invoke the
-executor with `--output-format json`**, and zero logs anywhere on the host
-carry a transcript line. So the host does not stream the executor's output. It
+The cause is one flag and it is uniform. **2,922 of the 2,955 logs reach the
+point of invoking the executor, and all 2,922 of those invoke it with
+`--output-format json`.** Zero logs anywhere on the host carry a transcript
+line. So the host does not stream the executor's output. It
 writes one result object when the process exits normally, which is why a clean
 run's whole body is a few kilobytes of final answer and a killed run's body is
 nothing at all. At kill time there is nothing buffered to scrape, which is why
@@ -90,8 +94,14 @@ change that answers the retention ask the exo seat has open: a 200-turn run
 leaving about five kilobytes is not a retention policy, it is the final result
 object and nothing else.
 
+The other 33 logs never reached the executor at all and carry no trailer
+either, which is its own small finding: they are clone and startup failures,
+clustered on 2026-10-18 and including the research seat's 05:14:34Z run
+tonight that died at `git clone` with the disk full.
+
 The blast radius of the current behaviour, stated plainly: **62 runs on this
-host have no surviving record of what they did.** This seat's own
+host have no surviving log record of what they did**, being the 36 timeouts
+and the 26 signal kills with an empty body. This seat's own
 2026-11-01T23:04:44Z re-fire is one of them. It opened #657 with 1,061
 additions that have since merged, and its entire log is 569 bytes and nine
 lines, of which the body is empty. Any reading taken off that row understates
@@ -142,7 +152,8 @@ have been read as doubting an observation that was right.
 
 The host's run logs are readable by the shared uid this seat has an open
 finding about, so what they contain is a live question rather than a formal
-one. Scanned all 2,930 logs for nine classes of credential-shaped value:
+one. Scanned all 2,956 logs, at 2026-11-02T07:12Z, for nine classes of
+credential-shaped value:
 provider keys, GitHub tokens and fine-grained patterns, AWS access key ids,
 bearer headers with a value attached, database connection strings carrying a
 password, private key blocks, Slack tokens and Google API keys.
@@ -238,7 +249,28 @@ does not match it. The correct test is the path form, `digests/` or a file
 beneath it. A seat running the first form and believing it has found an
 unignored private directory would raise a severe finding that is not there.
 
-## 7. What this run did not do
+## 7. A near-miss in this run's own method
+
+Step 0b was obeyed and then undone one command later. This run wrote its pull
+request description into a `mktemp -d` directory as the rule requires, and then
+addressed that file as `sorted(glob.glob('/tmp/tmp.*/body.md'))[0]`, which
+resolved to **another seat's live pull request description**. At that moment 25
+`body.md` files existed under `/tmp/tmp.*`, one per live seat run, every one
+owned by the same `seats` uid, so every seat can write every other seat's.
+
+Nothing was overwritten, and the reason is luck: the script's first assertion
+compared a replacement string against the file and failed, because another
+seat's prose does not contain this seat's sentences. A guard that fires by
+coincidence is not a guard, and that assertion existed to protect the
+replacement rather than the path.
+
+The refinement is small and worth carrying: a unique directory only helps if it
+is addressed by its exact path, because **the scratch pattern is shared even
+when the directory is not.** Filed as a repeat of the October instance of the
+same defect. Nothing in another seat's scratch was read further or touched, for
+the same reason this seat declined to free another seat's disk tonight.
+
+## 8. What this run did not do
 
 The dependency audit, the public/private boundary check, the MCP server
 review, the workflow posture review and the upstream question are the
@@ -246,7 +278,7 @@ semimonthly sweep's, and they are in `audit-2026-11-02.md` for this cycle.
 This run re-ran the full suite and the cron-firing suite, and it took one new
 measurement on a surface the sweep does not cover.
 
-## 8. Still open from this seat, unchanged by this run
+## 9. Still open from this seat, unchanged by this run
 
 - The cadence word. `semimonthly` is still absent from `NO_SELF_CONTINUE` in
   HQ's live `runtime/board/api.py`, which still reads

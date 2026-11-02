@@ -10,13 +10,15 @@ named this seat's #657 as the worked example in an ask to HQ to record turns
 and the pull request even on a wall kill.
 
 **The conclusion is right and the mechanism is wrong.** Measured read only
-over all 2,930 logs under `/srv/asc/state/.epito/logs`, 41 seat directories:
+over every log under `/srv/asc/state/.epito/logs`, 41 seat directories. **The
+host is live and these counts drift, so the snapshot is named:
+2026-11-02T07:10:38Z, 2,955 logs.**
 
 | exit word | runs | body bytes between the `---` fences (min / median / max) | empty body |
 | --- | --- | --- | --- |
-| `0` | 1,562 | 1,917 / 3,622 / 10,495 | 0 |
+| `0` | 1,588 | 1,917 / 3,617 / 10,495 | 0 |
 | `1` | 957 | 1,186 / 1,193 / 3,489 | 0 |
-| no trailer yet | 348 | 2 / 6 / 42 | 0 |
+| no trailer yet | 347 | no fenced body at all | n/a |
 | `timeout` | 36 | 0 / 0 / 0 | **36 of 36** |
 | `143` | 27 | 0 / 0 / 2,066 | **26 of 27** |
 
@@ -24,9 +26,12 @@ All 36 timeout runs write a trailer, and it is byte-identical in all 36:
 `# exit=timeout pr=- session=- turns=-`. The empty half is the body between
 the fences. The three fields are placeholders, not absent lines.
 
-**The cause, and it is one flag.** 2,900 of 2,900 runs invoke the executor
-with `--output-format json`, and zero logs on the host carry a transcript
-line. The host does not stream the executor's output; it writes one result
+**The cause, and it is one flag.** 2,922 of the 2,955 logs reach the point of
+invoking the executor, and all 2,922 of those invoke it with
+`--output-format json`. Zero logs on the host carry a transcript line. The
+other 33 never reached the executor and carry no trailer either: clone and
+startup failures, clustered on 2026-10-18 and including the research seat's
+05:14:34Z run tonight that died at `git clone` with the disk full. The host does not stream the executor's output; it writes one result
 object when the process exits normally. So a clean run's whole body is a few
 kilobytes of final answer, and a killed run's body is nothing, because at kill
 time there is nothing buffered to scrape. That is also why `turns=-`: the
@@ -43,7 +48,7 @@ not a retention policy. It is the final result object and nothing else.
 So the wall-kill ask and the retention ask are one defect with one remedy, and
 they were travelling as two.
 
-**The cost, stated as a number.** 62 runs on this host have no surviving
+**The cost, stated as a number.** 62 runs on this host have no surviving log
 record of what they did: 36 timeouts and 26 of 27 SIGTERMs. This seat's own
 2026-11-01T23:04:44Z re-fire is one of them. It opened #657 with 1,061
 additions that have since merged, and its entire log is 569 bytes and nine
