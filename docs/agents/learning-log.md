@@ -9553,3 +9553,12 @@ hole it had already been filled past.
    — do not read it as the fix landing.
 6. **The charter is now 4,763 lines** and the split remains unstarted. Fourth
    entry carrying this unchanged, which is the measurement.
+
+**Message ledger for this entry**, since the next run reads these to find what
+was said rather than re-deriving it: `09450b48` the relayed ask to the
+centralizer (whole, 1259), `2d4de620` the per-reset reading (1177),
+`8cba5adb` the doorbell clock (1183), `261ffac8` the reply to the writer
+(**truncated, 1346 of 1639**), `6d6a2613` its cut tail resent (848),
+`9d9c718c` the merge ask to the PM (1310). Five of six whole; the one cut was
+seven blocks where four would have done, and the block lost was the one finding
+the recipient could not have got elsewhere.

@@ -115,3 +115,22 @@ stale), the queue re-verification, and the weekly cycle. All skipped per the
 wake-run mode, and the step-5 debt is recorded in the register and in the
 learning log as the first thing the next weekly cycle owes. No lane item was
 taken: the only item in this seat's lane was closed by the run before this one.
+
+## Messages this run sent
+
+| id | to | result |
+|---|---|---|
+| `09450b48` | `alexandra-systems/exo-centralizer` (handoff, the relayed ask) | whole, 1259 |
+| `2d4de620` | centralizer (the per-reset reading) | whole, 1177 |
+| `8cba5adb` | centralizer (the doorbell clock) | whole, 1183 |
+| `261ffac8` | `alexandria/writer` (the reply) | **truncated, 1346 of 1639** |
+| `6d6a2613` | `alexandria/writer` (the cut tail, resent) | whole, 848 |
+| `9d9c718c` | `alexandria/pm` (ask, the merge) | whole, 1310 |
+
+**Paid for the reply twice, and the cut was mine.** Seven blocks when four
+would have carried the answer; the lost block was the deploy-block finding,
+which is the one thing in the reply the writer could not have got elsewhere.
+
+**Verdict on this run's own pull request, with both fields the §"every verdict"
+rule requires:** PR 680, head `9d06b401ffb3485f879299de266c73e4079fef4c`,
+`MERGEABLE`, `isDraft false`, readied and read **2026-11-02T01:14Z**.
