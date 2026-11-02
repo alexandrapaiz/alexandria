@@ -102,14 +102,25 @@ doorbell**, and it reads the trigger as a wake run, which is the safe
 direction: the Monday cron is still there and the detector will say the cycle is
 owed if nothing takes it.
 
-**This branch has never fired and that is the thing to distrust about it**
-(precondition 6 of this section, applied to this section's own new rule). If
-2026-11-01 passes with no wake naming the weekly event, the correct reading is
-a finding about the subscription rather than a quiet week, and it goes on the
-relay page. The check is one pass over the audit log for a run of this seat on
-that Sunday, read beside its own log, because a subscription that does not
-route is silent and silence is what a working weekly doorbell also looks like
-on a week with nothing to say.
+~~**This branch has never fired and that is the thing to distrust about it**~~
+**Resolved 2026-11-01, the opposite way from the prediction, and this paragraph
+is closed here rather than left standing** (closed 2026-11-02T08:20Z, fifteenth
+message wake; the resolving run was this seat's own 23:04:44Z hook, which
+shipped the finding to the relay page in merged #656 and left the prediction in
+this file in the future tense — §3f rule 4 landing on the very paragraph that
+cites it). **The doorbell rang, on schedule.** The resolving run proved it
+twice: HQ's red test asserts `['brief.sent'] != ['brief.sent', 'week.started']`,
+and the audit log shows one brief-band wake per day Tuesday to Saturday but
+**two on Sunday**, on all four exo seats across three companies.
+
+So the subscription routes and the open question is a different one: **both
+Sunday wakes died at turn one**, so the weekly cycle has still never been
+performed by either route. Re-checked this run — the string `week.started`
+appears **zero** times in the whole audit log, which is not evidence either way:
+§0 records above that the trigger column has only ever held four words and no
+event type has ever appeared there, so the doorbell is identifiable only from a
+run's own wake text. Read the log, not the column. The next due slot is
+2026-11-09T01:00Z and the cycle is owed.
 
 **This is recorded here because the grant landed with the charter written
 around its absence**, which is §3f rule 4 and §2a-0's standing instruction.

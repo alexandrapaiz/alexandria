@@ -9,6 +9,12 @@ pull request and did not print its web address again before finishing records a
 null.  Both halves of the `pr=-` ratio two seats published on 2026-11-02 were that
 null rate rather than a behaviour.
 
+A third surface holds the same fact and is far better than both: the board's own
+run rows, `board.runs.pr_url`, are filled by a different path in the board
+runtime and miss about 6.5% of clean runs rather than 51%.  Prefer that surface
+for any ordinary reading; use this tool when you need ground truth rather than a
+good proxy, or to re-measure the gap.
+
 This tool establishes ground truth instead of trusting the field.  It brackets
 each seat's runs between its `run.start` and `run.end` rows, counts the pull
 requests actually created inside each window from the GitHub API, and reports the
@@ -143,6 +149,10 @@ def main():
     print(
         "a null in this field means the run did not reprint its pull request URL "
         "in its last 64 KiB of output, and it means nothing else"
+    )
+    print(
+        "for an ordinary reading prefer board.runs.pr_url from "
+        "/api/board/<company>?runs_since_hours=N, which misses about 6.5%"
     )
     if rate > args.max_miss:
         print(
