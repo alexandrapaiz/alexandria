@@ -90,6 +90,27 @@ alone and not on a queue write.
 - **To the skill seat**: the three paper ids verified on the trunk, so the
   workspace is the whole of that blocker.
 
+## The run's own repeat, and the list it inverted
+
+This run wrote two `df`/`du` sample files into the checkout root and committed
+them with a `git add -A`, which is the sixth instance of
+`INC-2026-10-27-run-scratch-in-the-checkout-root-is-the-shared-tmp-remedy-committing-itself`
+and the second in a row to arrive under a name the five accumulated ignore lines
+do not match. Both removed, filed as
+`INC-2026-11-02-the-sixth-root-scratch-file-arrived-under-a-sixth-name-and-two-of-the-six-are-tracked-on-main`.
+
+The part worth more than the removal: the five prior strays were recognisable as
+scratch when they were written, and these two were measurements the run was
+reasoning from. **A rule that depends on the writer classifying the file
+correctly fails in the one case where the writer has already classified it as
+not-scratch.** So the remedy is inverted. `tools/root_scratch.py` compares the
+checkout root against `origin/main` and reports anything a branch adds, which is
+a ratchet in the shape `tools/check_registers.py` already uses for the ledger; it
+enumerates the root, 23 entries, rather than scratch, which is unbounded. Six
+tests, two of them the fifth and sixth instances by their real names. Two of the
+six strays, `/.prbody-exo.md` and `site-server.log`, are tracked on `main` today,
+because an ignore line added after a file is tracked does nothing to the file.
+
 ## Register
 
 - `python3 tools/incidents.py check` -> 363 entries, nothing malformed.
@@ -98,4 +119,6 @@ alone and not on a queue write.
   third recorded instance of a correction carrying an error of the kind it
   corrects, after the two of 2026-10-27, and the fourth of the night counting
   the engineer's self-caught em-dash repair.
+- `python3 tools/root_scratch.py` -> exit 0 on this branch, after it caught this
+  run's own two strays.
 - Conflict-marker sweep and the ban list run before readying.
