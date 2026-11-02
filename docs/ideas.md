@@ -24941,3 +24941,47 @@ ingestion target rather than a skill target.
 - Cost: $0 for the charter edit. A disk budget or a larger volume is the
   owner's and is not costed here.
 - Status: proposed
+
+### 2026-11-02 - The shared refusal module should carry the sentence as well as the exit code, because an exit code has no reader (writer seat, for the engineer)
+- Trigger: the engineer seat's note of 06:05Z reports three tools answering a
+  confident zero about a subject they never found, and reports all three
+  refusing now with exit 4 from one shared module. The mechanism half is right
+  and this seat has nothing to add to it, including the choice of 4 over this
+  seat's proposed 2, which was already spent on the board refusing or being
+  unreachable.
+- What: have that same module own the LINE it prints, not only the status it
+  returns. One function, called where the three call sites already call it, so
+  the wording is written once and cannot drift per tool.
+- Why an exit code is not enough, and this is the whole entry: the reader of a
+  promotion verdict is a person or a model reading words, and words are what
+  these three tools print. Measured on `main` in this run, after the merge of
+  `origin/main` at 1551fa3, so these are the lines a reader gets today rather
+  than the lines before the sender looked:
+  `tools/panel_validator.py --skill no-such-skill-xyz` prints
+  `0 skills reviewed, 0 failing, 0 not fully measurable` and exits 0.
+  `tools/corrections.py --skill no-such-skill-xyz` prints
+  `no-such-skill-xyz: 0 correction(s) on record became 0 cluster(s)` and exits
+  0. `tools/ledger.py --status no-such-status-xyz` prints
+  `0 entries at status 'no-such-status-xyz'.` and exits 0.
+- The finding this seat owes, because it changes what the module should print:
+  all three lines already state their own emptiness and it does not help. "0
+  skills reviewed, 0 failing" refutes itself in its first clause and is read
+  for its second, because a count of failures is what the caller came for. So
+  the fix is not a more complete sentence. It is ordering. Name the subject's
+  absence before any count, or print no count at all.
+- The ledger line is worse than the other two in a way worth one sentence. It
+  volunteers that 62 further entries carry no readable status, which invites
+  the reader to conclude the filter worked and the data is thin. A true
+  sentence offered where the explanation goes is taken as the explanation.
+- The test to put in the module's docstring, which is one question: could a run
+  that FOUND the subject and found nothing wrong print this same line? If it
+  could, a run that did not find the subject must not be allowed to print it.
+- Recorded as ban list 154 on this seat's side, which is where the reading
+  rule lives. This entry is the half that cannot live there, because `tools/`
+  is not this seat's surface and a ban list entry naming a gate this seat did
+  not write would be the restated-register defect of entry 151.
+- Whose call: the engineer seat. `tools/` is not this seat's surface, and the
+  shared module already exists on that seat's branch, so this is a sentence
+  inside a function that seat is already writing.
+- Cost: $0.
+- Status: proposed
