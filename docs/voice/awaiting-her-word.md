@@ -117,9 +117,51 @@ on an earlier run precisely so an issue page would be visible here, which fixed
 what the gate could see and left untouched what it would say about it. The
 floor shipped in this run's diff and the row below is the row it now demands.
 
+**Two rows confirmed against their sources 2026-10-26, writer run 59, and the
+clock in one of them became readable.** The PM answered this seat's W42 ruling
+on the board at 20:45Z: agreed with the pull, merged it, posted the
+correction-notice question to her as a formal ask, and did not dispatch the
+frontend seat because that seat's own pull request is still open. Both halves
+were read at their sources rather than taken from the note. The ask is board
+message `065eda95-92e7-4f94-8625-906c10691b81`, named in the PM's #609, and the
+live `2026-W42` page still serves the pulled section, re-read at 21:04Z by
+`check_voice.py provenance --live` on the same two findings. What changed in the
+rows is therefore the owing rather than the defect: the surface row now says
+which seat owes the diff and what it waits behind, and the question row carries
+`deadline 2026-10-28T20:44Z` in a fixed form. Run 58 wrote that clock in prose
+and prose is the thing no command can read, which is the defect this register
+keeps recording about itself. `check_voice.py deadlines` reads the token now and
+fails both ways: a row that argues a silence rule and names no deadline, and a
+deadline that has passed with the row still open.
+
+**Re-confirmed 2026-10-27 by command, writer run 60, and nothing in this table
+moved.** `check_voice.py reading` reports the same 4 failures on the same 4
+lines as on 2026-10-26 and `claims` reports the same 24 unhedged claims live
+right now, so no row below was repaired and the oldest is thirty-two days.
+`provenance --live` re-read the `2026-W42` row's defect at 00:12Z on 2026-10-27
+and found the same two findings at lines 47 and 49, which is the fourth live
+confirmation and the first one on the day after the ruling. The row's reader
+should now expect the live line to outlast the ruling by two days rather than
+one, because the frontend seat's #559 is still open. The question row's clock
+is unexpired: `deadlines` reads `2026-10-28T20:44Z` against a fixed
+`2026-10-27T00:05Z` and says so. This run adds no candidate, because
+`docs/voice/value.md` still carries no recorded approval.
+
+**New surface 2026-11-01, writer run 61, and the gate that found it had been
+failing on it in silence.** `check_voice.py standalone` fails on the opening
+sentence of `2026-W39`, in the repository and on the live page, and canon law
+13 quotes the owner rejecting that sentence's near twin by name and then
+writes the repair out in full. The row is thirty-eight days old as a defect and
+new as a row, because the two commands this register re-confirms itself with
+are `reading` and `claims` and neither of them reads an opening. The same run
+repaired `standalone --live`, which raised `ValueError` instead of printing the
+hit, so a run that pointed it at the product got a traceback rather than the
+sentence.
+
 | Surface | Candidate | Drafted | Is the defective line still live? |
 |---|---|---|---|
-| `site/content/issues/2026-W42.md`, the overturn section at lines 43 to 53, the lead's third sentence and the lead's count | `w42-correction-2026-10-26.md`, whose corrected body is `2026-W42-corrected.md` | 2026-10-26, run 57 | Yes. Read live at 20:49Z on 2026-10-26, after the ruling merged: the heading "Hidden reasoning can be encrypted, not merely hidden" still serves, and the research seat scored that section three wrong out of three against the abstracts the issue itself cites. The ruling is to pull the section rather than reword it. Setting it is the frontend seat's diff, and the file does not exist under `site/content/issues/` yet, so the correction lands as a new file that overrides the stored row |
+| `site/content/issues/2026-W39.md:6`, the opening's first sentence | `w39-opening-2026-11-01.md` | 2026-11-01, run 61 | Yes. Thirty-eight days. "You have spent the week watching agents get faster by thinking less at test time." is the shape canon law 13 bans in every tense, and the law's own text holds the replacement verbatim. Read live at 2026-11-01T23:21Z by `check_voice.py standalone --live` and in the repository at the same hour. One sentence, one line, and the ruling carries no notice with it |
+| `site/content/issues/2026-W42.md`, the overturn section at lines 43 to 53, the lead's third sentence and the lead's count | `w42-correction-2026-10-26.md`, whose corrected body is `2026-W42-corrected.md` | 2026-10-26, run 57 | Yes. Read live at 20:49Z on 2026-10-26, after the ruling merged: the heading "Hidden reasoning can be encrypted, not merely hidden" still serves, and the research seat scored that section three wrong out of three against the abstracts the issue itself cites. The ruling is to pull the section rather than reword it. Setting it is the frontend seat's diff, and the file does not exist under `site/content/issues/` yet, so the correction lands as a new file that overrides the stored row. Owed to that seat and not dispatched: the PM is holding it until the frontend seat's open #559 clears, said on the board at 20:45Z on 2026-10-26, so the row's reader should expect the live line to outlast the ruling by a day or more |
 | `site/lib/skill-shelves.js`, the shelf names and the nine captions | `shelf-names-2026-10-26.md` | 2026-10-26, run 53 | Yes. Four of nine skills stand on the catch-all shelf under a caption written when at most one could land there, and all seven live captions are fragments against her 2026-09-29 ruling. Two shelves do not exist yet |
 | `site/app/desk/page.jsx`, the verdict queue | `desk-verdict-queue-2026-10-24.md` | 2026-10-24, run 45 | Yes. The queue renders 524 rows oldest first, so the newest entry on it is the compute outage of 2026-10-23 and a reader reaches it last. The count beside the heading is also wrong by one against `tools/ledger.py --census`, which `check_voice.py ledger` now fails on. Four lines and a one-character anchor, in one diff |
 | `site/app/mission/page.jsx`, third paragraph | `claim-repairs-2026-10-18.md` | 2026-10-18, run 40 | Yes. Three unheld claims in one sentence, confirmed by `check_voice.py claims` on 2026-10-18 |
@@ -139,7 +181,16 @@ floor shipped in this run's diff and the row below is the row it now demands.
 | Are the skill files the paid product, or the free distribution that sells something else? The repository is public and all nine are in it, so the entitlement gate guards a door in a wall with no other sides | `skills-copy-2026-10-18.md`, surface 3 | 2026-10-18 |
 | Does a paid tier keep a bullet for a machine that does not exist, hedged, or lose the bullet? | `claim-repairs-2026-10-18.md`, finding 8 | 2026-10-18 |
 | Is `docs/voice/value.md` the target still owed an approval, or stale against the five pages she approved on 2026-09-29? | `value.md`, the note of 2026-09-30 | 2026-09-30 |
-| Does the corrected `2026-W42` page carry a notice saying a section was removed and why, on that page only? Recommended yes, quoted in full in the candidate. Her 2026-09-19 ban is on an issue narrating its own methodology, and this sentence reports what happened to one page in the past tense | `w42-correction-2026-10-26.md`, the one line that needs her word | 2026-10-26. Posted to her as a formal ask by the PM, and the first row here with a deadline on it: under the company standard's silence rule it proceeds as recommended at about 20:44 UTC on 2026-10-28 |
+
+## Resolved on the clock, without her word
+
+A row here was a question for her and is not one any more, because the
+standard's silence rule answered it. The row keeps its question verbatim, so
+the record shows what was asked rather than only what came of it.
+
+| Question | Resolution | Read at |
+|---|---|---|
+| Does the corrected `2026-W42` page carry a notice saying a section was removed and why, on that page only? Recommended yes, quoted in full in the candidate, and canon law 7 is the ground it stands on rather than an exception to her ban: that law's first clause asks for a limitation that materially affects the day's content in one plain sentence, and its second bans narrating the method | **Yes, as recommended.** `docs/standards/pm.md` §22 proceeds as the PM recommended after forty-eight hours of her silence, and the clock in the row was `deadline 2026-10-28T20:44Z`. No reply arrived on the card or on the bus. So the notice is settled text and not a proposal: the sentence is the one quoted verbatim in `w42-correction-2026-10-26.md`, the anchor is a new plain-prose paragraph directly under the masthead, and that candidate's sequencing section already decided the form so nobody decides it twice. It moves no authority and no money, which is what §22 reserves to her regardless of the clock | 2026-11-01T23:18Z, writer run 61, by `check_voice.py deadlines`. The hour had passed four days earlier and this register still called it a question, which is the one failure that gate exists to produce |
 
 ## Closed
 

@@ -84,6 +84,17 @@ one answers three.
     exited 0 and shipped nothing anyway. That last one is incident 3's failure
     mode and the reason the ship-first rule is in every charter.
 
+`recovering`
+    The slot was refused, HQ's retry claimed the log, and the re-fire it
+    dispatched **has not finished**. Its trailer is missing, so its `pr=-` is
+    the absence of a report and not the absence of a pull request. Never
+    reported as lost and never in the exit code, for the same reason
+    `reason_of` will not call a live run lost: the cost of a false alarm is
+    every reading of the report, and the cost of waiting is one reading.
+    Observed on 2026-11-01 against `alexandria-security`, whose 13:00Z slot
+    was scored `1 cycle(s) lost` at 23:34Z while the re-fire that rescued it
+    had been committing to pull request 657 since 23:06Z.
+
 `unseen`
     A slot this seat has fired at on other days in the history window, with no
     row on the day asked about. This is **never reported as a failure**, because
@@ -635,6 +646,15 @@ def judge(runs, day, tolerance=15, history_days=14, now=None, pr_index=None,
                 finding["state"] = "retried"
                 finding["late_minutes"] = int(
                     (successor["started"] - run["started"]).total_seconds() // 60)
+            elif (run.get("retry_claimed")
+                  and verdict_of(successor, now=now) == "in-flight"):
+                # The re-fire is still running, so its `pr=-` is the absence of
+                # a trailer and not the absence of a pull request. `reason_of`
+                # already refuses to call a live run lost; that reasoning was
+                # applied to the refused run's own verdict and never to its
+                # successor's, so a slot in recovery scored `lost` and set the
+                # exit code. The verdict here is owed at the next reading.
+                finding["state"] = "recovering"
             elif run.get("orphaned_behind"):
                 # The seat came back and this cycle did not. `orphaned` stays
                 # in the exit code because the cadence did lose the cycle; what
@@ -671,6 +691,7 @@ def judge(runs, day, tolerance=15, history_days=14, now=None, pr_index=None,
         "orphaned": [f for f in findings if f["state"] == "orphaned"],
         "cut": [f for f in findings if f["state"] == "cut"],
         "retried": [f for f in findings if f["state"] == "retried"],
+        "recovering": [f for f in findings if f["state"] == "recovering"],
         "history_days": history_days,
     }
 
@@ -708,6 +729,13 @@ def render(result, root, prs_given=False):
                          f"{finding['retried_by']} -> {finding['retry_pr']}"
                          f"{late}. The slot fired, the provider refused it and "
                          f"the retry carried the cycle")
+        elif finding["state"] == "recovering":
+            lines.append(f"  recover  {finding['seat']} {finding['slot']} "
+                         f"{finding['why']}, re-fired by "
+                         f"{finding['retried_by']}, which is still running. "
+                         f"Its `pr=-` is a missing trailer and not a missing "
+                         f"pull request, so the cycle is in recovery and the "
+                         f"verdict is owed at the next reading")
         elif finding["state"] == "orphaned":
             turns = finding["turns"]
             turns = f", {turns} turn{'' if turns == 1 else 's'}" if turns else ""
@@ -771,6 +799,14 @@ def render(result, root, prs_given=False):
                      f"and the cycle arrived late rather than not at all. The "
                      f"firing record alone shows these as a failed cron row "
                      f"and an unrelated hook row.")
+    if result.get("recovering"):
+        lines.append("")
+        lines.append(f"{len(result['recovering'])} cycle(s) in recovery: "
+                     f"refused, claimed by HQ's retry, and re-fired by a run "
+                     f"that has not finished. These do not count as lost, "
+                     f"because the only evidence against them is a trailer "
+                     f"nobody has written yet. Read the slot again once the "
+                     f"re-fire ends.")
     if result.get("cut"):
         lines.append("")
         lines.append(f"{len(result['cut'])} cycle(s) cut off after shipping. "
