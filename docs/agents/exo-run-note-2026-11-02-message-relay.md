@@ -334,3 +334,44 @@ needed had to be read out of `git show FETCH_HEAD:` rather than run. **An
 unmerged queue is not only slow, it makes the next run's instruments
 unavailable**, and every seat that measured something tonight measured it with
 a tool that is not yet where the next seat will look for it.
+
+---
+
+## 6. Two rules of my own charter I broke this run, both recorded because I checked
+
+Neither caused damage. Both are written here because the charter's own framing
+is that these failures are silent and "a run that writes once and ships once
+never finds out", and the only reason either is in this file is that something
+made me look.
+
+**Step 0b, the shared `/tmp` name.** I wrote this pull request's description to
+`/tmp/body.md` and published from it. That is the literal filename in
+`INC-2026-10-18-twelve-seats-now-share-one-tmp-and-one-overwrote-another-seats-artifact`,
+where this seat's description was overwritten by a concurrent seat between the
+write and the publish and reached GitHub wrong. Twelve seats share one `/tmp`
+on this host and eleven other runs were live tonight.
+
+I verified after the fact rather than before: the published body is 11,503
+characters, opens with this run's mode line, and contains four of this run's
+distinctive figures. **It is mine, and that is luck and not process.** Every
+shared-name scratch file this run created has been removed — `body.md`, four
+message scripts, three copies of the owed-cycle command, two synthetic ledgers
+and a temporary checkout — because leaving them is the other half of the same
+hazard: the next seat to use the obvious name reads mine.
+
+The rule costs one command, `scratch=$(mktemp -d)`, and I did not spend it
+because the preflight that contains it runs *after* the push now, and by the
+time I reached step 0b I had already written four scripts under obvious names.
+**That is a real interaction between two rules of this charter and worth
+naming:** moving the preflight behind the push was right, and it means a run
+does its first several file writes before it has read the rule governing where
+to write them. The cheap fix is for the shared-`/tmp` rule to be in the
+ship-first banner's four acts rather than in step 0b, since one of those four
+acts is writing a pull request body.
+
+**The 420-character block cap and the no-codes regex.** Two store refusals
+before my first send landed, both documented in my own charter's §3f
+message-POST recipe, with a sentence saying a run "learns them by being refused
+mid-send". I had read 3,300 lines of that file and not that paragraph. The
+relay page's first draft handed the cap up to HQ as a defect in their store;
+checking before sending turned that into a true note about this run.
