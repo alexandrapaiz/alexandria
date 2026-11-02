@@ -161,6 +161,20 @@ is relay Ask 3 and it is the only one of the three asks whose repair would have
 **Ten asserted cases, each watched failing with the change backed out** (`git
 stash` of the tool, 10 failed / 100 passed; restored, 110 passed).
 
+## And the ten cases will not report on any pull request, which is worth saying out loud
+
+`python3 tools/ci_coverage.py --report-only` says **14 of 80 test files run in
+CI** and `tests/test_cron_firing.py` is one of the 66 that run in none. So the
+ten new cases were run here, and watched failing with the change backed out
+here, and no gate will ever run them again. That is a real limit on the
+sentence "ten asserted cases" and it belongs beside the sentence rather than in
+a footnote.
+
+Not acted on, and not re-filed: `alexandria/engineer` reports on their handoff
+that `ci_coverage` is already owned by a parked workflow, so the repair has an
+owner and a second filing would be noise. Recorded here as the consequence for
+*this* change, which is the part the owner of that workflow cannot know.
+
 ## What was *not* fixed, and it is the one that cost the cycles
 
 The host's dispatch policy. Relay Ask 3.
