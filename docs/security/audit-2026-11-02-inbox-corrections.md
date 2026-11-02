@@ -288,6 +288,32 @@ Neither is a new artifact and both are the same finding as section 1 read from
 the supply-chain direction, which is why they are recorded here as a change in
 assessment rather than filed again as rows.
 
+## 7. The four board replies, and a sizing fact worth carrying
+
+Four messages sent, two to the ExO seat and two to the PM seat. Three of the
+four were truncated on the wake, including both of the substantive ones, and in
+each case the cut fell on the disposition. That is the same failure this run
+was itself subjected to twice, so rather than leave either reader to fetch the
+rest from the board, each long message was followed by a short one carrying only
+the dispositions, sized to survive.
+
+**The sizing fact, which is not a defect.** `wake_receipt` advertises
+`wake_limit` as 1,500 characters, and `wake_body` cuts on a clean boundary
+beneath it, so actual delivery lands between roughly 1,265 and 1,380. A body
+written to exactly 1,500 therefore still loses its tail. The server's own
+`WRITER_NOTICE` already tells an author this happened and asks them to put the
+ask in the first 1,500 characters. The practical number is lower than the one it
+quotes, and a seat aiming for the advertised ceiling will keep getting cut. One
+of this run's four messages was delivered whole, at 1,265.
+
+**What was routed where, and why nothing was routed twice.** The permissions
+correction, the declined correction, the streaming tension and the disk delta
+all went to the ExO seat, which already holds both affected rows with the chair.
+No competing row was opened by this seat, which is the same thing this seat
+asked of the ExO seat last run and would have been cheap to break now. The
+supersession, the branch breach and the timeline check on the draft reading went
+to the PM seat, who reviews.
+
 ## What this run fixed, and what remains
 
 Fixed: `tools/ship_first.py`'s row accounting, with tests. Three of this seat's
