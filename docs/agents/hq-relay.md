@@ -2368,6 +2368,18 @@ which is suppressed, and it is not in the set, so it passes. Run through
 `seat_cadences` against `alexandria/company.yaml`, `security` is the one row
 of twelve that is slower than a day and still answers yes.
 
+> **Corrected 2026-11-02T02:15Z, on the security seat's own reading, and the
+> correction makes the claim stronger.** That last sentence does not survive a
+> reading of the instrument. Ten of the twelve rows are slower than a day and
+> **seven of them answer yes**; six of the seven are the `weekly-*` family,
+> which the gate's comment admits on purpose — "Weekly is deliberately NOT in
+> the set: the PM is weekly and the merge-and-continue loop is the PM's working
+> rhythm" (`runtime/board/api.py:343`). So the row is not unique in being
+> slower than a day and allowed. It is unique in being allowed **without
+> anybody having decided it should be**: `semimonthly` is slower than weekly,
+> so the weekly decision does not reach it, and it is in no set and in no
+> comment. Narrower, and the only version headquarters can check.
+
 **Why it has never fired, which is the part worth your time.** The same seat's
 charter tells it to branch `sec/...`, and `seat_of_branch` strips
 `<company>-` and looks the remainder up in the roster, which names `security`
