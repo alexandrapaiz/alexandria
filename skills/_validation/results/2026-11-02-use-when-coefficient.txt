@@ -1,17 +1,21 @@
-USE_WHEN_BOOST against the literature  (lexical/2.2, 67 cases)
+USE_WHEN_BOOST against the literature  (lexical/2.2, 68 cases)
 ========================================================================
 
 What the two papers say
-  arXiv:2602.05366: keeps the when-to-use field, drops example-usage. Having the clause is supported.
-  arXiv:2510.22670: the field's learned weight runs 0.269x to 1.363x of the description's,
+  arXiv:2510.22670: keeps the when-to-use field, drops example-usage. Having the clause is supported.
+  arXiv:2602.05366: the field's learned weight runs 0.269x to 1.363x of the description's,
     median 0.695x, below the description in 5 of 6 cells.
+    That row is Table 5's `examples`, which this paper calls its usage-scenario
+    field and which shares a name with the field the other paper's ablation
+    DROPS. The identification is the step the comparison rests on, and neither
+    paper settles it.
   ours: 1.25x, which is ABOVE the description and inside the published range.
     So the clause is supported, a constant is ruled out in either
     direction, and central tendency runs the opposite way.
 
 The asymmetry the boost is actually applied through
-  stem_count_as_shipped  library 0.7963, panel 0.9441, ratio 0.8435x, trips True
-  idf_mass_as_scored     library 0.8048, panel 0.9426, ratio 0.8538x, trips True
+  stem_count_as_shipped  library 0.8019, panel 0.9441, ratio 0.8494x, trips True
+  idf_mass_as_scored     library 0.8104, panel 0.9426, ratio 0.8598x, trips True
   tolerance 1.15x. The gate checks the stem count and the engine multiplies
   idf mass, so the gate watches a different number from the one the boost moves.
   Both trip, so the finding stands either way, and the gap is worth one line
@@ -19,9 +23,9 @@ The asymmetry the boost is actually applied through
 
 Three arms, on every field the verdict reads
   arm               fired  passed  narrow  <floor
-  boost_off            52      60       7       1
-  boost_live           50      61       6       1
-  boost_uniform        52      60       6       1
+  boost_off            53      61       7       1
+  boost_live           51      62       6       1
+  boost_uniform        53      61       6       1
 
 What moves between arms
   boost_off_vs_boost_live
@@ -67,20 +71,18 @@ The coefficient, swept over the range the literature publishes
   live = through activation_clause()'s positional slice, as shipped.
   uniform = applied to every candidate's whole term set, as a unified schema would.
     boost  in range  live pass  live <fl  unif pass  unif <fl
-    0.269      True         48        11         56        25
-      0.5      True         56         1         60        10
-    0.695      True         59         1         60         6
-      1.0      True         60         1         60         1
-     1.25      True         61         1         60         1
-    1.363      True         61         0         60         0
-      1.5     False         61         0         60         0
-  live span 48 to 61 of 67; uniform span 56 to 60.
+    0.269      True         49        11         59        23
+      0.5      True         57         1         61        10
+    0.695      True         60         1         61         6
+      1.0      True         61         1         61         1
+     1.25      True         62         1         61         1
+    1.363      True         62         0         61         0
+      1.5     False         62         0         61         0
+  live span 49 to 62 of 68; uniform span 59 to 61.
   This is the measurement that decides what the coefficient is worth. The
   suite's pass rate responds to the coefficient only through the positional
-  slice. Applied uniformly, every arm at 0.5x and above scores [60], which is
+  slice. Applied uniformly, every arm at 0.5x and above scores [61], which is
   exactly flat, and the only movement below that is the floor collapsing rather
   than the clause earning anything. So what 1.25 buys this suite is the
   asymmetry and not the clause, and tuning the coefficient on the pass rate
   would be tuning on a confound.
-
-wrote skills/_validation/results/2026-11-02-use-when-coefficient.json

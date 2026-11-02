@@ -15,16 +15,52 @@ coefficient rather than for it.
 What the two papers say, as the research seat reported them and as the
 reading queue records them:
 
-  arXiv:2602.05366 ablates a when-to-use field add-one and one-out on a dense
+  arXiv:2510.22670 ablates a when-to-use field add-one and one-out on a dense
     and a sparse retriever over thirty-five unified datasets, and keeps it.
     The field its authors drop is example-usage. So HAVING the clause is
     supported. Its section 4.1 is the finding; its section 2.2 carries a
     sentence naming the wrong field that reverses it.
-  arXiv:2510.22670 is the only source either seat can find that measures a
+  arXiv:2602.05366 is the only source either seat can find that measures a
     WEIGHT on the field rather than its presence. It learns per-field weights
     and publishes them: the usage-scenario field runs 0.269x to 1.363x of the
     description field's weight across six dataset and retriever cells, median
     0.695x, and it sits BELOW the description in five of the six.
+
+**Two corrections to the block above, both made on 2026-11-02 by reading the
+papers rather than the note.** They are recorded here and not only in the
+commit, because this block is the citation receipt the coefficient decision
+rests on.
+
+First, the two identifiers were transposed, consistently, here and in
+trigger_test.py and in all three reading-queue lines. The claim content was
+right and only the ids moved, which is the one variant of the relayed-claim
+class that passes every check on the prose. The research seat caught it and
+this seat confirmed it by fetching both papers: 2510.22670 is "Tools are
+under-documented", whose five tables are token length, retrieval models,
+rerankers, field mapping and annotator background, and 2602.05366 is
+"Multi-Field Tool Retrieval", whose Table 5 is the learned field weights.
+
+Second, and this one is a narrowing nobody had made: **Table 5 has no
+when-to-use row.** Its four fields are description, parameters, response and
+examples, and 0.269x to 1.363x is the `examples` row divided by the
+`description` row, which reproduces exactly (0.2687 at E5-Base/Toolink,
+1.3633 at GTE/Toolink, median 0.6951, below description in 5 of 6). The paper
+glosses that field as its usage-scenario field in its own words, so the
+mapping is the paper's rather than a reader's. But 2510.22670's generated
+schema names `when_to_use` AND `example_usage` as separate optional fields,
+and the field its ablation drops is `example_usage`. So the step that carries
+this whole comparison is the identification of 05366's `examples` with
+22670's `when_to_use` rather than with its `example_usage`, and the field
+names point the other way while the glosses point this way. The range is
+cited below with that ambiguity attached rather than resolved, because ADR-35
+says the paper wins and neither paper settles it.
+
+A third thing the reading settled, on the field's size rather than its
+weight: 22670's expansion prompt caps `when_to_use` at "less than 20 words"
+and puts it under "Optional Fields ( Included only if explicitly supported by
+the original documentation )", while `function` and `tags` are always
+required. All 17 clauses in this panel run 82 to 132 words, which is 4.1x to
+6.6x that cap.
 
 Ours is a fixed 1.25x above it. So the literature supports the clause, rules
 out a constant in either direction, and runs the opposite way on central
@@ -64,15 +100,19 @@ sys.path.insert(0, HERE)
 
 import trigger_test as tt  # noqa: E402
 
-# The six cells arXiv:2510.22670 publishes for the usage-scenario field's
+# The six cells arXiv:2602.05366 publishes for the usage-scenario field's
 # weight, as a multiple of the description field's. Recorded here as the
 # literature's own range rather than as a recommendation, because the paper's
-# own conclusion is that no constant is right.
+# own conclusion is that no constant is right. The row these come from is
+# Table 5's `examples`, which that paper glosses as its usage-scenario field
+# and which shares a name with the field the OTHER paper's ablation drops. See
+# the second correction in this module's docstring: the ambiguity rides along
+# with the number and is not resolved by either paper.
 LIT_CELLS = (0.269, 1.363)
 LIT_MEDIAN = 0.695
 LIT_BELOW_DESCRIPTION = 5          # of six cells
-LIT_WEIGHT_PAPER = "arXiv:2510.22670"
-LIT_PRESENCE_PAPER = "arXiv:2602.05366"
+LIT_WEIGHT_PAPER = "arXiv:2602.05366"
+LIT_PRESENCE_PAPER = "arXiv:2510.22670"
 
 # The 2026-09-30 length-bias experiment, held fixed so the decomposition is
 # the published one. The candidate, prompt and topic are the same; only the
@@ -120,8 +160,16 @@ def _bound_score(eng, boost):
         prompt_terms = set(tt.tokens(prompt))
         if not prompt_terms:
             return 0.0
+        # sorted(), because floating-point addition is not associative and a
+        # set's iteration order depends on PYTHONHASHSEED. Five runs of one arm
+        # gave two distinct values before this line, and in one of them two arms
+        # that should have tied disagreed. The instability was at 1e-16 and the
+        # digit this file is checked on sits at 1e-4, so no published number was
+        # ever wrong because of it; it is fixed because nothing was watching it
+        # and the next comparison might be closer. Found by the research seat,
+        # 2026-11-02.
         total = matched = 0.0
-        for t in prompt_terms:
+        for t in sorted(prompt_terms):
             w = eng.idf.get(t, eng.default_idf)
             total += w
             if t in body:
@@ -181,7 +229,10 @@ def boosted_share(eng, keys, weighted):
             inside = sum(eng.idf.get(t, eng.default_idf) for t in body & act)
         else:
             total, inside = len(body), len(body & act)
-        shares[k] = round(inside / total, 4) if total else 0.0
+        # Exact, not rounded. measure() means these, and rounding each candidate
+        # before meaning them is what made the published idf-mass ratio 0.8538
+        # where the true value is 0.8539. Rounding happens once, at print.
+        shares[k] = (inside / total) if total else 0.0
     return shares
 
 
@@ -233,12 +284,13 @@ def measure(skills_dir, decoys_path):
             "library_boosted_share": round(lib_mean, 4),
             "panel_boosted_share": round(panel_mean, 4),
             "ratio": round(lib_mean / panel_mean, 4) if panel_mean else None,
+            "ratio_exact": (lib_mean / panel_mean) if panel_mean else None,
             "trips_tolerance": not (
                 1 / tt.PANEL_BOOST_TOLERANCE
                 <= (lib_mean / panel_mean if panel_mean else 1)
                 <= tt.PANEL_BOOST_TOLERANCE),
-            "per_skill": lib_shares,
-            "per_decoy": panel_shares,
+            "per_skill": {k: round(v, 4) for k, v in lib_shares.items()},
+            "per_decoy": {k: round(v, 4) for k, v in panel_shares.items()},
         }
 
     # ---- three arms, compared on every field the verdict reads -----------
@@ -356,6 +408,13 @@ def render(r):
              f"description's,")
     L.append(f"    median {lit['weight_median']}x, below the description in "
              f"{lit['cells_below_description']} of {lit['cells_total']} cells.")
+    L.append("    That row is Table 5's `examples`, which this paper calls its "
+             "usage-scenario")
+    L.append("    field and which shares a name with the field the other "
+             "paper's ablation")
+    L.append("    DROPS. The identification is the step the comparison rests "
+             "on, and neither")
+    L.append("    paper settles it.")
     L.append(f"  ours: {r['use_when_boost_shipped']}x, which is "
              f"{'ABOVE' if lit['ours_is_above_description'] else 'below'} the "
              f"description and "

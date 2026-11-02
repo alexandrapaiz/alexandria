@@ -1,5 +1,21 @@
 # USE_WHEN_BOOST against the two papers that measure the field
 
+> **Corrected 2026-11-02, after this file was written.** Three things in the
+> text below changed and the file is amended in place rather than reissued,
+> because it is the citation receipt the coefficient decision rests on.
+> (1) The two arXiv identifiers were transposed throughout, consistently, here
+> and in `use_when_evidence.py` and in all three reading-queue lines. The claim
+> content was right and only the ids moved. 2510.22670 is "Tools are
+> under-documented" (the add-one/one-out ablation, Tool-DE, the 41.6 percent
+> audit) and 2602.05366 is "Multi-Field Tool Retrieval" (Table 5, the learned
+> field weights). Caught by the research seat, confirmed here by fetching both.
+> (2) The 0.269x to 1.363x range is Table 5's `examples` row over its
+> `description` row. That table has no when-to-use row at all, and whether
+> `examples` is our field is now an open queue line rather than an assumption.
+> (3) The idf-mass ratio was computed by rounding each candidate's share and
+> then meaning the rounded values. It is now exact until print, which moves it
+> by one in the fourth decimal.
+
 2026-11-02, skill seat. Instrument `skills/_validation/use_when_evidence.py`,
 machine-readable bundle `2026-11-02-use-when-coefficient.json`, console form
 `.txt`. No database and no model call: every number is derived from this
@@ -20,13 +36,13 @@ runs against the coefficient rather than for it.
 
 ## What the literature says
 
-`arXiv:2602.05366` ablates a when-to-use field add-one and one-out on a dense
+`arXiv:2510.22670` ablates a when-to-use field add-one and one-out on a dense
 and a sparse retriever over thirty-five unified datasets, and keeps it. The
 field its authors drop is example-usage. So having the clause is supported.
 Read its section 4.1 and not its 2.2, which carries a sentence naming the wrong
 field that reverses the finding.
 
-`arXiv:2510.22670` is the only source either seat can find that measures a
+`arXiv:2602.05366` is the only source either seat can find that measures a
 weight on the field rather than its presence. It learns per-field weights and
 publishes them: the usage-scenario field runs 0.269x to 1.363x of the
 description field's weight across six dataset and retriever cells, median
@@ -134,7 +150,7 @@ constant.
 Our own suite cannot choose the number, because the only arm in which it
 responds is the arm carrying the confound.
 
-And `arXiv:2510.22670` lands the same warning independently. The variant in
+And `arXiv:2602.05366` lands the same warning independently. The variant in
 that paper which applies field weights to raw unstandardized documentation is
 the one that fluctuates, and its conclusion is that a unified schema is the
 prerequisite. A positional slice of free prose is that variant, and the 0.84x

@@ -166,12 +166,12 @@ PANEL_TERMSET_TOLERANCE = 1.20  # library:decoy mean distinct-stem ratio
 # against it (2026-11-02, skills/_validation/use_when_evidence.py, after the
 # research seat answered this seat's queued question by reading both ids in
 # full):
-#   arXiv:2602.05366 ablates a when-to-use field add-one and one-out on a
+#   arXiv:2510.22670 ablates a when-to-use field add-one and one-out on a
 #     dense and a sparse retriever over thirty-five unified datasets and keeps
 #     it; the field its authors drop is example-usage. HAVING the clause is
 #     supported. Its section 4.1 is the finding, and its 2.2 carries a
 #     sentence naming the wrong field that reverses it.
-#   arXiv:2510.22670 is the only source that measures a WEIGHT on the field
+#   arXiv:2602.05366 is the only source that measures a WEIGHT on the field
 #     rather than its presence. The usage-scenario field's learned weight runs
 #     0.269x to 1.363x of the description field's across six dataset and
 #     retriever cells, median 0.695x, and sits BELOW the description in five
@@ -185,7 +185,7 @@ PANEL_TERMSET_TOLERANCE = 1.20  # library:decoy mean distinct-stem ratio
 # arm at 0.5x and above scores exactly 60. All of the suite's apparent
 # preference for a high coefficient is the 0.84x asymmetry, so tuning 1.25 on
 # the pass rate would be tuning on a confound, and the prerequisite repair is
-# the panel rewrite already queued as decoy panel v3. arXiv:2510.22670 lands
+# the panel rewrite already queued as decoy panel v3. arXiv:2602.05366 lands
 # the same warning independently: the variant that applies field weights to
 # raw unstandardized documentation is the one that fluctuates, and its
 # conclusion is that a unified schema is the prerequisite. A positional slice
