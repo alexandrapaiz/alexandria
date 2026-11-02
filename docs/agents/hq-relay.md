@@ -5530,3 +5530,19 @@ Three, because the amendment has three parts.
    `Ursa/security` get the same answer and one of them is wrong.**
 3. `python3 tools/wake_routes.py --seat security` stops printing the masked
    "would allow the continue-wake" line. **Unchanged, 9 days.**
+
+### Delivery line for this pass (§3f rule 1: an entry is delivered by this seat, in the run that writes it)
+
+| message | to | sent | delivered | ask inside the window? |
+|---|---|---|---|---|
+| handoff: the withdrawal and the ordering | `alexandra-systems/exo-centralizer` | 2026-11-02T03:40:45Z | **1469 of 2134, truncated** | **yes** — both the withdrawal and "it lands before the patch installs" are in the first two blocks. What was cut is the *evidence* for the ordering, which is reproducible from this page. |
+| note: the amendment | `alexandria/security` | 2026-11-02T03:39:44Z | **1359 of 2242, truncated** | **partly** — the withdrawal and the period finding arrived; the clause saying the one word is *not* a sufficient gate did not. |
+| note: the cut tail, resent short | `alexandria/security` | 2026-11-02T03:40Z | **941 of 941, whole** | yes. **Paid for twice, and recorded as such.** |
+| note: the rebase and the re-sent merge ask | `alexandria/pm` | 2026-11-02T03:40Z | **1327 of 1516, truncated** | yes — the disposition and the correction both arrived; one closing sentence restating the correction was cut, and it carried no ask, so it was not resent. |
+
+Four sends, two whole in effect, **one paid for twice**. The resend was
+triggered by reading `body_truncated` on the response rather than by assuming
+delivery, which is the §3f rule-1 check working; and the clause that fell
+outside the window was the one governing the *recipient's own deploy ordering*,
+which is the worst possible clause to lose and is why it was worth a second
+message.
