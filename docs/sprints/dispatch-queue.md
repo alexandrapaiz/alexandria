@@ -1,109 +1,127 @@
-# Dispatch queue — 2026-10-26, ~14:12 UTC (hook pass, resuming the 11:05 cron standup cut off at turn 49)
+# Dispatch queue — 2026-11-02, ~01:15 UTC (Monday ceremony, PR #683)
 
-**Collides with #531 on this file.** Today's Monday ceremony (#531, opened
-00:34 UTC, still open) last wrote this file at 00:34. At least nine PM
-standup/message passes have run since, so this version supersedes #531's
-copy of this one file. #531 also carries the sprint, the org chart, the
-ledger grooming and the pending-table archive, none of which this pass
-touches or duplicates. Expected merge order: either works first; whichever
-lands second takes a one-file conflict here and keeps this pass's numbers,
-since they are newer.
-
-## Delivery health — the red finding, first
-
-**Press is now missing an issue.** `tools/delivery_health.py`, run fresh at
-14:10 UTC: the newest issue is still `2026-W42` (2026-10-19) and `2026-W43`
-has now ended with nothing published. Root cause is unchanged from
-yesterday and the day before: Modal workspace `ac-5DsaR3hWSUxqyNoGYiowja` has
-been disabled since 2026-10-23, which takes `compute`, `pipeline`, `mcp`,
-and `deploy` down together (deploy lag now 2.1 to 10.8 days across the five
-apps). `checkout` fails separately (`POLAR_CHECKOUT_*` unset). `payments` is
-unknown (`payment_exceptions` table missing). `site` and `archive` read `ok`
-against the same 2026-W42 record. Every one of these is owner-only
-(re-enable the Modal workspace, set the three Polar env vars, run the schema
-migration) and every one has already been asked for in prior passes and in
-#531's open PR. Not re-asking again here; naming the new consequence
-(a missed weekly issue) is what changed since the last report.
-
-## Queue gauge, four numbers
-
-1. **`main`'s age and check state.** Tip is `72d1c52` (merge of #571),
-   about 3h19m old at this writing (merged 2026-10-26T10:53:05Z). The newest
-   `checks.yml` run reported against `branch=main` is green (success,
-   2026-10-26T10:33:58Z). No 48-hour stall.
-2. **Open pull requests, total, and since the last merge.** 16 open, 3 of
-   them opened since the last merge to `main` (#573 this seat's own,
-   #574 engineer, #575 exo — all three resuming their own cut-off runs
-   under the same capacity-return wake as this pass).
-3. **Conversion, 7 days.** 99 merged / 179 opened (0.553), measured
-   2026-10-26T14:06Z.
-4. **Deepest open chain.** This seat's own #483, thirteenth in its chain
-   (depth 13, `#480` the immediate predecessor), unchanged since it opened
-   2026-10-24T21:24Z, two days ago. **This seat is blocked on merges**, and
-   has been for two days on this one branch specifically.
-
-## Cap ratio
-
-Board reaches back only to 2026-10-26T06:22:00Z (~7h50m before this pass),
-short of the 24-hour floor, so this reads only what's visible in that
-window, not a full 24 hours.
-
-- **writer 151/150 (101%) — over cap.** Hit mid-pass at 09:02:46Z on PR
-  #560 (depth-3 chain, #544 to #550 to #560). Third instance of this exact
-  fingerprint; filed as
-  `INC-2026-10-26-writer-hit-error-max-turns-a-third-time-at-the-same-150-cap`
-  in this pull request.
-- **engineer 142/200 (71%)**, PR #566, now merged. Above the 70% line named
-  in this section; no action proposed, reporting per the standing rule.
-- **pm (this seat) 97/300 (32%)**, PR #564.
-- **frontend 124/600 (21%)**, PR #559.
-- No reading this window on research, market, security, skill, or okr (no
-  runs recorded in the visible board window).
+Supersedes the copy of this file carried in #531 (closed, superseded by
+#683). No 48-hour stall: `main` merged 1 minute ago at the time of this
+reading. Full numbers below.
 
 ## Run health
 
-Two session-limit clusters since the last standup, both the provider's own
-`"You've hit your session limit · resets Npm/am (UTC)"` refusal, the same
-known class already carried in yesterday's report: one at 06:22 UTC (reset
-09:00), one spanning 10:33 to 12:20 UTC (reset 14:00, still the active
-window at this writing). Within the second cluster: `pm` (this seat) five
-one-turn deaths with no PR (11:05 cron landed PR #573 at 49 turns before
-the limit hit; 11:15x3 and 12:02, 12:20 were clean one-turn deaths),
-`engineer` two (10:33, 11:15, the first with PR #569 open), `exo` one
-(12:01). Nothing lost: every run that had shipped anything did so before
-the cutoff (ship-first held), and this pass is itself the recovery of the
-one PM run that got cut mid-session (11:05 cron, turn 49, PR #573).
+**Fleet.** Board run record, 25 rows, back to 2026-11-01T16:00:28Z (8h47m,
+short of the 24h floor — noting it per the standing caution rather than
+treating 25 rows as 24 hours). Non-successes in that window, all already
+registered:
 
-`gh run list --limit 30`: all green since the last report (`checks` and
-`deploy-main`), oldest row in the visible window 2026-10-26T06:04:48Z.
+- `engineer` (window:cron, 23:06:00Z) and `security` (window:hook,
+  23:04:44Z), both `exit 124` (timeout) — both already have open draft PRs
+  from the same runs (#659, and #657, now merged by this ceremony), ship-
+  first held, nothing lost. Same class #673 already named; not re-filed.
+- `pm` x2 and `writer` x1, all `exit 1, turns 1`, 16:00-18:20Z,
+  `"You've hit your weekly limit"` — the third Sunday weekly-limit outage,
+  already filed by exo's #656 and covered in #661's standup. Not re-filed.
 
-## Pending items a day past their date
+`gh run list --limit 30`: all green except one `checks` failure on a
+skill branch at 00:01:44Z that was already green a minute later on the
+same branch (the skill seat's own report named this). `checks.yml` on
+`branch=main`: the newest *completed* run reports `success` at
+`2026-11-02T00:28:33Z` (for the #674 merge); the #657 merge that landed
+during this ceremony (`729b0d58`, ~1 minute old) had not yet produced a
+completed `checks` run at the time of this reading — not reported as
+green or red, reported as pending.
 
-Not re-checked this pass. `docs/sprints/pending.md` on `main` is the stale
-2026-10-24 table; #531 (open) already carries this pass's archive of it
-(`docs/sprints/pending/archive-to-2026-10-26.md`) and a fresh empty state
-table, per the one-ceremony-writer rule in the charter. This standup pass
-does not touch that file.
+**Cap ratio** (24h-or-since-last-standup floor; board window was 8h47m,
+so this is the ratio over that shorter window, not a full day):
 
-## Worth your attention, not a dispatch proposal
+| Seat | Turns / live cap | Ratio |
+|---|---|---|
+| `exo` | 165 / 200 | **82.5%** |
+| `writer` | 163 / 225 | **72.4%** |
+| `research` | 113 / 180 | 62.8% |
+| `skill` | 150 / 270 | 55.6% |
+| `pm` | 115 / 300 | 38.3% |
+| `okr` | 37 / 160 | 23.1% |
 
-**Market's weekly brief is 10 days old.** Last brief `docs/market/briefs/2026-10-16.md`,
-cadence is Fridays at 11:00 UTC (`0 11 * * 5`); the 2026-10-23 slot produced
-no brief and no PR under `alexandria-market/*`. Not proposed as a dispatch
-below because the evidence is a gap rather than a ruling, and this pass
-cannot tell from here whether the slot fired and found nothing or did not
-fire at all.
+Caps read live this run from each seat's `agent.toml`
+(`exo` 200, `engineer` 300, `pm` 300, `writer` 225, `skill` 270, `research`
+180, `okr` 160, `security` 250 — several raised since the 2026-10-24
+reading this charter's §4 cites; writer's 150->225 raise in particular is
+now confirmed live, closing a pending-tracker item below). Not proposing a
+number for either flagged seat, per charter; reporting the ratio and
+naming the seat.
 
-## Proposed dispatches
+## Delivery health
 
-None. `PM_DISPATCH_ENABLED` reads empty in this run's environment, so
-nothing here could fire even if proposed. Beyond that: every seat this
-charter allows dispatching (engineer, writer, frontend, skill) already has
-an open pull request from its own last run (#574, #560, #559, #535), which
-is the hard stop in section 5. Of the remainder, research's Monday slot
-(16:30 UTC) has not fired yet today and okr/security are not due until
-2026-11-01. Nothing here clears the bar for a proposal.
+Fresh `tools/delivery_health.py` run this ceremony, reading the artifact
+rather than the scheduler:
+
+- **ok**: `compute` (Modal workspace restored — it was the headline red
+  finding in the last two ceremonies and is resolved as of this reading),
+  `pipeline`, `loop`, `mcp`.
+- **FAILING**: `press` (newest issue still `2026-W42`; `2026-W43` ended
+  with nothing sent — one issue missing, not caught up since compute came
+  back), `checkout` (Polar env vars unset, owner-only), `deploy` (`ingest`
+  16.4 days behind `main`, `interpret`/`triage` 8.5 days), `site` and
+  `archive` (both read through the same missing `2026-W43`/`2026-W41` gap).
+- **unknown**: `payments` (`payment_exceptions` table missing; one schema
+  migration closes it).
+
+Sprint-2026-11-02's first three backlog items exist because of this
+reading: catch up the backfill, the press, and the deploy lag, now that
+the one blocker common to all three (Modal) is gone.
+
+## Queue gauge, four numbers
+
+1. **`main`'s age and check state.** Tip `729b0d58` (merge of #657, this
+   ceremony's own merge), ~1 minute old at this writing. Newest
+   *completed* `checks.yml` run against `branch=main`: `success`,
+   2026-11-02T00:28:33Z (one merge behind; this merge's own check run had
+   not completed at reading time).
+2. **Open pull requests: 33 total, 0 opened since the last merge.**
+3. **Conversion, 7 days: 85 merged / 153 opened (0.556).**
+4. **Deepest open chain: #483, depth 13**, this seat's own, now 8.3 days
+   old, unchanged since the last three readings.
+
+## Pending items past their date
+
+`docs/sprints/pending.md` was fully rebuilt this ceremony from live
+evidence (not carried from #531's week-old copy), so nothing in it is
+stale as of this writing. Two items worth naming here because they carry
+a clock: the two writer copy-questions asks (posted 2026-11-02T00:32Z,
+proceed on silence 2026-11-04T00:32Z) and the ledger's proposed-entry
+policy question (asked 2026-10-26, no clock, unresolved, now 636
+entries/478 aged instead of 552/387).
+
+## Dispatch queue
+
+`PM_DISPATCH_ENABLED` is empty in this run's environment, so nothing
+below is fired — proposed only, for the owner or a chair to copy.
+
+### 1. market — no brief in 17 days against a weekly cadence
+
+**Trigger.** `gh pr list`: market's last and only recent PR is #316,
+merged 2026-10-16T18:26:27Z. `docs/playbook.md`'s seat roster lists
+market's cadence as "weekly Fri." 17 days have passed with zero market
+output, longer than the gap any other active seat is currently carrying,
+and market has no open PR (so this is not the dispatch-hard-stop case).
+This ceremony's sprint-2026-11-02.md and the 2026-11-01 OKR check-in both
+read `docs/market/briefs/2026-10-16.md` as their newest input, which is
+now itself 17 days stale.
+
+**Cost of skipping it today.** Every planning input that cites "the
+newest market brief" keeps citing the same 2026-10-16 file for a third
+and fourth cycle, and O2's positioning question (the $20/month paid spine)
+goes another week with no fresh outside read.
+
+**Dispatch.**
+
+```bash
+gh workflow run agent-market.yml \
+  -f owner_instructions='Produce this weeks market brief (landscape,
+demand, positioning). The last brief is docs/market/briefs/2026-10-16.md,
+17 days old. Read the 2026-11-01 OKR check-in (docs/okrs/okrs-2026-Q4.md)
+for what the quarter still needs measured on the skills-as-product
+objective before scoping this weeks read.'
+```
 
 ## Dispatched by the PM
 
-None this pass.
+None this pass (`PM_DISPATCH_ENABLED` empty).

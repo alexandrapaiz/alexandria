@@ -26,9 +26,18 @@ remembering must live in a file.
 
 - **GitHub repository** (public = unlimited free Actions minutes;
   private = 2,000/month).
-- **GitHub Actions** as the agent runtime: each seat a workflow with
+- **GitHub Actions** as the agent runtime, until HQ decision 056
+  (2026-10-17, corrected here 2026-11-02 — this bullet named the
+  pre-decision design for three weeks). Each seat still a workflow with
   `schedule:` cron plus `workflow_dispatch` carrying an
-  `owner_instructions` input for ad-hoc runs with live orders.
+  `owner_instructions` input for ad-hoc runs with live orders, **but the
+  schedule that actually fires a run now lives on the host**, in
+  `runtime/agents/<project>/<seat>/agent.toml` (`cron`, `model`,
+  `max_turns`), read live with `gh api
+  repos/alexandrapaiz/alexandra-systems/contents/runtime/agents/<project>/<seat>/agent.toml`.
+  GitHub Actions remains the mechanism for `checks.yml` and
+  `deploy-main.yml` and for every seat's git push and PR, which still run
+  on this repository's runners; it is no longer the clock.
 - **anthropics/claude-code-action@v1** runs Claude Code headlessly on
   the owner's existing subscription: `claude setup-token` once, stored
   as the `CLAUDE_CODE_OAUTH_TOKEN` repo secret (set it via
@@ -89,6 +98,25 @@ remembering must live in a file.
   is `true`. It is still her off switch, and every fired dispatch is
   logged for the exo seat to audit. See "Presence" below for why this
   exists.
+- **Merge authority** (company standard pm.md §10/§21, active since
+  2026-10-05, corrected here 2026-10-26): merging is not the owner's in
+  the ordinary course. Three tiers — Tier A (a seat self-merges its own
+  knowledge-surface PR), Tier B (the PM merges everything else in its own
+  company, including every other seat's PR, but never its own), Tier C
+  (a change to a seat's own authority, money, accounts, or secrets —
+  hers, and it is read from the diff's content, never from a file path:
+  `prompts/` is shorthand for "charter" and not for "the owner's," so a
+  charter-prose fix that moves no authority is Tier B even though it
+  touches `prompts/`). The portable artifact is the tool, not the rule:
+  a script that reads a diff and answers `clear` / `reserved` /
+  `undecided` against four fixed questions (does this move a seat's own
+  authority, spend money, open an account, or touch a secret) is cheaper
+  to get right once than to re-derive from a path list every time, and it
+  fails closed (`undecided` is non-zero) rather than guessing. A PM's own
+  Tier B pull request still waits for the owner or a chair — a seat that
+  can merge itself has no cadence — so a fast-waking PM will still pile
+  up its own small PRs faster than a human clears them; that is a known,
+  recorded cost of this pattern, not a bug to route around locally.
 - **The ledger** (docs/ideas.md): every idea with its trigger, first
   step, cost, and a status only the owner moves (proposed / accepted /
   rejected / built / urgent).
