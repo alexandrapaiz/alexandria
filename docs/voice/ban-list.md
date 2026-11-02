@@ -4504,3 +4504,67 @@ gap that the same collision had left empty (incident 25).
     percent of a domain covered 1.6 percent; both now fail. Quoting the
     figure was the instruction this seat was given, and printing it is how
     the instruction gets honoured.
+
+154. The count printed over a subject that was never found, which reads as a
+    finding and is a report that the search missed.
+    Not a phrase, and like 146, 150 and 151 it bans a reading. Entry 150 bans
+    an empty stdout read as a pass. This is its louder half, and the louder
+    half is worse: a line that prints a number. Silence has no reader and
+    nothing to disagree with, so 150's instances were found by somebody
+    noticing nothing was there. A zero has a reader, the reader takes it for
+    a measurement, and nobody goes looking.
+    The instances are the engineer seat's, measured on 2026-11-02 and
+    re-measured on `main` by this seat before being written here, because the
+    repair is on that seat's branch and these are the lines a reader gets
+    today.
+    ```
+    $ python3 tools/panel_validator.py --skill no-such-skill-xyz
+    0 skills reviewed, 0 failing, 0 not fully measurable
+    [exit 0]
+
+    $ python3 tools/corrections.py --skill no-such-skill-xyz
+    no-such-skill-xyz: 0 correction(s) on record became 0 cluster(s)
+    [exit 0]
+
+    $ python3 tools/ledger.py --status no-such-status-xyz
+    0 entries at status 'no-such-status-xyz'.
+    [exit 0]
+    ```
+    The first is the one that matters, and the sender's reason for saying so
+    is the reason it is in this file: the validator's verdicts gate
+    promotion, so a clean sheet about a skill it never located is the one
+    answer it must not be able to give.
+    Now the part that is this seat's and not the engineer seat's. **All three
+    lines already state their own emptiness, and it does not help.** "0 skills
+    reviewed, 0 failing" says in its first clause that nothing was reviewed
+    and in its second that nothing failed, and the second clause is the one
+    that reads as the verdict, because a count of failures is what the caller
+    came for. So this is not repaired by making the line more complete. A
+    sentence that carries both its refutation and its verdict is read for its
+    verdict every time.
+    The third line is worse than it looks for a reason the other two do not
+    share. It volunteers that 62 further entries carry no readable status,
+    which invites the reader to conclude that the filter worked and the data
+    is thin. A true sentence offered in the place where the explanation goes
+    will be taken as the explanation.
+    The test, and it is one question. Could a run that FOUND the subject and
+    found nothing wrong print this same line? If it could, a run that did not
+    find the subject must not be allowed to print it. The repair is ordering
+    and not detail: name the subject's absence first, or print no count at
+    all. "no skill named `no-such-skill-xyz` in the library, so nothing was
+    reviewed" cannot be mistaken for a verdict, and it is shorter than the
+    line it replaces.
+    Why this file rather than the incident register. The exit code is the
+    mechanism and the engineer seat has it right, including the choice of 4
+    over this seat's proposed 2, because 2 was already spent on the board
+    refusing or being unreachable. An exit code repairs the caller. It does
+    not touch the sentence, and the reader of a promotion verdict is a person
+    or a model reading the words. Both halves are needed and only one of them
+    is built.
+    The second ending is not in the generator and not in this seat's gate,
+    which is the honest version rather than the tidy one. No edition can
+    carry this shape, and `tools/` is not this seat's surface, so the rule is
+    stated here and the ask for the shared module to carry the sentence as
+    well as the code is in docs/ideas.md under the engineer seat's name. A
+    ban list entry whose enforcement sits in another seat's lane says so
+    rather than naming a gate this seat did not write.
