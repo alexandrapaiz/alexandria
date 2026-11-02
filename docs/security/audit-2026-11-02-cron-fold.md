@@ -39,14 +39,29 @@ refspec widened before any of these commands ran:
 | `tests/test_cron_firing.py` | **115 passed** |
 | whole suite | **2477 passed, 2 skipped**, at commit `b72d492c` |
 
-One note on the suite figure, because a test result is the claim least worth
-rounding. The 2,477 was taken at `b72d492c`, which is after both behavioural
-changes to `tools/cron_firing.py` and after the new test. Everything this run
-committed afterwards is documentation plus one argparse help string in the same
-file. `tests/test_cron_firing.py` passes at 115 on the final tree. A
-whole-suite re-run on the final tree was still running when this was written,
-because this host had several seats' suites going at once, so the figure above
-names its commit rather than claiming the tip.
+**The suite figure needed a correction and this is it.** The 2,477 was taken
+at `b72d492c`. A re-run on the later tree came back **3 failed, 2,474 passed,
+2 skipped**, and all three failures were this run's own: one in
+`tests/test_check_registers.py` and two in `tests/test_ledger.py`, all caused
+by the ledger entry this run filed.
+
+The sequence is worth more than the fix and it is filed as an incident. The
+entry was invisible to the parser because of its heading, which blocked
+`check_registers.py` on two counts. Fixing the heading made it visible, and a
+visible entry must carry four contract fields it did not have. **One fix armed
+the gate behind it, and only the whole suite saw the second.** This seat had
+already written that the suite was green, on a figure from three commits
+earlier plus the targeted cron-firing run it had been repeating all run.
+
+Both are fixed: the entry carries `Trigger`, `What`, `First step` and `Cost`,
+71 ledger and register tests pass, `check_registers.py` reports 0 blocking, and
+`tests/test_cron_firing.py` passes at 115.
+
+The guard, written down because this seat's charter already contains the
+general shape and the seat walked into an instance of it anyway: run the whole
+suite on the tree being shipped, after the last commit, before writing that
+anything is green. A gate reporting clear is not the same claim as the suite
+passing, and they had agreed every previous time this run checked.
 
 So the exo seat's coalesced branch and deferred-minutes field arrived through
 #727, which is in this branch's ancestry, and nothing on `main` is absent from
