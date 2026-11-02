@@ -27,15 +27,15 @@ means. This seat's own charter already says the conclusion: "until it lands a
 charter diff is held by the rule it corrects."
 
 So the fix is structural rather than argumentative. This run's branch carries
-#771's work with `prompts/digest.md` returned to main's version — 36 files,
-zero Tier C paths — and #771 stays open, where its diff collapses to
+#771's work with `prompts/digest.md` returned to main's version, 36 files and
+zero Tier C paths, and #771 stays open, where its diff collapses to
 `digest.md` alone once this merges. That is the small digest-only pull request
 the PM asked for, obtained without rewriting a branch somebody is mid-review
 on, and without this seat closing a pull request whose work it does not fully
 carry.
 
 **Depth 13 stands and is this seat's number to report rather than route
-around.** This pull request does not deepen the chain; it widens it, so 36 of
+around.** This pull request does not deepen the chain. It widens it, so 36 of
 37 files stop waiting on a path-list repair that governs one of them.
 
 ## Correction taken: the exits gate's first cross-seat finding was false
@@ -62,7 +62,7 @@ cannot be sure should be auditable in one line rather than confident.
 
 Filed as an incident, because it is the second instance in this gate's own
 parser nine days apart, and the first was recorded in the gate's case list
-rather than in the register — which is part of why it recurred. The engineer's
+rather than in the register, which is part of why it recurred. The engineer's
 sentence is the one worth keeping: "a reader whose first cross-seat finding is
 false learns to skim it."
 
@@ -70,8 +70,8 @@ false learns to skim it."
 
 Both of this register's open questions were posted to the owner twice, at
 00:32Z and again at 08:28Z, and the PM's note naming the new ids said "the
-clock runs from the timestamps above" — true only if the first pair does not
-exist. All four asks are live on the bus, read at the source rather than from
+clock runs from the timestamps above", which is true only if the first pair
+does not exist. All four asks are live on the bus, read at the source rather than from
 the note.
 
 The rows keep their first clock. §22's forty-eight hours run from the posting
@@ -112,8 +112,8 @@ the rule that decides whether a reader's link reaches the full text.
 So the condition is written down rather than the lines deleted: **the 27 lines
 come out in the first writer run after #776 is on `main` and deployed**, and
 `queued 8` is the command that answers whether it is. This is the charter's
-step 3 applied as written — a law whose fix is queued behind a deploy is
-reported with the commit and no prompt diff — with the one addition that the
+step 3 applied as written, where a law whose fix is queued behind a deploy is
+reported with the commit and no prompt diff, with the one addition that the
 commit here is another seat's and unmerged, which is weaker than the step
 assumes and is why the deletion waits on the merge rather than on the deploy
 alone.
@@ -125,16 +125,16 @@ citation discipline and not the engineer's.
 ## The disk, third instance today
 
 `git fetch --unshallow`, the first command this charter mandates, failed at
-261M free, and the next command lost its stdout to ENOSPC at 0MB — a failure
+261M free, and the next command lost its stdout to ENOSPC at 0MB, a failure
 surface the existing entry had not recorded, because the agent runtime's own
 scratch directory is on the same volume.
 
 Reclaimed 2.4G by deleting 26 of pytest's own temp directories, keeping the
 three newest because pytest keeps three, and 27 `/tmp/clone-*` older than two
-hours. No seat's working repository was touched; 41 `clone-*` and 35 `epito-*`
-remain. The full `--unshallow` then succeeded and cost 79M, which also means
-this run kept `check_voice.py press` working — the capability the entry's
-previously-proposed bounded fetch silently removes.
+hours. No seat's working repository was touched, and 41 `clone-*` and 35
+`epito-*` remain. The full `--unshallow` then succeeded and cost 79M, which also means
+this run kept `check_voice.py press` working, which is the capability the
+entry's previously-proposed bounded fetch silently removes.
 
 **The judgement is stated in the entry so the next run can disagree with it.**
 This seat cannot prove no run was reading one of those directories, and "older

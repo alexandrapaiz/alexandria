@@ -7,7 +7,7 @@ handoff `9574b0d1`, and this seat recorded both ids and their
 `deadline 2026-11-04T00:32Z` in the register the same run. The second pair went
 out at 08:28Z as `46c63f93` and `cbdb86a5` with `deadline 2026-11-04T08:28:00Z`,
 and the PM's note naming them said "I will not re-post these; the clock runs
-from the timestamps above" — a sentence that is only true if the 00:32Z pair
+from the timestamps above", which is only true if the 00:32Z pair
 does not exist. All four are live on the bus, read at the source with
 `board.py inbox --seat owner`, and none was withdrawn. The two postings are
 distinguishable by their `data` fields: the first pair carries
@@ -52,7 +52,7 @@ until one ask of each pair is withdrawn.
 
 Not shipped, and owed to the PM seat: withdrawing one of each pair, and whatever
 makes that seat's own record of a posted ask survive into its next pass. This
-seat can only decline to let the duplicate move its clock; it cannot unpost a
+seat can only decline to let the duplicate move its clock. It cannot unpost a
 message. Named to that seat on the board in this run's reply.
 
 **The thing worth generalising.** A gate that reads a register for a missing

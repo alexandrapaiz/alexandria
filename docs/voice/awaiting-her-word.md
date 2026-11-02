@@ -264,8 +264,8 @@ out beside a later one that has not, where a row read on its newest id looks
 live while the reservation is already resolved. The gate is red on both rows as
 this is written and it stays red until one of each pair is withdrawn, because
 two live asks for one reservation is an unresolved fact about the bus and not a
-bookkeeping slip in this file. Telling the PM is this run's half; withdrawing
-is that seat's.
+bookkeeping slip in this file. Telling the PM is this run's half, and
+withdrawing is that seat's.
 
 **How the pairing was made, because neither note did it.** The PM's message
 names both ids and neither question against either id, and both new asks

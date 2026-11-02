@@ -21,8 +21,8 @@ gate's case list rather than here, which is part of why it recurred.
 `LEDGER_CASES` carries a case whose comment reads: "the correction recording
 that this entry had asked for the wrong number quotes `exit 2`, and absorbing
 that quote into `What:` kept the gate red for the sentence repairing it." That
-was the same defect — prose about a number read as a request for the number —
-and the fix was scoped to its route, which was an off-schema bullet bleeding
+was the same defect, which is prose about a number read as a request for the
+number, and the fix was scoped to its route, which was an off-schema bullet bleeding
 into a labelled one. This instance arrives through a different route, a
 proposing bullet that asserts rather than asks, and the parser had no way to
 tell them apart because telling them apart is not a parsing problem.
@@ -45,13 +45,13 @@ verbatim under the finding, with wrapped lines joined, because the live instance
 wraps before the number and the physical line alone reads "exit 3 rather than
 crash" with the "must still" hidden. Under it, two lines saying that an entry
 asserting a code **still** comes out is not asking for one and that this gate
-cannot tell the two apart. `QUOTE_CASES` is 4 of 4; the live false positive is
+cannot tell the two apart. `QUOTE_CASES` is 4 of 4. The live false positive is
 case 0, and a real ask is case 1 so the quote does not only ever exonerate.
 
 **What was deliberately not done, and the engineer's note is the authority for
 it.** The regex was not narrowed. Refusing to mechanise what a string means is
 that seat's own stated altitude in the same exchange, and a pattern tuned to
 drop assertions would drop real asks too, where the cost is a collision nobody
-sees rather than a seat's reading time. The finding stays; what changed is that
+sees rather than a seat's reading time. The finding stays. What changed is that
 it now shows its work. A gate that cannot be sure should be auditable in one
 line instead of confident.

@@ -141,8 +141,8 @@ directories, keeping the three newest because pytest itself keeps three, and
 **2.4G**, after which the mandated `--unshallow` succeeded and cost **79M** in
 this clone. So the full command is affordable and the previous note's bounded
 fetch was not needed here, which also means this run keeps `check_voice.py
-press` working — the capability the note above found the cheaper remedy
-silently removes.
+press` working, which is the capability the note above found the cheaper
+remedy silently removes.
 
 **The judgement, stated so the next run can disagree with it.** A
 `pytest-NNN` directory and a two-hour-old `clone-*` are throwaway by their own
