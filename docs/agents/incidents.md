@@ -24092,6 +24092,114 @@ seat under ADR-22 and this seat's charter has it proposing targets, not files.
 
 Ban list checked on this entry.
 
+## INC-2026-11-01-relative-to-root-raised-on-a-served-edition-again - the gate crashed only once it had a finding, and the class was fixed in another pass on 2026-10-06 (2026-11-01, writer seat)
+
+**This is a repeat.** The same call in the same file raised on the same kind of
+artifact twenty-six days ago and the fix was written up in
+`INC-2026-10-06-shape-count-taken-by-eye`'s closing note: `check_voice.py
+measure` "called `relative_to(ROOT)` on every path, so the tool written to stop
+a figure drifting off its artifact raised an exception when pointed at the
+stored `digests` row the canon names as an artifact to grade." That pass got
+the `try/except` and a comment naming the class. Five other passes carry the
+same idiom inline. `standalone` does not, and `standalone` is the pass whose
+whole subject is an opening sentence on a served page.
+
+**What happened.** `check_voice.py standalone --live` fetches the three served
+editions into a temporary directory and then prints each hit as
+`path.relative_to(ROOT)`. A path in `/tmp` is not under the checkout, so the
+pass raised `ValueError` and exited non-zero with a traceback.
+
+```
+sentences whose subject is 'you' and whose verb is past  1
+Traceback (most recent call last):
+  ...
+ValueError: '/tmp/check_voice-editions-ji27p7tz/2026-W39.md' is not in the
+            subpath of '/tmp/epito-alexandria-writer-M81FpD'
+```
+
+**Why it survived the run that widened the pass, which is the part worth
+keeping.** `--live` was added on 2026-10-26 and that run DID meet this class
+and DID repair it, in the line directly above the crash. The pass prints where
+it read from, that line used to hardcode `site/content/issues`, and the run
+fixed it with a comment citing L-A47: "Where the paths came from, and not the
+directory this pass used to assume they came from ... Found by pointing it at a
+served edition." So the run pointed the pass at a served edition, saw the scope
+line was wrong, fixed the scope line, and left the two lines eight rows below
+that report a finding. The repair went to the sentence that describes the
+instrument and not to the sentence that carries its answer.
+
+**The failure mode is the ordering, not the exception.** A clean archive prints
+and exits zero. The traceback arrives only when the pass has something to say,
+so the pass is well-behaved in exactly the case where nobody needs it and fatal
+in the case it exists for. Six runs between 2026-10-26 and today read this
+register's re-confirmation commands and none of them is `standalone`, so
+nothing exercised the failing path against the product.
+
+**What it was hiding, and it is not small.** The live and stored `2026-W39`
+open on "You have spent the week watching agents get faster by thinking less at
+test time." Canon law 13 quotes the owner rejecting that sentence's near twin
+by name, writes the repair out verbatim, and says there is "no version of it
+this law allows and no material that earns an exception". It has been live
+thirty-eight days with no row in `awaiting-her-word.md`, because the two
+commands that re-confirm that register are `reading` and `claims` and neither
+reads an opening.
+
+**Fixed in this pull request.** `shown_path` is now a module-level helper with
+the class named in its docstring, and `standalone` uses it in both reporting
+loops. The candidate for the sentence is
+`docs/voice/w39-opening-2026-11-01.md` and the row is open.
+
+**What is not proposed.** Replacing the five remaining inline copies of the
+idiom. They work, and a sweep that touches five passes to prevent a sixth is a
+larger diff than this finding earns. The helper exists now, so the next pass
+that needs it has one to call.
+
+Ban list checked on this entry.
+
+## INC-2026-11-01-a-register-is-only-as-wide-as-the-commands-that-reconfirm-it - third instance, and this time the gate was failing out loud (2026-11-01, writer seat)
+
+**This is the third instance of one class** and the first two are in
+`docs/voice/awaiting-her-word.md` in its own words. Writer run 44, 2026-10-23:
+"`reading` was reading 61 surfaces and none of them was the archive, so it
+reported 4 failures. It now reads 63 and reports 5. The new row is the top one
+and it is the oldest defect in this table by four days, which is the argument
+for the row rather than against it: the line has been live for twenty-eight
+days and was never drafted, because nothing in the repository could see it."
+Writer run 58, 2026-10-26: a candidate for a surface the register had never
+held "registered nothing and passed, and the pass line read the same as it
+reads for a run that did the bookkeeping right."
+
+**The third instance.** `check_voice.py standalone` fails on
+`site/content/issues/2026-W39.md:6`, in the repository, with no `--live` flag
+and no network, and has been able to fail there since the pass was written.
+`awaiting-her-word.md` had no row for it. The register re-confirms itself with
+`reading` and `claims`, which read 63 surfaces for a reading-verb and 61 for an
+unhedged claim, and an opening sentence that tells a stranger what their week
+was is neither of those things.
+
+**So the class is now stated in its general form**, because three instances in
+nine days on one register is a property of the design rather than of any run.
+A register of live defects is exactly as wide as the union of the commands that
+re-confirm it, and nothing in the register says what that union is. Each of the
+three instances was found by a seat happening to run a command outside the
+union, which is luck, and the register's own closing section already says what
+it is honestly worth: "Two of the nine statuses above are checkable by command
+today ... and the rest is a seat's reading of a page on a date."
+
+**What would fix it, and it is one line rather than a new instrument.** The
+register's re-confirmation paragraph should name every pass that reads a live
+surface, and a run re-confirming the table should run that set rather than the
+two it currently names. The passes that qualify today are `reading`, `claims`,
+`standalone`, `devices`, `provenance`, `marks` and `measure`. Six of the seven
+were already written and five were never wired to this register.
+
+**Not fixed in this pull request, and the reason is scope rather than
+reluctance.** Naming the set is this seat's edit and is cheap. Running all
+seven and dispositioning whatever the five unwired ones report is a run's work
+on its own, and doing it badly would open rows nobody verified. This run opened
+the one row the one new failing pass found, named the rest, and left the sweep
+to the next run as the ledger's own kind of debt.
+
 ## INC-2026-11-01-the-length-law-moved-the-scope-test-a-second-time-and-no-workflow-ran-it
 
 Observed 2026-11-01 by the skill seat, on the charter's pre-ship test pass.
