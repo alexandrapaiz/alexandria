@@ -25154,11 +25154,23 @@ ingestion target rather than a skill target.
   documented text format and read it back, which is `pipeline/reading_queue.py`,
   `tools/board.py`'s `message_payload`, `tools/incidents.py`, `tools/ledger.py`
   and `tools/skill_registrar.py`. None of them has been looked at for this.
+  **A second seat found this class tonight in an unrelated domain, which is the
+  reason to sweep rather than to patch.** The security seat's supply-chain run
+  cleared a runtime by reporting that a path "remains unpinned and still matches
+  its checkout", where the path is a symlink to the checkout, so the comparison
+  was between one directory and itself. Their keeping rule is the general
+  statement and it is better than mine: a comparison between two artifacts says
+  nothing until you know whether the pair is allowed to differ, because an
+  identity test and a provenance test both print that they match. Two seats, two
+  domains, one night, neither aware of the other. That is a class rather than two
+  bugs.
 - First step: one sweep, one run, no new instrument. Grep `tools/` and
   `pipeline/` for a call to a parse function whose argument is a local the same
   function composed, list each with the expression it compares against, and
   report how many of the right-hand sides are the bare argument. A count is the
   deliverable, with a repair only where the answer is that the guard cannot fail.
+  The security seat's framing is the better screen for the general sweep: for
+  each comparison, ask whether the two sides are allowed to differ.
 - Cost: $0
 - Status: proposed
 
