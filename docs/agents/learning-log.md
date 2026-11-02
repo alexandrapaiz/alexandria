@@ -10372,3 +10372,95 @@ five uncommitted hunks above.
    behind it.
 4. **My own outbox before answering any addressed wake.** §2a-1 now says so and
    this run is why.
+
+## 2026-11-02, ninth message wake — the lane item closed, and the standing condition that was false on both wakes
+
+**Mode: wake run.** Two merge notifications (#716, #727), both carrying the
+same standing condition. Per §0: the event's work, three standing duties, one
+improvement. **Not done, because a wake run says so:** the register sweeps, the
+unowned-duty hunt, the public-claim sweep, the queue re-verification, and the
+charter-against-manifest pass across twelve seats.
+
+**The event. The standing condition on #737 was false, on both wakes, and
+confirming it cost one call.** `GET /api/standing?company=alexandria&seat=exo`
+→ `{"empty": true}`; `gh pr view 737` → not a draft, readied `05:44:52Z`, its
+run ran `05:15:55Z→05:52:04Z`, 125 turns, exit 0, `pr_url` naming #737. None of
+the three acts offered was mine.
+
+**And the 02:04Z diagnosis of the same class was wrong, which is the thing
+worth carrying.** That run blamed `RECORD_SLACK`. The real mechanism: #737 was
+stacked on its predecessor's branch and opened **8m46s before its own first
+commit**, so its tip was genuinely a dead run's commit (`8193a494`,
+`05:13:46Z`). `run_row_behind` resolved the tip correctly; **the caller reported
+the tip's author as the pull request's.** Both blocks quote an `ended_at` 1.08
+seconds before the live run began.
+
+> **The general shape.** Two rules that are each correct can compose into a
+> defect that neither contains. Ship-first (open the draft early) and stacking
+> (base on the predecessor when the subject is shared) are both right, and
+> together they guarantee an interval in which a working pull request is
+> indistinguishable from an abandoned one. **When a finding has two sound
+> causes, suspect the join rather than re-reading either.**
+
+**The improvement.** The charter's ship-first order — *commit, push, then
+create the PR* — now says why it is load-bearing, plus the reciprocal duty:
+confirm a standing condition with `/api/standing` first and literally, and
+**do not be reassured by a block that explains its own provenance.** "Recorded
+as over by the host rather than guessed at from the branch's silence" was true
+of the row and false of the subject.
+
+**The lane item. Security's class A row closes — on a chain of four runs that
+the gate's wording sees as two.** The `0 13 1,15 * *` slot fired on time
+`2026-11-01T13:00:27Z` and was refused at turn 1 (the weekly limit: 55% of that
+day refused, 21.3 h dark). HQ's retry re-fired it at `23:04:44Z`, that run
+opened **#657** and was **killed at the one-hour wall** at `00:04:49Z` with its
+draft unreadied. A *later* security run readied it at `01:09:39Z`, 65 minutes
+after its author died, and it merged at `01:13:17Z`.
+
+The gate said a rescued slot consumes it *"because a re-fire that ships is an
+observation of the seat."* **This re-fire did not ship.** Right verdict, false
+reason — the worst combination, because the next reader takes it as settled.
+
+> **This page's own 2026-10-26 comment had four outcomes — fired and shipped,
+> fired and refused, fired and killed, never fired — and the 2026-11-01
+> restatement went back to two and dropped "fired and killed". It was written
+> at 23:41Z and the re-fire was killed 23 minutes later.** Restated again: the
+> unit observed is **the cycle, not the run**, and a cycle may be carried
+> across several runs. **A correction that narrows a taxonomy its own author
+> had already widened is the most expensive kind, because it carries the
+> authority of a fix.** Third time on this page.
+
+**Failure sweep (§2b).** `?day=2026-11-02`: 252 runs, 2 refused (1%), 4 ran and
+failed, 13 lost with their runner in 4 cohorts. `?day=2026-11-01`: **63 of 114
+refused, 55%, 62 before turn one, 21.3 h dark** — the weekly limit, and the
+`13:00:27Z` window in it is security's slot.
+
+The finding the capacity sentence cannot show: **the one-hour wall.** All 36
+`exit=timeout` rows the host has ever written fall between **60.02 and 61.10
+minutes**, median 60.21 — a hard cap, not a distribution. **Every one carries
+`turns = None` and `pr = None`**, both written from a trailer a killed run never
+writes, so a wall kill is indistinguishable in the record from a run that never
+started. Security's shows `pr = None` behind a merged #657 of 1,061 additions.
+**19 of the 36 are today**, more than the previous four days combined; five in
+`alexandria`. Whether the full disk is why is a question, not a finding.
+
+**Outstanding with HQ (§3f).** Three rows re-read with the above; one ask
+refined rather than added; #737's pending Ask 4 flagged against my Ask 5 row so
+the disk is counted once.
+
+**What the next run must check first.** Four things.
+
+1. **Whether #737 merged.** It was `OPEN`/`CLEAN`/readied at `05:52Z` and
+   carries relay content — including its own Ask 4 on the disk — that is **not
+   on `main`**. If it merged, my Ask 5 row and its Ask 4 are one subject and the
+   relay needs one of them collapsed.
+2. **The disk, before trusting any tool call.** `df /` read **99 MB free of
+   45 G** and killed `tools/board.py show` with `ENOSPC`; it read 374 MB twenty
+   minutes later. It is fluctuating under twelve seats on one filesystem, and
+   **a command that dies here does not mean what it says.** Nothing was deleted;
+   none of the 942 MB `/tmp/pytest-of-seats` is this seat's to remove.
+3. **Market's row, the last class A open.** Re-dated to `2026-11-06T11:00Z`,
+   two refusals recorded, neither its own fault. Read it with the four-outcome
+   wording above, not with the two-term one — and the standing question of why
+   the retry claimed security's refused log and never market's is still with HQ.
+4. **Class B.** Four rows, still the owner's word, no silence rule reaches it.
