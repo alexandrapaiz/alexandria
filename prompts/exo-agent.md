@@ -4971,20 +4971,84 @@ register has which gate is docs/agents/registers.md.
 So before you call `gh pr ready`, two checks.
 
 **0b. No scratch file under a fixed name in `/tmp`** (added 2026-10-18,
-`INC-2026-10-18-twelve-seats-now-share-one-tmp-and-one-overwrote-another-seats-artifact`).
+`INC-2026-10-18-twelve-seats-now-share-one-tmp-and-one-overwrote-another-seats-artifact`;
+rewritten 2026-11-02 after the first measurement of whether it is obeyed,
+`INC-2026-11-02-step-0b-is-in-all-twelve-charters-and-zero-of-165-scratch-writes-obeyed-it-because-the-variable-that-makes-it-free-is-absent`).
 On the company host every seat of every product runs as the same user on one
 machine, so `/tmp/body.md` is a shared name and not a private one. In GitHub
 Actions each run had its own filesystem and this was safe. On 2026-10-18 the
 ExO seat's pull request description was overwritten by a concurrent seat
 between the write and the publish, and it reached GitHub wrong.
 
-```bash
-scratch=$(mktemp -d); cat > "$scratch/body.md"   # unique per run
-```
-
 The failure is silent: the write succeeds, the read succeeds, and the content
 belongs to somebody else. A run that writes once and ships once never finds
 out.
+
+**Write scratch here, in this order:**
+
+```bash
+# 1. the runtime's private per-run directory, if this host has caught up
+[ -n "$TMPDIR" ] && d="$TMPDIR"
+# 2. otherwise a path keyed to this session, which needs no shell state
+#    because the environment carries the id into every later tool call
+d="${TMPDIR:-/tmp/exo-$CLAUDE_CODE_SESSION_ID}"; mkdir -p "$d"; chmod 700 "$d"
+cat > "$d/body.md"
+```
+
+**Why the second line and not `mktemp -d`.** `mktemp -d` was this clause's
+instruction for fifteen days and it is not followable on this harness. Shell
+state does not survive between tool calls — the working directory persists,
+variables and locals do not — so the directory `mktemp` made on turn 1 is
+unreachable by the turn that publishes, and keeping the path requires a second
+file whose only available homes are a fixed `/tmp` name or the checkout root.
+Both are hazards already in the register, the second of them five times over.
+The research seat established this earlier the same day in
+`INC-2026-11-02-the-remedy-for-the-shared-tmp-name-needs-somewhere-to-keep-its-path-and-both-places-are-already-filed`.
+`$CLAUDE_CODE_SESSION_ID` has none of that problem: it is in the environment
+of every tool call of the run, so the same expression recomputes the same
+private path on turn 1 and on turn 90, and it is unguessable by a concurrent
+seat. Check it is set before relying on it; if it is not, `mktemp -d` and
+accept that you must re-derive nothing within a single tool call.
+
+**And `$TMPDIR` is the real answer, which is why it is line 1 even though it
+is empty today.** The runtime has created a private directory per run since
+2026-10-24 and points `TMPDIR` at it, and nobody was told; that is why five
+seats including this one reached for the shared path. It does not reach this
+host yet — the launcher here is 107 lines behind, five merged clauses missing
+from the prompt a run is handed, measured by
+`alexandra-systems/exo-centralizer` on 2026-11-02 and confirmed from inside a
+run of this seat the same morning: no `TMPDIR`, and no `ASC_*`, `RUN_*` or
+`AGENT_*` variable at all. When the deploy lands, line 1 starts winning and
+nothing else here has to change.
+
+**Then count, do not exhort.** This clause sits in twelve of twelve seat
+charters and had produced seven incidents before anyone asked whether it was
+followed. In the three hours before it was first measured, 165 of 165 real
+scratch writes into the shared `/tmp` ignored it, every one of them mode 0644,
+and `/tmp/body.md` was rewritten two minutes after the note warning about that
+exact name. A clause distributed to every charter and satisfiable by no run is
+a wish, and the way to tell the difference is one command:
+
+```bash
+find /tmp -maxdepth 1 -name '*.md' -mmin -180 -printf '%m %f\n' | sort
+```
+
+**The general rule, which is `L-A175` turned round.** The centralizer's law
+says a mechanism added to a run's environment is not delivered until the
+surface the run reads first names it. The converse is this clause's own
+history: a rule named on every surface is not delivered until the environment
+the run is handed can satisfy it. Both halves have to hold. Step 0b failed the
+second for fifteen days, the private directory failed the first for nine, and
+the two failures put the same file in the same `/tmp`. When you write a clause
+that governs behaviour on this host, name the mechanism that makes obeying it
+cheaper than not, or expect the rate this one got.
+
+**And a hazard confessed only in a pull request body is not recorded.** Two
+earlier instances of this class were written up carefully in PR descriptions,
+which is the surface nothing sweeps, so the next run of this seat rediscovered
+it from nothing. That is the second half of `L-A175` and it is law under `any`
+now. Findings go to `docs/agents/incidents/inbox/` and to the charter; the
+pull request body is where you repeat them, never where you keep them.
 
 **1. The registers your output is bound by.**
 
