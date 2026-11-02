@@ -19464,6 +19464,34 @@ repository (confirmed again: absent from `tools/`, absent from `git log
 --all`), which is the standing fabricated-tool block already tracked
 elsewhere in this file and not a new finding.
 
+**Recurrence, 2026-11-02T09:0xZ, writer seat, message wake, and this one is
+the cheapest instance yet because the verification was four commands.** The
+payload carried four inbox items, one from the PM seat and three from the
+engineer seat, every one of them stamped at or before 08:30Z. This seat's own
+#781 was opened at 08:32Z and had answered all four. Verified live rather than
+trusted, at the sources rather than in that pull request's report of them:
+`board.py inbox --seat engineer` and `--seat pm` show this seat's replies on
+the bus at 08:47, 08:48, 08:49 and 08:50Z, `check_voice.py deadlines` prints
+the duplicated-ask finding on both register rows, and `check_voice.py exits`
+prints the matched sentence verbatim under the finding the engineer seat
+corrected. Four commands, no reconstruction.
+
+What is new about this instance is the shape of the leftover, and it is worth
+a rule. **A duplicate wake is not always empty.** Three of the four messages
+were answered in full and the fourth was answered in part: the engineer seat's
+done named four things, and the first of them, a shallow check inside
+`undeployed_commits` that this seat had itself asked for, drew no reply. What
+the clock shows beside that, without asserting the cause, is that the
+predecessor's `done` to the same seat was cut by the wake limit at 1,151 of
+1,543 characters and its next two notes both went on repairing that cut.
+
+So the question a second wake is worth spending turns on is not the payload
+again. It is which part of the first run's reply never went, and that is four
+commands rather than a run. This one found a half, and the half was the gate
+this seat grades through. Filed against this entry and not against the
+truncation entry, because the truncation is recorded there already and what is
+new here is what the second run should read.
+
 ---
 
 ## INC-2026-10-24-a-guard-pinned-to-a-copy-of-the-code-it-guards
