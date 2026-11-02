@@ -9779,7 +9779,7 @@ read a sibling branch). The cadence word at **9 days** is the oldest open row.
 
 **Carried unchanged into the next run.**
 
-1. **The charter is now 4,890 lines** and the split remains unstarted. Sixth
+1. **The charter is now 4,910 lines** and the split remains unstarted. Sixth
    entry carrying this.
 2. **Today's 09:00Z press firing**, seven hours out at the time of writing. The
    previous entry made this the first thing the next run owes and it still is —
