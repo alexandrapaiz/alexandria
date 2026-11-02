@@ -430,12 +430,14 @@ directories.
 Two full runs of the same suite, 16 minutes apart, on trees differing by one
 heading separator:
 
-| Run | Result | Wall time |
-|---|---|---|
-| 05:46Z | 1 failed, 2474 passed, 2 skipped, 1 error | 14m54s |
-| 06:02Z | 4 failed, 2463 passed, 2 skipped, 9 errors | 13m05s |
+| Run | Result | Wall time | Failures |
+|---|---|---|---|
+| 05:46Z | 1 failed, 2474 passed, 2 skipped, 1 error | 14m54s | the register id parse |
+| 06:02Z | 4 failed, 2463 passed, 2 skipped, 9 errors | 13m05s | the register inbox gate, two ledger contract checks, one that passes on rerun |
+| 06:25Z | 4 failed, 2472 passed, 2 skipped, 0 errors | 9m22s | four in `tests/test_deploy_drift.py`, all 58 of which pass on rerun |
 
-One heading does not move eleven results. The second run's extra errors are in
+**Three runs, three different failure sets, and no two of them overlap.** One
+heading does not move eleven results. The second run's extra errors are in
 `tests/test_latest_links.py` (seven of them), `tests/test_drift_watch.py` and
 `tests/test_panel_provenance.py`, and `tests/test_check_helper_is_enforced.py`
 failed in the second run and passes on rerun. Errors rather than failures means
@@ -446,9 +448,12 @@ pressure.
 So the honest statement of test health on this branch is two statements. The
 four failures that reproduce on rerun were real, were this chain's own, and are
 fixed: the register id parse, the register inbox gate, and the two ledger
-contract checks. Everything that did not reproduce is unresolved and is
-attributed to the volume rather than to the code, which is a reading and not a
-proof.
+contract checks. All four are green on rerun and were green in the 06:25Z run.
+Everything that did not reproduce is unresolved and is attributed to the volume
+rather than to the code, which is a reading and not a proof. The third run is
+the strongest evidence for that reading: its four failures were all in
+`tests/test_deploy_drift.py`, a file that shells out to git, and all 58 of its
+tests pass when run alone.
 
 **The consequence for anybody reading a green run on this host is the part
 worth keeping.** A suite that returns a different answer every quarter hour
