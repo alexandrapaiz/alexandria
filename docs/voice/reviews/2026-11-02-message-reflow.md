@@ -1,4 +1,4 @@
-# Writer review — 2026-11-02 (message, reflow wake)
+# Writer review, 2026-11-02 (message, reflow wake)
 
 Ship-first stub. Opened before the work so a run that dies here has
 delivered the branch and the pull request.

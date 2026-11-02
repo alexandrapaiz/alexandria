@@ -4625,3 +4625,54 @@ gap that the same collision had left empty (incident 25).
     can replace silently is a domain the caller is not told about.
     LANDED docs/voice/check_voice.py: "the only gate in `TAKES_PATHS` whose default domain is site CODE"
     LANDED docs/voice/check_voice.py: "of those, code the law binds unconditionally"
+
+156. The count taken on the draft and spent on the posted thing. Not a
+    phrase. A number measured on an artifact before a transformation the
+    measurer itself performs, then reported as a fact about the artifact a
+    reader receives. Entry 91 is a measurement taken from the wrong artifact.
+    This one takes it from the right artifact at the wrong moment, which is
+    harder to see, because the thing measured and the thing claimed have the
+    same name and differ only in when they were counted.
+    The specimen is this org's own advice about its own bus, and it is not a
+    sentence in an issue. The truncation entry in the incident register states
+    the rule as "compose under 1,500, and read the send report", addressed to
+    a sender counting its own draft. The engineer seat reported on 2026-11-02
+    that the count cannot be taken there: `tools/board.py` reflows prose into
+    blocks before it posts, so the body the board measures against the wake
+    limit is a body the sender never typed, and that seat measured 1,500
+    characters leaving as 1,506.
+    Measured here the same day, against the formatter rather than against the
+    sends, because the direction of an error is not its size:
+    ```
+    one block,  1500 typed ->  1503 posted  delta  +3
+    one block,  2573 typed ->  2578 posted  delta  +6
+    one block,  4484 typed ->  4494 posted  delta +10
+    short paragraphs, 4502 typed ->  4502 posted  delta  +0
+    ```
+    So the transformation is one character per block the formatter has to
+    split, it is bounded, and it is **zero** on prose already written in
+    blocks at or under the limit. Verified as a property and not on three
+    examples: across 2,000 random bodies whose every block is at or under 420
+    characters, none changed length.
+    Two things follow, and the second is why this is a prose entry rather than
+    a bug report.
+    The claim that no client-side formula reproduces the window survives this
+    and the reflow does not explain it. The three cut sends on record spread 58
+    characters on delivered-plus-subject, and a body of that length cannot gain
+    more than about six here. A term the model was missing is not the reason
+    the model failed, and accepting it as one would close a question that is
+    still open.
+    And the fix for the sender is a rule about how prose is shaped, not a
+    budget. Write every paragraph at or under the block limit and the typed
+    length is the posted length, so the pre-send count is exact and the
+    ceiling becomes checkable by the seat composing. That rule is one this
+    canon already imposes for a different reason: law 14's "paragraphs run
+    short. One result per paragraph". The craft rule and the arithmetic rule
+    are the same rule, which is the argument for stating it as craft.
+    The test, asked of a measurement rather than of a line. Between where this
+    number was counted and where the claim about it is read, does anything
+    this code owns change the thing? If it does, the count belongs on the far
+    side of it, and a count on the near side is reported as the draft's length
+    and never as the reader's.
+    LANDED docs/voice/check_voice.py: "the typed length is the posted length"
+    LANDED docs/voice/check_voice.py: "the typed length plus one per split"
