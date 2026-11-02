@@ -32,7 +32,23 @@ is an identity test: it cannot fail, and passing it says nothing about where
 those bytes came from. The comparison that can fail is
 checkout-against-repository, and on 2026-11-02 it failed four ways at once.
 
-## The four questions, and why each is separate
+## Five questions, and the fifth was added by being wrong about the fourth
+
+The first draft of this file asked four and concluded, in a message to two
+seats, that five uncommitted hotfixes on the executed path had "no commit, no
+review and no backup." **That was false and the correction is the reason
+question 5 exists.** All five are committed in a *different* repository, as
+`alexandra-systems:tools/host/epitod-hotfix-2026-10-17/`, with an actuator
+beside them; and the capabilities they add are implemented properly on the
+runner's own upstream main, 984 commits ahead. So the live bytes are not
+unbacked. They are a **fork that is behind both repositories that could supply
+it**, which is a different finding and a better one.
+
+A provenance check that can only say "not a commit here" will therefore
+overclaim every time, because an artifact can be absent from its own repository
+and fully present somewhere else. `--staged` is how this file stops doing that.
+
+## The questions, and why each is separate
 
 1. **Is the install a copy or a link?** A link makes question 2 the only one
    that matters and makes an install-against-checkout comparison vacuous. A
@@ -49,6 +65,13 @@ checkout-against-repository, and on 2026-11-02 it failed four ways at once.
    distance of zero makes questions 2 and 3 cheap to fix. A large distance
    means a repair carries 43 days of somebody else's changes with it, which is
    why nobody has done it, which is why question 2's edits are load-bearing.
+5. **Does a staged copy elsewhere hold those same bytes?** Passed with
+   `--staged <dir>`, which is compared file-by-file against the executed paths.
+   This separates the two readings question 2 cannot tell apart: bytes that
+   exist nowhere else, and bytes that are committed in another repository and
+   deployed by hand. On this host the answer is split — `index.js` matches HQ's
+   staged copy exactly and `runner.js` does not, because the staged copy is four
+   prompt clauses ahead of what runs.
 
 ## What this does not do
 
@@ -97,6 +120,33 @@ def git_raw(checkout: str, *args: str) -> tuple:
     return p.returncode == 0, (p.stdout or p.stderr)
 
 
+def staged_comparison(staged: str, checkout: str, executed: list) -> dict:
+    """Question 5. For each executed file, does a staged copy hold the same
+    bytes. The staged copy is flat — one directory of basenames, which is the
+    shape `alexandra-systems:tools/host/epitod-hotfix-2026-10-17/` has — so the
+    match is by basename and a file the staged copy does not carry is reported
+    as absent rather than as differing."""
+    out = {"dir": staged, "files": {}}
+    if not staged:
+        return {"dir": None, "files": {}}
+    if not os.path.isdir(staged):
+        out["error"] = "no staged copy at this path"
+        return out
+    for rel in executed:
+        here = os.path.join(os.path.realpath(checkout), rel)
+        there = os.path.join(staged, os.path.basename(rel))
+        if not os.path.exists(there):
+            out["files"][rel] = "absent"
+            continue
+        try:
+            same = open(here, "rb").read() == open(there, "rb").read()
+        except OSError:
+            out["files"][rel] = "unreadable"
+            continue
+        out["files"][rel] = "same" if same else "differs"
+    return out
+
+
 def install_shape(install: str, checkout: str) -> dict:
     """Question 1. `link` when the installed module resolves inside the
     checkout, `copy` when it is its own bytes, `missing` when there is no
@@ -127,7 +177,8 @@ def default_branch(checkout: str) -> str:
     return "main"
 
 
-def verdict(checkout: str = CHECKOUT, install: str = INSTALL) -> dict:
+def verdict(checkout: str = CHECKOUT, install: str = INSTALL,
+            staged: str = None) -> dict:
     out = {"checkout": checkout, "install": install, "findings": [], "readable": False}
     ok, head = git(checkout, "rev-parse", "HEAD")
     if not ok:
@@ -163,10 +214,23 @@ def verdict(checkout: str = CHECKOUT, install: str = INSTALL) -> dict:
     executed = [d for d in dirty if scope is None or scope == ""
                 or d["path"].startswith(scope + "/")]
     out["dirty_on_executed_path"] = executed
+    out["staged"] = staged_comparison(staged, checkout,
+                                      [d["path"] for d in executed])
     if executed:
-        out["findings"].append(("uncommitted", "%d tracked file(s) the daemon executes carry "
-                                               "uncommitted edits: %s"
-                                % (len(executed), ", ".join(d["path"] for d in executed))))
+        held = [r for r, s in out["staged"]["files"].items() if s == "same"]
+        loose = [d["path"] for d in executed if d["path"] not in held]
+        if loose:
+            out["findings"].append(("uncommitted", "%d tracked file(s) the daemon executes carry "
+                                                   "edits in no repository this check was given: %s"
+                                    % (len(loose), ", ".join(loose))))
+        if held:
+            # Not a finding. A staged copy elsewhere is a real backup and a real
+            # review, and saying so is the difference between this check and the
+            # overclaim it shipped first.
+            out["findings"].append(("staged-elsewhere", "%d executed file(s) carry local edits that "
+                                                        "a staged copy holds byte for byte, so they "
+                                                        "are deployed by hand rather than unbacked: %s"
+                                    % (len(held), ", ".join(held))))
 
     base = default_branch(checkout)
     out["default_branch"] = base
@@ -189,6 +253,7 @@ def render(v: dict) -> None:
     if not v.get("readable"):
         print("  unreadable: %s" % v.get("error"))
         return
+    st = v.get("staged") or {}
     s = v["install_shape"]
     print("  install      %-9s %s" % (s["shape"], s["note"]))
     print("  branch       %-9s %s" % (v["branch"], "DETACHED" if v["detached"] else ""))
@@ -197,7 +262,9 @@ def render(v: dict) -> None:
     print("  working tree %d tracked modification(s), %d on the executed path"
           % (len(v["dirty"]), len(v["dirty_on_executed_path"])))
     for d in v["dirty_on_executed_path"]:
-        print("      %-3s %s" % (d["status"], d["path"]))
+        mark = (st.get("files") or {}).get(d["path"])
+        print("      %-3s %-28s %s" % (d["status"], d["path"],
+                                       "" if mark is None else "staged copy: %s" % mark))
     print()
     if not v["findings"]:
         print("The bytes the daemon executes are a commit on origin/%s with no local edits."
@@ -207,9 +274,10 @@ def render(v: dict) -> None:
     for key, why in v["findings"]:
         print("  %-12s %s" % (key, why))
     print()
-    print("None of this judges the edits. An uncommitted fix to a real outage is")
-    print("still a correct fix; it is the only copy of one, on one disk, with no")
-    print("commit, no review, no deploy row and no backup.")
+    print("None of this judges the edits, and none of it says they are unbacked")
+    print("unless the staged line above says so. Pass --staged to tell bytes that")
+    print("exist nowhere else from bytes committed in another repository and")
+    print("deployed by hand, because this check overclaimed that once already.")
 
 
 def main(argv=None) -> int:
@@ -218,9 +286,13 @@ def main(argv=None) -> int:
                    help="the runtime checkout the daemon runs from")
     p.add_argument("--install", default=INSTALL,
                    help="the globally installed module, copy or symlink")
+    p.add_argument("--staged", default=None,
+                   help="a flat directory of staged copies of the executed files, "
+                        "compared by basename; without it, a local edit cannot be "
+                        "told from an unbacked one")
     p.add_argument("--json", action="store_true")
     a = p.parse_args(argv)
-    v = verdict(a.checkout, a.install)
+    v = verdict(a.checkout, a.install, a.staged)
     if a.json:
         print(json.dumps(v, indent=2, sort_keys=True))
     else:

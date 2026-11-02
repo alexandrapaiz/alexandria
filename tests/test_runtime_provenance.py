@@ -174,3 +174,76 @@ def test_the_live_host_reading_is_reproducible_when_the_host_is_there():
     v = rp.verdict()
     assert v["readable"] is True
     assert isinstance(v["findings"], list)
+
+
+def _staged(tmp_path, **files):
+    d = tmp_path / "staged"
+    d.mkdir(exist_ok=True)
+    for name, body in files.items():
+        (d / name).write_text(body)
+    return d
+
+
+def test_a_staged_copy_that_matches_is_not_called_unbacked(repo, tmp_path):
+    """The pinned overclaim. The first draft of this check reported local edits
+    as having 'no commit, no review and no backup', and said so in a message to
+    two seats; the five edits it was reading are committed in another
+    repository with an actuator beside them. A staged copy holding the same
+    bytes is a backup, and the check has to say so."""
+    os.symlink(str(repo["checkout"] / "cli"), str(repo["install"]))
+    (repo["checkout"] / "cli" / "src" / "index.js").write_text("hotfix\n")
+    staged = _staged(tmp_path, **{"index.js": "hotfix\n"})
+    v = rp.verdict(str(repo["checkout"]), str(repo["install"]), str(staged))
+    assert v["staged"]["files"]["cli/src/index.js"] == "same"
+    keys = [k for k, _ in v["findings"]]
+    assert "staged-elsewhere" in keys
+    assert "uncommitted" not in keys
+
+
+def test_a_staged_copy_that_differs_leaves_the_edit_unaccounted(repo, tmp_path):
+    os.symlink(str(repo["checkout"] / "cli"), str(repo["install"]))
+    (repo["checkout"] / "cli" / "src" / "index.js").write_text("hotfix\n")
+    staged = _staged(tmp_path, **{"index.js": "four clauses ahead\n"})
+    v = rp.verdict(str(repo["checkout"]), str(repo["install"]), str(staged))
+    assert v["staged"]["files"]["cli/src/index.js"] == "differs"
+    assert "uncommitted" in [k for k, _ in v["findings"]]
+
+
+def test_one_file_held_and_one_loose_is_reported_as_both(repo, tmp_path):
+    """The live host's own shape on 2026-11-02: `index.js` matched HQ's staged
+    copy exactly and `runner.js` did not, because the staged copy is four
+    prompt clauses ahead of what runs. A check that printed one verdict for the
+    pair would have been wrong whichever verdict it chose."""
+    os.symlink(str(repo["checkout"] / "cli"), str(repo["install"]))
+    (repo["checkout"] / "cli" / "src" / "index.js").write_text("hotfix\n")
+    (repo["checkout"] / "cli" / "src" / "lib" / "runner.js").write_text("hotfix\n")
+    staged = _staged(tmp_path, **{"index.js": "hotfix\n", "runner.js": "ahead\n"})
+    v = rp.verdict(str(repo["checkout"]), str(repo["install"]), str(staged))
+    keys = [k for k, _ in v["findings"]]
+    assert "staged-elsewhere" in keys and "uncommitted" in keys
+    assert "cli/src/lib/runner.js" in dict(v["findings"])["uncommitted"]
+    assert "cli/src/index.js" in dict(v["findings"])["staged-elsewhere"]
+
+
+def test_a_file_the_staged_copy_does_not_carry_reads_absent(repo, tmp_path):
+    os.symlink(str(repo["checkout"] / "cli"), str(repo["install"]))
+    (repo["checkout"] / "cli" / "src" / "index.js").write_text("hotfix\n")
+    staged = _staged(tmp_path, **{"unrelated.js": "x\n"})
+    v = rp.verdict(str(repo["checkout"]), str(repo["install"]), str(staged))
+    assert v["staged"]["files"]["cli/src/index.js"] == "absent"
+    assert "uncommitted" in [k for k, _ in v["findings"]]
+
+
+def test_a_missing_staged_path_is_an_error_on_the_argument_not_a_pass(repo, tmp_path):
+    os.symlink(str(repo["checkout"] / "cli"), str(repo["install"]))
+    (repo["checkout"] / "cli" / "src" / "index.js").write_text("hotfix\n")
+    v = rp.verdict(str(repo["checkout"]), str(repo["install"]),
+                   str(tmp_path / "no-such-dir"))
+    assert v["staged"]["error"]
+    assert "uncommitted" in [k for k, _ in v["findings"]]
+
+
+def test_a_clean_tree_with_a_staged_argument_still_passes(repo, tmp_path):
+    staged = _staged(tmp_path, **{"index.js": "whatever\n"})
+    v = rp.verdict(str(repo["checkout"]), str(repo["install"]), str(staged))
+    assert v["findings"] == []
