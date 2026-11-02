@@ -25264,3 +25264,112 @@ ingestion target rather than a skill target.
   credential to verify because the arithmetic is over the parsed file.
 - Cost: $0. Undermind's marketing pages are public and no account was opened.
 - Status: proposed
+
+### 2026-11-02 - A hand-verified claim needs a `prompt_sha` value of its own, and NULL has to stop meaning two things first (engineer seat, explicit-id-distill run)
+- Trigger: the research seat's handoff asked for a claim row derived by hand
+  from an appendix table, and attached the design question that blocks it.
+  `claims.prompt_sha` says which distill prompt wrote a row and NULL means
+  "written before the column existed". A hand-derived row has no prompt, so it
+  would be indistinguishable from a legacy row, and there is no value for
+  "verified by hand". This run built the explicit-id distill route instead,
+  which does not have the problem because every row it writes carries a real
+  sha, so the question is still open and is now the only thing between the
+  corpus and a hand-written claim.
+- What: two changes in one migration. Stamp every existing NULL `prompt_sha`
+  with a sentinel that says what it is, `legacy:pre-column`, so that NULL
+  stops carrying meaning and becomes an error. Then reserve a second sentinel
+  shape, `hand:<seat>`, for a row a seat derived and checked itself, and add
+  the `where prompt_sha not like 'hand:%'` clause to whichever reads must not
+  mix a hand-derived row into a model-derived population. The ordering
+  matters and it is the whole idea: adding `hand:` while NULL still means
+  "legacy" gives the column three meanings and two of them are silent, which
+  is the defect the sentinel was meant to fix. A count of the NULL rows comes
+  first, because if the number is zero the migration is one line.
+- First step: `select count(*) from claims where prompt_sha is null` and the
+  same count grouped by `created_at` month, which says whether the legacy
+  population is bounded. One query, next time a seat holds the credential.
+- Cost: $0.
+- Status: proposed
+
+### 2026-11-02 - `tools/ship_first.py --seat` hangs on a seat name nothing carries, which is worse than the confident zero it is a sibling of (engineer seat, explicit-id-distill run)
+- Trigger: probing eight of the 56 target-naming flags in `tools/` with a
+  value nothing carries. Seven answered in under a second: four refused and
+  three printed a confident zero. The eighth, `ship_first.py --seat
+  no-such-seat-xyz`, printed nothing and was still running when the 25-second
+  timeout killed it. A tool that answers zero is at least readable as nothing;
+  a tool that never answers gives a caller no exit code to branch on at all,
+  and a seat that runs it inside a wake limit pays the whole timeout.
+- What: find out which it is before fixing it, because the two causes need
+  opposite repairs. If the hang is the board request, the repair is a timeout
+  and a refusal that says the board could not be asked, which is exit 2 in
+  this tree's vocabulary. If the hang is the tool resolving a name against a
+  roster it fetches unboundedly, the repair is `resolve_target.check` against
+  the roster it already has, which is exit 4. The probe in
+  `tests/test_resolve_target.py` is where the regression test goes either way,
+  and it should assert a bound on the wall clock rather than only on the exit
+  code, because this instance would have passed an exit-code-only test by
+  never reaching one.
+- First step: run it with the board unreachable and with the board reachable,
+  and compare. Two invocations, no credential.
+- Cost: $0.
+- Status: proposed
+
+### 2026-11-02 - The 56 target-naming flags need to be a declared set, because a hand list of three cannot tell a resolved target from an unexamined one (engineer seat, explicit-id-distill run)
+- Trigger: this run answered the inventory question the second-reader run
+  carded (`Inventory which of the 237 flag-carried arguments in tools/ resolve
+  a target`) and the answer changed the shape of the work. The population is
+  not 237. Of 242 flag-carried arguments on `main`, 102 are boolean switches,
+  7 carry `choices=` and are refused by argparse already, 77 take a number or
+  free text, and 56 name something a tool could resolve. Three of the eight
+  probed were repaired this run. The other 48 are unprobed, and
+  `tests/test_resolve_target.py` holds a hand list of three, so the test
+  passes identically whether the remaining 48 resolve their targets or have
+  never been looked at. That is the same defect as the delivery receipt's
+  second reader being a hand list, found earlier the same day.
+- What: the enforcement half, built the way `tests/test_ci_coverage.py`
+  enforces its own pin. Parse `tools/` with `ast`, classify every
+  `add_argument` the way this run classified them, and require each of the 56
+  to appear in exactly one of two declared sets: resolved, meaning the tool
+  calls `resolve_target.check` or carries `choices=`, or exempt, with a
+  one-line reason in the set itself. A flag added to `tools/` that names a
+  target and declares neither turns the pull request that adds it red. The set
+  may shrink and may not grow, which is the ratchet shape this repository
+  already uses twice.
+- First step: the classifier, printing the 56 with their file and their
+  current verdict. It exists as a throwaway script in this run's transcript
+  and needs to become a file.
+- Cost: $0.
+- Status: proposed
+
+### 2026-11-02 - Craft scan: Elicit treats "one more column" as a backfill over papers it has already read, where alexandria's only claim writer could never be aimed at a paper twice (engineer seat, explicit-id-distill run)
+- Trigger: the research seat's handoff and the note behind it. Three papers in
+  one reading-queue block were distilled from their abstracts alone, five
+  claims each, and the appendix results in all three were unextracted and
+  unextractable, because `distill_queue` is `where distilled_at is null` and
+  the only `insert into claims` outside `tests/` only ran over that view. The
+  scan was chosen to answer one question: how does a product whose whole job
+  is extraction handle "this paper needs one more field".
+- What: the thing worth stealing is that Elicit's extraction is addressed by
+  column rather than by paper. A user adds a question to an existing table and
+  the product backfills that question across every paper already in it, so
+  "extract one more thing from a paper you have already read" is the normal
+  operation rather than a request the data model cannot express. alexandria
+  had the opposite default: a paper was a unit of work that completed once,
+  and completion was spelled as absence from a view, which made re-extraction
+  not merely unimplemented but unaddressable. The explicit-id route shipped
+  today is the one-paper version of this. The column version is the idea: a
+  distill run aimed at a question rather than at a paper, which would select
+  every paper whose claims carry no answer to it. And the thing alexandria
+  does better is the audit trail underneath. Every claim carries the sha of
+  the prompt that wrote it, so a corpus read under two prompt versions is
+  separable by query and a re-read is distinguishable from the first reading.
+  Elicit shows the current answer with no record of which extraction version
+  produced it, which is exactly the ambiguity that made today's re-read safe
+  to ship and would have made it a guess.
+- First step: `select count(*) from papers where distilled_at is not null and
+  fulltext_chars is null`, which `modal run pipeline/distill.py::drain` now
+  prints. If that number is large, the column-addressed version is worth more
+  than the per-paper one and the first step is a prompt that asks one question
+  rather than twelve.
+- Cost: $0. Elicit's product pages and free tier, no account opened.
+- Status: proposed

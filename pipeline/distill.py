@@ -1031,166 +1031,6 @@ def rehearse(allow_abstract_only: bool = False) -> str:
             f"${cap.spent:.5f}, wrote nothing")
 
 
-#: The columns the walk below reads off an intake row, in the order it reads
-#: them. Both intake routes hand back this shape, because the walk is written
-#: once and must not learn which route a row arrived by.
-INTAKE_COLUMNS = ("id", "title", "abstract", "triage_decision", "source")
-
-
-def explicit_intake(conn, paper_ids, shas=None, force=False):
-    """The papers a caller named, whether or not the queue can still see them.
-
-    `distill_queue` is `where p.distilled_at is null` (db/schema.sql), so a
-    paper leaves it the moment this job marks it and never comes back. That is
-    right for a blackboard and it also means the only `insert into claims`
-    outside `tests/` can never be aimed at a paper twice.
-
-    The research seat measured what that costs on 2026-11-02. Three papers in
-    one reading-queue block were distilled from their abstracts alone, five
-    claims each, and every result in their appendices is unextracted today and
-    unextractable by any route that existed. The gap is the class and not the
-    row: every appendix result in every abstract-only paper. No credential
-    opened it either, because `mcp/server.py` allows one SELECT and sets the
-    transaction read-only, so two seats routed a claim request as though an
-    absent `NEON_RO_URL` were the blocker when there was no write route at all.
-
-    This is the route. It reads `papers` rather than the view, and what makes it
-    safe to aim at a paper twice is that the claims it writes carry a real
-    `prompt_sha`, so a second reading is distinguishable from the first by the
-    column that exists for exactly that question.
-
-    That is also the answer to the design question the handoff attached, and it
-    is worth saying because the question was asked about a different route. A
-    hand-derived claim has no prompt and would be indistinguishable from a
-    legacy NULL, so a hand-write route needs a sentinel that does not exist.
-    This route is not that route: every row it writes was written by a prompt
-    whose sha is on it. The sentinel stays owed and is carded rather than
-    improvised here, because a sentinel that overloads NULL repeats the defect
-    it was meant to fix.
-
-    Returns `(rows, lines)`. `rows` are in the order the caller named them, in
-    `INTAKE_COLUMNS` shape. `lines` is what the run says about what it is doing,
-    returned rather than printed so a test can read it.
-    """
-    wanted = []
-    for raw in paper_ids or []:
-        pid = (raw or "").strip()
-        if pid and pid not in wanted:
-            wanted.append(pid)
-    if not wanted:
-        return [], ["an explicit list was given and it parsed to no ids"]
-
-    # `papers`, not `distill_queue`. The left join is what lets a paper with no
-    # triage row be named at all: the view's filter is `decision in ('distill',
-    # 'deep_read')`, and a caller naming an id has made that decision already.
-    found = {}
-    for row in conn.execute(
-        """
-        select p.id, p.title, p.abstract,
-               coalesce(t.decision, 'distill'), p.source, p.distilled_at
-        from papers p
-        left join latest_triage t on t.paper_id = p.id
-        where p.id = any(%s)
-        """,
-        (wanted,),
-    ).fetchall():
-        found[row[0]] = row
-
-    stamped = {}
-    for pid, sha in conn.execute(
-        "select paper_id, prompt_sha from claims where paper_id = any(%s)",
-        (wanted,),
-    ).fetchall():
-        stamped.setdefault(pid, []).append(sha)
-
-    today = {s for s in (shas or {}).values() if s}
-    rows, lines = [], []
-    missing = [pid for pid in wanted if pid not in found]
-    if missing:
-        lines.append(
-            "no row in `papers` for " + ", ".join(missing)
-            + "; ingest them first with `modal run pipeline/ingest.py "
-              "--ids <ids>`, because this route reads the corpus and does "
-              "not fetch")
-    for pid in wanted:
-        row = found.get(pid)
-        if row is None:
-            continue
-        existing = stamped.get(pid, [])
-        # A NULL `prompt_sha` means "written before the column existed", so it
-        # is not evidence that today's prompt has read this paper. Any NULL in
-        # the set sends the paper through, which is the conservative direction:
-        # re-reading a legacy paper costs one request, and skipping it leaves
-        # the gap this route exists to close.
-        known = [s for s in existing if s]
-        read_already = (
-            bool(known) and len(known) == len(existing) and bool(today)
-            and all(s in today for s in known)
-        )
-        when = row[5]
-        stamp = when.date() if hasattr(when, "date") else when
-        if read_already and not force:
-            lines.append(
-                f"{pid}: {len(existing)} claims already carry a prompt_sha this "
-                "run would write, so this would be the same reading twice; "
-                "skipped. `--force` reads it again and the new claims append "
-                "beside the old ones rather than replacing them")
-            continue
-        rows.append(tuple(row[:5]))
-        if when is not None:
-            lines.append(
-                f"{pid}: distilled {stamp} with {len(existing)} claims already, "
-                "named explicitly, so it is read again; `distill_queue` cannot "
-                "see it and never will")
-        else:
-            lines.append(f"{pid}: never distilled, read now")
-    return rows, lines
-
-
-def unreachable(depth: int, threads: int, deep_unreached: int,
-                per_run: int) -> list[str]:
-    """The third number, which is neither the depth nor the rate.
-
-    The research seat's reading of 2026-11-02, checked against the code it
-    names. Two numbers describe this queue today, a depth and a rate, and both
-    can read healthy while a named part of the queue is not moving at all. The
-    intake query orders a title matching `priority.PRIORITY_PATTERNS` ahead of
-    everything, `deep_read` second and `published_at desc` third. So a paper
-    matching no pattern sits behind every paper that does, every run, and when
-    the standing threads alone are deeper than one run's budget that paper is
-    not draining slowly. It is not draining.
-
-    `drain_forecast` says "N more runs" from `depth / per_run`, and that
-    sentence is true of the queue and false of that paper. These are the lines
-    that say so. Nothing is said when the threads fit inside a run, because
-    then the ordering does reach the rest and the forecast is the whole story.
-    """
-    rest = max(depth - threads, 0)
-    if per_run <= 0:
-        return [f"per-run budget is {per_run}, so nothing drains at all"]
-    if threads < per_run:
-        return [
-            f"reachable: the {threads} standing-thread papers fit inside a "
-            f"{per_run}-paper run, so the {rest} behind them are reached this "
-            "run and the forecast above is the whole story"
-        ]
-    return [
-        f"UNREACHABLE: {threads} of the {depth} queued papers match a standing "
-        f"thread and a run reads {per_run}, so the {rest} that match none sit "
-        "behind a set that refills faster than the ordering empties it. They "
-        "are not draining slowly, they are not draining, and the forecast "
-        "above is a sentence about the queue rather than about them.",
-        f"  {deep_unreached} of those {rest} are deep_read, and they are the "
-        "alarm: triage asked for a full read, and the intake ordering puts a "
-        "thread title ahead of `deep_read` unconditionally. That is deliberate "
-        "(the owner's order of 2026-09-29) and it is why raising the per-run "
-        "cap does not reach them.",
-        "  the route that does reach them is naming them: `modal run "
-        "pipeline/distill.py --ids <id>,<id>`, which is the same route a "
-        "re-read of an abstract-only paper takes.",
-    ]
-
-
 def drain_forecast(remaining: int, per_run: int) -> str:
     """How many runs are left at this rate, and whether that is inside a week.
 
@@ -1384,6 +1224,166 @@ def bake_off(n_papers: int = 8, models: list[str] | None = None) -> list[dict]:
         print(f"distilled on {len(candidates)} models: {title[:60]}")
     print(cap.line())
     return results
+
+
+#: The columns the walk below reads off an intake row, in the order it reads
+#: them. Both intake routes hand back this shape, because the walk is written
+#: once and must not learn which route a row arrived by.
+INTAKE_COLUMNS = ("id", "title", "abstract", "triage_decision", "source")
+
+
+def explicit_intake(conn, paper_ids, shas=None, force=False):
+    """The papers a caller named, whether or not the queue can still see them.
+
+    `distill_queue` is `where p.distilled_at is null` (db/schema.sql), so a
+    paper leaves it the moment this job marks it and never comes back. That is
+    right for a blackboard and it also means the only `insert into claims`
+    outside `tests/` can never be aimed at a paper twice.
+
+    The research seat measured what that costs on 2026-11-02. Three papers in
+    one reading-queue block were distilled from their abstracts alone, five
+    claims each, and every result in their appendices is unextracted today and
+    unextractable by any route that existed. The gap is the class and not the
+    row: every appendix result in every abstract-only paper. No credential
+    opened it either, because `mcp/server.py` allows one SELECT and sets the
+    transaction read-only, so two seats routed a claim request as though an
+    absent `NEON_RO_URL` were the blocker when there was no write route at all.
+
+    This is the route. It reads `papers` rather than the view, and what makes it
+    safe to aim at a paper twice is that the claims it writes carry a real
+    `prompt_sha`, so a second reading is distinguishable from the first by the
+    column that exists for exactly that question.
+
+    That is also the answer to the design question the handoff attached, and it
+    is worth saying because the question was asked about a different route. A
+    hand-derived claim has no prompt and would be indistinguishable from a
+    legacy NULL, so a hand-write route needs a sentinel that does not exist.
+    This route is not that route: every row it writes was written by a prompt
+    whose sha is on it. The sentinel stays owed and is carded rather than
+    improvised here, because a sentinel that overloads NULL repeats the defect
+    it was meant to fix.
+
+    Returns `(rows, lines)`. `rows` are in the order the caller named them, in
+    `INTAKE_COLUMNS` shape. `lines` is what the run says about what it is doing,
+    returned rather than printed so a test can read it.
+    """
+    wanted = []
+    for raw in paper_ids or []:
+        pid = (raw or "").strip()
+        if pid and pid not in wanted:
+            wanted.append(pid)
+    if not wanted:
+        return [], ["an explicit list was given and it parsed to no ids"]
+
+    # `papers`, not `distill_queue`. The left join is what lets a paper with no
+    # triage row be named at all: the view's filter is `decision in ('distill',
+    # 'deep_read')`, and a caller naming an id has made that decision already.
+    found = {}
+    for row in conn.execute(
+        """
+        select p.id, p.title, p.abstract,
+               coalesce(t.decision, 'distill'), p.source, p.distilled_at
+        from papers p
+        left join latest_triage t on t.paper_id = p.id
+        where p.id = any(%s)
+        """,
+        (wanted,),
+    ).fetchall():
+        found[row[0]] = row
+
+    stamped = {}
+    for pid, sha in conn.execute(
+        "select paper_id, prompt_sha from claims where paper_id = any(%s)",
+        (wanted,),
+    ).fetchall():
+        stamped.setdefault(pid, []).append(sha)
+
+    today = {s for s in (shas or {}).values() if s}
+    rows, lines = [], []
+    missing = [pid for pid in wanted if pid not in found]
+    if missing:
+        lines.append(
+            "no row in `papers` for " + ", ".join(missing)
+            + "; ingest them first with `modal run pipeline/ingest.py "
+              "--ids <ids>`, because this route reads the corpus and does "
+              "not fetch")
+    for pid in wanted:
+        row = found.get(pid)
+        if row is None:
+            continue
+        existing = stamped.get(pid, [])
+        # A NULL `prompt_sha` means "written before the column existed", so it
+        # is not evidence that today's prompt has read this paper. Any NULL in
+        # the set sends the paper through, which is the conservative direction:
+        # re-reading a legacy paper costs one request, and skipping it leaves
+        # the gap this route exists to close.
+        known = [s for s in existing if s]
+        read_already = (
+            bool(known) and len(known) == len(existing) and bool(today)
+            and all(s in today for s in known)
+        )
+        when = row[5]
+        stamp = when.date() if hasattr(when, "date") else when
+        if read_already and not force:
+            lines.append(
+                f"{pid}: {len(existing)} claims already carry a prompt_sha this "
+                "run would write, so this would be the same reading twice; "
+                "skipped. `--force` reads it again and the new claims append "
+                "beside the old ones rather than replacing them")
+            continue
+        rows.append(tuple(row[:5]))
+        if when is not None:
+            lines.append(
+                f"{pid}: distilled {stamp} with {len(existing)} claims already, "
+                "named explicitly, so it is read again; `distill_queue` cannot "
+                "see it and never will")
+        else:
+            lines.append(f"{pid}: never distilled, read now")
+    return rows, lines
+
+
+def unreachable(depth: int, threads: int, deep_unreached: int,
+                per_run: int) -> list[str]:
+    """The third number, which is neither the depth nor the rate.
+
+    The research seat's reading of 2026-11-02, checked against the code it
+    names. Two numbers describe this queue today, a depth and a rate, and both
+    can read healthy while a named part of the queue is not moving at all. The
+    intake query orders a title matching `priority.PRIORITY_PATTERNS` ahead of
+    everything, `deep_read` second and `published_at desc` third. So a paper
+    matching no pattern sits behind every paper that does, every run, and when
+    the standing threads alone are deeper than one run's budget that paper is
+    not draining slowly. It is not draining.
+
+    `drain_forecast` says "N more runs" from `depth / per_run`, and that
+    sentence is true of the queue and false of that paper. These are the lines
+    that say so. Nothing is said when the threads fit inside a run, because
+    then the ordering does reach the rest and the forecast is the whole story.
+    """
+    rest = max(depth - threads, 0)
+    if per_run <= 0:
+        return [f"per-run budget is {per_run}, so nothing drains at all"]
+    if threads < per_run:
+        return [
+            f"reachable: the {threads} standing-thread papers fit inside a "
+            f"{per_run}-paper run, so the {rest} behind them are reached this "
+            "run and the forecast above is the whole story"
+        ]
+    return [
+        f"UNREACHABLE: {threads} of the {depth} queued papers match a standing "
+        f"thread and a run reads {per_run}, so the {rest} that match none sit "
+        "behind a set that refills faster than the ordering empties it. They "
+        "are not draining slowly, they are not draining, and the forecast "
+        "above is a sentence about the queue rather than about them.",
+        f"  {deep_unreached} of those {rest} are deep_read, and they are the "
+        "alarm: triage asked for a full read, and the intake ordering puts a "
+        "thread title ahead of `deep_read` unconditionally. That is deliberate "
+        "(the owner's order of 2026-09-29) and it is why raising the per-run "
+        "cap does not reach them.",
+        "  the route that does reach them is naming them: `modal run "
+        "pipeline/distill.py --ids <id>,<id>`, which is the same route a "
+        "re-read of an abstract-only paper takes.",
+    ]
 
 
 @app.function(

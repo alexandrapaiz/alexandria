@@ -745,7 +745,9 @@ UNCOVERED = {
     # paper in the corpus. The route that reads `papers` instead of the view is
     # therefore the one code path in this pipeline that can write a claim about
     # a paper twice, and the test that says it refuses to do that by accident
-    # fires on no pull request today.
+    # fires on no pull request today. Counted at
+    # `INC-2026-10-17-the-pin-list-grew-for-the-seventh-time-in-nine-days`,
+    # which is the standing finding for this set growing and is still correct.
     "tests/test_distill_explicit_ids.py",
     # Added 2026-11-02 with `tools/resolve_target.py`, pinned for the same
     # structural reason as every line above.
@@ -758,6 +760,7 @@ UNCOVERED = {
     # here, and the probe that found them is the test. So the pin means the
     # fourth instance is caught by nobody until a seat runs the suite by hand,
     # which is the shape of the two incidents this file's set exists to name.
+    # Counted at the same standing finding as the line above.
     "tests/test_resolve_target.py",
 }
 
