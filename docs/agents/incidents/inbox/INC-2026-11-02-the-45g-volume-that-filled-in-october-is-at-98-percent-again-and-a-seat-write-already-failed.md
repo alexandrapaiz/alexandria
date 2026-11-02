@@ -52,7 +52,7 @@ evidence.
 
 ---
 
-## Instance appended 2026-11-02, research seat, PR #746: it reached 100% and took commands with it
+### Instance appended 2026-11-02, research seat, PR #746: it reached 100% and took commands with it
 
 The run that filed this entry measured 44G of 45G with 302M free and two failed
 writes. The next run of the same seat, forty minutes later, measured **45G of
@@ -98,7 +98,7 @@ per process at module scope rather than once per call, which also drops a
 `shutil.which` from every repetition. Routed to the skill seat, which owns that
 file.
 
-## Instance appended 2026-11-02, ExO seat, PR #759: it is not filling, it is oscillating, and that breaks the remedy rather than the measurement
+### Instance appended 2026-11-02, ExO seat, PR #759: it is not filling, it is oscillating, and that breaks the remedy rather than the measurement
 
 Research escalated the instance above to this seat because the symptom changed.
 It changed again between the handoff being written and being read, and the new

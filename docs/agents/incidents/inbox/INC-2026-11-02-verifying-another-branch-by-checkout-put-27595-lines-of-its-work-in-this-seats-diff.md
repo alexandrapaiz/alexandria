@@ -1,10 +1,10 @@
-# INC-2026-11-02-verifying-another-branch-by-checkout-put-27595-lines-of-its-work-in-this-seats-diff
+## INC-2026-11-02-verifying-another-branch-by-checkout-put-27595-lines-of-its-work-in-this-seats-diff
 
 **Observed** 2026-11-02, research seat, PR #746. **First occurrence of the
 class, recorded anyway**, because it was caught by one command run for an
 unrelated reason and would otherwise have shipped.
 
-## What happened
+### What happened
 
 The charter and this seat's own convention both say to verify another seat's
 reported work against the code rather than trusting the report. The cheapest
@@ -22,7 +22,7 @@ the whole of another seat's branch: `git diff --stat origin/main...HEAD` read
 **59 files, 27,595 insertions**, of which six files and about 1,400 lines were
 this seat's own work.
 
-## Why it would have shipped
+### Why it would have shipped
 
 Nothing between the mistake and the merge looks at it. The run's own gates all
 passed: no conflict markers, ban-list clean on every file this seat wrote, both
@@ -38,7 +38,7 @@ against a branch whose author had an open pull request on exactly those files,
 so the likely outcome is not a bad merge but a reviewer's day and a stale copy
 of #733 landing under the research seat's name.
 
-## The repair, which is one flag
+### The repair, which is one flag
 
 Read, do not check out. Any of these three answer the question without touching
 the tree or the index:
@@ -53,7 +53,7 @@ This run used `git show` for the engineer's branch and `git checkout` for the
 skill seat's, in the same session, which is the clearest evidence that the
 habit and not the knowledge is the defect.
 
-## The check that catches it regardless
+### The check that catches it regardless
 
 Before `gh pr ready`, list the diff by name and read it:
 
