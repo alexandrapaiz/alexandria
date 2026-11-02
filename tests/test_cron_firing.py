@@ -1440,3 +1440,140 @@ def test_a_re_fire_with_no_trailer_at_all_is_still_in_recovery(tmp_path):
     result = cf.judge(cf.read_runs(tmp_path), "2026-11-01", claims=claims,
                       now=datetime(2026, 11, 1, 23, 30, tzinfo=UTC))
     assert len(result["recovering"]) == 1
+
+
+# ---------------------------------------------------------------------------
+# A slot the host folded into a run already going (2026-11-02). These are the
+# only tests here that read a second surface, because the class is defined by
+# the absence of the first one: a coalesced slot starts no run, so it writes no
+# log, so nothing above can see it. The audit log is written beside the log
+# root on the host and these build it the same way.
+
+
+def write_audit(root, rows):
+    """`audit.jsonl` in the host's layout: a sibling of the log root."""
+    root.parent.mkdir(parents=True, exist_ok=True)
+    (root.parent / "audit.jsonl").write_text(
+        "".join(json.dumps(row) + "\n" for row in rows), encoding="utf-8")
+    return root.parent / "audit.jsonl"
+
+
+def cron_row(seat, stamp, coalesced=True):
+    row = {"ts": stamp, "action": "cron", "agent": seat, "trigger": "cron"}
+    if coalesced:
+        row["coalesced"] = True
+    return row
+
+
+def test_a_coalesced_slot_has_no_log_and_is_reported_anyway(tmp_path):
+    """The whole point. No log is written, so `read_runs` is empty, and the
+    slot is still named rather than silently absent."""
+    logs = tmp_path / "logs"
+    audit = write_audit(logs, [cron_row("alexandria-exo", "2026-11-02T01:00:20.061Z")])
+    result = cf.judge(cf.read_runs(logs), "2026-11-02", now=NOW,
+                      coalesced=cf.read_coalesced(audit, day="2026-11-02"))
+    finding, = result["findings"]
+    assert finding["state"] == "coalesced"
+    assert finding["slot"] == "01:00Z"
+    assert result["coalesced"] == [finding]
+
+
+def test_a_coalesced_slot_sets_the_exit_code(tmp_path):
+    logs = tmp_path / "logs"
+    write_audit(logs, [cron_row("alexandria-exo", "2026-11-02T01:00:20.061Z")])
+    logs.mkdir(parents=True, exist_ok=True)
+    (logs / "alexandria-exo").mkdir()
+    assert cf.main(["--day", "2026-11-02", "--root", str(logs),
+                    "--now", "2026-11-02T04:00:00Z"]) == 1
+
+
+def test_the_coalesced_row_names_the_run_that_absorbed_it(tmp_path):
+    logs = tmp_path / "logs"
+    write_log(logs, "alexandria-exo", "2026-11-02T00-49-18-438Z", "message",
+              completed(), exit_code=0, turns=103)
+    audit = write_audit(logs, [cron_row("alexandria-exo", "2026-11-02T01:00:20.061Z")])
+    result = cf.judge(cf.read_runs(logs), "2026-11-02", now=NOW,
+                      coalesced=cf.read_coalesced(audit, day="2026-11-02"))
+    finding, = [f for f in result["findings"] if f["state"] == "coalesced"]
+    assert finding["absorbed_into"] == "00:49Z message"
+
+
+def test_a_coalesced_slot_a_later_cron_run_carried_is_deferred_not_lost(tmp_path):
+    """`ursa-exo`, 2026-11-02: coalesced at 01:30:23Z and dispatched at
+    01:40:48Z, three milliseconds after the run it was waiting on ended. The
+    same audit row means dropped for one seat and ten minutes late for
+    another, and only a later `cron` run separates them."""
+    logs = tmp_path / "logs"
+    write_log(logs, "ursa-exo", "2026-11-02T01-40-48-770Z", "cron",
+              completed("Had a look, opened nothing."), exit_code=0, turns=130)
+    audit = write_audit(logs, [cron_row("ursa-exo", "2026-11-02T01:30:23.908Z")])
+    result = cf.judge(cf.read_runs(logs), "2026-11-02", now=NOW,
+                      coalesced=cf.read_coalesced(audit, day="2026-11-02"))
+    finding, = result["findings"]
+    assert result["coalesced"] == []
+    assert finding["deferred_minutes"] == 10
+    assert finding["coalesced_at"] == "01:30:23Z"
+
+
+def test_a_deferred_slot_is_labelled_with_its_slot_and_not_its_dispatch(tmp_path):
+    """The defect this found in the existing output: `ursa-exo` was reported at
+    `01:40Z`, a minute no cron line anywhere puts a slot at."""
+    logs = tmp_path / "logs"
+    write_log(logs, "ursa-exo", "2026-11-02T01-40-48-770Z", "cron",
+              completed("Had a look, opened nothing."), exit_code=0, turns=130)
+    audit = write_audit(logs, [cron_row("ursa-exo", "2026-11-02T01:30:23.908Z")])
+    plain = cf.judge(cf.read_runs(logs), "2026-11-02", now=NOW)
+    assert plain["findings"][0]["slot"] == "01:40Z"
+    with_audit = cf.judge(cf.read_runs(logs), "2026-11-02", now=NOW,
+                          coalesced=cf.read_coalesced(audit, day="2026-11-02"))
+    assert with_audit["findings"][0]["slot"] == "01:30Z"
+
+
+def test_a_non_coalesced_cron_row_in_the_audit_log_is_not_a_finding(tmp_path):
+    """The audit log has a row for every firing. Only the folded ones are this
+    class, and reading the rest as coalesced would report every slot twice."""
+    logs = tmp_path / "logs"
+    audit = write_audit(logs, [cron_row("alexandria-pm", "2026-11-02T11:05:00.000Z",
+                                        coalesced=False)])
+    assert cf.read_coalesced(audit, day="2026-11-02") == []
+
+
+def test_an_absent_audit_log_is_an_empty_reading_and_not_a_traceback(tmp_path):
+    """A pull request checkout has no audit log, and the rest of the reading is
+    still correct without it: less decided, not broken."""
+    assert cf.read_coalesced(tmp_path / "nothing.jsonl") == []
+
+
+def test_the_audit_reader_scopes_to_the_seat_and_the_day_it_was_asked_for(tmp_path):
+    logs = tmp_path / "logs"
+    audit = write_audit(logs, [
+        cron_row("alexandria-exo", "2026-11-02T01:00:20.061Z"),
+        cron_row("ursa-security", "2026-11-02T01:15:23.753Z"),
+        cron_row("alexandria-exo", "2026-10-26T01:00:20.061Z"),
+    ])
+    both = cf.read_coalesced(audit, day="2026-11-02")
+    assert [row["seat"] for row in both] == ["alexandria-exo", "ursa-security"]
+    mine = cf.read_coalesced(audit, seat="alexandria-exo", day="2026-11-02")
+    assert [row["at"] for row in mine] == ["01:00:20Z"]
+
+
+def test_the_rendering_names_the_coalesced_state_a_reader_will_meet(tmp_path, capsys):
+    logs = tmp_path / "logs"
+    (logs / "alexandria-exo").mkdir(parents=True)
+    write_audit(logs, [cron_row("alexandria-exo", "2026-11-02T01:00:20.061Z")])
+    cf.main(["--day", "2026-11-02", "--root", str(logs),
+             "--now", "2026-11-02T04:00:00Z"])
+    out = capsys.readouterr().out
+    assert "COALESCED alexandria-exo 01:00Z" in out
+    assert "1 slot(s) coalesced into a run already going." in out
+
+
+def test_a_malformed_audit_line_is_skipped_rather_than_fatal(tmp_path):
+    logs = tmp_path / "logs"
+    logs.parent.mkdir(parents=True, exist_ok=True)
+    (logs.parent / "audit.jsonl").write_text(
+        '{"coalesced": true, not json\n'
+        + json.dumps(cron_row("ursa-security", "2026-11-02T01:15:23.753Z")) + "\n",
+        encoding="utf-8")
+    rows = cf.read_coalesced(logs.parent / "audit.jsonl", day="2026-11-02")
+    assert [row["seat"] for row in rows] == ["ursa-security"]

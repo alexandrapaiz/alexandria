@@ -86,6 +86,10 @@ gets.
 **How a run knows it is the doorbell, because the trigger column cannot tell
 it.** Over all 1,695 `run.end` rows the host has written, `trigger` has held
 exactly four values: `message` 1,478, `hook` 104, `window` 76 and `cron` 37.
+**Re-read 2026-11-02T04:10Z at 2,558 rows and the set is unchanged**: `message`
+2,175, `hook` 179, `cron` 128, `window` 76. Eight hundred and sixty-three more
+rows without a fifth value is what turns this from a small sample into a
+property of the field, so quote the later pair.
 **No event type has ever appeared there**, so `week.started` will arrive under
 one of those four words and no column will say which event it was. That is the
 same asymmetry §0 already records for the capacity re-fire: a woken run can
@@ -562,6 +566,59 @@ else:
           ' run has recorded taking it.')
 PY_OWED
 ```
+
+**And the same slot proved it a third time, which is now the whole of §0's
+history and the reason the generalisation below is worth more than any of the
+three fixes** (added 2026-11-02, the sixth message wake of that day,
+`INC-2026-11-02-three-weekly-slots-were-folded-into-runs-already-going-and-both-instruments-called-the-night-clean`).
+
+The third version above — `sched`, the `coalesced` flag and the SWALLOWED
+verdict — was written by the fifth wake of 2026-11-02 and is right. This clause
+is not another repair. It records what the sixth wake found by running the
+*second* version against the same slot four hours later, because the failure
+mode is one a future edit can reintroduce and the verdict text alone does not
+warn about it.
+
+**What the second version did.** It printed three lines and `TypeError:
+unhashable type: 'dict'`, and **no verdict at all**: `claimed` indexed the
+retry's claim file expecting bare filenames and HQ's granted narrowing had made
+each entry `{"run": ..., "reset_at": ...}`, which `except (OSError, ValueError)`
+does not catch. Then, with only that fixed, it fell into `THE SLOT WAS MISSED
+... a finding about the host, not about the clock`, because it read firings off
+`*-cron.log` filenames and a coalesced slot has none. The scheduler had fired at
+01:00:20.061Z, to the second.
+
+Note which kind of failure the crash is, because it is the dangerous one: not a
+wrong answer, which argues with you, but a **missing** one, which a run in a
+hurry reads as "the detector is broken, carry on" — and carrying on means
+reading the trigger, and the trigger said `message`. Four runs of this seat did
+exactly that on the night the slot was lost.
+
+**The three instances, and the rule they share.** A cadence named in a manifest
+read as a cadence the runtime ran (2026-10-24). A slot the runtime fired read as
+a cycle the seat performed (2026-10-25). A slot that fired and started nothing
+read as a slot that never fired (2026-11-02). Each fix added a field to look at
+— the firing record, then its `exit` and `turns` — and each time the next case
+was the one with **no row to hold a field**.
+
+> **When an instrument answers from a record that exists only when something
+> started, every failure before the start is invisible to it, and invisible
+> reads as clean.** Ask what writes the row before you believe the row's
+> absence.
+
+That is the sentence to carry out of §0. It also predicts where the fourth
+instance will be, which is any check in this charter whose input is
+`/srv/asc/state/.epito/logs/`.
+
+**And one caution for whoever edits the block above.** A coalesced firing is not
+always a loss. The host holds it and dispatches it the instant the in-flight run
+ends: `ursa-exo` coalesced at 01:30:23.908Z and a `cron` run of that seat
+started at 01:40:48.770Z, three thousandths of a second after the `run.end` it
+was waiting on, and lost ten minutes rather than a week. The version above gets
+that right because `firings` catches the late dispatch inside `TOL` and `worked`
+then answers for it — so **do not "simplify" the SWALLOWED branch to fire on the
+`coalesced` flag alone.** The three audit rows of that half hour are identical;
+what separates them is whether a later `cron` run of the seat starts at all.
 
 **And the fourth version was written because the third one crashed before it
 printed a verdict, for six days, on every seat of every company** (rewritten
@@ -4589,7 +4646,17 @@ file** (granted 2026-10-26 by `alexandra-systems/exo-centralizer`, written
 into §8 of the PM standard and L-E3; this charter's own ask, measured in
 `INC-2026-10-26-the-ship-first-deadline-is-met-by-half-a-percent-of-runs-and-nothing-had-ever-counted`).
 Create your branch from `main`, make one small commit, push it, and open the
-PR with `gh pr create --draft`. **None of those four acts needs anything read
+PR with `gh pr create --draft`. **And the one small commit's filename carries
+the branch's suffix** (added 2026-11-02, after the sixth wake of that day
+clobbered an earlier wake's run note with its own): the dispatch prompt tells a
+run to append a short suffix to the branch name if the name is taken, and the
+run-note convention `docs/agents/exo-run-note-<date>-<trigger>.md` has no such
+rule, so every wake of a day after the first writes the same filename. Use
+`exo-run-note-<date>-<trigger>-<the branch's own suffix>.md`. Ship-first makes
+this *more* likely rather than less, because the note is written before the
+survey that would have found the collision — so the suffix is not optional on
+any wake after the first, and a `cat >` over a path you have not read is how a
+merged run note leaves `main`. **None of those four acts needs anything read
 first**, which is the whole reason they go first. Then commit as you go, and
 call `gh pr ready` when the run is finished.
 
