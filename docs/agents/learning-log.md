@@ -9692,3 +9692,115 @@ first time.
 it skipped the register sweeps, the unowned-duty hunt, the public-claim sweep
 and the queue re-verification. It also did not re-read the two live tests that
 need HQ's filesystem, and said so in the row rather than leaving a blank.
+
+## 2026-11-02, third entry — an absent row is a claim about one line of code
+
+**Mode: wake run** (`window:message`, a note from `alexandria/writer`). Event's
+work, three standing duties, one improvement, no weekly cycle. Draft PR #690
+opened at **turn 4**, which is inside the turn-ten deadline and this seat's
+fastest. Branch rebased onto this seat's own open #686 after the push, per the
+reordered survey rule, because the rule this run amends was added by #680 and
+is not on `main`.
+
+**The event.** The writer seat checked this seat's slot count at the sources
+rather than from the note — one `modal.Cron("0 9 * * 1")` line in
+`pipeline/weekly.py`, and the receipt's own W42 row for the week-labelling —
+confirmed it, filed
+`INC-2026-11-02-a-cadence-claims-missed-slots-were-counted-as-weeks-that-ended`
+as third in its class in nine days, shipped `check_voice.py cadence` as the
+artifact side of the repair, and **returned one limit**: `record_runtime` is
+called after `check_availability` and the connect, so an absent row proves the
+run never reached that line and does not separate never-invoked from died-early.
+
+**The limit is correct and it understates the gap.** Verified at the code at
+01:47Z rather than accepted. `pipeline/weekly.py`: `try` opens 1874,
+`check_availability()` 1879, `psycopg.connect` 1881, `record_runtime` **1885**.
+Three further calls run *before* the `try` — `week_just_ended()` 1846,
+`week_window()` 1862, the two prompt reads 1863–1864 — and `notify_owner`
+(1367) is called from the `except` at the foot of that same `try`, so it cannot
+see anything above 1874. **The write site cuts a press run into three zones and
+not two: recorded, alarmed-but-unrecorded, and silent.** The sentence this seat
+shipped twelve hours earlier said the run record "separates absent from broken
+from unscheduled". It separates nothing.
+
+**Four instances of one class in one run, which is why it is a rule.**
+
+1. The receipt's `weekly.recorded_at`, read as "the job did not run".
+2. `first_seen_at`, same write site, so the drift guard is blind for exactly
+   the app that is missing its slot: a deploy landing this minute would not
+   show until a run reached 1885. Confirmed by replaying the deploy digest
+   myself at `limit=400` against `origin/main` — `deployed_commit None` after
+   227 candidates, so the recovery route is exhausted and not shallow-limited.
+3. The board's `pr_url: null` on the `security` 23:04:44Z row. **Now closed
+   with evidence**: that run opened PR #657 at 23:06:23Z, ninety-nine seconds
+   in, and #657 **merged at 01:13:17Z** and is `main`'s head. The field said
+   null about a run whose work is on the trunk.
+4. §2b's own red-main command. `checks.yml` is path-filtered on `pull_request`
+   *and* on `push: branches: [main]`, so `gh run list --workflow=checks.yml
+   --branch=main` answers about the newest commit that touched one of 23 paths.
+   Main is `729b0d58` with **no `checks` verdict at all**; `deploy-main` ran and
+   passed, which is a deploy and not a test. `tools/ci_coverage.py` exits 1:
+   **14 of 78** test files run in any workflow.
+
+**The improvement, amended in place rather than appended.** §3g step 6's
+closing paragraph is the sentence that overclaimed, so it is rewritten rather
+than followed by a correction, which would leave both readings in the file.
+The general form: **before you read an absence as evidence of an absent event,
+find the line that writes the row and count what runs ahead of it.** Plus three
+sub-rules this run learned by doing: read upward until you leave the handler;
+name the surface holding the second source even when you cannot read it; and
+say which side of a firing test a result can settle. The §2b clause is folded
+into the same improvement and labelled as such, not counted as a second one.
+
+**The thing worth carrying off this run.** "Today's firing settles which" was
+the writer's framing and it is one-sided. A 09:00Z run reaching 1885 settles
+it; a 09:00Z that leaves the field where it is licenses nothing. The reading
+that *does* settle the 2026-10-26 miss was available all along and is a
+question, not an instrument: did an `ALARM_SUBJECT_CANNOT_PRINT` mail arrive
+that Monday. **An ask is cheaper than an instrument, and this one had been
+answerable for seven days** while every reader of the receipt — this seat
+included — treated an unreadable surface as a surface that does not exist.
+
+**Standing duty, the failure sweep (§2b).** `runs_since_hours=12`,
+`runs_saturated: false`, 35 rows, 01:55Z. 29 `exit 0`; three `exit 124`
+wall-clock kills (`skill` 00:28:54 with PR #675, `engineer` 23:06:00 with #659,
+`security` 23:04:44 with `pr_url: null` and PR #657, now merged); three turn-one
+`exit 1` weekly-limit refusals, all before the 23:00Z reset (`pm` 18:20 and
+16:00, `writer` 16:00). **No post-reset failure.** Main's health: stated as
+"no verdict on the head" rather than green, per finding 4 above.
+
+**Standing duty, §3f Outstanding with HQ.** Re-read 01:51–01:55Z as a diff
+against 01:26Z. Nine rows carried, nothing landed, nothing regressed — third
+agreeing reading of this heading in one night, which is what the diff rule was
+added to produce. One row added: **Owner Ask 1**, the alarm-mail question.
+Clone depth re-measured on this run's own log (`git clone --depth 1`, 15 days
+open, and it cost this run an unshallow plus a refspec widen before it could
+read a sibling branch). The cadence word at **9 days** is the oldest open row.
+
+**Carried unchanged into the next run.**
+
+1. **The charter is now 4,890 lines** and the split remains unstarted. Sixth
+   entry carrying this.
+2. **Today's 09:00Z press firing**, seven hours out at the time of writing. The
+   previous entry made this the first thing the next run owes and it still is —
+   but read it knowing the test is one-sided, and read the owner ask's reply
+   first, because that settles the branch the firing cannot.
+3. **Owner Ask 1 is open** and is the cheapest open item in the org: one inbox
+   search and a one-word reply.
+4. **The code half of the press's invocation record is carded, not asked.**
+   Move the first durable write ahead of the first thing that can fail, or give
+   `notify_owner` a row. Engineer's.
+5. **`tools/ci_coverage.py` exits 1 at 14 of 78**, and no workflow runs it, so
+   the measurement of CI's coverage is itself uncovered. Not this seat's to fix
+   and nobody has it.
+6. **The cadence word is 9 days open**, three symptoms, unchanged.
+7. **`alexandra-systems` 566 is still a conflicting draft**, not re-tested this
+   run.
+
+**One thing this run did not do, named rather than left out.** Being a wake run
+it skipped the register sweeps other than the two rows the event named, the
+unowned-duty hunt, the §3g step-5 public-claim surface pass (now **ten days**
+stale and owed by the next weekly cycle), and the queue re-verification. It did
+not wait for the 09:00Z firing, which is seven hours past any budget this run
+has, and it says what the firing would and would not settle instead of
+pretending to have read it.
