@@ -9240,6 +9240,171 @@ def exits():
     return bad
 
 
+#: Bodies whose every blank-line-separated block is at or under the board's
+#: block limit, with the length the formatter must leave them at. The property
+#: is the gate: the formatter is the identity function on prose written in
+#: short blocks, so a sender writing that way can count its own draft and get
+#: the number the server will count. A case here that starts failing means the
+#: pre-send count a seat takes on its draft is no longer the posted length.
+BLOCK_IDENTITY_CASES = (
+    ("one short block.", 16),
+    ("first block.\n\nsecond block.", 27),
+    # Hard wrapping inside a block is free, because the formatter collapses a
+    # single newline to the space it replaced. Every seat writes this way.
+    ("a block\nwrapped by hand\nat a narrow column.", 43),
+    ("x" * 420, 420),
+)
+
+#: Bodies the formatter must lengthen, with the floor of the growth. A block
+#: over the limit is split and the pieces are rejoined on a blank line, so one
+#: space becomes two newlines and the body gains a character per split. This is
+#: the half a sender cannot predict from its own draft.
+BLOCK_GROWTH_CASES = (
+    ("word " * 84 + "end.", 1),
+    ("word " * 200 + "end.", 1),
+)
+
+
+def block_bodies(source):
+    """Which POST paths in a tool hand the board a body, and which format it.
+
+    Returns (name, formatted) per body-carrying payload, named by the enclosing
+    function, because the question is per command and not per file. `formatted`
+    is whether the body goes through the shape formatter on the way out.
+
+    Read off the source rather than by importing, because a gate that imports
+    another seat's module runs it, and this question is answerable by reading.
+    """
+    out = []
+    current = None
+    for line in source.splitlines():
+        if match := re.match(r"def (\w+)\(", line):
+            current = match.group(1)
+        if current is None:
+            continue
+        match = re.search(r"[\"']body[\"']\s*(?::|\]\s*=)\s*(.+?),?\s*$",
+                          line)
+        if match:
+            value = match.group(1).rstrip(",").strip()
+            if not value.startswith(("args.body", "scannable(", "body")):
+                continue
+            out.append((current, value.startswith("scannable(")))
+    return out
+
+
+def blocks():
+    """The board's block limit, which decides what a sender can count.
+
+    This gate grades a measurement and not an edition, like `exits` above it,
+    and it is this seat's because the thing it protects is prose this seat
+    writes. Canon law 15 binds "any line of copy", and a `note` on the bus is a
+    line of copy with a reader.
+
+    The fact it exists for, measured 2026-11-02 on the engineer seat's own
+    report: the client reflows prose before it posts, so the body the board
+    counts against the wake limit is not the body the sender typed. The
+    engineer's number was 1500 characters leaving as 1506. The useful half is
+    that the growth is not a mystery. It is one character per block the
+    formatter has to split, so it is zero on prose already written in short
+    blocks, and the property table above is what holds that.
+
+    The second half fails on a body-carrying POST path that skips the
+    formatter. It is reported rather than repaired here, because `tools/` is
+    not this seat's surface and the ask is in `docs/ideas.md` under the
+    engineer seat's name.
+    """
+    path = ROOT / "tools/board.py"
+    if not path.exists():
+        print("  FAIL    tools/board.py is not in the tree, so the limit this")
+        print("          gate reads is unverified and every count a seat")
+        print("          takes on its own draft is unchecked")
+        return 1
+    source = path.read_text(encoding="utf-8")
+
+    namespace = {}
+    exec(compile(re.search(
+        r"BODY_BLOCK_LIMIT = \d+", source).group(0), "<limit>", "exec"),
+        namespace)
+    limit = namespace["BODY_BLOCK_LIMIT"]
+    formatter = None
+    try:
+        module = {"re": re}
+        body = re.search(r"\ndef scannable\(.*?\n(?=\n\ndef )", source,
+                         re.S).group(0)
+        exec(compile(body.replace("BODY_BLOCK_LIMIT", str(limit)),
+                     "<scannable>", "exec"), module)
+        formatter = module["scannable"]
+    except (AttributeError, SyntaxError, KeyError):
+        print("  FAIL    tools/board.py has no readable block formatter, so")
+        print("          the property below cannot be checked and a sender's")
+        print("          own count is unverified")
+        return 1
+
+    bad = 0
+    print(f"{'the board block limit, read from the tool':<42} {limit}")
+    wrong = 0
+    for text, want in BLOCK_IDENTITY_CASES:
+        if (got := len(formatter(text))) != want:
+            wrong += 1
+            bad = 1
+            print(f"  CASE    a body of {len(text)} characters in blocks at or "
+                  f"under the limit posted at {got}, wanted {want}")
+    print(f"{'BLOCK_IDENTITY_CASES':<42} "
+          f"{len(BLOCK_IDENTITY_CASES) - wrong} of "
+          f"{len(BLOCK_IDENTITY_CASES)}")
+    wrong = 0
+    for text, floor in BLOCK_GROWTH_CASES:
+        if (grew := len(formatter(text)) - len(text)) < floor:
+            wrong += 1
+            bad = 1
+            print(f"  CASE    a single block of {len(text)} characters grew by "
+                  f"{grew}, wanted at least {floor}")
+    print(f"{'BLOCK_GROWTH_CASES':<42} "
+          f"{len(BLOCK_GROWTH_CASES) - wrong} of {len(BLOCK_GROWTH_CASES)}")
+    print()
+
+    print("what a sender can count on its own draft, by the shape it wrote:")
+    print(f"    {('every block at or under ' + str(limit)):<38}"
+          f"the typed length is the posted length")
+    print(f"    {'one block over it':<38}"
+          f"the typed length plus one per split")
+    print()
+
+    carried = block_bodies(source)
+    formatted = [name for name, ok in carried if ok]
+    bare = [name for name, ok in carried if not ok]
+    print(f"{'POST paths handing the board a body':<42} {len(carried)}")
+    print(f"{'  of those running the formatter':<42} {len(formatted)}"
+          f"  {', '.join(formatted)}")
+    print(f"{'  of those posting the body as typed':<42} {len(bare)}"
+          f"  {', '.join(bare)}")
+    for name in bare:
+        bad = 1
+        print(f"  FAIL    {name} posts the body as typed, so a block over the "
+              f"limit is refused by the")
+        print("          server rather than reshaped, and no pre-send count "
+              "of it is the posted one.")
+        print("          The refusal the formatter was written from is quoted "
+              "in that file as a")
+        print("          COMMENT refusal, so the one path the evidence names "
+              "is a path that skips it.")
+    if bare:
+        print("          Red in the engineer seat's lane and not repairable "
+              "from here, the way")
+        print("          `taste` is red on the frontend's. The ask is in "
+              "docs/ideas.md.")
+    if not bare:
+        print("  OK      every body-carrying path runs the formatter, so the")
+        print("          posted length is computable on every one of them")
+    print()
+    print("The reading, which is not the check: the growth is small and the")
+    print("entry it answers is not. Three cut sends on record spread 58")
+    print("characters on delivered-plus-subject, and a body of that length")
+    print("cannot gain more than about six here, so the reflow is a term the")
+    print("model was missing rather than the reason no formula fit.")
+    return bad
+
+
 def main():
     which = sys.argv[1] if len(sys.argv) > 1 else "all"
     # Paths after the subcommand go to `measure`. Without this, the arguments
@@ -9316,6 +9481,7 @@ def main():
                 ("columns", columns),
                 ("flags", flags),
                 ("exits", exits),
+                ("blocks", blocks),
                 ("compare", compare), ("selfcheck", selfcheck))
     # An unknown name is a usage failure and never a pass. Exit 2 rather than
     # 1, so a caller can tell "this gate is not here" from "this gate ran and
