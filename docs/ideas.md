@@ -25219,6 +25219,7 @@ write surface.
 
 ### 2026-11-02 - `tests_pass` is binary, which puts a ceiling on the differential screen (skill seat)
 
+- Trigger: writing this run's `without_skill` predictions against `tools/skill_eval.py:tests_pass`, which returns 1.0 on exit 0 and 0.0 on anything else, so a fixture's per-probe counts never reach the delta.
 - What: `tools/skill_eval.py:tests_pass` returns `1.0` on exit 0 and `0.0` on
   anything else. So a `project` task with a four-probe pytest suite has two
   scores available to it, and an answer that passes three probes scores what an
@@ -25251,6 +25252,7 @@ write surface.
 
 ### 2026-11-02 - a project task's starter file can shadow a standard-library module, and one did (skill seat)
 
+- Trigger: `skills/agent-containment` project task `ac-t12`, whose starter file shadowed a standard-library module and made both arms score 0.0 while the control passed trivially.
 - What: `rhsi-c1`'s starter file was named `bisect.py`. The probe command runs
   in a working directory containing it, so it shadowed the stdlib `bisect` that
   `_pytest._code.source` imports, and pytest died before collecting a single
@@ -25271,6 +25273,7 @@ write surface.
 
 ### 2026-11-02 - the ban-list checker reads a regex literal as prose (skill seat)
 
+- Trigger: `python3 tools/ban_list.py skills/_validation/prediction_basis.py` reporting entry 5 against a line inside a compiled regex literal.
 - What: `python3 tools/ban_list.py skills/_validation/prediction_basis.py`
   reports entry 5, empty intensifiers, against a line that is part of a
   compiled pattern. The alternation there lists `paper` alongside a two-word
@@ -25299,6 +25302,7 @@ write surface.
 
 ### 2026-11-02 - the shared 45G volume is at 100 percent and it disables the charter's own shallow-clone fix (skill seat)
 
+- Trigger: `git fetch --unshallow` exiting `fatal: write error: No space left on device` at run start, and two tool calls returning empty output through ENOSPC, with `df -h /` showing 35 MB free on the only writable filesystem.
 - What: this run began with 35 MB free on `/`, the only writable filesystem on
   the host. `git fetch --unshallow` died with `No space left on device`, and the
   harness's own tool-output capture died with ENOSPC twice, returning two tool
@@ -25334,6 +25338,7 @@ write surface.
 
 ### 2026-11-02 - a zero-claim skill has two gates that disagree on the word (skill seat)
 
+- Trigger: `tools/skill_registrar.py --files-only` printing `failing: skills/agent-approval-paths/SKILL.md cites no claim ids` while `prompts/skill-extract.md` §2 prescribed the `provisional` status that makes `tests/skill-provenance.test.mjs` fail.
 - What: `skills/agent-approval-paths` cites no claim ids, because its three
   papers have no rows and the ingestion queue is blocked on the compute
   workspace. Two gates govern that state and they ask for different words.
@@ -25362,6 +25367,7 @@ write surface.
 
 ### 2026-11-02 - the trigger engine routes a paraphrase to the wrong neighbour (skill seat)
 
+- Trigger: writing `ap-conf-1` for the new skill's trigger suite, where two phrasings of one question routed to different neighbours: agent-containment at 0.3779 with the words *prompt injection* and *deny list*, agent-security-measurement without them.
 - What: writing this run's confusion cases surfaced how narrow the margin between
   two neighbouring skills is. A prompt describing a within-tool prompt injection
   routes to `agent-containment` at 0.3779 against `agent-security-measurement`
@@ -25387,6 +25393,7 @@ write surface.
 
 ### 2026-11-02 - a release-engineering prompt fires harness-engineering (skill seat)
 
+- Trigger: `python3 skills/_validation/trigger_test.py` reporting `[FAIL] ap-neg-1 negative expect (silence) -> harness-engineering` at 0.0933 against a 0.05 floor.
 - What: `ap-neg-1` in this run's new trigger suite is a pull-request-approval and
   deploy-pipeline question with no agent in it. It should be silent and it is
   not: `harness-engineering` fires at 0.0933 against a 0.05 floor and a best
@@ -25403,5 +25410,31 @@ write surface.
   cheap repair, and it belongs in the decoy panel v3 rewrite already filed.
 - Whose call: this seat, in the v3 panel rewrite, deliberately not in the same
   commit that reports a pass rate.
+- Cost: $0.
+- Status: proposed
+
+### 2026-11-02 - a third pinned library count, twelve lines below the second one's fix (skill seat)
+
+- Trigger: `python3 -m pytest tests/test_skill_scope.py` failing
+  `test_scoping_loads_fewer_skills_and_less_context` with `assert 30 == 29`
+  after this run added a tenth skill.
+- What: `tests/test_skill_scope.py:284` pins
+  `full["unscoped"]["mean_skills_loaded"] == 29`, which is nine library skills
+  plus twenty distractors. Adding `skills/agent-approval-paths` makes it 30 and
+  the test goes red on a library that grew by one. Third instance of the class in
+  `INC-2026-11-02-a-pinned-count-went-red-on-a-library-that-had-just-got-better-and-the-same-suite-already-named-the-class`.
+- Why it is worth a ledger entry and not only an incident line: the second
+  instance was repaired by deriving the count, and that repair **held** through
+  this run, absorbing seven new trigger cases from 68 to 75 without going red.
+  So the fix is known to work and was applied to one assertion rather than to the
+  file. The pinned literal sits twelve lines below the derived one, and directly
+  below it is a test whose whole docstring argues against pinning live state.
+- First step: replace the literal with the derived count, the live library size
+  plus `len(live["distractor_pool"]["names"])`. One line. Then the part that
+  matters more: grep the suite for integer literals compared against anything
+  derived from `skills/`, because three instances in one file says fixing
+  instances does not reach the class.
+- Whose call: the engineer seat. `tests/` is outside this seat's write surface,
+  so this run reported the red test in its pull request rather than fixing it.
 - Cost: $0.
 - Status: proposed

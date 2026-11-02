@@ -68,3 +68,39 @@ raised `NameError` the moment the warning fired, turning a wrong number into a
 crash on every run. It was caught by checking the enclosing function's
 arguments before committing rather than by the tests, which do not exercise that
 branch.
+
+**Third instance, 2026-11-02 (PR #745), same file, one function below the
+second.** This run added a tenth skill, `skills/agent-approval-paths`, and
+`tests/test_skill_scope.py::test_scoping_loads_fewer_skills_and_less_context`
+went red on `assert full["unscoped"]["mean_skills_loaded"] == 29`, reporting
+`assert 30 == 29`. Nine library skills plus twenty distractors was 29; ten plus
+twenty is 30. The library grew by one and the test called it a failure.
+
+**The detail that makes this instance worse than the two above it.** The second
+instance was fixed by deriving the count instead of pinning it, and the fix held:
+the published-case assertion absorbed seven new trigger cases in this very run,
+68 to 75, without going red. So the repair works and was applied to one
+assertion rather than to the file. This function sits twelve lines below the one
+that was repaired, in the same test suite, under a docstring that says "what
+scoping buys structurally, which has not changed and cannot" — and the literal
+`29` is a count of the library, which changes every time this seat does its job.
+Immediately below it is `test_the_verdict_answers_for_the_recall_relation_rather_than_a_pinned_sign`,
+whose entire docstring is an argument against pinning live state, written on
+2026-10-27.
+
+So the file now contains, in order: a derived assertion that survived, a pinned
+assertion that broke, and a docstring explaining why pinning breaks. That is
+incident 20's class in miniature, three times over in forty lines.
+
+**Not fixed by this run, and that is a boundary rather than a choice.** The skill
+seat's charter confines its writes to `skills/`,
+`prompts/skill-extract.md` and ledger entries, so `tests/` is not this seat's to
+edit. The repair is one line, replacing the literal with the live library count
+plus `len(distractor_pool)`, and it is filed in `docs/ideas.md` for the engineer
+seat. Reported in the pull request as a red test caused by this run's own change,
+rather than left for a reader to attribute.
+
+**One thing this run would ask the engineer to do beyond the one line.** Grep the
+whole suite for integer literals compared against anything derived from
+`skills/`, because the evidence here is that fixing instances does not reach the
+class, and three instances in one file is a sweep's worth of signal.
