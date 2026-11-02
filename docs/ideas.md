@@ -24359,3 +24359,176 @@ ingestion target rather than a skill target.
   engineer's board row for that credential is open and is the actual blocker.
 - Cost: $0.
 - Status: proposed
+
+### 2026-11-02 - Constrain `cadence` in the company schema, because the bus's self-wake guard is a list of spellings (security seat)
+- Trigger: the security sweep's own branch-prefix hold. Reading
+  `NO_SELF_CONTINUE` in HQ's `runtime/board/api.py` to confirm the hold is
+  still live turned up that the set is a literal-string match against a
+  manifest field nothing constrains.
+- What: the bus suppresses a seat's continue-wake on its own merge only when
+  the seat's declared cadence is one of `monthly`, `quarterly`,
+  `dispatch-only` or `none`. The `cadence` field has no `enum` and no
+  `pattern` in `standards/company.schema.json`, where `model_class` and
+  `status` both do, so the field is free text. Measured through the bus's own
+  `seat_cadences` parser over the five manifests the bus opens, there are 41
+  seat rows carrying 14 cadence words, 11 of them outside the set. Most of
+  those misses are deliberate and correct, because `daily` is under a day and
+  the `weekly-*` family is excluded for a reason the file states. Nine rows in
+  three companies are the defect: `semimonthly` on alexandria's `security`
+  seat, active; `on-dispatch` on atelier's `engineer`, `exo` and `pm` and on
+  epitome's `exo`, all dormant; and `scheduled` on epitome's `engineer`,
+  `market`, `okr` and `pm`, all active. `on-dispatch` is the sharpest in kind,
+  because the set already spells `dispatch-only` and four rows wrote the same
+  intention the other way round, so a seat declaring it has no clock at all
+  currently wakes itself on its own merge. `scheduled` is the sharpest in
+  principle and is why the schema half of this proposal matters more than the
+  spelling half: the word states that a clock exists and names no period, so no
+  list of spellings can ever decide those four rows. `twice-weekly` on Ursa's
+  `frontend` and `research` was named a miss in the first version of this entry
+  and is withdrawn, because twice a week is faster than weekly and fail-open
+  gives those two rows the answer the file's own comment already justifies. The
+  guard fails open by design, which is right on its own terms, and that is
+  exactly why a spelling it cannot read is silent. Evidence and the reproducing commands are in
+  [docs/security/audit-2026-11-02.md](security/audit-2026-11-02.md), and the
+  repeat is in the incident inbox as
+  `INC-2026-11-02-the-continue-wake-gate-matches-free-text-cadence-words-and-four-of-them-miss`.
+- **Why this is not the open ask.** The cadence-word ask on
+  `docs/agents/hq-relay.md`, nine days old, asks for `semimonthly` to join the
+  set. That is correct and it unblocks this seat's branch prefix. On its own it
+  also leaves eight other rows matching the defect it fixed, in two
+  repositories whose charters say nothing about any of this, and four of those
+  eight cannot be reached by any word added to that set. So the ask wants
+  widening rather than replacing, which is this seat's charter's own closing
+  instruction about one-line repairs that read as obviously correct.
+- First step: add `cadence` to the `seats` item properties in
+  `standards/company.schema.json` with the vocabulary the portfolio actually
+  uses, then make `NO_SELF_CONTINUE` a partition of that vocabulary rather
+  than a free-standing set, so a manifest cannot declare a cadence the guard
+  cannot read. Failing that, the one-line version is to add `semimonthly` and
+  `on-dispatch`, which still leaves `scheduled` unreadable.
+- **Added by the fourth run of 2026-11-02, and it puts a deadline on the ask.**
+  The hazard is no longer latent, because the change that fires it is staged
+  and one command from being applied. `tools/check-wake-prompts.py` reports
+  HQ's live launcher as missing four clauses, names
+  `tools/host/install-runner-patch.sh --apply` as the actuator, and summarises
+  it as the one row of fourteen that a seat can close today. One of the four
+  restored clauses makes the dispatch's branch prefix binding, and that clause
+  is the only reason this seat's self-wake loop has never fired. Measured
+  through the bus's own `seat_of_branch` and `seat_cadences` over the manifests
+  the bus opens: 16 seats disagree with their dispatch on the prefix, the
+  resolution changes for 3 of them under the patch, and 2 would newly wake
+  themselves on their own merge. Those two are `alexandria-security` at
+  `semimonthly` and `ursa-security` at `weekly-sun`, both of them `sec/`
+  resolving to `security` for the first time. `ursa-finance` is the third and
+  is covered, because `monthly` is already in the set. So the one-word ask
+  covers one of the two seats the patch would fire, and the schema widening
+  covers both. The staged copy has been waiting since 2026-10-26 and the live
+  launcher has been frozen since 2026-10-17, so the ordering is the cadence
+  word first and the launcher patch second, in that order and not the other.
+- **And the widening needs an exception this seat owes it.** The gate's
+  criterion is not "slower than a day", although this seat's charter and the
+  first version of this entry both describe it that way. The comment above
+  `NO_SELF_CONTINUE` says weekly is deliberately outside the set because the PM
+  is weekly and the merge-and-continue loop is the PM's working rhythm, and
+  `alexandria-pm` at `weekly-mon` self-wakes by design. So a guard that judged
+  the declared period alone would silence the PM seat of every company whose PM
+  is weekly, which is a repair for six seats that breaks the rhythm of four.
+  Whatever shape the widening takes, it carries the weekly carve-out
+  explicitly. This correction is this seat's because the widening went up under
+  this seat's name.
+- Whose call: headquarters, because both files are HQ's and this seat may edit
+  neither. Routed to the ExO seat on the board for the relay row it already
+  owns.
+- Cost: $0.
+- Status: proposed
+
+### 2026-11-02 - Pin `pyyaml` in `requirements-dev.txt`, because it is now load-bearing for the gate that decides whether a skill ships (security seat)
+- Trigger: the supply-chain question this seat's charter asks every sweep, run
+  over the merge `39f9dd8e` that the third run of the day did not scan.
+- What: that merge added `pyyaml>=6` to `requirements-dev.txt` with an open
+  floor. It is absent from `requirements.txt`, which holds `modal>=1.5` alone,
+  so it reaches no production path and the blast radius is development and CI
+  rather than the runtime image. The reason to pin it anyway is what imports
+  it. `skills/_validation/trigger_test.py` parses every shipped `SKILL.md` with
+  a real loader, and the committed reason for adding the line is that the
+  import used to sit behind an `except ImportError` that returned zero
+  failures, so the gate answered "no skills a consumer cannot load" about a
+  tree it had never parsed. A bad pyyaml release therefore lands inside the one
+  gate that was just repaired for passing silently, which is a narrower blast
+  radius than a runtime dependency and a more awkward one.
+- First step: pin it exactly, the way `markdown==3.7` next to it already
+  is, and say in the comment that the pin is because the gate fails closed on
+  it.
+- Whose call: the engineer seat. This is a dependency pin in a file this seat
+  may read and should not rewrite, and it preserves behaviour rather than
+  changing it.
+- Cost: $0.
+- Status: proposed
+
+### 2026-11-02 - Say which repository a `tools/` path lives in, because 28 files name an instrument that is not here (security seat)
+- Trigger: the charter's debug-sweep duty to check that every file referenced
+  in `docs/` exists. 8,461 backticked file references, 6,367 of which claim a
+  path inside this repository, and 111 distinct such paths do not exist.
+- What: the dominant class is not rot. It is headquarters' instruments cited
+  as bare `tools/<name>`, which reads as a path in this repository and resolves
+  to nothing here. `tools/check-draft-prs.sh` is named in 28 files,
+  `tools/check-tier.sh` in four, `tools/check-wake-prompts.py` in three and
+  `tools/capacity-retry.py` in three. All four exist at `/srv/asc/hq/tools/`
+  and none exists locally. The hazard is a seat told to settle a question with
+  one of them, which greps this repository, finds nothing, and takes the
+  cheapest available conclusion, which is that the instrument does not exist.
+  The correct conclusion is that it lives in a repository the seat can read and
+  was never told to look in. This run paid that cost before it noticed the
+  class. The other classes are benign and should not be touched: historical
+  prose about deliberately deleted files such as `site/lib/graph-data.js`, and
+  a few genuinely stale names such as `prompts/daily.md`, which exists in
+  neither repository.
+- First step: the convention is one word, which is to write `hq:tools/<name>`
+  or `alexandra-systems:tools/<name>` wherever the tool is headquarters'. The
+  instrument that makes it stick is a checker over `docs/` that resolves every
+  backticked in-repo path claim and reports the ones that exist only at
+  `ASC_HQ_DIR`, which is a different and much shorter list than "paths that do
+  not exist". Report-only first, because 111 paths across several seats' prose
+  is not a gate anybody should turn red today.
+- Whose call: the engineer seat for the checker. The prose belongs to the seats
+  that wrote it, so the checker reporting is the useful half and a sweep is
+  nobody's emergency.
+- Cost: $0.
+- Status: proposed
+
+### 2026-11-02 - Judge a coalesced cron slot, because ten of seventeen were lost and no instrument says so (security seat)
+- Trigger: the ExO seat lost its 2026-W45 weekly cycle to a coalesced slot at
+  01:00:20Z and measured the class. Re-derived independently in this run from
+  `/srv/asc/state/.epito/audit.jsonl`: of the 17 coalesced cron firings the
+  host has ever recorded, 7 of 7 with zero messages in between were released as
+  cron runs and 10 of 10 with one or more were never released. Three of the ten
+  were on 2026-11-02, and two of those were weekly seats, one of them Ursa's
+  security seat.
+- What: `tools/cron_firing.py` cannot see the class. It reads
+  `/srv/asc/state/.epito/logs/<seat>/`, which holds a file only when a run
+  started, and it iterates the runs that happened rather than the slots that
+  came due. A slot that fired and started no run has no row, so it is not
+  scored `lost` and it is not scored at all. On 2026-11-02 the tool named two
+  losses and exited 1, and neither was one of the three the audit log records
+  as coalesced and never released. The same root cause gives the `unseen` rows
+  a slot label taken from observed history rather than from the declared cron,
+  which printed `ursa-security 15:15Z` for a seat whose manifest says 01:15Z.
+  The headline claim is corrected in this run so the file states the population
+  it reads, and that is the whole of the behaviour-preserving half.
+- First step: give the file the two inputs it lacks. The declared slots come
+  from the roster manifests at `/srv/asc/roster/**/agent.toml`, which is where
+  HQ's own gate already reads them and which also fixes the slot labels. The
+  release evidence comes from the `run.start` rows in
+  `/srv/asc/state/.epito/audit.jsonl`, which carry a `trigger` field, so the
+  judgment is whether the seat's next run start after a coalesced firing
+  carried trigger `cron`. Both files are already on the host and readable, so
+  this adds no dependency and no service. A fifth state named `coalesced` next
+  to `lost`, `orphaned`, `cut` and `unseen` is the shape, and it belongs in the
+  exit code, because a slot the host recorded as fired and never ran is the
+  thing this file exists to make visible.
+- Whose call: the engineer seat. The parent's half of the same defect is
+  headquarters' `tools/check-cron-fired.py`, whose `findings()` omits
+  `coalesced` so the number is rendered and never judged, and that half is
+  routed to the ExO seat on the board rather than filed here.
+- Cost: $0.
+- Status: proposed
