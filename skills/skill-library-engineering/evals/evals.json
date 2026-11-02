@@ -187,7 +187,7 @@
    "id": "sle-t3",
    "kind": "treatment",
    "sections": [
-    "Delta 3: the description is the entire routing surface, and more text does not repair a bad pick"
+    "Delta 3: the description is the entire routing surface, and widening the menu does not repair a bad pick"
    ],
    "form": "project",
    "situation": "The Router Within: under progressive disclosure every skill's name and description is preloaded and the model picks from that menu with no body text visible, and Qwen3-32B in a live bash-agent harness on 177 executable tasks loaded the correct skill on 1.1 percent of them.",
