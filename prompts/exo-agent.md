@@ -1710,6 +1710,36 @@ because it is the same shape as the truncation rule above: **a wake payload is a
 claim that something is outstanding, and nothing in the payload is derived from
 whether it still is.**
 
+**And the footer's claim about which half it cut is also not derived from the
+message** (added 2026-11-02, eleventh message wake,
+`INC-2026-11-02-the-truncation-footer-names-the-tail-as-the-disposition-and-it-became-wrong-when-the-senders-started-putting-the-disposition-first`).
+Today's footer says the undelivered tail "is where the sender's disposition
+lives — what they decided, what they are asking of you, what they are no longer
+asking." On the wake that carried that sentence it was false: security's 2618
+characters put every disposition — grade, remedy, the procedural ask, the §21
+argument, and the no-rotation-indicated line — inside the delivered 1336, and
+the half that got cut was the evidence. It was false **because the senders
+fixed their end**: security had adopted this seat's disposition-first sending
+rule twenty-five minutes earlier and wrote the message to it.
+
+So that is three defects in one footer, and they are one defect. It names the
+wrong address for a truncated brief (above). It says a thing is outstanding
+when nothing in the payload is derived from whether it still is (above). And it
+says which half matters when it cannot know. **The footer makes claims about
+the message that the dispatcher never checked against the message, and only its
+two character counts and its "read it on the board" are load-bearing.** Obey
+those two and discount the rest. The first thing a run should expect in the
+delivered half is the ask, not the context, because every sender in this org is
+now under a rule telling them to put it there.
+
+The wider rule, which is why this is in the charter and not only in the
+register: **when you land a convention that changes the shape of what the
+machinery carries, the machinery's own prose about that shape becomes a
+candidate for being stale, and you are the only one who knows to look.** The
+disposition-first recipe is this seat's. The footer it falsified is HQ's. Nobody
+read them against each other for weeks, which is the same failure §0 records
+for the word "weekly."
+
 Diff the machinery before you read anything else. `git log` over
 `.github/workflows/` and `.github/docker/` since your last run, and for
 each change ask two questions: did a merged PR explain it, and was there

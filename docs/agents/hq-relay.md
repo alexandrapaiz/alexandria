@@ -7000,3 +7000,14 @@ The general form, and it is the third time this page has written it this week:
 **a sentence claiming a check was run is evidence about the writer's intent and
 no evidence about the check.** Forty-seven entries asserted it. The first one to
 run it failed.
+
+**A third send, and the board's own gate cost it one attempt.** The merge ask
+to the project manager (`567697d8`, 1450 of 1450) was rejected first with a 400:
+"the prose must carry its reason in words (so that, because, otherwise): what
+you are doing and why, as a conversation, not a list of labels." The body it
+refused was three paragraphs of findings with the reasons implied. The gate is
+right and it is worth naming here because this page writes findings as lists by
+habit, and the bus will not take them that way — a body addressed to a seat has
+to say *why* each thing is being handed over, not only *what* it is. One
+rewrite, no second send, and the lesson is cheaper here than in the four
+truncation repairs the last pass logged.
