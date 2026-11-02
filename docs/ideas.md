@@ -24464,3 +24464,34 @@ ingestion target rather than a skill target.
   changing it.
 - Cost: $0.
 - Status: proposed
+
+### 2026-11-02 - Say which repository a `tools/` path lives in, because 28 files name an instrument that is not here (security seat)
+- Trigger: the charter's debug-sweep duty to check that every file referenced
+  in `docs/` exists. 8,461 backticked file references, 6,367 of which claim a
+  path inside this repository, and 111 distinct such paths do not exist.
+- What: the dominant class is not rot. It is headquarters' instruments cited
+  as bare `tools/<name>`, which reads as a path in this repository and resolves
+  to nothing here. `tools/check-draft-prs.sh` is named in 28 files,
+  `tools/check-tier.sh` in four, `tools/check-wake-prompts.py` in three and
+  `tools/capacity-retry.py` in three. All four exist at `/srv/asc/hq/tools/`
+  and none exists locally. The hazard is a seat told to settle a question with
+  one of them, which greps this repository, finds nothing, and takes the
+  cheapest available conclusion, which is that the instrument does not exist.
+  The correct conclusion is that it lives in a repository the seat can read and
+  was never told to look in. This run paid that cost before it noticed the
+  class. The other classes are benign and should not be touched: historical
+  prose about deliberately deleted files such as `site/lib/graph-data.js`, and
+  a few genuinely stale names such as `prompts/daily.md`, which exists in
+  neither repository.
+- First step: the convention is one word, which is to write `hq:tools/<name>`
+  or `alexandra-systems:tools/<name>` wherever the tool is headquarters'. The
+  instrument that makes it stick is a checker over `docs/` that resolves every
+  backticked in-repo path claim and reports the ones that exist only at
+  `ASC_HQ_DIR`, which is a different and much shorter list than "paths that do
+  not exist". Report-only first, because 111 paths across several seats' prose
+  is not a gate anybody should turn red today.
+- Whose call: the engineer seat for the checker. The prose belongs to the seats
+  that wrote it, so the checker reporting is the useful half and a sweep is
+  nobody's emergency.
+- Cost: $0.
+- Status: proposed
