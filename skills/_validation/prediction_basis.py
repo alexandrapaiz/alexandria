@@ -90,6 +90,7 @@ task's own prompt and only a reader can see that. Printing them is what makes a
 hand relabelling possible at all.
 """
 import argparse
+import contextlib
 import glob
 import json
 import os
@@ -102,6 +103,7 @@ import sys
 # unresolved-flag class, 2026-11-02).
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import trigger_test as tt                                # noqa: E402
+from earned_pass import verdict                          # noqa: E402
 
 KINDS = ("observed-bare-run", "this-repository-history", "authored-judgement",
          "refuted-and-survived", "measured-floor")
@@ -237,6 +239,23 @@ def criteria_come_apart(rows):
     return [r for r in rows if r["repository_shape"]]
 
 
+def _verdict(total, problems):
+    """One exit for both output modes, through the shared refusal.
+
+    `total` is the denominator: every prediction this run read a label off. It
+    was never consulted before 2026-11-02, so an empty suite printed the pass
+    sentence below over nothing at all and exited 0.
+    """
+    return verdict(
+        "prediction-basis labels", checked=total, unit="predictions",
+        failures=len(problems),
+        pass_line=f"Every one of the {total} predictions says what it rests on. "
+                  "Exit 0 does not mean the predictions are right, only that "
+                  "none of them is pretending.",
+        fail_line=f"{len(problems)} of {total} predictions carry no usable "
+                  "basis label.")
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--skills-dir", default="skills")
@@ -274,7 +293,10 @@ def main():
                           "criteria_come_apart": [
                               {"skill": r["skill"], "task": r["task"],
                                "kind": r["kind"]} for r in apart]}, indent=2))
-        return 1 if (args.check and problems) else 0
+        if not args.check:
+            return 0
+        with contextlib.redirect_stdout(sys.stderr):
+            return _verdict(total, problems)
 
     for kind in KINDS:
         print(f"{counts[kind]:>4} of {total} predictions: {kind}")
@@ -374,12 +396,13 @@ def main():
     print("       cannot see that, so it says too much instead of guessing.")
     for p in problems:
         print(f"failing: {p}")
-    if problems:
-        print(f"\n{len(problems)} predictions carry no usable basis label.")
-        return 1 if args.check else 0
-    print("\nEvery prediction says what it rests on. Exit 0 does not mean the "
-          "predictions are right, only that none of them is pretending.")
-    return 0
+    code = _verdict(total, problems)
+    # Without `--check` this is a reader and a labelled defect is printed rather
+    # than failed. A denominator of zero is refused either way, because then
+    # the reader read nothing and said so as though it had read everything.
+    if not args.check and code == 1:
+        return 0
+    return code
 
 
 if __name__ == "__main__":

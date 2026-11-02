@@ -98,6 +98,9 @@ import math
 import os
 import re
 import sys
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from earned_pass import REFUSAL, verdict                  # noqa: E402
 from datetime import date
 
 # ---------------------------------------------------------------------------
@@ -596,6 +599,16 @@ def run(skills_dir: str, decoys_path: str,
                 "scores": decision["scores"],
                 "rationale": case.get("rationale", ""),
             })
+        if not results:
+            # Before 2026-11-02 this fell through to `passed / len(results)`
+            # and died on a ZeroDivisionError, which exits 1, which is this
+            # file's code for "a case failed". A new skill shipped with
+            # `"cases": []` therefore read as a trigger-suite failure rather
+            # than as a suite nobody had written yet. It is a data error.
+            raise SystemExit(
+                f"{cf}: the suite carries no cases, so there is nothing to "
+                "measure for " + owner + ". " + REFUSAL.format(
+                    gate="trigger test", unit="cases"))
         passed = sum(1 for r in results if r["passed"])
         suites.append({
             "skill": owner,
@@ -1198,7 +1211,7 @@ def check_receipts(skills_dir: str, results_dir: str) -> int:
               "as the SKILL.md edit, not a later one:")
         print("  python3 skills/_validation/trigger_test.py "
               "--json skills/_validation/results/<date>-<engine>-<slug>.json")
-    else:
+    elif skills:
         print(f"\nall {len(skills)} receipts describe today's text.")
     return len(stale)
 
@@ -1286,7 +1299,7 @@ def check_frontmatter(skills_dir: str) -> int | SkippedGate:
               "unquoted description. Wrap the value in double quotes; both "
               "readers in this repository strip them, so the text a router "
               "scores does not change.")
-    else:
+    elif paths:
         print(f"\nall {len(paths)} skills load under a YAML parser.")
     return len(bad)
 
@@ -1338,12 +1351,23 @@ def main() -> int:
         return 0
 
     if args.receipts:
+        # The denominator the gate was missing. `refuse_unresolved` above
+        # covers a path that holds no skills *directory*; this covers a
+        # directory that resolved and holds no skills, which printed "all 0
+        # receipts describe today's text" and exited 0 until 2026-11-02.
+        n_skills = len(load_skills(args.skills_dir))
         stale = check_receipts(args.skills_dir, args.results)
         unloadable = check_frontmatter(args.skills_dir)
         if isinstance(unloadable, SkippedGate):
             print(f"\nreceipts: FAIL, {unloadable}")
             return 1
-        return 1 if (stale or unloadable) else 0
+        return verdict(
+            "receipts and frontmatter", checked=n_skills, unit="skills",
+            failures=stale + unloadable,
+            pass_line=f"receipts: all {n_skills} skills carry a receipt for "
+                      "today's text and load under a YAML parser.",
+            fail_line=f"receipts: {stale} stale and {unloadable} unloadable of "
+                      f"{n_skills} skills.")
 
     res = run(args.skills_dir, args.decoys, args.engine)
     report(res, args.verbose)

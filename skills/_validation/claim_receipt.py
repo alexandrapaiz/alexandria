@@ -24,6 +24,7 @@ section heading the skill no longer carries, which is what a length retrofit
 produces if it moves a heading and leaves the suite behind.
 """
 import argparse
+import contextlib
 import glob
 import json
 import pathlib
@@ -31,6 +32,9 @@ import re
 import sys
 
 import yaml
+
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+from earned_pass import verdict                              # noqa: E402
 
 # "claim 200", "claims 1652, 1653", "C476". The body of two skills already cites
 # this way inline, which is the finest-grained receipt in the library, so an
@@ -55,12 +59,18 @@ def read_skill(slug: str) -> dict:
     # `recursive-harness-self-improvement`'s own provenance entry said was not
     # derivable from the file. It is derivable, from the suite beside it.
     retired: dict[int, set[str]] = {}
+    # The denominator this file's `--check` is a verdict over: every (task,
+    # heading) pair it compared against the skill's own headings. Zero of them
+    # is what `earned_pass.py` refuses, because a suite with no tasks cannot
+    # name a heading wrongly and that is not the same as naming them all right.
+    section_refs = 0
     for task in spec.get("retired_tasks") or []:
         label = ", ".join(task.get("sections") or []) or f"cut with {task['id']}"
         for cid in (task.get("source") or {}).get("claims") or []:
             retired.setdefault(cid, set()).add(label)
     for task in spec.get("tasks") or []:
         named = task.get("sections") or []
+        section_refs += len(named)
         for section in named:
             if section not in sections:
                 stale.setdefault(task["id"], []).append(section)
@@ -85,6 +95,7 @@ def read_skill(slug: str) -> dict:
         "orphaned": [c for c in cited if c not in by_claim
                      and c not in inline and c not in retired],
         "stale_section_refs": stale,
+        "section_refs": section_refs,
     }
 
 
@@ -98,9 +109,27 @@ def main() -> int:
 
     rows = [read_skill(p.split("/")[1])
             for p in sorted(glob.glob("skills/*/SKILL.md"))]
+    refs = sum(r["section_refs"] for r in rows)
+    stale = {r["skill"]: r["stale_section_refs"]
+             for r in rows if r["stale_section_refs"]}
+
+    # `--json` used to return here, so `--check --json` printed the bundle and
+    # exited 0 on a defect that `--check` alone exits 1 on. That is the
+    # engineer's own 2026-11-02 defect in this file: a verdict discarded by how
+    # the tool was invoked. The bundle keeps stdout to itself and the verdict
+    # goes to stderr, so both readers get what they came for.
     if args.json:
         print(json.dumps(rows, indent=2, sort_keys=True))
-        return 0
+        if not args.check:
+            return 0
+        with contextlib.redirect_stdout(sys.stderr):
+            return verdict(
+                "claim-to-section receipt", checked=refs,
+                unit="eval-task section references", failures=len(stale),
+                pass_line="No eval task names a heading its skill no longer "
+                          f"carries, over {refs} section references.",
+                fail_line=f"{len(stale)} skills name a heading they no longer "
+                          "carry: " + ", ".join(sorted(stale)) + ".")
 
     cited = placed = 0
     width = max(len(r["skill"]) for r in rows)
@@ -129,17 +158,24 @@ def main() -> int:
         print(f"{orphans} are listed in frontmatter and placed nowhere. Placing "
               "one needs the claim row, so it is reported rather than guessed.")
 
-    stale = {r["skill"]: r["stale_section_refs"]
-             for r in rows if r["stale_section_refs"]}
     if stale:
         print("\nstale section references, which a heading rename produces:")
         for slug, tasks in stale.items():
             for task, sections in tasks.items():
                 print(f"  {slug}/{task} names {sections!r}, "
                       "which the skill no longer carries")
-    else:
-        print("\nNo eval task names a heading its skill no longer carries.")
-    return 1 if (args.check and stale) else 0
+    code = verdict(
+        "claim-to-section receipt", checked=refs,
+        unit="eval-task section references", failures=len(stale),
+        pass_line="No eval task names a heading its skill no longer carries, "
+                  f"over {refs} section references.",
+        fail_line=f"{len(stale)} skills name a heading they no longer carry.")
+    # Without `--check` this file is a reader, so a stale ref is printed above
+    # and the exit stays 0. A denominator of zero is refused either way: it
+    # means this reader read nothing, which no caller asked for.
+    if not args.check and code == 1:
+        return 0
+    return code
 
 
 if __name__ == "__main__":

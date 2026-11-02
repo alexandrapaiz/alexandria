@@ -42,6 +42,7 @@ false. `parses` tasks are the ones that get partial credit, because
 round from how the suites describe them.
 """
 import argparse
+import contextlib
 import glob
 import json
 import os
@@ -63,6 +64,7 @@ from skill_eval import command_env                       # noqa: E402
 # unresolved-flag class, 2026-11-02).
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import trigger_test as tt                                # noqa: E402
+from earned_pass import verdict                          # noqa: E402
 
 # Counted from pytest's own summary line, each outcome read independently.
 # A first draft required " passed" to be present and so could not count a
@@ -196,6 +198,24 @@ def problems(rows):
     return out
 
 
+def _verdict(rows, bad):
+    """One exit for both output modes, through the shared refusal.
+
+    The denominator is the number of starter files this run actually executed.
+    A suite with no project tasks used to print the pass sentence below and
+    exit 0, which says a sweep found nothing wrong in a sweep that swept
+    nothing.
+    """
+    return verdict(
+        "project fixture floors", checked=len(rows), unit="project tasks",
+        failures=len(bad),
+        pass_line=f"Every one of the {len(rows)} declared stub scores matches "
+                  "what the starter file just scored.",
+        fail_line=f"{len(bad)} of these {len(rows)} rows cannot be read as "
+                  "written: either a declared stub score disagrees with the "
+                  "measurement, or the probe never ran at all.")
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--skills-dir", default="skills")
@@ -222,7 +242,10 @@ def main():
                           "undeclared": [r["task"] for r in undeclared],
                           "collapsed_to_zero": [r["task"] for r in collapsed]},
                          indent=2))
-        return 1 if (args.check and bad) else 0
+        if not args.check:
+            return 0
+        with contextlib.redirect_stdout(sys.stderr):
+            return _verdict(rows, bad)
 
     print(f"{len(rows)} project tasks with a hard check, one starter module and "
           "one probe file.\nEach starter file run unchanged as its own answer:\n")
@@ -252,13 +275,10 @@ def main():
           "done yet, which is how a register stops being read.")
     for p in bad:
         print(f"\nfailing: {p}")
-    if bad:
-        print(f"\n{len(bad)} of these rows cannot be read as written: either a "
-              "declared stub score\ndisagrees with the measurement, or the probe "
-              "never ran at all.")
-        return 1 if args.check else 0
-    print("\nEvery declared stub score matches what the starter file just scored.")
-    return 0
+    code = _verdict(rows, bad)
+    if not args.check and code == 1:
+        return 0
+    return code
 
 
 if __name__ == "__main__":
