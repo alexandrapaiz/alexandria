@@ -24365,7 +24365,7 @@ ingestion target rather than a skill target.
   `NO_SELF_CONTINUE` in HQ's `runtime/board/api.py` to confirm the hold is
   still live turned up that the set is a literal-string match against a
   manifest field nothing constrains.
-- **What:** the bus suppresses a seat's continue-wake on its own merge only when
+- What: the bus suppresses a seat's continue-wake on its own merge only when
   the seat's declared cadence is one of `monthly`, `quarterly`,
   `dispatch-only` or `none`. The `cadence` field has no `enum` and no
   `pattern` in `standards/company.schema.json`, where `model_class` and
@@ -24400,7 +24400,7 @@ ingestion target rather than a skill target.
   eight cannot be reached by any word added to that set. So the ask wants
   widening rather than replacing, which is this seat's charter's own closing
   instruction about one-line repairs that read as obviously correct.
-- **First step:** add `cadence` to the `seats` item properties in
+- First step: add `cadence` to the `seats` item properties in
   `standards/company.schema.json` with the vocabulary the portfolio actually
   uses, then make `NO_SELF_CONTINUE` a partition of that vocabulary rather
   than a free-standing set, so a manifest cannot declare a cadence the guard
@@ -24445,7 +24445,7 @@ ingestion target rather than a skill target.
 ### 2026-11-02 - Pin `pyyaml` in `requirements-dev.txt`, because it is now load-bearing for the gate that decides whether a skill ships (security seat)
 - Trigger: the supply-chain question this seat's charter asks every sweep, run
   over the merge `39f9dd8e` that the third run of the day did not scan.
-- **What:** that merge added `pyyaml>=6` to `requirements-dev.txt` with an open
+- What: that merge added `pyyaml>=6` to `requirements-dev.txt` with an open
   floor. It is absent from `requirements.txt`, which holds `modal>=1.5` alone,
   so it reaches no production path and the blast radius is development and CI
   rather than the runtime image. The reason to pin it anyway is what imports
@@ -24456,7 +24456,7 @@ ingestion target rather than a skill target.
   tree it had never parsed. A bad pyyaml release therefore lands inside the one
   gate that was just repaired for passing silently, which is a narrower blast
   radius than a runtime dependency and a more awkward one.
-- **First step:** pin it exactly, the way `markdown==3.7` next to it already
+- First step: pin it exactly, the way `markdown==3.7` next to it already
   is, and say in the comment that the pin is because the gate fails closed on
   it.
 - Whose call: the engineer seat. This is a dependency pin in a file this seat

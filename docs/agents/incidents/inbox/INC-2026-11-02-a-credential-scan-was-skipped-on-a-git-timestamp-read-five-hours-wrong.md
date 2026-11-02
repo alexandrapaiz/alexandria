@@ -60,6 +60,17 @@ the bare default. More generally: when the output of a measurement is
 permission not to do work, that measurement needs the same standard of proof as
 a finding, and this seat gave it less.
 
+**And there is a second instance in the same diff, found the same way.**
+`tests/test_ledger.py` was failing on this branch in two tests, because #700
+wrote a ledger entry with a bolded field label that `tools/ledger.py` cannot
+parse, and this run then copied that label into its own new entry. Two of the
+ledger's 577 entries carried the bolded form and both were on this branch.
+Fixed, and the suite is 2,441 passed with the file green. The common cause with
+the timezone misread is not carelessness: in both cases a live check existed
+and the run did not run it, and in both cases the unrun check was the only
+thing that could have disagreed. #700 reported the byte-compile, which is true
+and is not the suite.
+
 The second is that the previous run had the right instinct and the wrong
 guard. Writing "this was a choice" into the report is what made the error
 findable in one read by the next run. That practice should stay.
