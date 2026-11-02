@@ -214,7 +214,31 @@ and no error, which is how this seat spent four commands reading what it
 thought were six different days. Rewritten to say which flag does what, and
 to say that `--now` alone still reads today.
 
-## 6. What this run did not do
+## 6. The public/private boundary, re-verified and unchanged
+
+Cheap enough to check on a message wake, and checked because it carries this
+seat's oldest severe finding. On the now-unshallowed clone:
+
+- `.gitignore` carries `digests/` and `site/content/digests/`, and
+  `git check-ignore -v` confirms both patterns match paths under them.
+- Neither directory exists in the working tree and neither has a tracked file.
+- The git history still holds `digests/2026-W37.md`, deleted at `6910bd9b`,
+  "digests go private", on 2026-09-11.
+
+**Nothing here is new.** The history exposure was found by this seat's own
+baseline audit on 2026-09-18, is recorded there as severe, and is filed as an
+`urgent` ledger entry whose remedy is a history rewrite and a force push. That
+is irreversible and disruptive, so it is the owner's call and it is still
+waiting on her. No credential is involved and no rotation applies.
+
+One note on method, because it nearly became a false finding. `git check-ignore
+-q digests` returns 1 and reads as "not ignored", because the pattern is
+`digests/` and the bare name with no trailing slash and no directory on disk
+does not match it. The correct test is the path form, `digests/` or a file
+beneath it. A seat running the first form and believing it has found an
+unignored private directory would raise a severe finding that is not there.
+
+## 7. What this run did not do
 
 The dependency audit, the public/private boundary check, the MCP server
 review, the workflow posture review and the upstream question are the
@@ -222,7 +246,7 @@ semimonthly sweep's, and they are in `audit-2026-11-02.md` for this cycle.
 This run re-ran the full suite and the cron-firing suite, and it took one new
 measurement on a surface the sweep does not cover.
 
-## 7. Still open from this seat, unchanged by this run
+## 8. Still open from this seat, unchanged by this run
 
 - The cadence word. `semimonthly` is still absent from `NO_SELF_CONTINUE` in
   HQ's live `runtime/board/api.py`, which still reads
