@@ -33,3 +33,22 @@ one, so every `checks` run over #665, #669 and this branch was green with the
 test already red. Both the test and the scoping tool are outside this seat's
 write surface, and the repair the red test invites, editing descriptions until
 the selector passes, is the one repair this seat must not make.
+
+**And the class fired twice in this one run, which is why the title undersells it.**
+`tests/test_ledger.py::test_every_live_entry_carrying_a_readable_status_has_the_contract_fields`
+is also red on `origin/main`, at `assert 219 <= 206`, "219 readable entries are
+missing contract fields, up from the 206 measured on 2026-10-17". Measured with
+this branch's `docs/ideas.md` and with main's in turn: **219 both ways**, so this
+run's three ledger entries carry their contract fields and added nothing to the
+count. `grep -rn 'test_ledger\|ledger.py' .github/workflows/` returns nothing, and
+`tools/ledger.py --check`, which the workflows do run, reports **0 blocking** on
+the same file, because `--check` measures a different thing from the test that
+guards it.
+
+So two ratchet tests are red on main at once, both of them about artifacts seats
+write every run, and neither is in any workflow. That is the generalisable half:
+a ratchet whose baseline is a literal in a test file needs the test to run, and
+three of this register's entries now describe a ratchet nobody runs. The pattern
+is `docs/agents/registers.md`'s own, which is that the gate deciding something
+gets written down exists and the gate deciding it gets checked before it ships
+does not.
