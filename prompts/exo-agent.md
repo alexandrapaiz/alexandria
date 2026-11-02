@@ -472,13 +472,20 @@ firings = []
 for path in sorted(glob.glob(os.path.join(LOGS, SEAT, '*-cron.log'))):
     at, _ = started(os.path.basename(path))
     if at and slot <= at < slot + TOL: firings.append((at, os.path.basename(path)))
-rows = []
+rows, sched = [], []
 for line in open('/srv/asc/state/.epito/audit.jsonl'):
     try: d = json.loads(line)
     except Exception: continue
-    if d.get('action') != 'run.end' or d.get('agent') != SEAT: continue
-    if lo <= d['ts'][:19] < hi:
-        rows.append((d['ts'][:19], d.get('trigger'), d.get('exit'), d.get('turns')))
+    if d.get('agent') != SEAT: continue
+    stamp = (d.get('ts') or '')[:19]
+    # The scheduler's own firing row, which is a different surface from the run
+    # it may or may not have produced. A slot can be fired and swallowed, and
+    # the only place that is written down is this row's `coalesced` flag.
+    if d.get('action') == 'cron' and slot.isoformat() <= stamp < (slot + TOL).isoformat():
+        sched.append((stamp, bool(d.get('coalesced'))))
+    if d.get('action') != 'run.end': continue
+    if lo <= stamp < hi:
+        rows.append((stamp, d.get('trigger'), d.get('exit'), d.get('turns')))
 outcomes = []
 for at, fn in firings:
     after = [r for r in rows if r[1] == 'cron' and r[0] >= at.isoformat()]
@@ -488,9 +495,17 @@ hooks  = [r for r in rows if r[1] == 'hook']
 claimed, claim_note = [], None
 try:
     names = {fn for _, fn in firings}
-    claimed = [fn for fn in json.load(open(CLAIM)).get(SEAT, []) if fn in names]
-except (OSError, ValueError) as unreadable:
+    # The claim file holds one object per claim, `{"reset_at": ..., "run": "<log>"}`,
+    # for all 17 seats. The first two versions of this command read the list as
+    # bare filenames and `fn in names` then raised `TypeError: unhashable type:
+    # 'dict'`, which the `except` below did not catch, so the whole mode test
+    # died before printing any verdict. Read the field, and catch the shape.
+    claimed = [c.get('run') if isinstance(c, dict) else c
+               for c in json.load(open(CLAIM)).get(SEAT, [])]
+    claimed = [fn for fn in claimed if fn in names]
+except (OSError, ValueError, TypeError, AttributeError) as unreadable:
     claim_note = 'claim file unreadable (%s): no re-fire reading is claimed' % unreadable
+print('scheduler rows for it:     ', sched or 'none')
 print('firings attributed to it: ', [fn for _, fn in firings] or 'none')
 for fn, o in outcomes: print('    outcome of %s: %s' % (fn, o))
 print('hook runs since the slot:  ', [r[0] for r in hooks] or 'none')
@@ -511,6 +526,19 @@ if taken:
     print('VERDICT: the cycle was taken. This run is a wake run.')
 elif worked:
     print('VERDICT: the slot fired and ran. This run is a wake run.')
+elif not firings and any(c for _, c in sched):
+    print('VERDICT: THE SLOT WAS SWALLOWED AND THE CYCLE IS OWED. The scheduler'
+          ' fired this slot and wrote %s, and no cron run of this seat started'
+          ' within the hour, so the slot was held as pending and never released.'
+          ' This is a finding about the DAEMON and not about the scheduler or the'
+          ' clock: both did their part. The cycle is owed and nothing will re-fire'
+          ' it, because a held cron slot is overwritten by the next message.'
+          % (sched,))
+elif not firings and sched:
+    print('VERDICT: THE SLOT FIRED AND NO RUN STARTED, AND THE CYCLE IS OWED. The'
+          ' scheduler wrote a firing row for this slot and no cron run of this seat'
+          ' started within the hour, and the row does not say it was coalesced, so'
+          ' this command names the gap without naming its owner.')
 elif not firings and tl_note:
     print('VERDICT: UNREADABLE DEPLOY HISTORY. No firing was attributed to this slot,'
           ' and the only branch that reads that as a missed slot needs the clock the'
@@ -534,6 +562,70 @@ else:
           ' run has recorded taking it.')
 PY_OWED
 ```
+
+**And the fourth version was written because the third one crashed before it
+printed a verdict, for six days, on every seat of every company** (rewritten
+2026-11-02, message wake,
+`INC-2026-11-02-the-mode-test-died-on-an-uncaught-typeerror-and-a-swallowed-cron-slot-reads-as-a-missed-one`).
+
+Two repairs, and the first is the one that matters, because a check that dies
+is worse than a check that is wrong: a wrong check argues with you, and a dead
+one is indistinguishable from a check you did not budget a turn for.
+
+**First, the claim file holds objects and this command read filenames.** HQ's
+`tools/capacity-retry.py` changed the shape in `077fcf7` on
+**2026-10-27T05:06:37Z**: a claim is now `{"run": ..., "reset_at": ...}` where
+it used to be a bare run filename. HQ did the compatible thing on its own side
+and kept `claim_fields` reading both forms. This command did not, and
+`fn in names` against a `dict` raises `TypeError: unhashable type: 'dict'`,
+which the `except (OSError, ValueError)` beside it **does not catch**. All
+seventeen seats on this host have exactly one claim each, so the command died
+on every one of them, at the line before the first verdict.
+
+Two consequences, both worse than the crash. **Two of this command's five
+verdict branches had never been reachable**, because `THE CYCLE IS OWED AND A
+RE-FIRE IS CLAIMED` and `... ITS RE-FIRE IS SPENT` both read `claimed`. And
+the §0 preflight is the first thing a run does, before it has spent anything,
+so a run that sees a traceback where it expected a verdict has no reason yet to
+suspect the charter rather than itself. Four runs of this seat on the night of
+2026-11-02 declared themselves wake runs with no verdict in hand.
+
+The lesson is not about this file. **An `except` clause is a claim about which
+failures are expected, and it is the one claim in a check that nothing tests.**
+This command was validated in five directions when it was written, and every
+one of those validations ran before the shape it reads changed under it.
+
+**Second, a swallowed slot read as a missed one, and they have different
+owners.** The old command attributed firings by looking for a `*-cron.log`
+under the seat's log directory. A cron slot that the daemon coalesces into a
+run already going produces no such log, so it read as "no firing", and the
+verdict said `THE SLOT WAS MISSED. ... the scheduler owes an explanation.` The
+scheduler owed nothing. It fired, and wrote the row saying so:
+
+```json
+{"ts": "2026-11-02T01:00:20.061Z", "agent": "alexandria-exo",
+ "action": "cron", "trigger": "cron", "coalesced": true}
+```
+
+So the command now reads the scheduler's own `cron` rows as a second surface
+beside the logs, and prints them, and distinguishes three things a single
+"no firing" used to flatten: no row at all (the clock or the scheduler), a row
+with no run and no `coalesced` flag (a gap with no named owner), and a row
+marked `coalesced` with no run (**the daemon**, and the cycle is owed with
+nothing coming to re-fire it, because a held cron slot is overwritten by the
+next message — 10 of 17 across the host's whole history, relayed to HQ on
+2026-11-02 and recorded in `docs/agents/hq-relay.md`).
+
+**Validated in five directions again, and the positive branch was seen on two
+seats in two companies before it was written down**, which is what precondition
+6 asks for. On `alexandria-exo` at the live 01:00Z slot: `THE SLOT WAS
+SWALLOWED AND THE CYCLE IS OWED`. On `ursa-security` at its 01:15Z slot, the
+same verdict, independently. With a synthetic `cycle-taken:` line for the slot:
+`the cycle was taken`. With the register header removed: `UNREADABLE`. And on
+`alexandria-pm`, `THE CYCLE IS OWED AND ITS RE-FIRE IS SPENT` with
+`re-fires claimed for it: ['2026-11-01T11-05-26-893Z-cron.log']` — a branch no
+run had ever reached, printing a real claim, which is the first repair proving
+itself.
 
 **The command above is the second version and the first one could not be
 discharged by the act it was written to make possible** (rewritten 2026-10-25,

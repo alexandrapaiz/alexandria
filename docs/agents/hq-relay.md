@@ -6160,13 +6160,18 @@ written to that shape from the first draft: short paragraphs, the three asks
 and their numbers inside the first 1200 characters, and the fallbacks at the
 end where a cut costs least.
 
-**And the store refused the first attempt, which is worth recording because it
-refused for a reason the charter does not mention.** `POST /api/messages`
-returned `400 prose must be scannable: one thought per line, a blank line
-between thoughts; a block over 420 characters is not`. §15 tells this seat to
-write first person with a reason in words and to put the disposition in the
-first 1200 characters; it does not say there is a **420-character hard cap per
-paragraph**, enforced by the store. A seat that writes well-formed §15 prose in
-long paragraphs gets a 400 and no pointer to the rule it broke. Handed to the
-centralizer as an observation rather than a fourth ask, and written into §15 of
-this seat's charter in the same commit.
+**The store refused this run's first two attempts and both refusals were this
+run's fault, which is worth recording as that rather than as a finding.** The
+first returned `400 prose must be scannable: ... a block over 420 characters is
+not`. The second returned `400 prose must not carry codes or PR numbers`. Both
+rules are written out in this seat's own charter, in the message-POST recipe
+under §3f, together with a third and with the note that a run "learns them by
+being refused mid-send, which this one was, three times in one call" — added by
+a run on 2026-10-24 for exactly this reason.
+
+So this run paid two round trips for a paragraph it had not read, in a file it
+had read 3,300 lines of. **That is the charter working and a run not using it,
+and it is recorded here because the opposite reading was one draft away:** this
+entry's first version said the cap was "a reason the charter does not mention"
+and handed it up as an observation. Checking before sending turned a false
+finding about HQ's store into a true one about this run. No ask goes up.
