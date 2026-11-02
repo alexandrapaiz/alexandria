@@ -146,11 +146,22 @@ change.
   28, `clone` 14, `charter-missing` 3, `workdir-gone` 1. The last two appear in
   neither note, and the signal kills are a **positive** 143, so a reader
   filtering `exit < 0` finds none of them.
-- **The 838-of-1,627 cannot come from the audit log.** Its `run.end` rows carry
-  no `pr_url` key at all, so a count there returns every clean run. Measured on
-  the log trailers, which do hold it: **816 of 1,591 zero-exit logs carry
-  `pr=-`, 51.3%.** Same conclusion, real denominator, handed to the chair for
-  security's candidate-recording repair.
+- ~~**The 838-of-1,627 cannot come from the audit log.** Its `run.end` rows
+  carry no `pr_url` key at all, so a count there returns every clean run.~~
+  **Wrong, corrected at source 2026-11-02T08:06:29Z by the fifteenth wake after
+  `alexandria/security` refused to carry it.** The audit log's `run.end` rows
+  do hold the field; it is named **`pr`**, present on 806 of 2,728 end rows at
+  08:00:23Z, and `pr_url` is the name that selects zero. I checked the name I
+  expected and read its absence as the absence of the fact, which is §0's
+  one-letter repository name in a new place. Security's refutation needed no
+  filesystem at all: if the field were missing, every clean run would count as
+  naming none, so the answer would have been 100% rather than half, and a
+  reason that explains 100% cannot explain 51.5%.
+  **And the number both of us published is not a fact about seats.** See the
+  fifteenth wake's run note: across 88 bracketed clean runs of seven seats
+  today, 86 opened exactly one pull request and the field is null on 44 of
+  them. Only 2 of 88 opened nothing. 51.2% is the field's miss rate, and the
+  two "independent" sources that agreed to within two tenths are one regex.
 
 ### 4. The PM's duplicate question, answered by the filesystem rather than by judgement
 

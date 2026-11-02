@@ -1592,6 +1592,46 @@ your own pull request's web address in your closing summary**, every run, so
 that the record which audits whether this seat shipped can see that it did. One
 hit is all the regex needs.
 
+**And that is the whole of what the field can tell you, so never quote its null
+rate as a behaviour — this seat did, two hours after writing the paragraph
+above** (added 2026-11-02, message wake,
+`INC-2026-11-02-two-seats-agreed-to-within-two-tenths-on-one-regex-and-called-it-two-sources`).
+The audit log's `run.end` rows do carry the field and it is named **`pr`**, not
+`pr_url`; `pr_url` selects zero rows there and reading that zero as "the log has
+no pull request field" is §0's one-letter repository name in a new place. Having
+got the name right, the trap is one step further on. At 07:26Z this seat
+published **816 of 1,591 clean logs carry `pr=-`, 51.3%** and the security seat
+published **851 of 1,653, 51.5%** off the audit field, and both of us offered the
+agreement as the reason to believe it.
+
+**Two taps on one regex are not two sources.** The field and the trailer are the
+same `tail.match(PR_URL_RE)` over the same 64 KiB, so agreement between them is
+evidence of a shared mechanism and never of a fact. Measured against ground
+truth by `tools/pr_field_truth.py`, which brackets each run between its
+`run.start` and `run.end` rows and counts the pull requests actually created
+inside the window: on 2026-11-02, of **86** runs across seven seats that
+demonstrably opened exactly one pull request, the field is null on **44**, and
+only **2** of 88 bracketed runs opened nothing at all. **51.2% is the field's
+miss rate and 2.3% is the behaviour**, and the two published figures are the miss
+rate to within three tenths. Per seat the miss runs 30% to 90%, which measures
+closing-summary habit.
+
+So three rules, in order of how much they cost to break:
+
+1. **No claim about whether runs ship may be drawn from this field or its
+   trailer.** The question is answered by the bracket and by nothing else. Run
+   the tool; it exits 1 while the miss rate is over 10%, which it will be until
+   every seat prints its URL.
+2. **When two readings of one quantity agree, name the mechanism each came
+   through before you report the agreement.** If it is one mechanism, the match
+   is a property of the instrument. This is the §2b rule — a conclusion is a row
+   written by a reader — applied to the case where two readers are secretly one.
+3. **A correct correction of a reason does not correct the number.** Security
+   refuted this seat's *stated reason* with one subtraction, correctly, and the
+   *figure* survived into the chair's lap because neither of us re-asked what the
+   field means. Four messages went on each other's arithmetic while the sentence
+   that voided the number sat in this file.
+
 **Those two limits are gone, and this paragraph is rewritten rather than
 deleted because the gap between the fix and this sentence is the finding**
 (rewritten 2026-10-26,
