@@ -1804,6 +1804,78 @@ READING = re.compile(
     re.I)
 
 
+def shown_path(path):
+    """A hit's path as a reader of this output can act on it.
+
+    Seven gates already wrap `relative_to` in this exact `try`, with the
+    comment at `measure` recording why: it "used to raise rather than measure
+    it (2026-10-06)". `reading` joined the path-taking gates on 2026-10-23,
+    after that repair, and so never received it. That is the whole defect, and
+    it is a repair applied in seven places missing the one caller added next.
+    """
+    try:
+        return str(path.resolve().relative_to(ROOT))
+    except ValueError:
+        return str(path)
+
+
+def reading_domain(paths):
+    """Law 15's two halves, because only one of them a caller may replace.
+
+    `--live` replaces the archive glob with the editions the product serves,
+    and for every other path-taking gate that is exactly right: the question
+    is what a reader opens rather than what somebody committed. `reading` is
+    the only gate in `TAKES_PATHS` whose default domain is site CODE and not
+    the issue archive, so for this one gate replacement silently drops the
+    half the law names first.
+
+    Measured on 2026-11-02, both ways, on this branch:
+
+        reading          63 surfaces, 4 FAIL, exit 1
+        reading --live    3 surfaces, 0 FAIL, exit 0
+
+    The four it stopped seeing are `site/app/page.jsx`, `site/app/terms`
+    and two in `site/app/llms.txt`, and `taste` inherits this verdict for her
+    2026-09-29 verdict 6, so the green reported a ruling as held while the
+    line that breaks it was live on the home page. `editions` prints "`--live`
+    on the passes that take paths is the way to answer it inside one run", so
+    a run following this file's own advice got the green.
+
+    The law's own words are the reason the split is not arbitrary: it binds
+    "the masthead, the email, the site and any line of copy drafted under the
+    canon". A served edition is not a substitute for `site/app/page.jsx`, so
+    the code half is unconditional and the archive half is what a caller may
+    point somewhere else.
+    """
+    code = []
+    for glob in SURFACE_GLOBS:
+        code += sorted(ROOT.glob(glob))
+    if paths:
+        archive = [p if p.is_absolute() else ROOT / p
+                   for p in (pathlib.Path(x) for x in paths)]
+    else:
+        archive = []
+        for glob in ARCHIVE_GLOBS:
+            archive += sorted(ROOT.glob(glob))
+    return code, archive
+
+
+# What `reading_domain` owes, as pairs of (paths given, what must hold). The
+# defect these exist for is invisible in output: a narrowed domain prints a
+# smaller count next to the word "surfaces" and a clean pass under it, and
+# both numbers are true of the domain it chose.
+READING_DOMAIN_CASES = (
+    # No paths is both halves, which is the `all` run and the only shape that
+    # was ever correct.
+    (None, "code and archive both globbed"),
+    # The defect. A path given must ADD to the code half, never replace it,
+    # because `--live` hands this three editions and the law binds the code.
+    (("site/content/issues/2026-W39.md",), "code half survives a named path"),
+    # `--live`'s real shape: absolute paths in a tempdir outside the repo.
+    (("/tmp/nonesuch-live/2026-W42.md",), "code half survives absolute paths"),
+)
+
+
 def reading(paths=None):
     """Canon law 15 on every surface, which is where the law says it binds.
 
@@ -1848,19 +1920,21 @@ def reading(paths=None):
     is a worse version of the same lie. The number's provenance is a reading of
     site/lib/metrics.js and it belongs to the grade.
     """
-    targets = [ROOT / p for p in paths] if paths else []
-    if not targets:
-        for glob in SURFACE_GLOBS + ARCHIVE_GLOBS:
-            targets += sorted(ROOT.glob(glob))
+    code, archive = reading_domain(paths)
+    targets = code + archive
     hits = []
     for path in [t for t in targets if t.is_file()]:
         text, marks = surface_text(path)
         for m in READING.finditer(text):
             around = norm(text[max(0, m.start() - 40):m.start() + 72])
-            hits.append((str(path.relative_to(ROOT)),
+            hits.append((shown_path(path),
                          line_of(marks, m.start()), m.group(), around))
     print(f"surfaces read                               "
           f"{len([t for t in targets if t.is_file()])}")
+    print(f"  of those, code the law binds unconditionally  "
+          f"{len([t for t in code if t.is_file()])}")
+    print(f"  of those, the archive this run was pointed at "
+          f"{len([t for t in archive if t.is_file()])}")
     print(f"lines giving the arriving count a verb of reading   {len(hits)}")
     for rel, line, phrase, body in hits:
         print(f'  FAIL    {rel}:{line}  "{phrase.strip()}"')
@@ -7853,7 +7927,33 @@ def dispatch():
     print(f"SELECTION_CASES                            "
           f"{len(SELECTION_CASES) - picked_wrong} of {len(SELECTION_CASES)}")
 
-    worse += bad + routed_wrong + picked_wrong
+    # The code half is unconditional, so every case asserts the same thing and
+    # the cases differ in what is handed in. A regression that restores the
+    # replacing version fails all three rather than one, which is deliberate:
+    # the identity is the guard and not any single call.
+    narrowed = 0
+    floor = len([p for p in reading_domain(None)[0] if p.is_file()])
+    for given, what in READING_DOMAIN_CASES:
+        code, _ = reading_domain(given)
+        got = len([p for p in code if p.is_file()])
+        if got != floor or floor == 0:
+            narrowed += 1
+            print(f"  READING_DOMAIN_CASES: {what} -- given {given!r}, "
+                  f"the code half was {got} of the {floor} it globs alone")
+    # `shown_path` is the other half of the same `--live` defect: a hit on a
+    # path outside the repository used to raise ValueError, so the only way
+    # this gate could ever report a violation on a served edition was a
+    # traceback. Asserted on a path that cannot exist here.
+    outside = pathlib.Path("/tmp/nonesuch-live/2026-W42.md")
+    if shown_path(outside) != str(outside):
+        narrowed += 1
+        print(f"  READING_DOMAIN_CASES: a path outside the repository must "
+              f"print as itself, got {shown_path(outside)!r}")
+    print(f"READING_DOMAIN_CASES                       "
+          f"{len(READING_DOMAIN_CASES) + 1 - narrowed} "
+          f"of {len(READING_DOMAIN_CASES) + 1}")
+
+    worse += bad + routed_wrong + picked_wrong + narrowed
     if worse:
         print()
         print("A dispatcher that returns 0 for a name it does not have makes")
