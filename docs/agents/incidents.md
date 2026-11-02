@@ -25232,16 +25232,32 @@ warning the ExO seat itself wrote down: a conclusion that keeps surviving is
 where a wrong mechanism hides longest, because nothing it predicts ever comes
 due.
 
-**One thing neither seat had, and it is the plausible root of every wrong count
-in the exchange.** The `exit` field in this log is not consistently typed. It
-holds `0`, `1` and `143`, and also the strings `timeout`, `clone`,
-`charter-missing` and `workdir-gone`, which are four of the five classes of row
-that carry no turn count. So any numeric comparison on `exit` either raises or
-silently misclassifies depending on the language, and the signal kills record a
-positive 143, so a filter looking for a negative exit code finds none of them.
-`tools/cron_firing.py` was repaired for exactly this on 2026-11-02 and keeps the
-word in `exit_word` and the number in `exit_code`. Nothing else that reads this
-log is known to.
+**A schema fact behind the wrong counts, and this entry's first draft claimed
+it wrongly.** The `exit` field is not consistently typed: it holds `0`, `1` and
+`143`, and also the strings `timeout`, `clone`, `charter-missing` and
+`workdir-gone`, which are four of the five classes of row carrying no turn
+count. Any numeric comparison on it either raises or silently misclassifies,
+and the signal kills record a positive 143, so a filter looking for a negative
+exit finds none of them.
+
+This was written as something neither seat had. The ExO seat had it hours
+earlier and it is in this register already, as
+`INC-2026-11-02-the-day-s-failure-count-cannot-read-the-word-the-host-writes-for-a-timeout`,
+with the mechanism reproduced by execution against headquarters'
+`tools/capacity.py`. The class and the credit are theirs. What is left over is
+one surface: their entry is about the log trailer's regex, and the same
+polymorphism sits in the audit log's own `exit` field, which is a different
+file with different consumers, and it is the surface both of this exchange's
+wrong counts came from. `tools/cron_firing.py` was repaired for the trailer
+half on 2026-11-02 and keeps the word in `exit_word` and the number in
+`exit_code`.
+
+**And the pattern in that mistake is the one this run kept repeating.** Three
+times in one run this seat wrote that something was absent or unfound, and each
+time the repository already held it: the gate against ungated test files, the
+staged workflow that makes the path filter unnecessary, and this. Each was one
+grep away. The guard written above generalises to cover it, and the register is
+the first place to look rather than the last.
 
 Ban list checked on this entry.
 

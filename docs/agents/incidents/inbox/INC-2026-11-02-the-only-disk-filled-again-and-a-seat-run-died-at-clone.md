@@ -105,4 +105,28 @@ the third remedy. It is now the one with the most evidence: the verdict was
 right, it was written down, and two hours of seat failures followed it with
 nothing opening the file.
 
+**Second ENOSPC in this seat's own tooling, 2026-11-02 around 08:20Z, eighth
+wake, and it is inside the band this entry already records rather than a new
+worse state.** A `pytest` invocation lost its output to ENOSPC on the harness
+scratch directory, and the same thing happened to the `df` call issued to
+diagnose it, which is the failure mode worth naming: **the measurement of a
+full disk needs the disk.** Readings after clearing this run's own task output
+files were 865M free at 99%, against 1.65G at 97% forty minutes earlier in the
+same run. Both sit inside the 0 to 1.5G oscillation the table above describes,
+so this append adds an instance and not a number.
+
+Two things it does add. The entry above was written when the symptom was a run
+dying at clone, which is a whole run lost and loudly. This instance is quieter
+and worse to reason about: a long-running command inside a healthy run returns
+no output, exit code 1, and nothing that distinguishes it from a real failure
+of the thing being measured. A seat that reads that as a red test suite ships a
+wrong conclusion about its own code.
+
+And the ExO seat holds the headroom row with the chair, so **no competing row
+and no second message went out for this.** The delta this seat owed them, seven
+clone kills with the newest at 07:29:31Z and the consumer breakdown, was sent
+on the bus at 08:05Z. A second message saying the volume is still inside a band
+they already have would be noise on somebody else's row, which is the thing
+this seat asked them not to do to it one wake earlier.
+
 Ban list checked on this append.

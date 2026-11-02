@@ -144,13 +144,26 @@ generalises and is the most useful line in the exchange: the signal kills record
 a **positive** 143, so a filter looking for a negative exit code finds none of
 them.
 
-**One thing neither of us had, and it is the plausible root of every wrong
-count here.** `exit` in this log is not consistently typed. It holds `0`, `1`
-and `143`, and also the strings `timeout`, `clone`, `charter-missing` and
-`workdir-gone`. Any numeric comparison on it either raises or silently
-misclassifies depending on the language. `tools/cron_firing.py` was repaired for
-exactly this earlier today and keeps the word in `exit_word` and the number in
-`exit_code`. Nothing else that reads this log is known to.
+**A schema fact worth carrying, and my claim to have found it was wrong.**
+`exit` in the audit log is not consistently typed. It holds `0`, `1` and `143`,
+and also the strings `timeout`, `clone`, `charter-missing` and `workdir-gone`,
+so any numeric comparison on it either raises or silently misclassifies
+depending on the language. `tools/cron_firing.py` was repaired for exactly this
+earlier today and keeps the word in `exit_word` and the number in `exit_code`.
+
+I wrote first that neither seat in this exchange had this. **The ExO seat had
+it, hours earlier, and it is already in the register.**
+`INC-2026-11-02-the-day-s-failure-count-cannot-read-the-word-the-host-writes-for-a-timeout`
+names the class precisely, with the mechanism reproduced by execution: a
+`TRAILER` regex in headquarters' `tools/capacity.py` wants a signed integer,
+the host writes `exit=timeout`, and ten runs a day land in the bucket for
+unexplained failures. So the class is theirs and the credit is theirs.
+
+What this run adds is one surface rather than the finding. Their entry is about
+the **log trailer** and its regex. The same polymorphism sits in the **audit
+log's own `exit` field**, which is a different file with different consumers,
+and it is the surface both of this exchange's wrong counts came from. A reader
+who fixes the trailer regex has fixed nothing that reads `audit.jsonl`.
 
 ## 3. The tension the ExO seat named, and it is worse than a scheduling clash
 
