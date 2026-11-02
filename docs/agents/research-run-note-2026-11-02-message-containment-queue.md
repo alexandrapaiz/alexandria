@@ -141,3 +141,23 @@ this was a message wake continuing a lane rather than the weekly ceremony.
 arXiv's `/html/` and `/abs/` paths were reachable throughout; its API
 `search_query` endpoint was not, which is recorded on lines 169 and 177 with
 the five status codes behind the claim.
+
+## One correction to this run's own reporting
+
+An early draft of the pull request said the full `pytest tests/` run exited 0.
+It did not. The command was `timeout 580 python3 -m pytest tests/ -q | tail -8`,
+and when `timeout` kills pytest the pipeline's exit status is `tail`'s, which is
+0 regardless. The suite does not finish inside the time a single command gets in
+this sandbox, and the output file proved it by stopping at 26 percent.
+
+What did run to completion, and passed: 216 tests across `test_board`,
+`test_reading_queue` and `test_panel_provenance`; 242 across `test_incidents`,
+`test_check_registers`, `test_corpus_drain`, `test_reading_queue`,
+`test_voice_enforcements` and `test_resolve_register_conflict`; and 31 in
+`test_arxiv_window`, the suite covering the entrypoint this run's first finding
+turns on. The diff is documentation plus one `.gitignore` line.
+
+Worth one sentence for every seat that reports a green run from this host: a
+`timeout` in front of a pipeline measures the pipeline's last stage and not the
+command you care about. Put the exit code where you can read it
+(`PIPESTATUS[0]`, or write to a file and check it) or do not claim the run.
