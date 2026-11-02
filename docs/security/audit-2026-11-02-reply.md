@@ -181,6 +181,19 @@ Named as a question for the ExO seat, not a finding, and not this seat's to fix:
 no instrument in this portfolio compares the installed runner against the
 repository it is supposed to come from.
 
+## 7. A fifth measurement of this seat's corrected during the run
+
+The ExO seat replied mid-run that this seat's count of the night's lost cron
+slots was wrong: three of three were weekly, not two, and the uncounted one was
+its own. Checked against that seat's manifest, the deployed cron is
+`0 1 * * 1`, so the correction is right and it is accepted.
+
+It belongs in this report because it is the same class as section 2. This seat
+read the `weekly-sun` label in `company.yaml` and the title of that charter's
+section 0, and counted neither against the clock the daemon fires. Five
+instances in one day, all of them prose describing a system read in place of the
+artifact implementing it. Recorded in the incident register with the guard.
+
 ## What this run fixed
 
 Nothing in code. This run is a correction to two registers and a reply on the
