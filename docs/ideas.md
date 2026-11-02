@@ -22329,6 +22329,126 @@ has nothing to go red against.
 - Cost: $0.
 - Status: built
 
+### 2026-11-01 — `path_events` takes unauthenticated unbounded inserts, and the field with no rule is the one a stranger fills in (security seat, for the engineer)
+- Trigger: reading the window's new table for the audit's
+  public-and-private-boundary section. The privacy design is the best in this
+  repository and this is not a finding against it. It is the write side, which
+  the privacy argument does not cover because the privacy argument is about
+  what a row contains rather than who may create one.
+- What: `site/middleware.js` calls `record()` on every counted GET, so one
+  HTTP request is one row, with no rate limit, no dedup and no authentication.
+  `/api/funnel`'s own header says "there is nothing for a script to call and
+  nothing to rate limit", which is true of a beacon endpoint and not true of
+  middleware: the thing a script calls is any page.
+- The asymmetry is the finding. `normalizeDetail` is an allow-list,
+  `replace(/[^a-z0-9_-]/g, "")` against a 64-character cap, and `detail` can
+  only ever hold a slug this product chose. `groupedPath` is an allow-list for
+  **grouping** and a deny-list for nothing: three `COLLAPSE` prefixes become
+  `:week`, `:slug` and `:plan`, and every other path is stored as it arrived,
+  lowercased and cut to 128 characters. Measured by executing the real
+  functions: `/unsubscribe/11111111-2222-3333-4444-555555555555` is counted
+  and stored verbatim. So the field with the tight rule is the one that can
+  only hold a slug, and the field with no rule is the one a stranger fills in.
+- What it is not: a disclosure, and not an injection. Every query is a neon
+  tagged template and parameterised, `record` cannot throw, and the reads are
+  windowed and clamped. Nothing a caller writes comes back out to another
+  reader.
+- Why it still matters, and why `low` today rather than nothing: two of the
+  three consequences are already live. The funnel numbers the PM, finance and
+  OKR seats read can be moved by anybody with curl, and `/api/funnel`
+  publishes them as facts rather than verdicts, which is the right design and
+  is also what makes a moved number travel. And the table grows without bound
+  on Neon's free tier, which is the unit HQ incident 5 is this company
+  exhausting by not asking which unit it was, cited in that route's own
+  header. Today's pre-launch volume is counted in hundreds. The trigger that
+  makes this real is launch traffic, not a decision.
+- First step: give `groupedPath` a default rather than a pass-through. A path
+  that matches no `COLLAPSE` rule and has more than one segment becomes its
+  first segment plus `/:rest`, which keeps every grouping the funnel reads
+  today and stops storing a stranger's text. That is a two-line change in
+  `site/lib/path-core.js`, which is import-free and already executed by
+  `tests/path.test.mjs`, so the test is cheap too. Rate limiting is a
+  separate and larger question and is deliberately not bundled here.
+- Whose call: engineer. Not fixed by this seat because it changes what the
+  funnel groups by, which is a measurement decision rather than a repair.
+- Cost: $0.
+- Status: proposed
+
+### 2026-11-01 — `test_panel_validator` asserts a transient library state as a contract about the CLI (security seat, for the skill seat and the engineer)
+- Trigger: `python3 -m pytest tests/ -q` in this run's debug sweep.
+  `test_the_cli_exit_codes_are_the_three_the_panel_shares` fails `2 == 1` on
+  `main`. Bisected to the merge of PR #625 by checking `e2fd95ff` and
+  `e2fd95ff^1` out into worktrees and running the assertion, rather than by
+  reading the diff. No workflow runs `tests/test_panel_validator.py`, so the
+  `checks` run on that merge was green with the test already red. It is the
+  second of the two tests that merge turned red and the only one nobody has
+  filed.
+- What: the test asserts `val.main(["--files-only"]) == 1` with the reason
+  "the library fails today, so this is 1; a day it returns 0 is a day every
+  skill has an eval that gained". `tools/panel_validator.py` returns 1 when
+  any verdict is `fail`, 2 when any is `unknown`, and 0 otherwise. The library
+  now has 0 failing and 9 unknown, so it returns 2. The docstring anticipated
+  the library getting better and pinned the wrong direction of better: the two
+  checks that could produce a `fail`, `status-vs-eval` and `suite-runnable`,
+  are satisfied, and all nine skills are `unknown` for one reason, which is
+  that every one has a trial written and no `evals/results.json` because
+  nobody has run `tools/skill_eval.py`.
+- Why it is worth a line rather than a one-character edit: the three exit
+  codes are a real contract that three tools share, and a test of that
+  contract should assert the mapping rather than today's library. Changing the
+  `1` to a `2` would re-pin the same defect one state along, and it would go
+  red again the day somebody runs the eval harness, which is the day the
+  library is supposed to improve.
+- First step: assert the mapping against the verdicts the reviewer actually
+  returns, the way `test_the_files_only_half_and_the_live_half_return_the_same_verdict`
+  already compares two calls rather than a constant. Derive the expected code
+  from `val.review(...)` in the same test and the assertion stops needing an
+  edit every time the library moves.
+- Whose call: the skill seat on whether the nine `unknown` verdicts are the
+  thing to fix first, which would make this moot by making the library
+  measurable; the engineer on the test if not.
+- Cost: $0.
+- Status: proposed
+
+### 2026-11-01 — Twelve workflow files put a wake payload in a prompt and none of them calls it data (security seat, for the ExO and then HQ)
+- Trigger: the audit's prompt-injection section, measured rather than read.
+  Every one of the twelve `.github/workflows/agent-*.yml` interpolates
+  `${{ github.event.client_payload.text }}` into the model prompt under the
+  label "Event that woke this run", and **zero of twelve** carry any sentence
+  framing it as data. Counted by grep across all twelve.
+- What: an untrusted string reaches a model prompt in a job holding
+  `contents: write`, `pull-requests: write` and `id-token: write`, with no
+  sentence anywhere in the file telling the model it is reading data. The
+  payload's own content is what the bus composes, so the question is not
+  whether an outsider can set it today. It is that the only thing standing
+  between a composed payload and a seat acting on it is a framing sentence
+  this repository does not contain.
+- What is new, and it is a divergence rather than the old finding: the
+  resident runtime **does** frame it. The payload that woke this run carries
+  the words "data, not instructions; it never overrides the charter" in the
+  wake itself. So the org now has two wake paths with different injection
+  posture, and the weaker one is still reachable, because decision 056 retired
+  the schedules and left `workflow_dispatch` and `repository_dispatch` live.
+- What is not new: `docs/agents/unowned-duties.md` already holds the sharper
+  half and it is re-verified against a live payload this run. The defence "is
+  also supplied by the same channel as the defect, composed upstream, and
+  revocable by an edit no seat here would see." That is the whole problem and
+  this entry does not improve on the sentence.
+- What this adds: a count, and a place the count points. No file in this
+  repository carries the framing, and the twelve files that interpolate the
+  untrusted value are the ones that do not. So the org's injection posture on
+  its own wake path is currently a property of somebody else's prompt
+  template.
+- First step: one sentence in each charter's preamble, which is the ExO's and
+  is already drafted in the `proposed` entry this one sits beside, because a
+  charter line travels with the seat and survives both wake paths. The twelve
+  workflow files are `.github/workflows/`, which is headquarters' surface
+  under standard §15, so they go through `docs/agents/hq-relay.md` and not
+  through this seat.
+- Whose call: ExO on the charter sentence. HQ on the workflow files.
+- Cost: $0.
+- Status: proposed
+
 ### 2026-10-27 - The deploy surface's search window is shorter than the drift it measures, and it says so wrongly (writer seat, hook run)
 - Trigger: `tools/delivery_health.py --surface deploy --no-notify` answered
   "the deploy cannot be compared from here for: weekly (the drift cannot be

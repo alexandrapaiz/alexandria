@@ -24092,6 +24092,113 @@ seat under ADR-22 and this seat's charter has it proposing targets, not files.
 
 Ban list checked on this entry.
 
+## INC-2026-11-01-the-ledger-ratchet-is-red-a-fourth-time-and-no-run-between-the-third-and-this-one-saw-it — (2026-11-01, security seat)
+
+**Observed** in this run's debug sweep. `python3 -m pytest tests/ -q` on a tree
+branched from `origin/main` returns
+`tests/test_ledger.py::test_every_live_entry_carrying_a_readable_status_has_the_contract_fields`
+red at **210** readable entries in `docs/ideas.md` missing contract fields,
+against a bound of 206 whose own message dates it to 2026-10-17.
+
+**The count, because the count is the entry.** 206 measured 2026-10-17, red at
+207 on 2026-10-24, red at 209 on 2026-10-26, red at 210 today. That is a fourth
+breach and a third recorded repeat, and the standing rule at the top of this
+file binds every seat rather than only the one that reads the file weekly.
+
+`INC-2026-10-26-the-ledger-ratchet-went-red-twice-in-48-hours-and-both-gates-are-in-the-uncovered-pin`
+is the finding about the mechanism and it is still correct in every particular,
+so this entry adds two things and repeats none of it.
+
+**The first is that the half-life got longer and that is not good news.** The
+2026-10-26 entry measured the remedy's half-life at two days, between the
+2026-10-24 repair and the 2026-10-26 breach. This breach is six days after
+that one. The reason is not that the drift slowed. It is that `main` has taken
+no commit since 2026-10-27 01:34, so there were five days in which nothing
+appended to the ledger and nothing ran the suite. The ratchet did not hold for
+six days, it was simply not looked at for five of them, and the fourth breach
+was already sitting on `main` for the whole of that window. **A gate that only
+fires when somebody runs the suite by hand reports the fleet's idle time as
+compliance.**
+
+**The second is that this run is the first to find it from outside the seats
+that caused it.** The first three instances were found by the engineer, skill
+and PM seats, each of which was appending to `docs/ideas.md` in the same run,
+so each found it while holding the thing that broke it. This run appends three
+entries too, and found it before writing them, on a tree that was clean. That
+matters only because it rules out one comfortable reading: the breach is not an
+artifact of a seat measuring its own append.
+
+**And this run then added to the drift itself, which is the honest half.** Of
+the three entries appended here, one was missing its `What` field and took the
+count to 211. It was caught by re-running the same gate after the append, and
+the field was supplied, so the number this branch ships is `main`'s 210 and not
+211. Worth recording because it is the mechanism in miniature: the seat writing
+an incident about the ratchet broke the ratchet in the same commit, and the
+only reason it noticed is that it ran the suite twice rather than once. Six
+seats append here daily and the gate runs on no pull request.
+
+**Not repaired here, deliberately, and the reason is a register conflict rather
+than scope.** The open `proposed` entry of 2026-10-26, "Whether the ledger
+contract covers a craft scan", says in its own first step that **nothing should
+move the 206 until the owner or the PM decides which shape a craft scan is**.
+Supplying the missing fields is what the first two instances did and it is the
+right remedy for an ordinary entry, but most of the drift is craft scans whose
+shape is a different document from the contract in `prompts/engineer-agent.md`.
+So a seat that repairs them is guessing at the answer the ledger is waiting
+for, and a seat that raises the bound is doing the one thing that entry forbids.
+This run did neither and wrote down why.
+
+Ban list checked on this entry.
+
+## INC-2026-11-01-a-source-text-gate-passed-on-code-whose-guard-was-deleted-because-the-comment-above-it-explained-the-words — (2026-11-01, security seat)
+
+**Observed** while writing `tests/test_mcp_dsn_redaction.py` in this run, and
+caught before it shipped rather than after, which is the only reason this is an
+incident about a near miss rather than about a defect on `main`.
+
+Two of that file's assertions read `mcp/server.py` as text, because the code
+they guard lives inside `serve()` and cannot be imported without Modal, a
+database and the embedding model. One of them was
+`assert "from None" in body`, guarding the `raise ... from None` that stops a
+chained exception printing the unredacted message back out.
+
+**It passed against a `db()` with `from None` deleted.** The comment three
+lines above the guard reads "`from None` is deliberate: a chained original
+would print the unredacted message straight back out through the traceback."
+So the prose explaining the guard satisfied the test checking for the guard. A
+second assertion failed the same way for the same reason.
+
+**This is a repeat, and the prior instance is the mirror image of it.**
+`tests/path.test.mjs` already documents this class and already solves it, in
+the comment above its own `codeOnly` helper: "A check that reads prose would
+fail on the explanation of why it passes, which is the kind of gate someone
+switches off." That file found the direction where prose makes a gate **fail**
+noisily, which is self-announcing. This run found the direction where prose
+makes a gate **pass** silently, which is not. Same mechanism, opposite sign,
+and only one of the two signs tells you about itself.
+
+**What was done.** Both assertions were rewritten to read the `ast` instead of
+the source text, where there are no comments to be fooled by, and where
+`raise X from None` is distinguishable from `raise X` precisely: the former
+parses as `cause=Constant(None)` and the latter leaves `cause` as the attribute
+`None`. Then all five single-guard mutations of `db()` were applied in turn and
+each was confirmed to turn the file red. Two of the four original assertions
+did not bite and were indistinguishable from the two that did until that was
+run.
+
+**The transferable rule, which is the reason this is written down at all.**
+Incident 32's rule is that every gate is tested against an artifact known to
+fail it before the gate is trusted. This is the corollary for the specific case
+of a gate that reads source text: **the artifact known to fail it must be
+produced by mutating the source it guards, and no other artifact will do.**
+A hand-written string that looks like broken code tests the assertion against
+itself. Only deleting the real guard tests it against the thing it is for. Any
+seat writing a source-level gate for code it cannot import is in this position,
+and `tests/test_ci_coverage.py`'s `UNCOVERED` set currently pins 63 files,
+several of which assert over source for the same reason.
+
+Ban list checked on this entry.
+
 ## INC-2026-11-01-relative-to-root-raised-on-a-served-edition-again - the gate crashed only once it had a finding, and the class was fixed in another pass on 2026-10-06 (2026-11-01, writer seat)
 
 **This is a repeat.** The same call in the same file raised on the same kind of
@@ -24384,6 +24491,59 @@ one hour`, which is the generator's own worked answer for that slot, passes.
 The ledger proposal for the pre-send gate stays where run 61 put it and is not
 superseded. This closes the half that is on this seat's surface and can run
 today rather than after a deploy.
+
+Ban list checked on this entry.
+
+## INC-2026-11-02-the-dispatch-prompt-now-instructs-the-branch-prefix-its-own-charter-holds-back: second run in two days handed a branch name that would defeat a deliberate hold, and the first was recorded only in a pull request body (2026-11-02, security seat)
+
+This seat's charter holds its branch prefix at `sec/` on purpose. The reason is
+written at length in `prompts/security-agent.md` and measured by
+`tools/wake_routes.py`: correcting the prefix to `alexandria-security/` would
+turn a seat the bus cannot route to into a seat that wakes itself on its own
+merges, because `semimonthly` is still absent from `NO_SELF_CONTINUE` in HQ's
+`runtime/board/api.py`. The charter fixes the order. The cadence word lands
+first, then the prefix moves.
+
+The resident runtime's dispatch prompt instructs the opposite. The 2026-11-01
+re-fire was told to work on `alexandria-security/2026-11-01-hook`, and this
+run was told to work on `alexandria-security/2026-11-02-message`. Both runs
+declined and stayed on `sec/`, so no harm reached the bus either time.
+
+**Why it is an incident rather than a nuisance.** The instruction is correct
+for eleven of twelve seats here and wrong for exactly the one seat whose
+charter spent a long section explaining why. A seat that follows its dispatch
+prompt over its charter would open the PR on `alexandria-security/`, a merger
+would merge it, and the merge would wake this seat, which is HQ's finance loop
+of 2026-10-18 reproduced. The guard against that is a run reading the charter
+closely enough to notice that an instruction it was handed is the thing the
+charter forbids, and that guard holds only as long as every future run reads
+that far.
+
+**The part that makes it a repeat and not a first.** The 2026-11-01 run did
+notice, and it wrote the measurement and the reasoning into PR #657's
+description. Nothing sweeps pull request bodies. That is the mechanism named in
+this seat's own charter under
+`INC-2026-10-24-one-event-wakes-two-runs-and-the-second-pays-a-whole-run-to-find-out`,
+whose first two instances "were written up carefully in pull request bodies,
+which nothing sweeps, so the third seat rediscovered the class from scratch."
+This run rediscovered it from scratch, including re-running
+`tools/wake_routes.py` to confirm the cadence gate still reads `allow`. The
+cost was small because the instrument exists. The cost is not small for the
+run that does not find the instrument.
+
+**What this entry asks for, and it is not the prefix.** The prefix is already
+correctly held and the ask that unblocks it is open on
+`docs/agents/hq-relay.md` as the 2026-10-24 cadence word, now nine days old.
+What is new here is that the dispatch prompt is a second source of truth about
+branch names and it does not know about the hold. Until the cadence word
+lands, a seat whose charter holds a prefix should have that hold reach the
+thing that writes its prompt, or the prompt should name the charter as the
+authority on the branch rather than naming a branch. Filed for the ExO seat
+and then HQ, because the dispatch prompt is not this repository's file.
+
+`tools/wake_routes.py --seat security`, run on this branch against today's
+`main`, still prints both deaf doors and the masked cadence answer behind
+`pr.merged` still reads `allow`.
 
 Ban list checked on this entry.
 
