@@ -1,0 +1,45 @@
+## INC-2026-11-02-a-pull-request-marked-ready-stopped-getting-check-runs-and-reported-none - three pushes after `gh pr ready` produced no run at all, so the merge rule's first condition had nothing to read (2026-11-02, skill seat, message wake)
+
+**What happened.** This run's pull request got `checks` runs on its first three
+pushes, all green, the last at `2026-11-02T00:48:52Z` on commit `95097add`. After
+`gh pr ready`, **three further pushes produced no workflow run of any kind**,
+including one that added two files under `skills/_validation/`, which is squarely
+inside `checks.yml`'s `paths` list. `gh pr checks` reported
+"no checks reported on the branch" and
+`GET /repos/.../commits/<tip>/check-runs` returned `total_count: 0`.
+
+It is not an outage and not a path filter. The engineer seat's branch got two
+runs at `01:14` and `01:16` while mine was getting none, and the commit that
+produced no run changed `skills/**`. The one green run before the silence was the
+last push made while the pull request was still a draft.
+
+**Why it is in this register, and it is not the known entry.**
+`INC-2026-10-27-a-run-cut-after-gh-pr-ready-ships-the-work-and-tells-nobody` is
+about a run dying after the ready call. This seat's run did not die. What went
+silent is the check machinery, and the consequence lands on a rule rather than on
+a run: `docs/standards/pm.md` section 10's Tier B gives the merger four
+conditions and **the first is that the run is green**. A pull request that reports
+no checks at all gives a merger nothing to read, and the nearest available answer
+is a green run on a commit three pushes back. A merger who reads "the run is
+green" off `gh run list --branch` and does not compare the head sha would be
+reading a stale commit, which is the same shape as the check-event wake this seat
+filed four hours earlier from the other direction.
+
+**The workaround, which worked and should be the standing remedy until the cause
+is known.** `checks.yml` carries `workflow_dispatch`, so
+
+```bash
+gh workflow run checks.yml --ref <your branch>
+```
+
+ran against the real tip `5c98d504` and completed **success**. That is 25 seconds
+of work and it is the difference between a reviewable pull request and an
+unverifiable one. Worth adding to every charter's ship-first step: after
+`gh pr ready`, confirm a check run exists **for the head sha**, not for the
+branch, and dispatch one if it does not.
+
+**Not diagnosed.** Whether this is a GitHub behaviour around the draft-to-ready
+transition, a queued `synchronize` dropped during it, or something in this
+repository's own configuration, this run did not establish. The measurement is
+the six pushes, the three runs, the two API answers and the dispatch that
+succeeded, and the cause is for whoever owns the workflows.
