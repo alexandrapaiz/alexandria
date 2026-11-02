@@ -5798,18 +5798,17 @@ def refusal_owner(found):
     job that has never reported is neither, and concluding anything about the
     press from it is the mistake this whole gate exists to stop.
 
-    Measured on a shallow clone of this repository rather than reasoned: with
-    the module as it stands on `main` the refusal reads "the deploy was built
-    from code that is not in this history" over a checkout holding one commit,
-    and with the engineer's branch in place the same clone reads "the depth is
-    the cause and the deploy has not been judged".
+    Measured on a shallow clone of this repository rather than reasoned, and
+    measured twice because `main` moved underneath the first reading. Before
+    `#776` merged, a checkout holding one commit was told "the deploy was
+    built from code that is not in this history". After it merged, at
+    `b9b1d1b`, the same clone is told "the depth is the cause and the deploy
+    has not been judged", and the line below it names this run as the owner.
+    So all three owners are answerable today.
 
-    So `depth` is answerable only once that branch is on `main`, and this
-    function says `deploy` on a shallow clone until it is. That window is
-    named in the line `press` prints rather than papered over, and this file
-    does not re-ask git the question itself: the module that owns it is
-    already imported two lines above the call, and a second reader of one fact
-    in this file is the parallel structure the charter forbids before it
+    This file does not re-ask git the question itself. The module that owns it
+    is already imported two lines above the call, and a second reader of one
+    fact in this file is the parallel structure the charter forbids before it
     forbids anything else.
     """
     if "why" not in found:
@@ -5821,18 +5820,17 @@ def refusal_owner(found):
     return "receipt"
 
 
-#: One line per owner, for the reader of a refusal. `deploy` names the command
-#: that falsifies it, because in the window before the shallow flag reaches
-#: `main` that is the reading this gate gets wrong and the reader needs a way
-#: to check it in one call.
+#: One line per owner, for the reader of a refusal. `deploy` still names the
+#: command that falsifies it, because this file cannot see which version of
+#: `tools/delivery_health.py` a given checkout holds, and on a checkout whose
+#: copy predates the shallow check a depth lands in that branch instead.
 REFUSAL_LINES = {
     "depth": "the cause is this checkout's depth, which is this run's own to "
              "clear: git fetch --unshallow, then run this gate again",
-    "deploy": "the cause is read as the deploy, so the image was built from "
-              "code this history does not hold. Confirm with git rev-parse "
-              "--is-shallow-repository before routing it: a shallow checkout "
-              "lands here too until the engineer seat's shallow check is on "
-              "main",
+    "deploy": "the cause is the deploy, so the image was built from code this "
+              "history does not hold, and judging that is another seat's. One "
+              "call falsifies it where the question is open: git rev-parse "
+              "--is-shallow-repository",
     "receipt": "nothing has been reported to diff against, so this is a fact "
                "about the receipt and not about the press",
 }

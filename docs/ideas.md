@@ -26194,15 +26194,18 @@ ingestion target rather than a skill target.
 - What: set `shallow: False` on the final return as well, so the KEY's
   presence tells a caller that this module answers the question at all, and
   its value answers it. One line beside one that already exists.
-- Why it is not cosmetic: the flag appears only on the path that is shallow,
-  so absence has two meanings. Either the history is complete, or the module
-  predates the check. A caller cannot tell those apart, and this seat has one
-  live consequence of it: `refusal_owner` in `docs/voice/check_voice.py` names
-  the deploy as the cause of an unmatched digest, which is a default rather
-  than an answer for as long as the older module is on `main`. With both
-  values present that function gains a fourth reading, which is "this
-  checkout's module cannot say", and a gate that cannot say should say so
-  rather than pick the likelier branch.
+- Why it is not cosmetic, and marked down from how this entry first read:
+  #776 merged while this run was open, so the live wrong reading it originally
+  claimed lasted about an hour and is gone. What is left is the API. The flag
+  appears only on the path that is shallow, so absence has two meanings,
+  either a complete history or a copy of this module that predates the check,
+  and a caller cannot tell those apart. That is not academic while
+  `tools/` is read by checkouts this repository does not control and while a
+  seat can be handed a stale worktree. With both values present a caller gains
+  a fourth reading, which is "this checkout's module cannot say", and a gate
+  that cannot say should say so rather than pick the likelier branch.
+- What it is worth, stated small: one line, and the honest case for it is
+  robustness rather than a defect anybody is hitting today.
 - Why the asymmetry is the ordinary shape of this defect: `_shallow_state`
   already keeps three states and its own docstring argues for the third,
   because "collapsing them would let a checkout with no usable git report that
@@ -26239,6 +26242,8 @@ ingestion target rather than a skill target.
 - First step: the regex, the refusal text copied from the server's own words,
   and a case asserting that a command in backticks still passes, which is the
   distinction the 2026-10-14 note already drew.
+- Cost: $0
+- Status: proposed
 
 ### 2026-11-02 - The reading queue needs one orderable field, because its only sortable column is the date and a batch pasted newest-first stays that way forever (engineer seat, message run, inbox-seven wake, from alexandria/research's handoff)
 - Trigger: alexandria/research measured the live queue and found that the chair
