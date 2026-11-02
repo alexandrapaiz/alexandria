@@ -24250,3 +24250,139 @@ not a clean function of length and should be characterised before anything is
 tuned to it.
 
 Ban list checked on this entry.
+
+## INC-2026-11-02-the-gate-was-in-the-union-and-still-could-not-see-the-row - fourth instance, and the answer had been in force four days and eighteen hours (2026-11-02, writer seat, run 62)
+
+**Repeat of** `INC-2026-11-01-a-register-is-only-as-wide-as-the-commands-that-reconfirm-it`,
+filed by this seat's own previous run, which stated the class in general form
+after three instances in nine days and named the fix as naming the set of
+passes that re-confirm `docs/voice/awaiting-her-word.md`. It also said the
+sweep itself was "left to the next run as the ledger's own kind of debt". This
+is the next run and this entry is what the sweep found.
+
+**What happened.** On 2026-10-26 at 06:19:51Z the PM posted ask `db6d191e` to
+the owner: is `docs/voice/value.md` still owed its own approval, or did her
+approval of the five pages on 2026-09-29 settle it in substance. The ask
+carried the PM's own recommendation, which was to treat the five pages as
+having cleared it and open the gate, and named the forty-eight-hour line.
+`docs/standards/pm.md` section 22 is law since 2026-10-16 and says such a
+reservation proceeds as recommended after forty-eight hours of her silence.
+No reply arrived. So the answer has been in force since 2026-10-28T06:19Z.
+
+Nothing in the repository said so for four days and eighteen hours.
+`value.md` still read "Status: awaiting her approval ... Until then no site
+copy is drafted", which is the charter's precondition on every copy round.
+`awaiting-her-word.md` still carried the row in its "Questions awaiting her
+word" table. And `check_voice.py deadlines`, which exists for exactly this,
+printed `every clock here is readable and none of them has run out` on every
+run since the gate was written.
+
+**Why this instance is not the same mechanism as the first three, and that is
+the point of filing it.** The three instances in the entry above are all the
+same shape: the command that would have seen the defect was outside the set of
+commands the register re-confirms itself with. The remedy that entry proposes,
+name the union and run it, would not have caught this one. `deadlines` was
+inside the union. It ran on every writer run. It read the right file, found the
+right table, and reported the row as clean.
+
+It did that because its fail condition read a field the row did not have. The
+gate failed a row that argued the silence rule and named no hour, and failed a
+row whose named hour had passed. A row with no hour at all was silent by
+design, and the design was written down:
+
+> The false cases are load-bearing in the usual direction: a question with no
+> clock at all is the ordinary shape of this table and must stay silent,
+> because nine of its ten rows wait on her with no standard attached and
+> failing them would make the check unusable by the register it reads.
+
+**That premise was false on the day it was written.** Section 22 became law on
+2026-10-16 and covers "every other reservation a charter makes, in every
+company", with four exceptions that are money, accounts, secrets and widening
+a seat's own authority. Not one row of that table is one of the four. So every
+row had a standard attached, every row was owed an ask with an hour on it, and
+the gate was written on 2026-10-26, ten days after the sentence justifying its
+blind spot stopped being true.
+
+**So the class is wider than the entry above states it.** A register of live
+defects is as wide as the union of the commands that re-confirm it, AND as deep
+as each of those commands' fail conditions. A predicate that reads a field is
+blind to a row without the field, and the absence of a field is the most common
+way a bookkeeping row is wrong. This is the same shape as writer run 58's
+finding, where a candidate for a surface the register had never held passed
+because the check compared candidates against rows and a missing row is not a
+clash, and as the board's two open writer rows on `candidates` and `routed`
+recall. Four of this seat's own gates have now had it.
+
+**Fixed in this pull request.** `deadline_findings` grows a third code,
+`unasked`: no ask id and no deadline token, which under section 22 means nobody
+ever started the clock. `DEADLINE_CASES` goes from four to six and the first
+case's expected value is inverted from nothing to `unasked`, with the false
+premise quoted in the comment so the next reader sees why it moved. The
+register now reports two rows red, both of them genuinely unasked at fifteen
+days, and both are routed to the PM as board handoff `9574b0d1` with this
+seat's recommendation on each, because section 22 puts the posting in that
+seat's hands.
+
+**What was deliberately not done.** The resolution was recorded, not decided.
+The recommendation in force is the PM's, carried verbatim, and `value.md`'s new
+status line says in its own words that clearing the precondition is not
+approving the page and that rewriting the page from the five approved ones is
+still owed. A seat ruling on its own precondition would be widening its own
+authority, which is the one thing section 21 reserves to her with no silence
+rule attached.
+
+Ban list checked on this entry.
+
+## INC-2026-11-02-the-twice-ruled-law-had-a-gate-on-the-generator-and-none-on-the-artifact (2026-11-02, writer seat, run 62)
+
+**Repeat of incident 20**, which is the owner's ruling that the framework's
+internal section names are never printed, given twice, the second time in
+capitals, after the artifact that followed the first ruling printed them
+anyway. `docs/agents/registers.md` was written to answer that incident and its
+whole thesis is that every register needs two gates, one that decides something
+gets written down and one that decides something gets checked before it ships.
+
+**What happened.** The newest issue the product serves, `2026-W42` of
+2026-10-19, prints `## What to read`. `2026-W40` prints three more:
+`## What is gaining ground: ...`, `## What is genuinely new: ...`,
+`## What fell behind: ...`. Four framework headings live, which writer run 61
+measured and reported on 2026-11-01.
+
+That run then did the archive-side repair. Law 12's slot ban in
+`prompts/digest.md` named five phrasings and `what to read` was not one of
+them, so the ban now names six, and `check_voice.py slotwords` derives what it
+sweeps for from that list. The run also filed the pre-send gate's half of the
+repair to `docs/ideas.md` for the engineer, correctly, because `tools/` is
+pipeline code and this seat may not write it.
+
+**What no pass of this seat's own instrument could do, before or after that
+run, is return a verdict on an artifact.** `slotwords` reads
+`prompts/digest.md` and never an issue. `measure` prints every heading carrying
+a colon, and that print does not reach its exit code, because the exit code
+means the character gate and `tests/test_voice_enforcements.py` asserts on it
+by name. So widening the ban from five dresses to six widened what one command
+reads in the generator and changed nothing about whether a served issue
+carrying one of the six is ever caught by a command. The specimen was on the
+product while the fix was being written.
+
+**This is registers.md's own argument turned on a gate this seat built.** The
+archive-side gate was repaired on the day the defect was found. The
+artifact-side gate did not exist. That is the exact asymmetry incident 20 is
+about, nine weeks later, on the same law.
+
+**Fixed in this pull request.** `check_voice.py slotheads`, ten pinned cases,
+two readings and both quoted law rather than taste. The first is the ban's own
+list of phrasings, read out of `prompts/digest.md` by the same regex
+`slotwords` uses, so it cannot drift from the rule. The second is the colon: a
+heading that opens on `What` and breaks to a colon is the slot label with the
+day's news bolted behind it, which is the construction `2026-W40` serves three
+times and which no list of phrasings can hold, because `gaining ground` and
+`genuinely new` are in no list anybody keeps. Run with `--live` it names all
+four live headings with the reason for each, and `## What to read if you have
+one hour`, which is the generator's own worked answer for that slot, passes.
+
+The ledger proposal for the pre-send gate stays where run 61 put it and is not
+superseded. This closes the half that is on this seat's surface and can run
+today rather than after a deploy.
+
+Ban list checked on this entry.
