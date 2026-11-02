@@ -5239,7 +5239,11 @@ def round_trip():
     return True, rows
 
 
-def editions(paths=None):
+# No `paths` parameter, removed 2026-11-02. It had one, it was never read in
+# the body, and `main` never passed it one either, so `editions <a path>`
+# silently graded the global scope under the caller's argument. A parameter a
+# gate accepts and ignores is the same promise ban list 91 is about.
+def editions():
     """Does this file's default scope reach every edition a reader can open?
 
     The gate entry 141 needed and did not get. That entry closed the reading
@@ -5504,8 +5508,21 @@ def captions(paths=None):
     """
     rc = caption_cases()
     print()
-    sets = [(p, label) for p, label in CAPTION_SETS
-            if not paths or p in paths]
+    sets = selected_sets(CAPTION_SETS, paths)
+    # The caller named surfaces and none of them is a declared caption set, so
+    # the loop below runs zero times and the only line printed is the
+    # asserted-case count above it, which reads as a clean pass on the thing
+    # that was asked about. Found 2026-11-02 and it is the purest instance of
+    # the class the ExO seat kept: this gate reported success by saying nothing
+    # at all about the artifact.
+    if paths and not sets:
+        print("  FAIL    none of the paths named is a declared caption set,")
+        print("          so no set was read and the count above is about this")
+        print("          gate's own cases rather than about anything you asked")
+        print("          for. The declared sets are:")
+        for path, label in CAPTION_SETS:
+            print(f"            {path}  ({label})")
+        return 1
     for path, label in sets:
         if not (ROOT / path).exists():
             print(f"  FAIL    {path}  missing")
@@ -7304,6 +7321,53 @@ def _dispatch_rc(which, names):
     return 0 if which in (set(names) | {"all"}) else DISPATCH_UNKNOWN
 
 
+# The same defect one level down, found on 2026-11-02 by asking exo's own
+# question of this file: where else does a gate report success by saying
+# nothing? The dispatcher now refuses a NAME this file does not carry, and it
+# still accepted a TARGET this file could not read. `measure`, `links`,
+# `firstuse` and `provenance` each printed a verdict and exited 0 when handed a
+# path that does not exist, `captions` printed its asserted-case count and
+# never mentioned the path at all, and `standalone` raised a traceback, while
+# `delivery`, `devices`, `marks` and `specimens` returned 1 on that same
+# condition. So one file answered one question four ways, and the majority
+# answer was a pass about an artifact nobody had opened.
+#
+# `exists` is a parameter and not a call, so the cases below assert the
+# resolver without putting files on disk. That is the property that makes the
+# dispatcher's own repair worth trusting and it is cheap to keep.
+def missing_targets(named, exists):
+    """The targets a caller named that are not there to be graded."""
+    return [p for p in named if not exists(p)]
+
+
+# The declared sets a caller's paths select. Returning nothing when the caller
+# named paths is the condition `captions` could not see: its selection is a
+# filter over a fixed table, so a path outside that table emptied the loop and
+# left only the asserted-case line, which reads as a clean pass.
+def selected_sets(known, named):
+    """The members of `known` that `named` asks for, or all of them if none."""
+    return [row for row in known if not named or row[0] in named]
+
+
+# The subcommands whose arguments are paths. Hoisted to module scope so `main`
+# and the asserted cases read ONE table instead of two copies of it, because a
+# hand-copied schema rots exactly the way a hand-copied line number does.
+#
+# `queued` is in it because `main` routes arguments to it, and out of
+# PATH_ARG_COMMANDS because those arguments are canon law labels rather than
+# paths. `reading` is new here as of 2026-11-02: it resolves paths at its own
+# first line and the dispatcher had never passed it any, so
+# `check_voice.py reading <an edition>` read 63 unrelated surfaces and printed
+# the verdict under the caller's path. That is ban list 91 in the file that
+# enforces ban list 91, and this table is the thing that was built to stop it.
+TAKES_PATHS = ("measure", "links", "delivery", "compare", "firstuse",
+               "queued", "claims", "reading",
+               "generator", "specimens", "standalone", "devices",
+               "captions", "marks", "provenance", "slotheads",
+               "apparatus")
+PATH_ARG_COMMANDS = tuple(x for x in TAKES_PATHS if x != "queued")
+
+
 # Asserted because the defect this repairs was invisible by construction: the
 # old dispatcher's wrong answer was silence and exit 0, which is also what a
 # clean pass looks like, so no run could tell the two apart and none did for
@@ -7327,13 +7391,79 @@ DISPATCH_CASES = (
 )
 
 
+# A target is named, nothing is there, and the answer must not be a pass. The
+# `exists` predicate is a dict lookup here, so these cases pin the resolver and
+# not the filesystem.
+TARGET_CASES = (
+    # The live shape. A caller names an edition, the path is wrong by one
+    # character, and five gates graded their default scope and exited 0.
+    (("site/content/issues/2026-W41.md",), ("site/content/issues/2026-W39.md",),
+     ("site/content/issues/2026-W41.md",)),
+    # The ordinary pass. Everything named is there, so nothing is returned and
+    # `main` proceeds to the gate.
+    (("site/content/issues/2026-W39.md",), ("site/content/issues/2026-W39.md",),
+     ()),
+    # Order is preserved and every absent target is named, because a caller
+    # who mistyped two of four needs both rather than the first.
+    (("a.md", "b.md", "c.md"), ("b.md",), ("a.md", "c.md")),
+    # No arguments at all is the default scope and never a missing target.
+    ((), ("a.md",), ()),
+    # `--live` hands this absolute paths outside the repository. They exist, so
+    # the check must not refuse the one command that reads what readers open.
+    (("/tmp/served/2026-W42.md",), ("/tmp/served/2026-W42.md",), ()),
+)
+
+# The two tables this file routes arguments by, asserted against the gates
+# that actually accept them rather than against a copy of the list.
+ROUTING_CASES = (
+    # `reading` resolves paths at its own first line, so it must be routed
+    # them. It was not until 2026-11-02.
+    ("reading", True, True),
+    # `queued` takes canon law labels, so it is routed arguments and is not
+    # path-checked.
+    ("queued", True, False),
+    # An ordinary path gate is both.
+    ("measure", True, True),
+    # A gate that takes no arguments is neither.
+    ("taste", False, False),
+    # `editions` takes none as of 2026-11-02, having accepted and ignored one.
+    ("editions", False, False),
+)
+
+# `captions` filters a fixed table, so a path outside it empties the selection.
+SELECTION_CASES = (
+    # No paths named is the whole table, which is the `all` run.
+    ((("a.jsx", "A"), ("b.jsx", "B")), (), 2),
+    # One named member selects itself.
+    ((("a.jsx", "A"), ("b.jsx", "B")), ("a.jsx",), 1),
+    # The defect: a real path that is not a declared set selects nothing, and
+    # the gate must say so rather than print its own case count and exit 0.
+    ((("a.jsx", "A"), ("b.jsx", "B")), ("site/content/issues/2026-W39.md",), 0),
+)
+
+
 def dispatch():
-    """Assert that an unknown subcommand fails and a known one does not.
+    """Assert that a request this file cannot answer is never reported as a pass.
 
     This gate is about this file and not about an edition, which is why it
-    asserts and reads nothing. It is in `all` because it is six comparisons
-    and because the thing it protects is the one defect class that cannot be
-    caught by reading output: the output is empty either way.
+    asserts and reads nothing. It is in `all` because it is nineteen
+    comparisons and because the thing it protects is the one defect class that
+    cannot be caught by reading output: the output is empty either way.
+
+    Four tables, one question, asked at the three altitudes a request can be
+    dropped at. DISPATCH_CASES is the subcommand NAME, which was the instance
+    the ExO seat found on 2026-11-02 by running a gate that had shipped only on
+    a branch. TARGET_CASES is the path ARGUMENT, nine gates deep, found the
+    same night by asking that seat's own generalisation of its own file: the
+    class "will produce a seventh instance anywhere a gate reports success by
+    saying nothing". ROUTING_CASES is the table that decides whether an
+    argument reaches the gate at all, which is how `reading` came to resolve
+    paths it was never given. SELECTION_CASES is the filter inside `captions`,
+    which could match nothing and print only its own case count.
+
+    The four are one gate rather than four because they are one defect, and
+    the thing they have in common is the thing to keep: in every one of them
+    the caller named a target, no gate ran on it, and the exit code said pass.
     """
     worse = 0
     for which, names, want in DISPATCH_CASES:
@@ -7344,11 +7474,45 @@ def dispatch():
                   f"wanted {want}, got {got}")
     print(f"DISPATCH_CASES                             "
           f"{len(DISPATCH_CASES) - worse} of {len(DISPATCH_CASES)}")
+
+    bad = 0
+    for named, present, want in TARGET_CASES:
+        got = tuple(missing_targets(named, lambda x: x in set(present)))
+        if got != want:
+            bad += 1
+            print(f"  TARGET_CASES: {named!r} against {present!r} "
+                  f"wanted {want!r}, got {got!r}")
+    print(f"TARGET_CASES                               "
+          f"{len(TARGET_CASES) - bad} of {len(TARGET_CASES)}")
+
+    routed_wrong = 0
+    for name, takes, checked in ROUTING_CASES:
+        got = (name in TAKES_PATHS, name in PATH_ARG_COMMANDS)
+        if got != (takes, checked):
+            routed_wrong += 1
+            print(f"  ROUTING_CASES: {name!r} wanted "
+                  f"{(takes, checked)!r}, got {got!r}")
+    print(f"ROUTING_CASES                              "
+          f"{len(ROUTING_CASES) - routed_wrong} of {len(ROUTING_CASES)}")
+
+    picked_wrong = 0
+    for known, named, want in SELECTION_CASES:
+        got = len(selected_sets(known, named))
+        if got != want:
+            picked_wrong += 1
+            print(f"  SELECTION_CASES: {named!r} against {known!r} "
+                  f"wanted {want}, got {got}")
+    print(f"SELECTION_CASES                            "
+          f"{len(SELECTION_CASES) - picked_wrong} of {len(SELECTION_CASES)}")
+
+    worse += bad + routed_wrong + picked_wrong
     if worse:
         print()
         print("A dispatcher that returns 0 for a name it does not have makes")
         print("every gate in this file unfalsifiable from the outside, since")
-        print("a missing gate and a passing gate print the same nothing.")
+        print("a missing gate and a passing gate print the same nothing. The")
+        print("same holds of a target that is not there and of a selection")
+        print("that matches nothing, which is why all four tables are here.")
     return 1 if worse else 0
 
 
@@ -7361,11 +7525,7 @@ def main():
     # prevent (ban list 91, fixed 2026-10-06).
     paths = sys.argv[2:]
     rc = 0
-    takes_paths = {"measure", "links", "delivery", "compare", "firstuse",
-                   "queued", "claims",
-                   "generator", "specimens", "standalone", "devices",
-                   "captions", "marks", "provenance", "slotheads",
-                   "apparatus"}
+    takes_paths = TAKES_PATHS
     # `--live` is the answer to `editions`, inside one run. It replaces the
     # archive glob with the editions the product actually serves, fetched from
     # the public pages and un-rendered, so a pass grades what a reader opens
@@ -7449,6 +7609,23 @@ def main():
             print(f"  {name}", file=sys.stderr)
         print("  all", file=sys.stderr)
         return rc_unknown
+    # A target this file cannot open is the dispatcher's defect at the argument
+    # level, so it gets the dispatcher's answer: nothing was checked, the exit
+    # code says so, and 2 separates it from a gate that ran and failed. One
+    # check here rather than one per gate, because the altitude is the whole
+    # point: thirteen gates resolve paths and four of them already refused this
+    # condition, which is how the other nine were found.
+    absent = missing_targets(paths, lambda x: (ROOT / x).exists())
+    if which in PATH_ARG_COMMANDS and absent:
+        for target in absent:
+            print(f"unknown target: {target}", file=sys.stderr)
+        print(f"`{which}` grades the artifacts it is handed, and these are not",
+              file=sys.stderr)
+        print("there, so nothing was graded. A verdict under a path that does",
+              file=sys.stderr)
+        print("not exist is ban list 91 with the figure left out.",
+              file=sys.stderr)
+        return DISPATCH_UNKNOWN
     for name, fn in commands:
         if which == name or (which == "all"
                              and name not in ("selfcheck", "compare",
