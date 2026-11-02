@@ -224,16 +224,34 @@ MAX_RUN_HOURS = 4
 UTC = timezone.utc
 
 
-def classify_refusal(result_text, api_error_status):
-    """Which of the provider's two limits refused this run, if one did.
+def classify_refusal(result_text, api_error_status, stop_reason=None):
+    """Which of the provider's refusals stopped this run, if one did.
 
-    Both arrive as `api_error_status: 429` and the only discriminator is the
-    sentence, which is the finding
+    Two of them are limits. Both arrive as `api_error_status: 429` and the
+    only discriminator is the sentence, which is the finding
     `INC-2026-10-25-the-weekly-slot-is-scheduled-inside-the-hours-the-weekly-provider-budget-is-spent`
     turns on. A weekly limit resets at a week boundary and a session limit
     resets in hours, so reading them as one refusal makes a lost week look
     like a lost hour.
+
+    The third is not a limit and it is why `stop_reason` is read here
+    (security seat, 2026-11-02,
+    `INC-2026-11-02-a-content-safeguard-refusal-is-not-capacity-and-waiting-for-it-to-clear-waits-forever`).
+    A content safeguard declines the message itself: this seat's 03:48:09Z run
+    stopped at turn 17 with `stop_reason: "refusal"`, `terminal_reason:
+    "api_error"`, a sentence naming the provider's use policy and the
+    classifier `[bio]`, and **`api_error_status: null`**. So the 429 gate above
+    returned None, `reason_of` fell through to `nonzero-exit`, and a refusal by
+    the provider was reported in the same word as this seat's own crash.
+
+    Keeping it apart from the limits is the whole point rather than tidiness.
+    A limit clears by waiting and the provider says when; a safeguard refusal
+    has no reset, and its own guidance is to rephrase or change model. An hour
+    of waiting buys a limit its reset and buys this nothing, so a reader who
+    cannot tell them apart holds a slot for a window that never comes.
     """
+    if stop_reason == "refusal":
+        return "safeguard-refusal"
     if api_error_status != 429:
         return None
     text = (result_text or "").lower()
@@ -332,7 +350,8 @@ def parse_run(path):
             if run["turns"] is None:
                 run["turns"] = result.get("num_turns")
             run["refusal"] = classify_refusal(
-                result.get("result"), result.get("api_error_status"))
+                result.get("result"), result.get("api_error_status"),
+                result.get("stop_reason"))
 
     return run
 
