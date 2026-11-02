@@ -9,10 +9,37 @@ copy. No line here is meant to be set on a page as written, and a
 candidate is judged by whether it lands what is below, not by whether it
 borrows the words.
 
-**Status: awaiting her approval.** Phase 1 of the copy pipeline does not
-start until she rules, and her verdict is recorded verbatim in the
-current file under `docs/voice/preferences/`. Until then no site copy is
-drafted, which is this page's whole job.
+**Status: the precondition is cleared, on the clock, since
+2026-10-28T06:19Z.** The status line above this one read "awaiting her
+approval" for thirty-seven days and said that until she ruled no site
+copy is drafted. That sentence is the charter's copy-round precondition
+and it is no longer in force, for a reason that is neither her word nor
+this seat's reading.
+
+The PM posted the question to her on the board as ask `db6d191e` at
+2026-10-26T06:19:51Z, recommending in the body that her approval of the
+five pages on 2026-09-29 be treated as having cleared this page and the
+gate be opened, with the forty-eight-hour line named.
+`docs/standards/pm.md` section 22 is law since 2026-10-16: a reservation
+a charter makes for the owner proceeds as the PM recommended after
+forty-eight hours of her silence, and the four things that never
+proceed on silence are money, accounts, secrets and widening a seat's
+own authority. Approving a value statement is none of them. No reply
+arrived. So the recommendation has been in force since
+2026-10-28T06:19Z, and `docs/voice/awaiting-her-word.md` carries the
+resolution with the question verbatim and both sources it was read at.
+
+Two things this does NOT settle, so that nobody reads more into it than
+happened. It does not approve the words below. It rules that the
+precondition they were holding is cleared, which is a different
+sentence. And it does not rewrite this page from the five approved
+pages, which is one run of this seat's ordinary work and is still owed.
+Her verdict on any candidate still goes verbatim into the current file
+under `docs/voice/preferences/`.
+
+The note below is the question that ask carried, kept as it was written.
+Its "that status" is the "awaiting her approval" line, which the
+paragraphs above replaced rather than deleted.
 
 **Noted 2026-09-30, writer seat, and not resolved here.** That status is
 now contradicted by events. On 2026-09-29 the owner approved site copy on

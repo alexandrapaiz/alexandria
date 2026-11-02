@@ -2413,6 +2413,75 @@ here, because §5 confines this seat to charters and `docs/agents/`. The shape
 asked for is one rule in both: a `--seat` a reader cannot resolve must raise,
 never return empty.
 
+### And prove it has finished before you believe a total from it (added 2026-11-01, capacity-return hook, `INC-2026-11-01-a-count-read-off-the-re-fire-record-mid-drain-is-a-progress-bar-not-a-measurement`)
+
+The rule above is about a **zero** from an instrument that cannot see its
+subject. This one is about a **total** from a file that something else is still
+writing, and it is the same mistake one layer along: the number is real, the
+instrument is correct, and the reading is taken too early.
+
+`/srv/asc/state/.epito/capacity-retry.json` is the file, and it is **not a
+queue of pending claims.** It is an append-only record of the re-fires the host
+has **already issued**, and after a limit reset it grows in waves minutes
+apart as the host works through the refused seats. So its length is a progress
+bar. Subtracting it from a refusal count does not measure seats the retry
+dropped; it measures how far through the drain you happened to read.
+
+**Three lines, and they are not optional on a capacity-return wake, because
+that wake lands you inside the drain by construction.**
+
+- Never quote a count from that file without a **second read** minutes later.
+- Never compare it to a refusal total during the hour after a limit reset.
+- When the two reads differ, the file is still being written and **no total
+  from it is quotable yet** — say so with the clock, as an open question.
+
+Cross-check the length against the `hook` rows in `audit.jsonl` for the same
+minutes; when the two agree exactly, you are looking at issued re-fires and not
+at a shortfall:
+
+```bash
+python3 -c "
+import json,collections
+q=json.load(open('/srv/asc/state/.epito/capacity-retry.json'))
+h=[]
+for l in open('/srv/asc/state/.epito/audit.jsonl'):
+    try: d=json.loads(l)
+    except Exception: continue
+    if d.get('action')=='hook': h.append(d)
+h=[r for r in h if str(r.get('ts',''))>=__import__('os').environ.get('SINCE','')]
+print('claims', len(q), 'hooks since SINCE', len(h))
+print('waves', dict(collections.Counter(str(r['ts'])[:16] for r in h)))
+"
+# SINCE=2026-11-01T23:00 is the reset minute; equal counts mean no shortfall
+```
+
+**The worked example is this charter's own near miss, and it is kept in the
+wrong version on purpose.** At 23:05Z on 2026-11-01 a run of this seat read 8
+seats in that file against 31 refused on the weekly limit and had a finding
+ready to ship: *23 of 31 refused seats get no re-fire, and 76 refused cron
+slots are unrecovered.* It had already eliminated three competing causes — a
+write race, a daemon restart, a last-run-per-seat rule — which is exactly what
+made it feel safe. At 23:10Z the file held 11, three of them new, and the
+`hook` rows said 8 at 23:04 and 3 at 23:09: **11 hooks, 11 entries, exact
+match, no shortfall at all.** Nothing was dropped. The reading was five
+minutes early.
+
+Note what did *not* catch it. Adversarial checking of the **cause** cannot
+catch a mistimed reading of the **effect**, because every hypothesis was being
+tested against a difference that was about to disappear. Only the second read
+caught it, and that second read was taken for an unrelated reason.
+
+**And the clean prior reading is the trap rather than the counter-example.**
+`INC-2026-10-27-the-capacity-retry-rescues-the-seat-and-claims-the-cheapest-of-its-refused-runs`
+read this same file and recorded "claims: **20, one per seat, none missing**",
+treating one-per-seat-none-missing as an invariant. That was true: it was taken
+on a 43-minute session window whose drain had finished. A reading with no
+stated validity window reads as a property of the file, and the next run
+inherits an invariant that only holds after the drain. **So when you quote a
+count off a file the host writes, say what made it final** — the same
+obligation §"Your own last run may still be open" puts on a pull-request
+verdict, applied to host state.
+
 ### And half the fleet does not appear in `gh run list` at all (added 2026-10-11)
 
 The fix above is necessary and not sufficient, because no limit reaches a run

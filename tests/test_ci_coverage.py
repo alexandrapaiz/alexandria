@@ -630,6 +630,27 @@ UNCOVERED = {
     # whose assertions stand between a stray keystroke in a secret and a
     # credential disclosure, reporting nothing on any pull request.
     "tests/test_mcp_dsn_redaction.py",
+    # Added 2026-11-02 by the ExO seat, pinned for the same structural reason
+    # as every line above: the step that would run it goes in
+    # `.github/workflows/checks.yml`, which no seat's token may write by
+    # design. The staged replacement runs the whole suite and therefore runs
+    # this too. `INC-2026-10-17-the-pin-list-grew-for-the-seventh-time-in-nine-days`
+    # is already the finding about the pattern and still correct, so this
+    # counts itself there rather than opening another incident.
+    #
+    # What it guards, and why this seat wrote it. The two lines above say this
+    # set "is now the only measure of that wait" and call it "a ledger of a
+    # blocked `git mv` rather than a list of exceptions." That is one instance
+    # of a class this run measured three of: a remedy that was designed,
+    # agreed and then never measured for adoption. The inbox that
+    # `docs/agents/incidents.md` has had since 2026-10-24 is bypassed by 69%
+    # of the open pull requests that contest it; the `pending.md` split of the
+    # same day was never migrated; and this set grows unread. The file pinned
+    # here is the instrument for the first of those, and its own pin is the
+    # second. A gate that can only be satisfied by a permission no seat holds
+    # does not stop being a measurement — it stops being a gate, and this
+    # comment is where the difference gets written down.
+    "tests/test_anchor_contention.py",
 }
 
 

@@ -24198,3 +24198,298 @@ and `tests/test_ci_coverage.py`'s `UNCOVERED` set currently pins 63 files,
 several of which assert over source for the same reason.
 
 Ban list checked on this entry.
+
+## INC-2026-11-01-relative-to-root-raised-on-a-served-edition-again - the gate crashed only once it had a finding, and the class was fixed in another pass on 2026-10-06 (2026-11-01, writer seat)
+
+**This is a repeat.** The same call in the same file raised on the same kind of
+artifact twenty-six days ago and the fix was written up in
+`INC-2026-10-06-shape-count-taken-by-eye`'s closing note: `check_voice.py
+measure` "called `relative_to(ROOT)` on every path, so the tool written to stop
+a figure drifting off its artifact raised an exception when pointed at the
+stored `digests` row the canon names as an artifact to grade." That pass got
+the `try/except` and a comment naming the class. Five other passes carry the
+same idiom inline. `standalone` does not, and `standalone` is the pass whose
+whole subject is an opening sentence on a served page.
+
+**What happened.** `check_voice.py standalone --live` fetches the three served
+editions into a temporary directory and then prints each hit as
+`path.relative_to(ROOT)`. A path in `/tmp` is not under the checkout, so the
+pass raised `ValueError` and exited non-zero with a traceback.
+
+```
+sentences whose subject is 'you' and whose verb is past  1
+Traceback (most recent call last):
+  ...
+ValueError: '/tmp/check_voice-editions-ji27p7tz/2026-W39.md' is not in the
+            subpath of '/tmp/epito-alexandria-writer-M81FpD'
+```
+
+**Why it survived the run that widened the pass, which is the part worth
+keeping.** `--live` was added on 2026-10-26 and that run DID meet this class
+and DID repair it, in the line directly above the crash. The pass prints where
+it read from, that line used to hardcode `site/content/issues`, and the run
+fixed it with a comment citing L-A47: "Where the paths came from, and not the
+directory this pass used to assume they came from ... Found by pointing it at a
+served edition." So the run pointed the pass at a served edition, saw the scope
+line was wrong, fixed the scope line, and left the two lines eight rows below
+that report a finding. The repair went to the sentence that describes the
+instrument and not to the sentence that carries its answer.
+
+**The failure mode is the ordering, not the exception.** A clean archive prints
+and exits zero. The traceback arrives only when the pass has something to say,
+so the pass is well-behaved in exactly the case where nobody needs it and fatal
+in the case it exists for. Six runs between 2026-10-26 and today read this
+register's re-confirmation commands and none of them is `standalone`, so
+nothing exercised the failing path against the product.
+
+**What it was hiding, and it is not small.** The live and stored `2026-W39`
+open on "You have spent the week watching agents get faster by thinking less at
+test time." Canon law 13 quotes the owner rejecting that sentence's near twin
+by name, writes the repair out verbatim, and says there is "no version of it
+this law allows and no material that earns an exception". It has been live
+thirty-eight days with no row in `awaiting-her-word.md`, because the two
+commands that re-confirm that register are `reading` and `claims` and neither
+reads an opening.
+
+**Fixed in this pull request.** `shown_path` is now a module-level helper with
+the class named in its docstring, and `standalone` uses it in both reporting
+loops. The candidate for the sentence is
+`docs/voice/w39-opening-2026-11-01.md` and the row is open.
+
+**What is not proposed.** Replacing the five remaining inline copies of the
+idiom. They work, and a sweep that touches five passes to prevent a sixth is a
+larger diff than this finding earns. The helper exists now, so the next pass
+that needs it has one to call.
+
+Ban list checked on this entry.
+
+## INC-2026-11-01-a-register-is-only-as-wide-as-the-commands-that-reconfirm-it - third instance, and this time the gate was failing out loud (2026-11-01, writer seat)
+
+**This is the third instance of one class** and the first two are in
+`docs/voice/awaiting-her-word.md` in its own words. Writer run 44, 2026-10-23:
+"`reading` was reading 61 surfaces and none of them was the archive, so it
+reported 4 failures. It now reads 63 and reports 5. The new row is the top one
+and it is the oldest defect in this table by four days, which is the argument
+for the row rather than against it: the line has been live for twenty-eight
+days and was never drafted, because nothing in the repository could see it."
+Writer run 58, 2026-10-26: a candidate for a surface the register had never
+held "registered nothing and passed, and the pass line read the same as it
+reads for a run that did the bookkeeping right."
+
+**The third instance.** `check_voice.py standalone` fails on
+`site/content/issues/2026-W39.md:6`, in the repository, with no `--live` flag
+and no network, and has been able to fail there since the pass was written.
+`awaiting-her-word.md` had no row for it. The register re-confirms itself with
+`reading` and `claims`, which read 63 surfaces for a reading-verb and 61 for an
+unhedged claim, and an opening sentence that tells a stranger what their week
+was is neither of those things.
+
+**So the class is now stated in its general form**, because three instances in
+nine days on one register is a property of the design rather than of any run.
+A register of live defects is exactly as wide as the union of the commands that
+re-confirm it, and nothing in the register says what that union is. Each of the
+three instances was found by a seat happening to run a command outside the
+union, which is luck, and the register's own closing section already says what
+it is honestly worth: "Two of the nine statuses above are checkable by command
+today ... and the rest is a seat's reading of a page on a date."
+
+**What would fix it, and it is one line rather than a new instrument.** The
+register's re-confirmation paragraph should name every pass that reads a live
+surface, and a run re-confirming the table should run that set rather than the
+two it currently names. The passes that qualify today are `reading`, `claims`,
+`standalone`, `devices`, `provenance`, `marks` and `measure`. Six of the seven
+were already written and five were never wired to this register.
+
+**Not fixed in this pull request, and the reason is scope rather than
+reluctance.** Naming the set is this seat's edit and is cheap. Running all
+seven and dispositioning whatever the five unwired ones report is a run's work
+on its own, and doing it badly would open rows nobody verified. This run opened
+the one row the one new failing pass found, named the rest, and left the sweep
+to the next run as the ledger's own kind of debt.
+
+## INC-2026-11-01-the-length-law-moved-the-scope-test-a-second-time-and-no-workflow-ran-it
+
+Observed 2026-11-01 by the skill seat, on the charter's pre-ship test pass.
+
+**The repeat.** `python3 -m pytest tests/test_skill_scope.py -q` fails on
+`origin/main` at `test_scoping_loads_fewer_skills_and_keeps_recall`, which
+asserts `scope/body recall >= unscoped recall`. On 2026-10-26 this seat recorded
+the same failure in the ideas ledger reading `0.8776 >= 0.898`, bisected to
+`5b792013`, the commit that shortened `context-window-engineering`. Today the
+same assertion reads **`0.8163 >= 0.898`**. The gap roughly doubled and the
+cause is the same cause: another ADR-38 length retrofit landed in between,
+`e079e6fb`, which took `agent-security-measurement` from 370 lines to 111.
+
+**Why it is recorded here and not only in the ledger.** The standing rule at the
+top of this file is that an issue occurring more than once is recorded at the
+moment it repeats. The first occurrence was written as a proposal for the
+engineer, which is the right register for a fix that belongs to another seat,
+and nothing in that register comes back when the thing recurs. It has now
+recurred, and the ledger entry's own prediction is what recurred: it said in its
+own words that every remaining retrofit in this seat's queue makes a body
+shorter, so an absolute inequality over a body-indexed selector is a ratchet
+against the library's own length law. That prediction is now confirmed by a
+second data point rather than argued.
+
+**The part that is new, and it is the uncomfortable half.** Today's retrofit of
+`evaluation-integrity`, 477 lines to 119, did **not** move the number. The branch
+and `origin/main` both read `0.8163 >= 0.898`, identically, to four digits. So
+the ratchet is real and it is also not monotone in body length, which means the
+one-line story "shorter bodies lower scope/body recall" is too simple to act on.
+Whatever the selector is keying on, it is not a smooth function of how long a
+body is, and a repair tuned against the direction alone would be tuned against
+a relationship nobody has characterised.
+
+**The failure that makes both of these invisible.** No workflow runs
+`tests/test_skill_scope.py`. The red test has been red across at least two
+merges and every `checks` run over that span was green, so the only thing that
+has ever observed this is a seat running the file by hand because its charter
+told it to. That is the L-A21 shape, a gate judged by what it can see, and the
+gate here sees nothing.
+
+**Not repaired here, and deliberately so.** `tests/test_skill_scope.py` and
+`tools/skill_scope.py` are both outside this seat's write surface. The repair the
+red test invites is tuning a reader-facing description until an experimental
+selector passes, and that is the one repair this seat must not make. The ledger
+entry of 2026-10-26 names the first step for the engineer, which is to make the
+assertion report rather than gate, and this entry adds only that the direction is
+not a clean function of length and should be characterised before anything is
+tuned to it.
+
+Ban list checked on this entry.
+
+## INC-2026-11-02-the-gate-was-in-the-union-and-still-could-not-see-the-row - fourth instance, and the answer had been in force four days and eighteen hours (2026-11-02, writer seat, run 62)
+
+**Repeat of** `INC-2026-11-01-a-register-is-only-as-wide-as-the-commands-that-reconfirm-it`,
+filed by this seat's own previous run, which stated the class in general form
+after three instances in nine days and named the fix as naming the set of
+passes that re-confirm `docs/voice/awaiting-her-word.md`. It also said the
+sweep itself was "left to the next run as the ledger's own kind of debt". This
+is the next run and this entry is what the sweep found.
+
+**What happened.** On 2026-10-26 at 06:19:51Z the PM posted ask `db6d191e` to
+the owner: is `docs/voice/value.md` still owed its own approval, or did her
+approval of the five pages on 2026-09-29 settle it in substance. The ask
+carried the PM's own recommendation, which was to treat the five pages as
+having cleared it and open the gate, and named the forty-eight-hour line.
+`docs/standards/pm.md` section 22 is law since 2026-10-16 and says such a
+reservation proceeds as recommended after forty-eight hours of her silence.
+No reply arrived. So the answer has been in force since 2026-10-28T06:19Z.
+
+Nothing in the repository said so for four days and eighteen hours.
+`value.md` still read "Status: awaiting her approval ... Until then no site
+copy is drafted", which is the charter's precondition on every copy round.
+`awaiting-her-word.md` still carried the row in its "Questions awaiting her
+word" table. And `check_voice.py deadlines`, which exists for exactly this,
+printed `every clock here is readable and none of them has run out` on every
+run since the gate was written.
+
+**Why this instance is not the same mechanism as the first three, and that is
+the point of filing it.** The three instances in the entry above are all the
+same shape: the command that would have seen the defect was outside the set of
+commands the register re-confirms itself with. The remedy that entry proposes,
+name the union and run it, would not have caught this one. `deadlines` was
+inside the union. It ran on every writer run. It read the right file, found the
+right table, and reported the row as clean.
+
+It did that because its fail condition read a field the row did not have. The
+gate failed a row that argued the silence rule and named no hour, and failed a
+row whose named hour had passed. A row with no hour at all was silent by
+design, and the design was written down:
+
+> The false cases are load-bearing in the usual direction: a question with no
+> clock at all is the ordinary shape of this table and must stay silent,
+> because nine of its ten rows wait on her with no standard attached and
+> failing them would make the check unusable by the register it reads.
+
+**That premise was false on the day it was written.** Section 22 became law on
+2026-10-16 and covers "every other reservation a charter makes, in every
+company", with four exceptions that are money, accounts, secrets and widening
+a seat's own authority. Not one row of that table is one of the four. So every
+row had a standard attached, every row was owed an ask with an hour on it, and
+the gate was written on 2026-10-26, ten days after the sentence justifying its
+blind spot stopped being true.
+
+**So the class is wider than the entry above states it.** A register of live
+defects is as wide as the union of the commands that re-confirm it, AND as deep
+as each of those commands' fail conditions. A predicate that reads a field is
+blind to a row without the field, and the absence of a field is the most common
+way a bookkeeping row is wrong. This is the same shape as writer run 58's
+finding, where a candidate for a surface the register had never held passed
+because the check compared candidates against rows and a missing row is not a
+clash, and as the board's two open writer rows on `candidates` and `routed`
+recall. Four of this seat's own gates have now had it.
+
+**Fixed in this pull request.** `deadline_findings` grows a third code,
+`unasked`: no ask id and no deadline token, which under section 22 means nobody
+ever started the clock. `DEADLINE_CASES` goes from four to six and the first
+case's expected value is inverted from nothing to `unasked`, with the false
+premise quoted in the comment so the next reader sees why it moved. The
+register now reports two rows red, both of them genuinely unasked at fifteen
+days, and both are routed to the PM as board handoff `9574b0d1` with this
+seat's recommendation on each, because section 22 puts the posting in that
+seat's hands.
+
+**What was deliberately not done.** The resolution was recorded, not decided.
+The recommendation in force is the PM's, carried verbatim, and `value.md`'s new
+status line says in its own words that clearing the precondition is not
+approving the page and that rewriting the page from the five approved ones is
+still owed. A seat ruling on its own precondition would be widening its own
+authority, which is the one thing section 21 reserves to her with no silence
+rule attached.
+
+Ban list checked on this entry.
+
+## INC-2026-11-02-the-twice-ruled-law-had-a-gate-on-the-generator-and-none-on-the-artifact (2026-11-02, writer seat, run 62)
+
+**Repeat of incident 20**, which is the owner's ruling that the framework's
+internal section names are never printed, given twice, the second time in
+capitals, after the artifact that followed the first ruling printed them
+anyway. `docs/agents/registers.md` was written to answer that incident and its
+whole thesis is that every register needs two gates, one that decides something
+gets written down and one that decides something gets checked before it ships.
+
+**What happened.** The newest issue the product serves, `2026-W42` of
+2026-10-19, prints `## What to read`. `2026-W40` prints three more:
+`## What is gaining ground: ...`, `## What is genuinely new: ...`,
+`## What fell behind: ...`. Four framework headings live, which writer run 61
+measured and reported on 2026-11-01.
+
+That run then did the archive-side repair. Law 12's slot ban in
+`prompts/digest.md` named five phrasings and `what to read` was not one of
+them, so the ban now names six, and `check_voice.py slotwords` derives what it
+sweeps for from that list. The run also filed the pre-send gate's half of the
+repair to `docs/ideas.md` for the engineer, correctly, because `tools/` is
+pipeline code and this seat may not write it.
+
+**What no pass of this seat's own instrument could do, before or after that
+run, is return a verdict on an artifact.** `slotwords` reads
+`prompts/digest.md` and never an issue. `measure` prints every heading carrying
+a colon, and that print does not reach its exit code, because the exit code
+means the character gate and `tests/test_voice_enforcements.py` asserts on it
+by name. So widening the ban from five dresses to six widened what one command
+reads in the generator and changed nothing about whether a served issue
+carrying one of the six is ever caught by a command. The specimen was on the
+product while the fix was being written.
+
+**This is registers.md's own argument turned on a gate this seat built.** The
+archive-side gate was repaired on the day the defect was found. The
+artifact-side gate did not exist. That is the exact asymmetry incident 20 is
+about, nine weeks later, on the same law.
+
+**Fixed in this pull request.** `check_voice.py slotheads`, ten pinned cases,
+two readings and both quoted law rather than taste. The first is the ban's own
+list of phrasings, read out of `prompts/digest.md` by the same regex
+`slotwords` uses, so it cannot drift from the rule. The second is the colon: a
+heading that opens on `What` and breaks to a colon is the slot label with the
+day's news bolted behind it, which is the construction `2026-W40` serves three
+times and which no list of phrasings can hold, because `gaining ground` and
+`genuinely new` are in no list anybody keeps. Run with `--live` it names all
+four live headings with the reason for each, and `## What to read if you have
+one hour`, which is the generator's own worked answer for that slot, passes.
+
+The ledger proposal for the pre-send gate stays where run 61 put it and is not
+superseded. This closes the half that is on this seat's surface and can run
+today rather than after a deploy.
+
+Ban list checked on this entry.
