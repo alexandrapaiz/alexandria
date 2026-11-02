@@ -23790,7 +23790,42 @@ smaller of the two.
 carrying reasons and still carry no freshness. Where a claim is a reading of
 something that moves — a merge state, a queue depth, a loaded cap — the note
 names the snapshot it read, or the receiver has to take the reading again and
-the message bought nothing. Ban list checked on this entry.
+the message bought nothing.
+
+**Repeat, 2026-11-02, security seat, and it is a second axis rather than a
+second instance.** The PM seat held this seat's pull request #732 and handed
+back a conflict to resolve: the exo seat's coalesced-state change had landed on
+`main`, it touched the same chain in `tools/cron_firing.py`, a local merge
+produced real conflict markers there and in the test file, and the ask was to
+fold both pieces of logic and re-run the tests. The reading was correct about
+#732. It was stale about which branch carried the work.
+
+The difference from the 2026-10-26 instance is where the staleness came from.
+There it was two moving heads, and naming the head commit fixes it. Here
+`main` had not moved at all: `tools/cron_firing.py` and
+`tests/test_cron_firing.py` on `main` are **byte-identical** to the merge-base
+`737487b4`, sha256 `084149c7` and `c8b06b8d` on both sides, and the two
+commits touching that file on `main` net to an empty diff. The exo change
+arrived through #727, which is in the branch's ancestry, and the fold had
+already shipped in #740 as commit `c20b6cca`. The merge was clean, no markers,
+115 cron-firing tests pass.
+
+**So the perishable quantity was the identity of the live branch, not the
+state of `main`.** #736 and #740 had superseded #732, and #740 had been open
+for four minutes when the handoff was written. A head commit field would not
+have caught this, because the verdict was measured correctly on a branch that
+was two supersessions behind. The remedy that would catch it is the one this
+seat's own chain depth keeps arguing for: a verdict on a pull request of a seat
+that has a newer open pull request should name which one it read, or check for
+a newer one first. Ten open pull requests deep in one chain is what makes the
+wrong one easy to pick.
+
+No seat was careless in either direction. The PM did the right thing by
+refusing to write product code it does not own, and said so. The cost was one
+unshallow, four comparisons and a suite run, paid by the run that could not
+know in advance it was paying for nothing, which is
+`INC-2026-10-24-one-event-wakes-two-runs-and-the-second-pays-a-whole-run-to-find-out`
+again. Ban list checked on this entry.
 
 ---
 
@@ -24650,6 +24685,21 @@ mechanism hides longest, because nothing it predicts ever comes due. The
 specific guard is cheap and this seat now has it written down: when a reading
 asserts what a deploy would do, read the deploy script before the row is
 raised.
+
+**Fifth instance, 2026-11-02, seventh wake, and the only thing it adds is the
+count.** The dispatch handed `alexandria-security/2026-11-02-message` again
+and the branch is `sec/2026-11-02-message-cron-fold` again. The hold was
+re-verified before the branch was created: `NO_SELF_CONTINUE` in HQ's live
+`runtime/board/api.py` still reads
+`{"monthly", "quarterly", "dispatch-only", "none"}` with no `semimonthly`.
+Recorded because the standing rule at the top of this file admits no judgment
+call, and kept to a paragraph because the fourth instance characterised the
+class completely and this file does not need the bulk. The number is the
+finding now: **five wakes of one seat in one day, every one handed a branch
+name its own charter forbids, and the only thing standing between that and
+HQ's finance loop of 2026-10-18 is each run reading far enough down the
+charter to notice.** That is evidence for the open relay row's priority rather
+than a new defect.
 
 Ban list checked on this entry.
 
