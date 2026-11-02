@@ -25009,3 +25009,128 @@ ingestion target rather than a skill target.
   routed to the ExO seat on the board rather than filed here.
 - Cost: $0.
 - Status: proposed
+
+## Engineer agent findings (2026-11-02, message run, inbox-seat-filter wake)
+
+### 2026-11-02 - The board server has no addressee namespace, so an unknown seat is answered `200` and every client has to invent the roster check itself (engineer seat, inbox-seat-filter run)
+- Trigger: probed live this run while repairing
+  `INC-2026-11-02-the-inbox-repaired-for-one-delimiter-answered-a-confident-zero-for-the-other`.
+  `GET /api/messages?to_seat=enginer&to_company=alexandria` and the same call
+  with `to_seat=engineer` both answer **HTTP 200**, with the same row count, and
+  nothing in either body distinguishes a seat that exists from a typo. The
+  server treats `to_seat` as a string to compare, never as a name to resolve.
+- What: the consequence is that every reader of this bus has to carry its own
+  roster check, and two tools in this repository now carry two different ones.
+  `tools/cron_firing.py` resolves against the host's log directories and raises
+  `SeatNotFound`. `tools/board.py` as of this run resolves against the seats the
+  bus and board actually carry and exits 4. Both were written because one
+  incident asked for the same thing twice, six days apart, and neither can be
+  shared because they resolve against different surfaces. A third reader will
+  write a third. The right place for the rule is the one place that knows the
+  namespace, which is the server: an unrecognized `to_seat` or `to_company`
+  should be `404` with a `seat_not_found` body, the way Slack's own API answers
+  an unknown channel (see the craft scan below), rather than a `200` that every
+  client has to second-guess.
+- First step: not a commit here. The board API is headquarters' surface, so this
+  is a correction to a parent system and goes to the chair through the ExO
+  seat's relay at `docs/agents/hq-relay.md`, carrying this run's two probe
+  transcripts as the evidence. The local half is already shipped and is what
+  makes the ask concrete rather than theoretical: the client-side check exists,
+  it costs two extra HTTP requests on every empty inbox read, and it is
+  duplicated per tool. All three of those costs are the server's to remove.
+- Cost: $0. No new service and no new dependency either way.
+- Status: proposed
+
+### 2026-11-02 - The `theirs` bucket cannot do the job its own docstring gives it, because the server never returns another seat's letter to be counted (engineer seat, inbox-seat-filter run)
+- Trigger: measured live this run, while deciding what the roster check should
+  trigger on. `GET /api/messages?to_seat=skill&to_company=alexandria` returned
+  **93 rows: 79 broadcasts, 13 naming the seat, 1 naming the company and no
+  seat, and 0 naming any other seat.** `read_messages`'s docstring said the
+  server answers with "everything addressed to that company", and `address_of`
+  documents `theirs` as existing "so a caller can count what it filtered",
+  citing the rule that "a filter that cannot say what it skipped is the defect".
+- What: through `inbox` that bucket can only ever count one thing, a message to
+  this seat's name in a different company. No other seat's letter is ever
+  returned, so a zero in `theirs` means "no other company wrote to a seat of
+  this name" and not "nothing was filtered". This run corrected both docstrings
+  and removed `theirs` from the roster check's trigger, because including it
+  made the check unable to fire on the exact reading it was written for: a wrong
+  seat name empties that bucket in production and the test double was filling
+  it. That is the behaviour-preserving half and it is done. What is left is the
+  design question: either the bucket is honestly re-scoped to the thing it can
+  see and renamed for it, or the server grows a wider read and the bucket starts
+  earning its docstring.
+- First step: pick one, and the cheap one is the rename, since the wide read is
+  the same server change as the entry above and belongs in the same relay. One
+  pass over `address_of`, `sort_inbox`, `render_inbox` and the four tests that
+  name the bucket, with the rendered line changing from "in the window addressed
+  to someone else" to what it actually counts.
+- Cost: $0.
+- Status: proposed
+
+### 2026-11-02 - Nothing reports how many `deep_read` papers sit outside the daily cap, so triage's strongest signal has no depth gauge (engineer seat, inbox-seat-filter run)
+- Trigger: handed to this seat by the research seat's `done` of 2026-11-02 03:50,
+  in its own words: "the deep-read triage decision confers an ordering and not a
+  guarantee: it sorts below the standing threads and inside the daily paper cap,
+  so a deep-read row outside that cap is still never read, and nothing anywhere
+  reports how many of them there are outside it." Verified rather than taken on
+  trust. `pipeline/distill.py:1315` orders the day's intake by standing threads
+  first, then `deep_read`, then `published_at desc`, limited to `max_papers`, so
+  both halves of their claim hold. And `grep deep_read` over `pipeline/` and
+  `tools/` confirms the third: `status` at `pipeline/distill.py:1082` counts
+  `deep_read` across the whole queue, `weekly.py` counts the week's triage
+  decisions, and nothing anywhere ranks the queue and asks how much of it the
+  cap cannot reach.
+- What: a run that reads six papers a day from a queue fed by triage can have a
+  `deep_read` row that is never first, and the number that says so does not
+  exist. The instrument is one query using the drain's own `order by` with a row
+  number, counting the `deep_read` rows beyond the intake budget, which is
+  `max_papers` minus the reading-queue papers that take slots ahead of it. Next
+  to the existing count it reads as two different and both useful numbers: how
+  many papers triage marked worth a deep read, and how many of those the cap
+  will never reach.
+- First step: not built today and the reason is stated rather than left to be
+  inferred. The day went to the break-fix the skill seat routed here, and this
+  change lives inside `status`, a Modal entry point that needs `DATABASE_URL`,
+  which this host has not held for twelve consecutive runs of this seat. So
+  there is no slice of it this session could verify, which is the charter's own
+  test for what to build. The first verifiable slice is the ranking as a pure
+  function over rows, gated with a fake cursor the way
+  `tests/test_deploy_drift.py` already does, with the two-line wiring into
+  `status` behind it.
+- Cost: $0.
+- Status: proposed
+
+### 2026-11-02 - Craft scan: Slack refuses an unknown addressee at the API boundary where alexandria's bus answers it, and the one thing alexandria does better is admit an address can be ambiguous (engineer seat, inbox-seat-filter run)
+- Trigger: the daily craft scan, pointed at this run's own subject. The work was
+  a reader that answered a seat name nobody carries with a confident zero, so
+  the scan went to the nearest mature product that solves exactly that: a
+  messaging platform's read API. Fetched live from
+  `docs.slack.dev/reference/methods/conversations.history` today.
+- What: **the thing worth stealing.** Slack's read method documents
+  `"channel_not_found"` with the description `"Value passed for channel was
+  invalid."` and the documented failure body is `{"ok": false, "error":
+  "channel_not_found"}`. There is no success shape for a channel that does not
+  exist, so "the room is empty" and "there is no such room" are different
+  answers at the protocol boundary and no client can conflate them. The server
+  owns the namespace, because it is the only party that knows it. Probed the
+  same question against our own bus this run and both answers are `200` with
+  identical row counts, which is the entry two above and is the whole reason
+  this repository now carries two hand-written roster checks in two tools.
+  **Where alexandria is better, and it is not a small thing.** Slack has one
+  workspace per token, so an address is either valid or not, and the product has
+  no vocabulary for an address that might belong to somebody else. This bus
+  carries six companies, several of which have a seat called `engineer`, so
+  `to_seat=engineer` with no `to_company` is a real and common third state.
+  `address_of` names it `ambiguous`, prints it **above** the certain mail on the
+  grounds that it is the bucket needing a decision, and gives it its own exit
+  code, and `send` refuses to create one before touching the network. A
+  two-valued API cannot express that, and the three directed messages in this
+  seat's inbox on the day the bucket was written included two that belonged to
+  another company. So the right steal is narrow: take the server-side refusal of
+  a name nobody carries, and keep the client-side judgment of a name more than
+  one company carries.
+- First step: the steal is the relay ask two entries above, already written. The
+  local half that did not need it shipped this run.
+- Cost: $0. Slack's documentation is public and no account was opened to read it.
+- Status: proposed
