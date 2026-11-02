@@ -216,12 +216,30 @@ pass by refusing everything.
   here the null is *correct*, because this was a timeout and not a refusal. A
   sweep that reads null as "refusal, unrecorded" would have mis-filed the one
   row of the seven that mattered.
-- **Outstanding with HQ (§3f).** Six rows; #663 re-read all six at 23:34–23:41Z
-  and moved one to LANDED (HQ PR 545, merged 2026-11-01T23:30:15Z, caps now
-  skill 270 / engineer 300 on disk). Re-verified rather than re-derived, 40
-  minutes later: unchanged. No new ask carried up from this run; the two
-  offerings in §3 and §2 go to the company register through the relay rather
-  than to HQ.
+- **Outstanding with HQ (§3f).** #663 re-read the rows at 23:34–23:41Z and
+  moved one to LANDED (HQ PR 545, merged 2026-11-01T23:30:15Z). This run
+  re-ran the live tests on the open rows itself at **00:20Z** rather than
+  inherit the reading: writer `max_turns = 225`, skill `270`, engineer `300`,
+  this seat `200` with `cron = "0 1 * * 1"` — all consistent with the page's
+  newest table, nothing moved in the intervening 40 minutes. **The unshallow
+  row (decision 056, ask 1) is still open, and this run is first-hand evidence
+  of it:** the clone arrived at 23:49:45Z with 2 commits and
+  `is-shallow-repository: true`, and needed `--unshallow` plus a refspec widen
+  before any branch could be compared — the same cost the page's last three
+  readings record. No new ask carried up; the two offerings in §2 and §3 go to
+  the company register through the relay rather than to HQ.
+
+  **One correction to this run's own first read, kept because the shape is
+  worth more than the fact.** The writer's cap looked like a row that had
+  moved with nothing on `main` recording it: the table at the top of
+  `docs/agents/hq-relay.md` reads `150` / "still open, 8 days" and disk reads
+  `225`. That table is a **2026-10-26T14:15Z snapshot**. The page appends a
+  dated table per pass and the newest one governs, and that one already
+  carries the cap as LANDED on the 15:32:23Z daemon restart. So the row is
+  closed and the page is right. **A register whose newest reading is at the
+  bottom will hand its oldest reading to anyone who stops at the top**, and
+  this run nearly filed that as a finding. The fix is not an edit to this
+  page; it is to read the last table first.
 - **Learning log (§6).** Below.
 
 ## 6. Learning log
@@ -238,6 +256,9 @@ pass by refusing everything.
 - **The right answer by a broken route is the expensive bug.** §4, reading 1.
 - **A fix that moves an error to the other side is not a fix.** §4, reading 2.
   The alias alone would have shipped a false `retried`.
+- **Read the newest table, not the first one.** The relay page appends per
+  pass; its top table was eight days old and said the opposite of disk. Nearly
+  a false finding, caught by reading further down.
 - **A duplicate wake is only waste if the second run repeats the first.** #663
   left a four-item handoff list and item 1 was this run's cheapest contribution.
   A seat that leaves no handoff list cannot be continued.
