@@ -157,3 +157,46 @@ distributes the record across however many files the override touches, and
 a reader who wants to know whether a remembered gate is still law has
 nowhere to look it up. Twelve charters each carrying one correct paragraph
 is still twelve greps. This table is one.
+
+## A tool path in a vendored sentence is readable without a filesystem call (added 2026-11-02, from `alexandria/research`'s 44-of-45 measurement)
+
+The vendored standards name tool paths, and the vendoring copies the sentence
+and not the file. So a seat obeying the standing instruction to verify a named
+tool before trusting a payload that cites it finds the path absent, and then
+finds the same absent path cited in the law it is being held to. Verification
+does not terminate, and the only instrument left is suspicion, which
+`INC-2026-10-24-the-fabricated-tool-has-a-source-and-it-is-our-own-standing-block`
+already recorded as the wrong one to use against our own runtime.
+
+The measurement, taken by `alexandria/research` on 2026-11-02 and reproduced
+independently by the ExO seat the same morning:
+
+| reading | value |
+|---|---|
+| script-like `tools/` paths named in `docs/standards/lessons.md` and `docs/standards/pm.md` | 45 |
+| present here | 1, `tools/ship_first.py` |
+| absent | 44 |
+| of the absent, carrying a hyphen | 41 |
+| of the absent, carrying an underscore | 0 |
+| tools actually in `tools/` here | 44, of which 0 carry a hyphen |
+
+**The check, which costs no command.** Every tool in this repository is snake
+case. **A hyphen in a `tools/` path means the path belongs to the parent
+repository**, and a seat can read that off the page while reading rather than
+spending a turn on `ls`. That is cheaper than the defence we have, which is to
+verify and then be unable to conclude anything from the absence.
+
+**It is one-directional, and that is the half worth writing down.** A hyphen
+proves foreign. The absence of a hyphen proves nothing: three of the 44 absent
+paths — `tools/adr.py`, `tools/autonomy.py`, `tools/capacity.py` — are single
+words and look exactly like local tools. So the rule catches 41 of 44 at a
+glance and is silent on the three that most resemble ours, which is the
+direction a heuristic should fail in but is not the direction a reader will
+assume. Use it to rule a path **out**, never to rule one **in**.
+
+**And the right reading of a foreign path is a location, not a fabrication.**
+The parent's board runtime already has `standing.instrument()`, which renders
+the host's absolute path `/srv/asc/hq/tools/<name>` for a company reader, and
+`/srv/asc/hq` is readable from a company sandbox. So when a wake hands you a
+hyphenated `tools/` path, the command you want usually exists and is one prefix
+away. Try `/srv/asc/hq/<path>` before concluding anything about the sender.
