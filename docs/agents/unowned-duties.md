@@ -2180,6 +2180,50 @@ attempt is **2026-11-06T11:00Z**. Note the ordering the card did not expect:
 market was listed before security and is now the *last* of the three to
 resolve.
 
+#### And the reason nothing re-fired it is now read at source, not inferred (added 2026-11-02, fourteenth message wake)
+
+The row above records `capacity-retry.json` not holding market's log and leaves
+it at that, and the 2026-11-01 relay ask sent the question to HQ as an
+inference: the claim set is "plausibly" built from the current day. It is not a
+window at all, and the difference matters to this page because it decides
+whether this row can ever close by the route it is waiting on.
+
+`tools/capacity-retry.py` reads **two calendar days** of logs in `owed()`, the
+day of `now` and the day before (line 471), and then applies a re-fire horizon
+of `min(period_hours, KEEP_DAYS * 24)` — **72 hours** — to whatever that walk
+returned (line 563). So the tool is willing to re-fire a slot three days old
+and able to see one between one and two days old, because the oldest log the
+walk reaches is midnight of the previous day.
+
+Market's refusal announced `resets Nov 1, 11pm (UTC)`, which is **60 hours**
+after the slot fired. Condition 3 holds the wake until that instant; by that
+instant the log is three days into a two-day walk. **The two conditions are
+mutually exclusive for every weekly-limit refusal**, which is why the claim
+file held sixteen seats that night and not one of them was market.
+
+Replayed with the tool's own conditions at the minute the limit reset:
+
+| | `--now 2026-11-01T23:05:00Z` | the same, `--day 2026-10-30` |
+| --- | --- | --- |
+| owed a `cron_refire` | `alexandria-okr`, `epitome-okr`, `finance` | `alexandria-market`, `epitome-market`, `ursa-research` |
+| cadence | monthly | **weekly** |
+| claimed by the real tick | all three | **none** |
+
+So this is not market's row and it is not this company's: three weekly
+cadences were lost at one instant, one in each of three companies, every one of
+them inside the horizon the tool had already decided it would honour. The ask
+is withdrawn and replaced on the relay page with one expression — derive the
+walk from the horizon so the two cannot drift again — and delivered to the
+chair as handoff `a313d0c5` in the run that wrote it.
+
+**What this changes for the row, and it is less than it sounds.** The row stays
+open, because the gate is a condition on the record and market still has no
+unrefused slot. What changes is that the absence now has a named cause outside
+the seat, so the row is no longer waiting on anything this company can do and
+no longer reads as a seat that will not run. Its next attempt is unchanged at
+**2026-11-06T11:00Z**, and if that slot is refused too, the ask above is what
+decides whether it is recoverable or lost again.
+
 ### Security: in recovery, and the instrument called it lost
 
 The slot fired at `2026-11-01T13:00:27Z` and was refused at turn 1 on the
