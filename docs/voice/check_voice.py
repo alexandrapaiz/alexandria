@@ -1413,7 +1413,67 @@ STATE_CASES = (
     # Unbolded, which no row uses today. The whole cell is the verdict then,
     # and the ambiguity rule below still governs it.
     ("queued", "queued"),
+    # The two live cadence rows as of 2026-11-02, both split by half, pinned
+    # because the resolver was already right about them and nothing said so.
+    # The ExO seat's sweep of that day made "a cadence claim carries two
+    # verdicts" step six of its claim sweep, so split cells stop being the
+    # exception here. The strictest half still governs whether a line may
+    # ship, which for both of these is `contradicted`.
+    ("contradicted",
+     "**held on the clock, contradicted on the record**, moved from a flat "
+     "`contradicted` 2026-11-02, and the mechanism is a **job running and "
+     "falling behind** rather than the stopped job of the last reading"),
+    ("contradicted",
+     "**contradicted on the record and on the clock**, moved from "
+     '"contradicted on the record, cadence resumed" 2026-11-02'),
+    # The dangerous direction, which no row writes today and one will: a row
+    # whose record half is the one that holds. `held` must still lose.
+    ("contradicted",
+     "**contradicted on the clock, held on the record**"),
 )
+
+# Which half of a cadence claim each verdict belongs to. `claim_state` answers
+# whether a line may ship and this answers what hedge it needs, which are two
+# questions one word cannot carry: a row false about the current period is
+# softened by naming the gap, and a row false about the whole series is only
+# honest if the claim stops being universal.
+HALF_NAMES = ("clock", "record")
+HALF_CASES = (
+    ("**held on the clock, contradicted on the record**",
+     {"clock": "held", "record": "contradicted"}),
+    # One verdict, two halves, and the second half names no state of its own.
+    ("**contradicted on the record and on the clock**",
+     {"clock": "contradicted", "record": "contradicted"}),
+    ("**contradicted**", {}),
+    # A half-shaped phrase that is not a half. "on the verb" and "on the live
+    # site" are the register's own words for other things entirely.
+    ("**contradicted on the verb, and dark on the live site**", {}),
+    ("**contradicted on the universal reading**", {}),
+    # The history recount, which is the case `claim_state` was written for.
+    # It names no half, so this returns nothing and the AMBIGUOUS line below
+    # stays the right message for it.
+    ("**contradicted**, moved from `held` 2026-10-11", {}),
+)
+
+
+def claim_halves(cell):
+    """The per-half verdicts a cadence row names, as `{half: state}`.
+
+    Empty for every row that does not split, which is most of them, so the
+    caller prints the split only where the register wrote one.
+    """
+    bold = re.search(r"\*\*(.+?)\*\*", cell)
+    scope = (bold.group(1) if bold else cell).lower()
+    out, carry = {}, None
+    for part in re.split(r",| and ", scope):
+        state = next((s for s in STATES
+                      if re.search(r"\b" + re.escape(s) + r"\b", part)), None)
+        half = re.search(r"\bon the (clock|record)\b", part)
+        if state:
+            carry = state
+        if half:
+            out.setdefault(half.group(1), state or carry)
+    return out
 
 
 def claim_state(cell):
@@ -1440,8 +1500,10 @@ def claim_state(cell):
 
 def state_cases():
     """Every case above, run before the register is read."""
-    return [(want, cell) for want, cell in STATE_CASES
-            if claim_state(cell)[0] != want]
+    bad = [(want, cell) for want, cell in STATE_CASES
+           if claim_state(cell)[0] != want]
+    return bad + [(str(want), cell) for cell, want in HALF_CASES
+                  if claim_halves(cell) != want]
 
 
 def claim_words(phrase):
@@ -1472,6 +1534,7 @@ def claim_rows():
         state, ambiguous = claim_state(cells[3])
         rows.append({"phrases": phrases, "where": where, "state": state,
                      "ambiguous": ambiguous, "cell": cells[3],
+                     "halves": claim_halves(cells[3]),
                      "label": phrases[0], "measured": cells[4] if len(cells) > 4 else ""})
     return rows
 
@@ -1581,7 +1644,8 @@ def claims(paths=()):
         print("The register's verdict convention changed and STATE_CASES says")
         print("how. Nothing below was read.")
         return 1
-    print(f"  the verdict cases                         {len(STATE_CASES)} pass")
+    print(f"  the verdict cases                         "
+          f"{len(STATE_CASES)} state, {len(HALF_CASES)} half, all pass")
     rows, fails = claim_rows(), []
     hedged, moved, spread, gone = [], [], [], []
     surfaces = []
@@ -1627,7 +1691,24 @@ def claims(paths=()):
                 if score >= 0.6 and max(len(w & have) for w in words) >= 3:
                     hits.append((rel, line, body, score))
         print(f"{row['state']:>13}  \"{row['label'][:58]}\"")
-        if row["ambiguous"]:
+        if row["halves"]:
+            # A split cell is not an ambiguous one. The register wrote two
+            # verdicts on purpose, one per half of a cadence claim, and
+            # reporting that as an ambiguity teaches the reader to skim the
+            # line. The shipping decision is unchanged and the strictest half
+            # still governs it; what this adds is which hedge the half needs.
+            print(f"  SPLIT     "
+                  + "   ".join(f"{h}: {row['halves'][h]}"
+                               for h in HALF_NAMES if h in row["halves"]))
+            failed = [h for h in HALF_NAMES
+                      if row["halves"].get(h) not in (None, "held")]
+            print(f"            the {' and '.join(failed)} "
+                  f"{'half fails' if len(failed) == 1 else 'halves fail'}, "
+                  f"so the hedge owed is "
+                  + ("the gap named" if failed == ["clock"]
+                     else "the universal dropped" if failed == ["record"]
+                     else "both, which is the claim withdrawn"))
+        elif row["ambiguous"]:
             print(f"  AMBIGUOUS the state cell names more than one verdict; "
                   f"the strictest is read")
             print(f"            {row['cell'][:96]}")
@@ -5631,11 +5712,11 @@ def press_deploy():
     except Exception as e:
         print(f"  UNREACHED tools/delivery_health.py: {type(e).__name__}: {e}")
         return None
-    body = _fetch(dh.RECEIPT_URL)
-    if body is None:
+    doc = receipt_json(dh.RECEIPT_URL)
+    if doc is None:
         return None
     try:
-        rows = {r["app"]: r for r in json.loads(body).get("deploy", [])}
+        rows = {r["app"]: r for r in doc.get("deploy", [])}
     except (ValueError, KeyError, TypeError) as e:
         print(f"  UNREACHED {dh.RECEIPT_URL}: {type(e).__name__}: {e}")
         return None
@@ -5648,6 +5729,404 @@ def press_deploy():
                                   limit=PRESS_WINDOW, ref="origin/main")
     found["row"] = row
     return found
+
+
+def receipt_json(url):
+    """The public receipt as a dict, or None with the reason printed.
+
+    `press_deploy` read the receipt for its `deploy` array and threw the rest
+    away, and the command below needs the `press` block off the same document.
+    Two fetches of one URL in one file would be a parallel structure before it
+    was a second request, and this file forbids those before it forbids
+    anything else, so both callers come through here.
+    """
+    body = _fetch(url)
+    if body is None:
+        return None
+    try:
+        return json.loads(body)
+    except ValueError as e:
+        print(f"  UNREACHED {url}: {type(e).__name__}: {e}")
+        return None
+
+
+# The press's schedule, read off the job rather than restated here. A copy of
+# `0 9 * * 1` in this file goes stale the first time the engineer seat moves
+# the cron, and the gate would then be confidently wrong about the one number
+# its whole verdict turns on.
+WEEKLY_JOB = ROOT / "pipeline/weekly.py"
+CRON_LINE = re.compile(r"modal\.Cron\(\s*[\"']([^\"']+)[\"']")
+# `M H * * D` and nothing else. Every other cron shape is refused rather than
+# approximated, because this command exists to replace a seat's mental
+# arithmetic and an approximation puts the mistake back one level down.
+WEEKLY_FORM = re.compile(r"^(\d{1,2}) (\d{1,2}) \* \* ([0-7])$")
+
+PRESS_SCHEDULE_CASES = (
+    ("0 9 * * 1", (0, 9, 1)),
+    # Cron's Sunday is 0 and `isoweekday`'s is 7. Converted once, here, so no
+    # caller below compares two conventions.
+    ("30 14 * * 0", (30, 14, 7)),
+    ("0 1 * * 1", (0, 1, 1)),
+    # Refused rather than guessed. A multi-slot or sub-daily cron is a cadence
+    # this enumerator does not model, and a wrong slot list is worse than no
+    # slot list because there is nothing to check it against
+    # (INC-2026-10-26-the-detector-named-a-slot-that-never-came-due-and-called-it-a-slot-that-did-not-fire).
+    ("0 9 * * 1,4", None),
+    ("*/15 * * * *", None),
+    ("0 9 1 * *", None),
+)
+
+
+def press_schedule(line=None):
+    """The press's cron as `(minute, hour, isoweekday)`, or `(None, why)`.
+
+    Reads `pipeline/weekly.py` when given nothing, so the gate and the job
+    cannot disagree. Weekday comes back in `isoweekday`'s convention, where
+    Monday is 1 and Sunday is 7, because every comparison below is against a
+    `date`.
+    """
+    if line is None:
+        if not WEEKLY_JOB.exists():
+            return None, "pipeline/weekly.py is not in this checkout"
+        found = CRON_LINE.findall(WEEKLY_JOB.read_text())
+        if len(found) != 1:
+            return None, (f"pipeline/weekly.py carries {len(found)} "
+                          f"modal.Cron lines, so which one the press runs on "
+                          f"is not readable from the file")
+        line = found[0]
+    m = WEEKLY_FORM.match(line.strip())
+    if not m:
+        return None, (f"the press cron is `{line.strip()}`, which is not the "
+                      f"`M H * * D` form this gate can enumerate")
+    minute, hour, dow = (int(x) for x in m.groups())
+    if minute > 59 or hour > 23:
+        return None, f"the press cron is `{line.strip()}`, which is not a time"
+    return (minute, hour, dow or 7), ""
+
+
+def slots_between(schedule, since, until):
+    """Every firing of `schedule` strictly after `since` and at or before `until`.
+
+    This function is the whole command. A cadence claim is read by counting
+    FIRINGS, and the mistake it replaces is counting PERIODS: on 2026-11-02
+    this seat told the register's owner that two press slots had passed with no
+    edition, because two weeks had ended since the last one. One slot had come
+    due. A week ends on its own and only a schedule can miss, so the period
+    boundary is never the measurable event.
+    """
+    minute, hour, iso = schedule
+    out, day = [], since.date()
+    while day <= until.date():
+        if day.isoweekday() == iso:
+            at = datetime.datetime(day.year, day.month, day.day, hour, minute,
+                                   tzinfo=datetime.timezone.utc)
+            if since < at <= until:
+                out.append(at)
+        day += datetime.timedelta(days=1)
+    return out
+
+
+def next_slot(schedule, after):
+    """The first firing strictly after `after`."""
+    minute, hour, iso = schedule
+    day = after.date()
+    for _ in range(9):
+        at = datetime.datetime(day.year, day.month, day.day, hour, minute,
+                               tzinfo=datetime.timezone.utc)
+        if day.isoweekday() == iso and at > after:
+            return at
+        day += datetime.timedelta(days=1)
+    return None
+
+
+def periods_between(schedule, since, until):
+    """The period ENDS in the span, printed beside the slots and never instead.
+
+    A period ends at the instant the firing's day begins, because the press
+    labels the week that ended the day before it runs. That is not this seat's
+    reading of the schedule: the receipt proves it on one row, where
+    `newest_week` 2026-W42 was created 2026-10-19T09:02Z and 2026-W42 is the
+    week that ended Sunday 2026-10-18.
+
+    Where this count and the slot count differ, the difference is a period that
+    has closed whose slot has not come due, and that window is the only time a
+    hand count can be wrong. For the press it is nine hours wide once a week,
+    and 2026-11-02T01:23Z fell inside it.
+    """
+    wide = slots_between(schedule, since, until + datetime.timedelta(days=1))
+    ends = [datetime.datetime(s.year, s.month, s.day,
+                              tzinfo=datetime.timezone.utc) for s in wide]
+    return [e for e in ends if since < e <= until]
+
+
+# The reading that produced this command, and three around it, asserted before
+# anything live is read. `since` is 2026-W42's creation on the receipt and
+# `until` is the hour of the reading.
+CADENCE_CASES = (
+    # 2026-11-02T01:23:12Z, this run's `observed_at`. Two weeks had ended, one
+    # slot had fired, and this seat reported two. The case IS the incident.
+    ("2026-10-19T09:02:52+00:00", "2026-11-02T01:23:12+00:00", 1, 2,
+     "2026-11-02T09:00:00+00:00"),
+    # The same tree eight hours later, after today's firing. Two slots, two
+    # periods, and the two numbers agree again.
+    ("2026-10-19T09:02:52+00:00", "2026-11-02T09:30:00+00:00", 2, 2,
+     "2026-11-09T09:00:00+00:00"),
+    # The gap window itself, an hour before the missed slot of 2026-10-26: the
+    # week has closed and nothing has failed yet. A seat reading here counts
+    # one and the schedule has missed nothing.
+    ("2026-10-19T09:02:52+00:00", "2026-10-26T08:00:00+00:00", 0, 1,
+     "2026-10-26T09:00:00+00:00"),
+    # The register's own last reading, 2026-10-25T23:32:50Z, which it called
+    # "the clock has not yet missed" in prose and got right. Twenty-seven
+    # minutes before the week closed, so neither number has moved.
+    ("2026-10-19T09:02:52+00:00", "2026-10-25T23:32:50+00:00", 0, 0,
+     "2026-10-26T09:00:00+00:00"),
+    # Minutes after a firing that produced its edition, which is the only
+    # shape of reading on which this row may read OK.
+    ("2026-10-19T09:02:52+00:00", "2026-10-19T09:05:00+00:00", 0, 0,
+     "2026-10-26T09:00:00+00:00"),
+)
+
+
+def cadence_cases():
+    """The schedule parser and the arithmetic, against every pinned case."""
+    rc = 0
+    for line, want in PRESS_SCHEDULE_CASES:
+        got, why = press_schedule(line)
+        if got != want:
+            rc = 1
+            print(f"  CASE    `{line}` wanted {want} and got {got} ({why})")
+    print(f"PRESS_SCHEDULE_CASES                       "
+          f"{len(PRESS_SCHEDULE_CASES) - rc} of {len(PRESS_SCHEDULE_CASES)}")
+    bad = 0
+    sched, _ = press_schedule("0 9 * * 1")
+    for since, until, slots, periods, nxt in CADENCE_CASES:
+        a = datetime.datetime.fromisoformat(since)
+        b = datetime.datetime.fromisoformat(until)
+        got = (len(slots_between(sched, a, b)),
+               len(periods_between(sched, a, b)),
+               next_slot(sched, b).isoformat())
+        if got != (slots, periods, datetime.datetime.fromisoformat(nxt).isoformat()):
+            bad = 1
+            print(f"  CASE    at {until} wanted "
+                  f"{(slots, periods, nxt)} and got {got}")
+    print(f"CADENCE_CASES                              "
+          f"{len(CADENCE_CASES) - bad} of {len(CADENCE_CASES)}")
+    return rc | bad
+
+
+def week_label(end):
+    """The ISO week label the press prints for a period ending at `end`.
+
+    `end` is the instant the firing's day begins, so the week it closes is the
+    day before it.
+    """
+    d = (end - datetime.timedelta(days=1)).date()
+    y, w, _ = d.isocalendar()
+    return f"{y}-W{w:02d}"
+
+
+def cadence():
+    """The two verdicts a cadence claim carries, each answered by its own reading.
+
+    The ExO seat owns `docs/agents/quality-claims.md` and this seat is its
+    artifact-side gate, which is step 1b of this charter. On 2026-11-02 that
+    seat took one improvement from this one and made it step six of its own
+    claim sweep: **a cadence claim carries two verdicts and one reading can
+    only answer one of them.** This is the half that belongs here, because the
+    register's rows are prose and the hedge a candidate has to carry is this
+    seat's to draft.
+
+    - **the clock.** Is the claim true of the current period? One reading
+      answers it, and the reading is a count of FIRINGS. This is where the
+      improvement was paid for: the note that earned it counted two missed
+      slots because two weeks had ended, and `slots_between` is the repair.
+    - **the record.** Has it been true of every period it covers? No single
+      reading answers it, and the register's own words for the growth row are
+      that six days between two readings "cannot be recovered from a maximum".
+      For the press it CAN be recovered, because every edition is a page that
+      either exists or does not, and that is the asymmetry worth having in a
+      command rather than in a paragraph.
+
+    Three failure modes, and the third is the one no previous reading of this
+    row had asked for.
+
+    - CLOCK, a slot that came due and produced no edition.
+    - RECORD, a period inside the served span with no edition and no make-up.
+    - UNREACHED, the receipt or the library did not answer. Never a pass: a run
+      that cannot read the row and concludes the cadence holds has made the
+      mistake this file was built to stop.
+
+    And it separates unscheduled from broken, which the output alone cannot.
+    `pipeline/runtime_sha.py`'s upsert sets `recorded_at = now()` on every run,
+    so the receipt's `deploy` row for the press says when the job last ran at
+    all. A frozen `newest_week` beside a frozen run record is a job that did
+    not start; a frozen `newest_week` beside a fresh run record is a job that
+    ran and printed nothing. Those take different repairs from different seats
+    and for thirteen days nothing here had asked which one it was.
+
+    What it cannot see. Whether a slot was served and refused upstream, which
+    lives in the platform and not in this receipt, and whether an edition that
+    exists is any good, which is every other command in this file.
+    """
+    rc = cadence_cases()
+    print()
+    sched, why = press_schedule()
+    if sched is None:
+        print(f"  FAIL    {why}")
+        print("Nothing below was read, because a slot list computed from a")
+        print("schedule this gate could not parse is the invented-subject")
+        print("defect rather than a weaker version of this answer.")
+        return 1
+    minute, hour, iso = sched
+    day = ("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday",
+           "Sunday")[iso - 1]
+    print(f"the press schedule                         "
+          f"{day}s at {hour:02d}:{minute:02d}Z")
+    print(f"  read from                                "
+          f"pipeline/weekly.py, its own modal.Cron")
+
+    try:
+        sys.path.insert(0, str(ROOT))
+        import importlib.util
+        spec = importlib.util.spec_from_file_location(
+            "_dh", ROOT / "tools" / "delivery_health.py")
+        dh = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(dh)
+    except Exception as e:                          # noqa: BLE001
+        print(f"  UNREACHED tools/delivery_health.py: {type(e).__name__}: {e}")
+        return 1
+    doc = receipt_json(dh.RECEIPT_URL)
+    if doc is None:
+        print("  FAIL    the receipt answered nothing, so this run concludes")
+        print("          nothing about the cadence")
+        return 1
+    press_block = doc.get("press") or {}
+    created = press_block.get("created_at")
+    newest = press_block.get("newest_week")
+    observed = doc.get("observed_at")
+    runs = {r.get("app"): r for r in (doc.get("deploy") or [])}
+    ran = (runs.get(PRESS_APP) or {}).get("recorded_at")
+    if not (created and newest and observed):
+        print("  FAIL    the receipt carries no press block, so the newest")
+        print("          edition and its hour are both unknown")
+        return 1
+    since = datetime.datetime.fromisoformat(created.replace("Z", "+00:00"))
+    now = datetime.datetime.fromisoformat(observed.replace("Z", "+00:00"))
+    slots = slots_between(sched, since, now)
+    periods = periods_between(sched, since, now)
+    nxt = next_slot(sched, now)
+    print(f"read at                                    "
+          f"{observed}, the receipt's own hour")
+    print(f"newest edition                             "
+          f"{newest}, created {created}")
+    print(f"  its age                                  "
+          f"{round((now - since).total_seconds() / 86400, 2)} days")
+    print()
+    print(f"slots that have FIRED since it             {len(slots)}")
+    for s in slots:
+        print(f"    {s.isoformat()}  for {week_label(s)}")
+    print(f"periods that have ENDED since it           {len(periods)}")
+    for e in periods:
+        print(f"    {e.isoformat()}  closing {week_label(e)}")
+    if len(periods) != len(slots):
+        print(f"  the two numbers differ by {len(periods) - len(slots)}, which "
+              f"is a week that has")
+        print("  closed whose slot has not come due. Counting periods here is")
+        print("  the error this command was written for.")
+    print(f"next slot                                  "
+          f"{nxt.isoformat() if nxt else 'unknown'}"
+          f"{'' if not nxt else f', in {round((nxt - now).total_seconds() / 3600, 1)}h'}")
+    print()
+
+    # The clock half.
+    if slots:
+        print(f"  FAIL    CLOCK: {len(slots)} slot(s) came due after "
+              f"{newest} and produced no edition")
+    else:
+        print(f"  OK      CLOCK: no slot has come due since {newest}")
+    print()
+
+    # Did it run at all? The output cannot say and this row can.
+    if ran:
+        last = datetime.datetime.fromisoformat(ran.replace("Z", "+00:00"))
+        print(f"the press last RAN at all                  {ran}")
+        others = sorted((r.get("recorded_at") or "")
+                        for a, r in runs.items() if a != PRESS_APP)
+        if others:
+            print(f"  its siblings' newest run                 {others[-1]}")
+        if slots and last <= since:
+            print("  so the press has not executed since that edition: the")
+            print("  slot was UNSCHEDULED rather than the job broken, and")
+            print("  nobody has to repair a job to fix it")
+        elif slots:
+            print("  so the press DID execute after that edition and printed")
+            print("  no issue, which is a defect in the job and not a schedule")
+    else:
+        print("the press last RAN at all                  no row on the receipt")
+
+    # The record half, which needs the series and not the reading.
+    print()
+    served = served_weeks()
+    if served is None:
+        print("  FAIL    RECORD: the library did not answer, so the record")
+        print("          half is unread and this run concludes nothing on it")
+        return 1
+    print(f"weeks the product serves                   "
+          f"{len(served)}: {', '.join(served)}")
+    # Every week the claim covers, which starts at the first edition the
+    # product serves and not at the first slot before it. The first draft of
+    # this walked from the Monday of 2026-W39 and reported 2026-W38 as a hole,
+    # because the firing inside a week labels the week BEFORE it: one slot
+    # earlier than the span is one week earlier than the claim. A week whose
+    # slot has not come due is not owed yet and is named separately.
+    #
+    # The labels sort lexicographically because ISO weeks are zero-padded, so
+    # `>= first` holds across a year boundary as well as inside one.
+    first = min(served)
+    span_from = datetime.datetime.fromisoformat(
+        datetime.date.fromisocalendar(int(first[:4]), int(first[6:]), 1)
+        .isoformat()).replace(tzinfo=datetime.timezone.utc)
+    owed = [w for w in (week_label(s)
+                        for s in slots_between(sched, span_from, now))
+            if w >= first]
+    holes = [w for w in owed if w not in served]
+    pending = [w for w in (week_label(e)
+                           for e in periods_between(sched, span_from, now))
+               if w >= first and w not in owed]
+    # The archive and the record are two different answers to "which weeks
+    # exist", and `site/lib/issues-core.js` says the record decides. Where the
+    # checkout carries an edition the library does not serve, the span above
+    # starts later than the oldest file, and that is worth one printed line
+    # rather than a failure: whether a committed week should be served is the
+    # frontend seat's surface and this gate reads the served set on purpose.
+    filed = sorted(p.stem for p in (ROOT / "site/content/issues").glob("*.md"))
+    older = [w for w in filed if w < first]
+    if older:
+        print(f"  in the checkout and not served            "
+              f"{', '.join(older)}, so the span above starts at {first}")
+    print(f"  weeks whose slot has fired since {first}  {len(owed)}")
+    print(f"  of those, served                         {len(owed) - len(holes)}")
+    print(f"  closed but not yet due                   "
+          f"{', '.join(pending) if pending else 'none'}")
+    if holes:
+        print(f"  FAIL    RECORD: {len(holes)} week(s) had a slot fire and "
+              f"carry no edition")
+        for w in holes:
+            print(f"            {w}")
+        print("          A missed week stays missed unless something makes it")
+        print("          up, so this half cannot be repaired by the next")
+        print("          firing and the claim's universal reading stays false.")
+    else:
+        print(f"  OK      RECORD: every week with a fired slot since {first} "
+              f"is served")
+    print()
+    print("A cadence sentence asserts both halves at once, so a candidate")
+    print("hedged against the clock and silent about the record is still")
+    print("printing a false universal. Which half failed decides the hedge:")
+    print("a clock failure is softened by naming the gap, and a record")
+    print("failure is only honest if the claim stops being universal.")
+    return rc | bool(slots) | bool(holes)
 
 
 # Which law each undeployed generator patch reaches. `press` says the press is
@@ -6113,6 +6592,7 @@ def main():
                      ("candidates", candidates),
                      ("deadlines", deadlines),
                      ("press", press),
+                     ("cadence", cadence),
                      ("queued", queued),
                      ("ledger", ledger),
                      ("firstuse", firstuse),
@@ -6133,7 +6613,7 @@ def main():
                      ("compare", compare), ("selfcheck", selfcheck)):
         if which == name or (which == "all"
                              and name not in ("selfcheck", "compare",
-                                              "press", "queued")):
+                                              "press", "cadence", "queued")):
             print(f"==== {name} ====")
             if name in ("enforcements", "selfcheck", "candidates", "ledger",
                         "routed"):
