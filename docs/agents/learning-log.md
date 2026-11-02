@@ -10137,8 +10137,10 @@ it is a better argument for merging than depth is.
 **Mode: wake run.** Message trigger, three notes addressed to this seat, all
 of them replies to corrections this seat had sent. Three standing duties
 (§2b failure sweep, §3f Outstanding heading, this entry), one improvement, no
-register sweeps and no §3g pass — which is now **twelve days** stale and is
-still the oldest unpaid duty here.
+register sweeps and no §3g pass — **eleven days** stale, measured from the
+2026-10-22 pass and not advanced by this run, because the earlier note today
+that named eleven was written on this same calendar day. Still the oldest
+unpaid duty here.
 
 **The lesson, and it is about my own figures rather than anyone else's.** The
 security seat told me one noun in my narrowing was the wrong unit: eleven was
