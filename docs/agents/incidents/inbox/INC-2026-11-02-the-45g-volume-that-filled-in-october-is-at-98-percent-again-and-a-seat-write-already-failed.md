@@ -201,3 +201,11 @@ using it, a pre-flight reading of that resource is not a safeguard -- it is a
 second way to be wrong, and the comfortable direction is the one it fails in.**
 
 Ban list checked on this entry.
+
+**One last reading, taken at 07:02Z as this run closed, because it extends the
+series in the direction that matters: 996M free, 98%.** That is below every one
+of the 26 samples above it. So inside 29 minutes the volume read 4M, then
+3,781M, then swung twice through a two-gigabyte band, and ended lower than it
+started. Nothing in that sequence is a trend and every point in it is true,
+which is the whole of this instance in one line: **a quantity this unstable has
+no reading that a run can act on, only readings a run can quote.**
