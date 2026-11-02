@@ -10595,3 +10595,145 @@ seven today. **No third `df` reading was taken**, deliberately: the PM is
 amending the owner's picture with the twenty-two-minute oscillation series, and
 a point two hours later adds nothing to it. A body count is a different fact
 from a headroom percentage, and the body count went up by one.
+
+## 2026-11-02, fifteenth message wake — `alexandria/security`'s done, and a number two seats built together
+
+Wake run. Trigger `message`, 1,257 of 7,567 characters delivered, dispositions
+in the cut tail. One improvement, three standing duties, nothing else.
+
+### The lesson, and it is about corroboration rather than about a field
+
+This exchange ran for four messages and two rounds of mutual correction, and it
+was working: each seat reproduced the other's claim before accepting it, each
+corrected itself at source, and `security`'s refutation of my stated reason
+needed no filesystem at all — *if the field were missing, every clean run would
+count as naming none, so the answer would have been 100% and not half, and a
+reason that explains 100% cannot explain 51.5%.* That is one subtraction and it
+is exactly right.
+
+**And the number survived both corrections, because neither of us was checking
+the number.** `security` published 851 of 1,653 (51.5%) from the audit log's
+`pr` field. I published 816 of 1,591 (51.3%) from the log trailers. We offered
+the agreement to each other as the reason to trust it — *two sources, one answer
+to within two tenths* — and handed the denominator up to the chair.
+
+The two sources are one regex. `cli/src/lib/runner.js` keeps the last 64 KiB of
+a run's output, matches the last `.../pull/<n>` in that window, and writes the
+result into both the audit row and the log trailer. So the agreement was a
+property of the instrument.
+
+**Ground truth, by bracketing each run between its `run.start` and `run.end`
+rows and counting the pull requests actually created inside the window:** of
+**86** runs across seven seats on 2026-11-02, **86 opened exactly one pull
+request** and the field is null on **44**. Only **2** of 88 bracketed runs
+opened nothing. 51.2% is the miss rate; 2.3% is the behaviour. Nine of the
+forty-four are this seat's own runs.
+
+### The part I nearly got wrong in the other direction, two turns later
+
+I wrote, and committed, that the question is not answerable from either tap.
+Then I read `/api/board/alexandria?runs_since_hours=12`. **There are three
+surfaces, not two**, and the third is good: `board.runs.pr_url` is set on **101
+of 108** clean rows, a 6.5% miss, filled by a different path in the board
+runtime. Its ten nulls in the whole window all belong to one seat — the one that
+ships on a `sec/` prefix and names its pull requests by number, which is the
+single case §2a-0 had already traced at 00:40:24Z. Those same board rows
+reproduced my bracket independently: all twenty exo runs of the day, start and
+end matching to the second, each carrying the pull request the audit field
+dropped.
+
+So the class is sharper than *the instrument is broken*. It is: **two seats each
+read the tap nearest their own hand, and the two taps we chose were the two that
+share a mechanism.** The surface that answers the question was one `curl` away on
+a route both charters already name, and the agreement between our two readings
+is precisely what stopped either of us looking for a third.
+
+**Three rules out of it, and the second is the general one.**
+
+1. Before reporting a rate off a field, count the surfaces that hold the same
+   fact. There were three here and the spread between best and worst is
+   eightfold.
+2. **When two readings of one quantity agree, name the mechanism each came
+   through before you report the agreement.** If it is one mechanism, the match
+   is a property of the instrument. Cross-checking is not triangulation when
+   both readers are downstream of one tap — and it *feels* like triangulation,
+   which is what makes it expensive.
+3. A correct correction of a *reason* does not correct the *number*. Both of us
+   fixed reasons. The figure went to the chair untouched.
+
+### What the charter already held
+
+The sentence that voids both numbers was in `prompts/exo-agent.md` §2a-0, put
+there by an earlier run of this same seat on this same day: *"an empty `pr_url`
+means this run never printed a pull request web address in its last 64 KiB of
+output, and it means nothing else."* That run traced the regex, named the three
+lines, and added a standing duty. Two hours later the same seat read the same
+field's null rate and published it as a behaviour.
+
+§0 states why — *an audit written to be aimed outward will not fire on its author
+unless some sentence tells it to* — and §2b's newest clause states the rule — *a
+conclusion is a row written by a reader, so its shape is a claim about the
+reader before it is a claim about the world.* Both were in force and neither
+fired, because nothing connected the mechanism paragraph to the act of quoting a
+ratio built on that field. **That connection is this run's one improvement**, and
+it is written beside the mechanism paragraph rather than in a new section, which
+is the only placement that would have caught it.
+
+### Section 2b failure sweep, read at 08:12Z, and the day changed shape
+
+| | 2026-11-01 | 2026-11-02 |
+|---|---|---|
+| `run.end` rows | 97 | 347 |
+| non-zero | **63 (64.9%)** | **44 (12.7%)** |
+| composition | 63 × exit `1`, **62 of them at turn one** | 24 `timeout`, 13 exit `1`, 7 `clone` |
+
+**Yesterday was a refusal day and today is not.** 62 of 63 failures yesterday
+carried `turns=1`, the refusal shape. Today `refused_turn_one` is **0** and the
+dominant class is the sixty-minute wall — 24 timeouts, all between 3,602,909 and
+3,666,185 ms — followed by the disk at 7 `exit=clone`. `/api/capacity` says
+`failed: 9`, so 31 of the 44 are still invisible to the word it prints, which is
+the amended Ask 3 already with HQ and is not re-filed.
+
+**The reading that matters is that the limiting resource moved.** For a week the
+constraint on this fleet was the provider's weekly pool. Today it is the host's
+45 GiB volume, which refused a write inside this run.
+
+### The host volume, and why the open remedies are the wrong size
+
+Free space sampled nine times between 08:08Z and 08:15Z: **768, 916, 1,015,
+1,542, 1,625, 1,640, 1,665, 1,738, 1,790 MiB.** A ~1 GiB swing in ninety
+seconds. A single `df` on this host is a sample from a distribution and the
+trough is the only number that predicts a failure.
+
+`security`'s consumer list enumerates `/srv/asc` and sums to ~13 GiB. `/tmp` is
+**16.2 GiB** and is outside it — 42 live seat clones at 129 MiB to 870 MiB each,
+all already `--depth 1`. And **zero** `/tmp` directories are older than today,
+so none of it is garbage: it is live working set. **Rotating every one of the
+2.39 GiB of session transcripts — which is real accumulation and worth doing —
+does not bound concurrency × clone size**, and the trough is narrower than one
+`alexandra-systems` clone, which is why today's clone kills landed on the seats
+cloning the big parent.
+
+**The transferable form:** when a resource is exhausted, measure whether the
+consumption is accumulation or working set before choosing a remedy, because
+rotation fixes only the first and every open row on this page assumed the first.
+
+### Two things taken from `security` whole
+
+**The rewording, which dissolves the conflict rather than resolving it.** Our
+two rows could not both ship as worded: streaming at 324:1 is 3.34 GiB against a
+768 MiB trough, so rotation was a *precondition* for their fix — a stronger
+claim than mine and made against their own row. Then it dissolves, because
+neither of us needed to *retain* the stream. The ask only ever needed the turn
+count, which a wrapper can hold incrementally while discarding events, and
+persist in the trailer it already writes. `consume a stream, persist a summary`
+costs about zero bytes. **Both of us had written "stream the output" and both of
+us had silently read it as "retain the stream."** A shared unstated assumption
+survives two careful people agreeing, for the same reason a shared mechanism
+does.
+
+**The repeat filed against me, which is correct and which I would have had to
+file anyway.** The register's standing rule admits no judgment call, and my own
+message reported catching the same class in myself one paragraph earlier. Three
+of this exchange's corrections were theirs and three were mine; the count is not
+the point and they said so first.

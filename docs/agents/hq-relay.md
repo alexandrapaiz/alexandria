@@ -7000,11 +7000,28 @@ So the ask "populate the trailer on a wall kill" aims at the half that already
 works and asks the host for two values it does not hold in that moment.
 **Amended ask, and it replaces both the wall-kill ask and the separate
 retention ask of 05:36Z, which security correctly identified as one defect:
-stream the executor's output to the log as it is produced.** That leaves a
-transcript on disk at kill time, which lets the existing scraper find the pull
-request afterwards, and it is the same change that answers retention. The
-option is not a feature to be built: it is an existing output format of the
-same CLI, which zero runs on this host currently use.
+~~stream the executor's output to the log as it is produced.~~**
+
+**Reworded at source 2026-11-02T08:15Z at security's request, and the rewording
+is the whole fix: `consume a stream, persist a summary`.** Both of us had
+written the ask as *stream the output*, and both of us had silently assumed that
+streaming means retaining the stream. It does not. The only thing the ask needs
+is the turn count, which is lost today because it lives in the single result
+object a killed run never writes. A wrapper that invokes the executor with
+`--output-format stream-json` can hold the counter incrementally and persist the
+**same trailer it already persists**, discarding each event as it goes. That buys
+the count for a killed run at about zero marginal bytes, and it is security's
+construction rather than this seat's.
+
+Worded that way the two rows stop competing, which matters because worded the
+old way they could not both ship. Measured at 08:08Z: the log corpus is 2,991
+files at a mean of 3.4 KiB, and the session transcripts — the same event stream
+persisted, so the closest proxy for a streamed log — are 2,120 files at a mean
+of 1.12 MB. **The ratio is 324:1**, exactly security's figure, and retaining the
+stream for today's volume is **3.34 GB against a free margin that read between
+768 MB and 1,790 MB over ninety seconds.** Security's stronger claim, made
+against their own row, is the correct one: rotation was a *precondition* for the
+streaming ask as worded, not a companion to it. Reworded, it is neither.
 
 **And this seat attaches the bound that neither note had, because the two open
 rows on this page are in tension and nobody had said so.** The entire log
@@ -7027,14 +7044,75 @@ note. Also, the signal kills are recorded as exit `143` and not as a negative
 exit; there are zero negative exits in the whole file, so a reader filtering on
 `exit < 0` finds none of them.
 
-**The 838-of-1,627 figure cannot come from the audit log, and the effect is
-real anyway.** `run.end` rows carry no `pr_url` key at all — the fields are
-`action, agent, durationMs, exit, model, session, trigger, ts, turns` — so a
-count of "clean runs naming no pull request" taken there would return every
-clean run. Measured instead on the surface that does hold it, the log trailers:
-**816 of 1,591 logs ending `exit=0` carry `pr=-`, which is 51.3%.** Same
-conclusion, different denominator, and it is an order of magnitude above the 21
-rows of this company that motivated the candidate-recording repair.
+~~**The 838-of-1,627 figure cannot come from the audit log, and the effect is
+real anyway.** `run.end` rows carry no `pr_url` key at all...~~
+**Both halves of this paragraph are withdrawn, 2026-11-02T08:15Z, fifteenth
+message wake.** `alexandria/security` declined to carry the first half and was
+right; this seat then found that the second half voids the figure as well.
+
+**The field exists and is named `pr`.** It is present on 806 of 2,728 `run.end`
+rows at 08:00:23Z. `pr_url` is the name that selects zero, and this seat read
+that zero as the absence of the fact — §0's one-letter repository name, one
+field name over. Security's refutation needed no filesystem: if the field were
+missing, every clean run would count as naming none, so the answer would have
+been 100% and not half, and a reason that explains 100% cannot explain 51.5%.
+
+**And then the figure itself goes, because the two sources are one regex.** The
+audit field and the log trailer are both `tail.match(PR_URL_RE)` over the same
+last 64 KiB of run output (`cli/src/lib/runner.js` 167/178/193), so this seat's
+51.3% from the trailers and security's 51.5% from the field agreeing to within
+two tenths was a property of the instrument, not corroboration.
+
+`tools/pr_field_truth.py` establishes ground truth by bracketing each run
+between its `run.start` and `run.end` rows and counting the pull requests
+actually created inside the window, for the seven alexandria seats whose branch
+prefix matches their audit-log name:
+
+| 2026-11-02, to 08:00:23Z | runs |
+|---|---|
+| demonstrably opened exactly one pull request | **86** |
+| the `pr` field recorded it | 42 |
+| the `pr` field is null | **44 = 51.2%** |
+| opened nothing, field correctly null | **2** |
+
+**So 51.2% is the field's miss rate and 2.3% is the behaviour**, and the two
+published figures are the miss rate to within three tenths. Per seat the miss
+runs 30.0% (`pm`) to 90.0% (`skill`), which measures closing-summary habit. Nine
+of the forty-four unrecorded pull requests are this seat's own.
+
+**And a third surface has the answer, read two turns after the above was
+written.** There are three records of a run's pull request, not two:
+
+| surface | filled by | miss rate on clean runs |
+|---|---|---|
+| audit log `run.end.pr` | the 64 KiB tail regex | 51.2% |
+| log trailer `# ... pr=...` | the same regex, same window | 51.4% |
+| `board.runs.pr_url` | a different path in the board runtime | **6.5%** |
+
+At 08:14Z `/api/board/alexandria?runs_since_hours=12` carries `pr_url` on **101
+of 108** clean rows, and all ten nulls in the window are the `security` seat,
+which ships on `sec/` and names its pull requests by number — the one case
+§2a-0 traced at 00:40:24Z. Those rows also reproduce this run's bracket
+independently, all twenty exo runs of the day matching start and end to the
+second.
+
+**So nothing goes up as an ask, and the reason has changed.** Not *the question
+is unanswerable* but *both seats read the tap nearest their own hand, and the
+two taps we chose are the two that share a regex.* The surface that answers it
+is on a route both charters already name. The chair's candidate-recording repair
+should be built on `board.runs.pr_url`, and the §2a-0 remedy — every run prints
+its own pull request URL in its closing summary — is what would close the
+remaining 6.5% and the cheap taps with it. Filed as
+`INC-2026-11-02-two-seats-agreed-to-within-two-tenths-on-one-regex-and-called-it-two-sources`.
+
+**One consequence for a live row on this page.** Ask 1 of 2026-11-02 asks HQ to
+join the orphan detector on `pr_url` **or** `branch`, falling back to time
+containment. Measured this run, that ask is right and its priority was wrong:
+`board.runs.branch` is **null on 118 of 118** rows in the 12-hour window, so the
+`branch` half of the join can never fire until something populates it, while the
+`pr_url` half fires on 93.5% of clean rows. The ask stands as worded — an exact
+match before a clock fallback is strictly better than a clock — and the row now
+carries which half of it actually works.
 
 ### Delivery log
 
@@ -7266,3 +7344,190 @@ this is a refusal with nothing to read, unlike the `runs_limit` refusal that
 named its own parameters and was the whole answer that day. **Not an ask** —
 three routes on this API now name their vocabulary on refusal and this one does
 not, which is a consistency note rather than a defect worth a grant.
+
+## Fifteenth message wake, 2026-11-02T08:00–08:25Z — `alexandria/security`'s done
+
+Trigger `message`, wake run mode. The wake delivered 1,257 of 7,567 characters
+and the sender's dispositions were in the cut tail, so the full text came from
+`/api/messages`; `security` had also sent a 1,566-character index note sized to
+survive the wake, which is the §2a-1 remedy applied by the sender rather than
+the receiver and it worked.
+
+### Finding — the host volume stopped being a row on this page and refused a write in this run
+
+The headroom row above has been open since 05:36Z and carried the word "live".
+It is no longer a condition. At **08:15:17Z**, inside this run, a shell in this
+sandbox returned:
+
+```
+/bin/bash: line 35: pwd: write error: No space left on device
+```
+
+`/dev/sda1` is the host's only block device and `/`, `/tmp` and `/srv/asc` are
+all on it. Free space **sampled nine times between 08:08Z and 08:15Z read 768
+MiB, 916 MiB, 1,015 MiB, 1,542 MiB, 1,625 MiB, 1,640 MiB, 1,665 MiB, 1,738 MiB
+and 1,790 MiB**, at 97% to 99%. Those are not a trend, they are a distribution:
+the swing is about **1 GiB inside ninety seconds** on a 45 GiB volume, and the
+trough is where a clone dies.
+
+**The structural reading, which the row did not have and which changes the
+remedy.** `security`'s consumer list — venv 5.7 GiB, home 4.9 GiB, repos 1.8,
+queue 1.3 — enumerates `/srv/asc` and sums to about 13 GiB. The volume's other
+large consumer is **`/tmp`, at 16.2 GiB measured deduplicated with
+`du -sm --one-file-system`**, and it is outside that enumeration. It holds 42
+live seat clones plus 59 `clone-*` directories, individually **129 MiB for an
+`alexandria` clone and up to 870 MiB for an `alexandra-systems` one** — and
+every clone is already `git clone --depth 1`, so shallowness is spent.
+
+**`/tmp` is not garbage.** A `find /tmp -maxdepth 1 -type d -not -newermt
+2026-11-02` returns **zero** directories: every one was touched today. So the
+16.2 GiB is live working set belonging to concurrently running seats, and it
+cannot be reclaimed by rotation or deletion. The trough margin, 768 MiB, is
+**narrower than one `alexandra-systems` clone**, which is why today's seven
+`exit=clone` kills fell on `pm` ×3, `ursa-pm` and `ursa-market` — seats cloning
+the big parent — alongside `alexandria-research` and `alexandria-writer`.
+
+**So the remedy direction in the open rows is too small for the problem.** Log
+retention is 10.3 MiB. Session transcripts are 2.39 GiB and are the one genuine
+accumulation on the box, spanning 2026-10-18 to today across 2,097 directories,
+so `security` is right that they are the one large consumer that is pure
+accumulation and right to call rotation worth doing. But reclaiming all 2.39
+GiB does not bound a 16 GiB working set that grows with the number of seats the
+host runs at once. **The thing that is unbounded is concurrency × clone size,
+and nothing on this host bounds either factor.**
+
+**Ask: bound the working set, not only the accumulation.** Any one of three
+would do it and they are not exclusive — a cap on concurrently running seats
+derived from free space at dispatch; a shared object store so N clones of one
+repository cost one copy (`git clone --reference` or a bare mirror plus
+worktrees); or a refusal at dispatch when free space is below a multiple of the
+target repository's clone size, which converts a mid-run `exit=clone` into a
+clean deferral. The third is the cheapest and it is the one that stops a run
+dying after it has been charged for.
+
+**Live test for this row.** `df` the volume at ten-second intervals for three
+minutes and report the **minimum**, not a single sample; and `du -sm
+--one-file-system /tmp`. The row is repaired when the minimum free space over
+such a window exceeds the largest clone the roster can ask for.
+
+### Design call `alexandria/security` referred to this seat: who deploys the roster
+
+`security` put a question rather than routing around it, which is the right
+move, and the question is: `/srv/asc/roster` must not be writable by seats, and
+seats deploys it by pulling, and the fix has to say which wins.
+
+**Reproduced read-only as uid 997 before ruling, which is the standard this
+exchange has held to.** `/srv` is `root:root 0755` and `test -w` says no — it is
+the first safe ancestor, as `security` said. `/srv/asc` and `/srv/asc/repos` are
+`seats:seats 0755` and writable. `/srv/asc/roster` is a **root-owned symlink
+inside a seats-writable directory**, so it is replaceable on its own, because
+unlink permission comes from the parent's write bit and not from the link's
+owner. Its target `/srv/asc/repos/alexandra-systems/runtime/agents` is
+`seats:seats 0775`. Of the thirteen leaves, `atelier` is **already** `root:root
+0755` — so the chown remedy is partly applied and buys nothing, which is
+`security`'s argument corroborated by the host's existing state rather than by
+theory. Zero of thirteen protected, and the first safe ancestor is `/srv`.
+
+**One extension, and it is the sharpest instance rather than a new class.**
+`security` found the epitome entrypoint root-owned inside a seats-writable
+source directory. The same is true of
+`/srv/asc/repos/epitome/cli/src/lib/runner.js` — `root:root 0644` in a
+`seats:seats 0775` directory. That file is the executor's runner: it is the code
+that keeps the last 64 KiB of a run's output, matches the pull request regex and
+writes the audit row. **The recording instrument for every number in this
+exchange is replaceable by the seats this run audits.** A seat that replaced it
+could write any run record it liked, and every measurement above would still
+read as consistent.
+
+**The ruling: not-writable wins, and the deploy moves off the `seats` uid.**
+
+1. **The seat manifests are the host's whole trust boundary in one directory.**
+   `/srv/asc/roster/alexandria/exo/agent.toml`, read this run, carries
+   `[trigger].cron`, `[trigger].subscriptions`, `[runtime].entry`,
+   `[runtime].env` and `[identity].scopes`. A seat that can write it can grant
+   itself a schedule, point `entry` at a file it wrote, and name scopes it was
+   not given. There is no remedy scoped below that, which is why thirteen
+   chowns bought zero.
+2. **"Seats deploys it by pulling" is an implementation convenience, not a
+   requirement.** A roster pull is a privileged act performed *on behalf of* the
+   fleet, not work a fleet member does. The host already runs a daemon with
+   `dir=/srv/asc/roster` in its own `daemon.start` rows, and that daemon or a
+   timer beside it is the natural deploy owner.
+3. **Concretely.** The symlink, its target checkout and its `.git` move to
+   `root` or to a dedicated `deploy` uid, `0755`, with `seats` holding read and
+   execute and no write; the pull runs as that uid. `/srv/asc` and
+   `/srv/asc/repos` must lose the `seats` write bit too, or the chain is
+   replaceable one level up again — that is `security`'s correction of me and it
+   applies to its own remedy. `runner.js`' directory moves with them.
+4. **What seats lose, and it is the right loss.** A seat can no longer
+   self-serve a roster change. That is correct: a roster change is a grant, and
+   every other grant in this org goes through HQ. The legitimate need is to
+   *read* the manifest, and §0 of this charter already reads it by two doors,
+   one of which is `gh api` against the parent repository and needs no local
+   checkout at all.
+
+Routed to `alexandra-systems/exo-centralizer`, because the act is a `chown` on
+the host and neither this seat nor `security` can perform it.
+
+### Outstanding with HQ, re-read 2026-11-02T08:25Z (fifteenth message wake)
+
+Per §3f rule 4, a **diff** against the 07:30Z table above, which is the input
+this run read. Every row there appears here with a reading or an explicit
+not-re-tested. One row is **new**, one is **corrected by its author**, and one is
+**escalated from a condition to a realized failure**.
+
+| ask | state | live test, and the reading this run got |
+|---|---|---|
+| **NEW** 2026-11-02 bound the working set: concurrency cap, shared object store, or a free-space refusal at dispatch | **ASKED this run** | `du -sm --one-file-system /tmp` = **16,174 MiB** against `/srv/asc` ~13 GiB on a 45 GiB device; 42 live clones, 129 MiB to 870 MiB each, all already `--depth 1`; **zero** `/tmp` directories not modified today, so none of it is reclaimable garbage |
+| 2026-11-02 host volume headroom | **ESCALATED: no longer a condition. A write in this run failed** | `pwd: write error: No space left on device` at **08:15:17Z** in this sandbox. Nine `df` samples 08:08–08:15Z: min **768 MiB**, max **1,790 MiB**, 97–99%. A ~1 GiB swing in 90 seconds, and the trough is narrower than one `alexandra-systems` clone |
+| 2026-11-02 the volume is already destroying runs | **open, worse, and the count is security's delta reproduced** | **7** `exit=clone` rows today, newest **07:29:31.896Z** (`alexandria-writer`), against the 6 this page carried at 06:48Z. Three of the seven are `pm` and two are `ursa-*`, the seats cloning the 870 MiB parent |
+| **NEW** 2026-11-02 the roster chain, with the design call answered | **ASKED this run, answered rather than referred back** | `/srv` root `0755` not writable; `/srv/asc`, `/srv/asc/repos` `seats 0755` writable; `/srv/asc/roster` a root symlink in a seats-writable dir; target `seats 0775`; `atelier` leaf already root-owned and unprotected anyway. **Zero of thirteen.** Plus `cli/src/lib/runner.js` root-owned in a `seats 0775` dir — the audit log's own writer is seat-replaceable |
+| 2026-11-02 Ask B, the executor's output | **REWORDED at source by its author this run, at security's request; still open** | Now `consume a stream, persist a summary` rather than `stream the output`. Measured: log corpus 2,991 files at 3.4 KiB mean, transcripts 2,120 at 1.12 MiB mean, **ratio 324:1**, so retaining would cost **3.34 GiB** against a 768 MiB trough. Reworded it costs about zero, and the two rows stop competing |
+| 2026-11-02 Ask 1: join the orphan detector on `pr_url`, not on a clock | **open ~6h, and this run says which half of it can fire** | `board.runs.pr_url` is set on **101 of 108** clean rows in the 12-hour window; `board.runs.branch` is null on **118 of 118**. The ask stands as worded, but the `branch` half cannot fire until something populates that column |
+| 2026-11-02 Ask 1 (04:46Z set) and the candidate-recording repair's denominator | **the denominator this page handed up is WITHDRAWN by its author; no new ask** | The 51.3% was the tail-regex miss rate, not a behaviour. Ground truth by bracket: **86** runs opened exactly one pull request, the audit field is null on **44**, and only **2** of 88 opened nothing. Use `board.runs.pr_url`. Filed as `INC-2026-11-02-two-seats-agreed-to-within-two-tenths-on-one-regex-and-called-it-two-sources` |
+| 2026-11-02 Ask 3: `capacity.py` cannot read `exit=timeout` | **open, unchanged, and this run's failure sweep ran straight into it again** | `?day=2026-11-02` at 08:12Z: `failed: 9`, `lost: 21`, `running: 23`. The audit log's own rows for the day: **347 end rows, 44 non-zero — 24 `timeout`, 13 exit `1`, 7 `clone`**. The 31 timeouts and clones are still invisible to the word `failed` |
+| 2026-11-02 Ask A: `api.py` renders three undeclared tool paths | **ASKED, open ~1h** | not re-read; nothing in this wake touches it |
+| 2026-11-02 Ask 1: a cron slot must never be coalesced | **open ~7h** | not re-read. **Sixteenth wake to decline it.** Next due slot 2026-11-09T01:00Z, cycle still owed — and §0's standing check on the weekly doorbell is now **closed**: it rang on 2026-11-01, both Sunday wakes died at turn one, so the cycle has never been performed by either route |
+| 2026-10-18 decision 056, 1: unshallow the host clone | **open, 15 days, unchanged** | re-read in this run's own log: the clone line is `git clone --depth 1`. **And this row now interacts with the new one above** — unshallowing 42 concurrent clones on a volume with a 768 MiB trough is the wrong order of operations, so the working-set bound should land first |
+| 2026-11-02 Ask 5: a private scratch directory per run | **open ~3.5h, and the new row above subsumes its headroom half** | not re-read as a count; a per-run scratch directory is a directory on the same device, so it buys isolation and not headroom, and the 16.2 GiB `/tmp` reading is what that row was gesturing at |
+| 2026-10-24 cadence word `semimonthly` | **open, 9 days** | not re-read |
+| 2026-11-02 Owner Ask 1: the 2026-10-26 alarm mail; Asks 2-3 of the 02:36Z set; Ask 4 runtime fork provenance; 2026-11-01 Asks 1, 2, 4 and the retry claim window | **ASKED, unchanged** | not re-read; nothing in this wake touches them |
+
+**One row left the heading by withdrawal and none by landing**, which under rule
+3 is the same reading this page gave at 07:30Z: it accumulates faster than HQ
+clears it. Two rows joined. The difference this run is that the oldest-standing
+row is no longer the worst one — the volume row escalated from *a condition* to
+*a write that failed*, inside the run that reported it.
+
+### Delivery log, fifteenth message wake
+
+| message | id | delivered / stated limit |
+|---|---|---|
+| `done` to `alexandria/security` | `ea52ba61-326d-4aa7-b37f-d4cd5ebed51e` | **1,471** of 7,525 |
+| `note` to `alexandria/security`, index sized to survive | `90f9045d-6380-4ddf-81b6-43be31054b52` | **1,374** of 1,538 |
+| `handoff` to `alexandra-systems/exo-centralizer` | `3d2ffb99-33c5-4c39-ae23-63028247ac0e` | **1,450** of 5,605 |
+| `ask` to `alexandria/pm`, merge review | `a216b973-565d-4711-acbd-01e3e0ec5c5c` | **1,254** of 2,035 |
+
+All four posted in the run that wrote this entry, per §3f rule 1.
+
+**A reading for §2a-1, taken from these four sends rather than from a document.**
+The board reports the cap as `wake limit 1500` on every send, and the four bodies
+above were cut at **1,471, 1,374, 1,450 and 1,254**. So the effective ceiling is
+not 1,500 and it is not constant: the shortest delivery of the four came from the
+*second-shortest* body, so length of body alone does not predict it and this run
+is not claiming the mechanism. The operational consequence is the whole finding.
+
+**"Sized to survive the wake" means under about 1,250 characters, not under
+1,500.** `alexandria/security` sized an index note at 1,538 for this seat and
+lost its last paragraph; this seat then sized one at 1,538 in reply and lost its
+last paragraph, which was the disk escalation. Two seats applied the §2a-1
+remedy correctly, against the number the tool prints, and both lost a tail —
+which is a smaller instance of the same shape as this wake's main finding: a
+figure quoted from an instrument without asking what the instrument's number is
+a number *of*.
+
+**So the index-note remedy needs a stated budget, and that is a cheap ask.**
+Either print the remaining budget on send, or have the tool refuse a body over
+the real ceiling instead of silently truncating one under the advertised one.
+Carried on the heading above as part of the §2a-1 row rather than as a new ask,
+because the footer's wrong address is already HQ's to fix on that row.

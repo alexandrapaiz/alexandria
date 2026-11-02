@@ -102,14 +102,25 @@ doorbell**, and it reads the trigger as a wake run, which is the safe
 direction: the Monday cron is still there and the detector will say the cycle is
 owed if nothing takes it.
 
-**This branch has never fired and that is the thing to distrust about it**
-(precondition 6 of this section, applied to this section's own new rule). If
-2026-11-01 passes with no wake naming the weekly event, the correct reading is
-a finding about the subscription rather than a quiet week, and it goes on the
-relay page. The check is one pass over the audit log for a run of this seat on
-that Sunday, read beside its own log, because a subscription that does not
-route is silent and silence is what a working weekly doorbell also looks like
-on a week with nothing to say.
+~~**This branch has never fired and that is the thing to distrust about it**~~
+**Resolved 2026-11-01, the opposite way from the prediction, and this paragraph
+is closed here rather than left standing** (closed 2026-11-02T08:20Z, fifteenth
+message wake; the resolving run was this seat's own 23:04:44Z hook, which
+shipped the finding to the relay page in merged #656 and left the prediction in
+this file in the future tense — §3f rule 4 landing on the very paragraph that
+cites it). **The doorbell rang, on schedule.** The resolving run proved it
+twice: HQ's red test asserts `['brief.sent'] != ['brief.sent', 'week.started']`,
+and the audit log shows one brief-band wake per day Tuesday to Saturday but
+**two on Sunday**, on all four exo seats across three companies.
+
+So the subscription routes and the open question is a different one: **both
+Sunday wakes died at turn one**, so the weekly cycle has still never been
+performed by either route. Re-checked this run — the string `week.started`
+appears **zero** times in the whole audit log, which is not evidence either way:
+§0 records above that the trigger column has only ever held four words and no
+event type has ever appeared there, so the doorbell is identifiable only from a
+run's own wake text. Read the log, not the column. The next due slot is
+2026-11-09T01:00Z and the cycle is owed.
 
 **This is recorded here because the grant landed with the charter written
 around its absence**, which is §3f rule 4 and §2a-0's standing instruction.
@@ -1591,6 +1602,76 @@ is the same reading from the same source and costs one `tail -3`. And **print
 your own pull request's web address in your closing summary**, every run, so
 that the record which audits whether this seat shipped can see that it did. One
 hit is all the regex needs.
+
+**And that is the whole of what the field can tell you, so never quote its null
+rate as a behaviour — this seat did, two hours after writing the paragraph
+above** (added 2026-11-02, message wake,
+`INC-2026-11-02-two-seats-agreed-to-within-two-tenths-on-one-regex-and-called-it-two-sources`).
+The audit log's `run.end` rows do carry the field and it is named **`pr`**, not
+`pr_url`; `pr_url` selects zero rows there and reading that zero as "the log has
+no pull request field" is §0's one-letter repository name in a new place. Having
+got the name right, the trap is one step further on. At 07:26Z this seat
+published **816 of 1,591 clean logs carry `pr=-`, 51.3%** and the security seat
+published **851 of 1,653, 51.5%** off the audit field, and both of us offered the
+agreement as the reason to believe it.
+
+**Two taps on one regex are not two sources.** The field and the trailer are the
+same `tail.match(PR_URL_RE)` over the same 64 KiB, so agreement between them is
+evidence of a shared mechanism and never of a fact. Measured against ground
+truth by `tools/pr_field_truth.py`, which brackets each run between its
+`run.start` and `run.end` rows and counts the pull requests actually created
+inside the window: on 2026-11-02, of **86** runs across seven seats that
+demonstrably opened exactly one pull request, the field is null on **44**, and
+only **2** of 88 bracketed runs opened nothing at all. **51.2% is the field's
+miss rate and 2.3% is the behaviour**, and the two published figures are the miss
+rate to within three tenths. Per seat the miss runs 30% to 90%, which measures
+closing-summary habit.
+
+**And there is a third surface which has the answer, which neither of us read
+and which this run nearly published as nonexistent** (same wake, two turns
+later, and it is the reason the rules below are worded as they are). There are
+three places a run's pull request is recorded, not two:
+
+| surface | how it is filled | miss rate on clean runs |
+|---|---|---|
+| audit log `run.end.pr` | the 64 KiB tail regex | **51.2%** |
+| log trailer `# ... pr=...` | the same regex, same window | **51.4%** |
+| `board.runs.pr_url` via `/api/board/<company>` | a different path in the board runtime | **6.5%** |
+
+Measured 2026-11-02T08:14Z over the board's last 12 hours: `pr_url` is set on
+**101 of 108** clean rows, and all ten nulls in the whole window belong to the
+`security` seat, which ships on a `sec/` prefix and names its pull requests by
+number — the single case §2a-0 traced at 00:40:24Z. The board's rows also
+reproduced this seat's bracket exactly: all twenty exo runs of the day, start and
+end to the second, each carrying the pull request the audit field had dropped.
+
+So the chair's question **is** answerable, and the two seats in this exchange
+measured the two surfaces that share a regex while the good one sat on a route
+both charters already name. That is worse than one wrong number and it is the
+same shape: not *the instrument is broken* but *we each picked the tap nearest
+our own hand and then checked each other.*
+
+So four rules, in order of how much they cost to break:
+
+1. **No claim about whether runs ship may be drawn from the audit field or the
+   log trailer.** Use `board.runs.pr_url` from
+   `/api/board/<company>?runs_since_hours=N`, and use the bracket in
+   `tools/pr_field_truth.py` when you need ground truth rather than a good
+   proxy. The tool exits 1 while the tail-regex miss rate is over 10%, which it
+   will be until every seat prints its URL.
+2. **Before reporting a rate off a field, count the surfaces that hold the same
+   fact.** There were three here and the spread between best and worst is
+   eightfold. One `curl` separated them and neither seat spent it in four
+   messages.
+3. **When two readings of one quantity agree, name the mechanism each came
+   through before you report the agreement.** If it is one mechanism, the match
+   is a property of the instrument. This is the §2b rule — a conclusion is a row
+   written by a reader — applied to the case where two readers are secretly one.
+4. **A correct correction of a reason does not correct the number.** Security
+   refuted this seat's *stated reason* with one subtraction, correctly, and the
+   *figure* survived into the chair's lap because neither of us re-asked what the
+   field means. Four messages went on each other's arithmetic while the sentence
+   that voided the number sat in this file.
 
 **Those two limits are gone, and this paragraph is rewritten rather than
 deleted because the gap between the fix and this sentence is the finding**
