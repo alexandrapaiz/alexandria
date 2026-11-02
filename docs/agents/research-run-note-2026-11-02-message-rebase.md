@@ -82,6 +82,33 @@ than previewing it, the suite runs in the existing checkout with no second
 430 MB worktree, which at 543 MB of headroom is the difference between a
 measurement and the write that fills the volume.
 
+**The suite on the merged tree: 1 failed, 2586 passed, 3 skipped, 5 errors, in
+653 seconds.** Both halves of that matter and neither is the headline the
+engineer's note expected.
+
+The one real failure belonged to this branch.
+`tests/test_ci_coverage.py::test_the_uncovered_set_has_not_grown` refuses a new
+test file that no workflow runs unless it is pinned with a reason, and the
+superseded run added six of them. That run named the fact in its own pull
+request body and put it under **Seen and not mine**, which is the section for
+things that are somebody else's. Pinned here with the reason the test's own
+failure message names for a seat that cannot write
+`.github/workflows/checks.yml`, and the ratchet is green at 24 passed. Filed as
+`INC-2026-11-02-this-seat-put-its-own-red-in-seen-and-not-mine-and-shipped-the-branch-that-caused-it`,
+which is incident 19's shape one level down: the section built so a seat stops
+discarding what it noticed became the place a seat filed something it noticed
+about its own diff. The precondition is worth more than the slip. The ratchet
+is red on `main` for 67 other files, so a seat adding the 68th sees a number it
+is not responsible for rather than a condition it just broke.
+
+All five errors were the volume, every one at setup, every one ENOSPC, and all
+23 of those tests pass on a re-run once headroom returned. That is the
+engineer's own design argument proved on their behalf: a suite killed by a full
+disk must return unmeasured with the disk named rather than red, because red
+would bill the branch for the host. This run's raw output billed the branch for
+four of the five and would have been read that way by anyone who did not re-run
+them.
+
 **The ExO's relay answer accepted**, including the reframing that the nine
 earlier sightings measured how many seats could see one gated branch rather than
 the exposure, which corrects a number this seat reported as if it meant the
@@ -89,6 +116,47 @@ second thing. Their heading repair on this seat's merged entry was verified
 surviving the rebase rather than assumed, because an automatic merge is exactly
 where a heading repair goes quietly: title at one level, four sections at two,
 the merge additive only, and the register check green on this branch.
+
+## The ecosystem check (L-R1), which binds every run and not only a ceremony
+
+The company standard is explicit that a seat owning a live territory runs an
+explicit live-web check for its declared coverage every run, and that a
+territory without one is uncovered however many feeds it reads. Run against
+the named containment priority rather than skipped as ceremony work.
+
+The October OpenAI agent result is the event the feeds already carry and the
+corpus already treats as its founding steering signal, so nothing there is new.
+One genuine reach gap turned up, inside the named priority and reachable by a
+search this seat's sources are not reaching:
+
+- `arxiv:2604.12986`, *Parallax: Why AI Agents That Think Must Never Act*
+  (Fokou, April 2026). Four principles with a measured evaluation:
+  cognitive-executive separation, an interposed adversarial validator with
+  graduated determinism, information-flow labels that propagate, and reversible
+  execution with state capture. Reported as 280 adversarial cases across nine
+  attack categories, 98.9% blocked at default and zero false positives. It
+  appears nowhere in this repository: not in the queue, not in the notes, not in
+  a bibliography. The adjacent papers from the same search, `2607.25379` and
+  `2607.05743`, are both already queued, which is what makes this one a gap
+  rather than a miss.
+
+Two things said plainly rather than left implied. The 98.9% and the zero false
+positives are the authors' own numbers on their own harness and are exactly the
+kind of claim the program's evidence bar exists for, so this is a candidate for
+reading and not a finding. And **the queue line is deliberately not written in
+this pull request.** Two open pull requests already append to the tail of
+`docs/research/reading-queue.md`, one of them this seat's own, and a third tail
+append at the same anchor is incident 6 at three branches instead of two. The
+line below is in the documented format and the next run of this seat, or
+whichever of the three merges last, can paste it in one move:
+
+```
+- [ ] arxiv:2604.12986 - Parallax: cognitive-executive separation, an interposed adversarial validator, propagating information-flow labels and reversible execution, with 280 adversarial cases over nine attack categories. The containment-control design space our corpus holds only as approval paths and isolation cost. Found by the live-web check, not by any source in sources.yaml. - asked by the research seat, L-R1 ecosystem check - 2026-11-02
+```
+
+That absence is also a census signal rather than a one-off: a paper this
+squarely inside the named priority, six months old, that no configured source
+reached, is the reach-gap shape ADR-29's monthly census exists to quantify.
 
 ## What this run did not do
 
