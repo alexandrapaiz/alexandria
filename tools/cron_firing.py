@@ -515,6 +515,24 @@ def pr_absence_is_evidence(run):
         # request of that seat inside its window belongs to it. Widening the
         # same reasoning to every exit-0 run would dissolve `silent`, which is
         # the state incident 3 exists to keep visible.
+        #
+        # THE PREMISE ABOVE IS FALSE AND THE WIDENING WAS THE WRONG REMEDY TO
+        # REACH FOR (security seat, 2026-11-02,
+        # `INC-2026-11-02-a-clean-exit-0-run-names-no-pull-request-and-the-settlement-is-gated-off`).
+        # `retry_of` was added because a re-fired run shipped without saying
+        # so, and the case was read as something re-firing does. It is not.
+        # Two runs of this seat on 2026-11-02 exited 0 at 104 and 80 turns,
+        # wrote a complete final answer, re-fired nothing, and named neither
+        # of the pull requests they had opened (#715, since merged, and #724)
+        # because their closing prose wrote `#715` rather than a url. Whether
+        # a run names its pull request is a property of its prose, not of how
+        # it stopped, so no predicate over exit codes can recover it.
+        #
+        # So this function is deliberately left as it is. It answers the
+        # question it is asked -- is the absence, on its own, evidence -- and
+        # for a caller holding no better evidence the answer is still yes.
+        # The repair belongs in `resolve_shipped`, which does hold better
+        # evidence and used to skip these runs before consulting it.
         return False
     return (not run["refusal"]
             and not run["api_error_status"]
@@ -524,7 +542,6 @@ def pr_absence_is_evidence(run):
 # Branch prefixes no rule derives from the seat directory name. One entry is
 # not a pattern; `index_is_blind_to` is what catches the second one.
 ALIASES = {"alexandria-security": {"sec"}}
-
 
 def _branch_prefixes(seat):
     """The branch prefixes a seat's own pull requests use.
@@ -590,8 +607,32 @@ def resolve_shipped(runs, pr_index, max_run_hours=MAX_RUN_HOURS):
     for the newest run of a seat, which is exactly the run a reading of today
     asks about.
 
-    Only runs whose absence is not evidence are resolved, so a `silent` run
-    stays silent. Nothing here is a fallback for a trailer that already has a
+    A run whose absence is not evidence is settled outright, as before. A run
+    whose absence *is* evidence keeps its `silent` verdict and now also
+    records `pr_candidate`, which is the thing this function used to compute
+    and throw away: a pull request of this seat created inside this run's
+    window. Nothing is reclassified by it. The point is that `silent` stops
+    being reported with a confidence nothing behind it has.
+
+    WHY IT IS NOT A STRAIGHT SETTLEMENT (security seat, 2026-11-02,
+    `INC-2026-11-02-a-clean-exit-0-run-names-no-pull-request-and-the-settlement-is-gated-off`).
+    The scraper misses a clean run's pull request often, because a clean run
+    writes a closing summary and a summary is free to say `#715` instead of a
+    url. Measured on this host: 21 alexandria cron and hook runs are classed
+    `silent` with a pull request of their own seat in their window, two of
+    them merged (#645, #660), and 78 rows fleet-wide are eligible. So the gate
+    is wrong often. But the obvious repair -- delete the gate and settle these
+    the same way -- was tried here and backed out, because
+    `test_a_silent_run_stays_silent_even_with_the_list` is not a restatement
+    of the gate. It forbids lending one run's pull request to another, and the
+    branch name cannot tell those apart: #530 is a `cron` run's pull request
+    on a branch named `...-2026-10-26-message`, so a trigger-word check that
+    looks principled declines correct attributions. A timestamp inside a
+    window is not enough evidence to overturn incident 3's failure mode, and
+    it is ample evidence to stop asserting the opposite.
+
+    A reading with no index is untouched: `pr_index` empty returns early one
+    line below. Nothing here is a fallback for a trailer that already has a
     url; a url the host wrote is better evidence than a timestamp match.
     """
     if not pr_index:
@@ -618,15 +659,30 @@ def resolve_shipped(runs, pr_index, max_run_hours=MAX_RUN_HOURS):
         candidates.sort()
 
         for index, run in enumerate(seat_runs):
-            if pr_absence_is_evidence(run):
+            if run["pr"]:
+                # The host already named it, and that beats a timestamp match.
                 continue
             opens = run["started"]
             closes = opens + timedelta(hours=max_run_hours)
             if index + 1 < len(seat_runs):
                 closes = min(closes, seat_runs[index + 1]["started"])
+            settles = not pr_absence_is_evidence(run)
             for created, entry in candidates:
                 if opens <= created < closes:
-                    run["pr"] = entry.get("url") or f"#{entry.get('number')}"
+                    url = entry.get("url") or f"#{entry.get('number')}"
+                    if not settles:
+                        # The run stopped on its own terms, so the absence is
+                        # evidence and this match does not get to overturn it.
+                        # But it is not nothing either, and the old code threw
+                        # it away before anybody saw it. Recording it is the
+                        # whole repair: `silent` keeps its meaning, and a
+                        # reader is told that a pull request of this seat sits
+                        # inside this run's window and wants a human.
+                        run["pr_candidate"] = url
+                        run["pr_candidate_branch"] = (
+                            entry.get("headRefName") or "")
+                        break
+                    run["pr"] = url
                     run["pr_source"] = "pull request list"
                     # A draft is not a shipped cycle. `isDraft` is absent from
                     # an index built without it, and an absent field is read as
@@ -834,6 +890,8 @@ def judge(runs, day, tolerance=15, history_days=14, now=None, pr_index=None,
             "pr": run["pr"],
             "pr_source": run.get("pr_source", "trailer" if run["pr"] else None),
             "pr_unknown": not pr_absence_is_evidence(run),
+            "pr_candidate": run.get("pr_candidate"),
+            "pr_candidate_branch": run.get("pr_candidate_branch"),
             "pr_index_blind": bool(run.get("pr_index_blind")),
             "pr_is_draft": bool(run.get("pr_is_draft")),
             "retry_claimed": bool(run.get("retry_claimed")),
@@ -996,8 +1054,25 @@ def render(result, root, prs_given=False):
                 lines.append(f"  LOST?    {finding['seat']} {finding['slot']} "
                              f"{finding['why']}{turns}. {hint}")
             else:
-                lines.append(f"  LOST     {finding['seat']} {finding['slot']} "
-                             f"{finding['why']}{turns}, no pull request")
+                line = (f"  LOST     {finding['seat']} {finding['slot']} "
+                        f"{finding['why']}{turns}, no pull request")
+                if finding.get("pr_candidate"):
+                    # The verdict is unchanged and deliberately so, see
+                    # `resolve_shipped`. What changes is that it stops being
+                    # the only thing printed: the scraper reads a run's
+                    # closing prose, a clean run is free not to quote a url,
+                    # and this seat's own #715 and #724 of 2026-11-02 are
+                    # what that looks like. A reader settling this opens the
+                    # branch and looks.
+                    line += (f". But {finding['pr_candidate']} "
+                             f"({finding['pr_candidate_branch']}) was opened "
+                             f"inside this run's window by this seat, and the "
+                             f"host scrapes `pr=` out of a run's closing "
+                             f"answer, so a clean run that wrote `#1234` "
+                             f"rather than a url reads exactly like this. "
+                             f"Settle it against the branch before you treat "
+                             f"the cycle as lost")
+                lines.append(line)
         else:
             days = ", ".join(finding["evidence"])
             lines.append(f"  unseen   {finding['seat']} {finding['slot']} "
