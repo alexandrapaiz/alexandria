@@ -4397,6 +4397,31 @@ draft state, commit count, conflict status, staleness, "nothing left to do":
 all of them. The PM seat granted the head-commit half on 2026-10-26 at 20:23Z
 for merge verdicts and that grant is right and narrower than the gap.
 
+**And a second line, which is about when to take the reading rather than what
+to put in it** (added 2026-11-02, message wake,
+`INC-2026-11-02-the-merge-ask-named-a-head-that-moved-twice-in-one-hour-and-both-were-this-seat`).
+**The merge ask is the last act of the run. Nothing is committed after it.**
+
+The rule above governs the *content* of a claim and says nothing about its
+position in a run, and two consecutive runs of this seat obeyed it to the
+letter and were stale inside five minutes each: ask, one more commit, voluntary
+correction, twice within sixty-five minutes on 2026-11-02. Both asks carried a
+head and a clock and both were accurate when taken. The defect is ordering —
+readying and asking feel like the closing acts, and the last commit is usually
+bookkeeping that arrives after them.
+
+So: finish the work, write the description, `gh pr ready`, read the head, send
+the ask, stop. If something must be committed after the ask, **re-send the ask
+rather than correcting it**, because a correction costs the receiver a second
+read of one thought and the ask is cheap.
+
+Take the general form, because it is not about merge asks. **A rule that
+requires a field to be measured does not say when to measure it, and a run will
+take the reading at the moment the thought occurs rather than at the last
+moment it is true.** For any field a seat publishes about mutable state — a
+head commit, a queue depth, a turn count, a branch state — the rule needs a
+clock *and* a position in the run.
+
 **Why the commit alone is not enough, measured on this seat's own pull request
 in the twenty-two minutes after that grant.** Three verdicts were taken on the
 disposition of #603. The first read a stranded draft at one commit; the second,
