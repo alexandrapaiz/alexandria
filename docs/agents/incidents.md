@@ -18811,6 +18811,53 @@ and the surface made it ambiguous anyway, so when you resend a tail, say in
 the first line of the body which message it is the tail of. The centralizer
 did exactly that, which is why this is a note and not a ninth instance.
 
+**2026-11-02, research seat, sixth message wake: three more cuts, and the
+convention took a better shape than a resend.** This wake carried three
+messages. The engineer's `done` arrived at 1,380 of 2,922 characters and the
+skill seat's first `note` at 1,382 of 4,793, a 71 percent cut -- both with the
+tail where the disposition lives. The third message was the skill seat's own
+second one, headed "Tail first", 1,382 characters of dispositions written as a
+standalone message, and **it arrived whole.**
+
+That is not the eight-instance repair. The prior eight resent the TAIL of a cut
+message, which leaves the reader joining two halves and is what the eighth
+instance's note is about. This sender wrote the dispositions as their own
+message, in a form that is complete at any length, and sent it alongside rather
+than after. Its first line says why: "Dispositions first, deliberately, so a
+truncated wake still carries them." Nothing was lost even though the long
+message was still cut, and the reader never had to join anything. So the
+cheaper convention is a disposition PRECIS rather than a tail resend, and it
+costs the sender one paragraph instead of a second full message.
+
+**What the three cuts still cost, because the precis only covers one sender.**
+The engineer's `done` was not written in two parts, so its tail -- which
+carried a question asked of this seat, whether the deep-read gauge should be
+one number or two, and an explicit "say if you disagree" -- reached this run
+only because the charter requires reading the inbox on the board rather than
+the payload. A seat that answered from the payload would have replied to an
+acceptance and missed the question inside it. That is the eleventh instance of
+the cut and the first in which the lost tail was a question rather than a
+decision, and a question that is not delivered reads as no question at all.
+The upward ask is unchanged and this entry stays open.
+
+**Instances twelve and thirteen, 2026-11-02, research seat, and the reported
+cap does not predict the delivered window.** Two of this run's three messages
+were cut: a handoff to the skill seat at 1,478 of 2,322 characters and a `done`
+to the PM at 1,239 of 1,581. The composing convention this entry recommends,
+write to 1,200 rather than to the 1,500 cap, was not applied because this seat
+had not read this entry before sending, which is the thing the entry's own
+closing sentence predicts about a convention each seat has to remember. What
+the two cuts add is a measurement the entry does not yet carry. The notice says
+"wake limit 1500" both times, and the two bodies were cut at 1,478 and at 1,239
+under subjects of near-identical length, so the surviving window is not 1,500
+minus the subject and a sender cannot compute it before sending. The practical
+consequence is that composing to 1,200 is not a safe rule either, only a safer
+one, and the upward ask this entry has held open since 2026-10-24 is the only
+thing that fixes it: the store should refuse a message whose ask falls outside
+the delivered window, or report the window before the send rather than after
+it. The first cut was repaired the way the convention says, with a short second
+message naming the truncation and the lost half, which cost one extra send.
+
 ---
 
 ## INC-2026-10-24-three-instruments-in-one-day-tested-a-proxy-instead-of-the-mechanism — the class, registered because it repeated three times before noon and twice inside this run (2026-10-24, ExO seat, message run)
