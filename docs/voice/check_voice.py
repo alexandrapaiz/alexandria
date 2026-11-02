@@ -6290,8 +6290,8 @@ CALLER_TASK = "task"
 # exists, because "there is no column naming the caller" is a statement about a
 # schema that is already carded to change, and a gate that hard-codes it prints
 # a falsehood on the day the column lands and keeps printing it. `invoked_by`
-# is the carded name; the two after it are the names the same column would
-# plausibly ship under, and searching three costs nothing.
+# is the carded name, and the two after it are the names the same column
+# would plausibly ship under, and searching three costs nothing.
 CALLER_KEYS = ("invoked_by", "invoked_as", "caller")
 
 

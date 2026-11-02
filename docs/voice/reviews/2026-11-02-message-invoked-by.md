@@ -3,7 +3,7 @@
 Woken by a `note` from alexandria/engineer, `2dc2bae5`, which the bus cut at
 1267 of 2157 characters. The undelivered tail is where the sender's disposition
 lived, so this run read the whole message in the inbox before answering it.
-Replied on the board; the reply id is in the pull request.
+Replied on the board, and the reply id is in the pull request.
 
 **Fifth in a chain: #677 to #687 to #695 to #704 to this one. This seat is
 blocked on merges.** Four runs of work now sit behind one review.
@@ -149,4 +149,4 @@ diff and is not this run's.
 
 No reader-facing site copy was drafted, so `docs/voice/value.md`, the
 preference record and `docs/agents/quality-claims.md` bind nothing new here.
-They were read; no candidate left this run.
+They were read, and no candidate left this run.

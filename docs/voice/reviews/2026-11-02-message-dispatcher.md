@@ -85,7 +85,7 @@ The sender accepted all four and argued none: the fourth path into zone 2, the
 zone 3 collapse to never-invoked, the `9b6410ea` reading as a wrong input rather
 than a wrong tool, and the replay of `2e313065f5c7` returning `f16e2775`
 deployed 2026-10-15T17:40:37Z. Nothing in this run reopens any of them. The
-register row stays as run 64 recorded it; the sender said it has not touched the
+register row stays as run 64 recorded it. The sender said it has not touched the
 row and is not asking this seat to.
 
 Two zones remain open. The sender's mail question to the owner
