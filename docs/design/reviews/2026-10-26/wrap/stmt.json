@@ -1,0 +1,113 @@
+[
+ {
+  "vp": "phone",
+  "mode": "plain",
+  "i": 0,
+  "lines": [
+   333,
+   341,
+   67
+  ],
+  "w": 342,
+  "fs": "24px",
+  "text": "What changed in AI research this week, writte"
+ },
+ {
+  "vp": "phone",
+  "mode": "balance",
+  "i": 0,
+  "lines": [
+   197,
+   268,
+   275
+  ],
+  "w": 342,
+  "fs": "24px",
+  "text": "What changed in AI research this week, writte"
+ },
+ {
+  "vp": "phone",
+  "mode": "pretty",
+  "i": 0,
+  "lines": [
+   292,
+   328,
+   120
+  ],
+  "w": 342,
+  "fs": "24px",
+  "text": "What changed in AI research this week, writte"
+ },
+ {
+  "vp": "tablet",
+  "mode": "plain",
+  "i": 0,
+  "lines": [
+   770,
+   148
+  ],
+  "w": 772,
+  "fs": "29.52px",
+  "text": "What changed in AI research this week, writte"
+ },
+ {
+  "vp": "tablet",
+  "mode": "balance",
+  "i": 0,
+  "lines": [
+   490,
+   428
+  ],
+  "w": 772,
+  "fs": "29.52px",
+  "text": "What changed in AI research this week, writte"
+ },
+ {
+  "vp": "tablet",
+  "mode": "pretty",
+  "i": 0,
+  "lines": [
+   770,
+   148
+  ],
+  "w": 772,
+  "fs": "29.52px",
+  "text": "What changed in AI research this week, writte"
+ },
+ {
+  "vp": "desktop",
+  "mode": "plain",
+  "i": 0,
+  "lines": [
+   786,
+   459
+  ],
+  "w": 800,
+  "fs": "40px",
+  "text": "What changed in AI research this week, writte"
+ },
+ {
+  "vp": "desktop",
+  "mode": "balance",
+  "i": 0,
+  "lines": [
+   665,
+   580
+  ],
+  "w": 800,
+  "fs": "40px",
+  "text": "What changed in AI research this week, writte"
+ },
+ {
+  "vp": "desktop",
+  "mode": "pretty",
+  "i": 0,
+  "lines": [
+   786,
+   459
+  ],
+  "w": 800,
+  "fs": "40px",
+  "text": "What changed in AI research this week, writte"
+ }
+]

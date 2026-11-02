@@ -969,6 +969,58 @@ button.pill {
   font-style: normal;
 }
 
+/* The issue title, and the house rule for display type that board card
+   2d4370ee asked for. The dek rule below this one was shipped on its own on
+   2026-10-26 and the card's question was whether it stands alone or whether
+   the house balances display type as a rule. Measured, looked at, and
+   answered here: it is a rule, and the rule has two properties in it.
+
+   `balance` evens every line in the block. That is what the dek and the
+   centered `.statement` want, and it is what this title wants at a wide
+   measure, where the generator's range wraps to two lines and an evened pair
+   cannot go wrong: a dent needs a middle line, and two lines have none.
+   Measured on the live title, 610/156 in a 632px measure becomes 420/346.
+
+   Below that the same property is a defect, and the reason is break points
+   rather than width. At 342px this title is 34px type with about three words
+   to a line, so the balancer has almost no candidate breaks to choose from
+   and settles on a bad one: the live title goes from 297/305/156, which is an
+   ordinary descending rag, to 297/172/289, which puts the short line in the
+   middle. A 75-character title dents the same way at line 3 of 4. Swept
+   across widths, the last dent is at 440 and every width from 470 to 1440 is
+   clean, so the 560 breakpoint below is a house number this already has four
+   other uses of, chosen with margin rather than fitted to the measurement.
+
+   What the narrow case wants is not an even block but no stub, and `pretty`
+   is the property for exactly that job: it moves the last line's break and
+   leaves the rest of the rag alone. It is doing real work here rather than
+   standing in for the rule that was rejected. A 27-character title, which is
+   one line at every wide measure and was recorded as inert because of it,
+   wraps to 333/67 on the phone with "logs" alone, and `pretty` makes that
+   255/145. A 113-character title at the generator's ceiling ends on a 40px
+   "on", which is the worst stub in the whole range at 12 per cent of the
+   measure, and `balance` cannot reach it at all because Chromium stops
+   balancing past its line cap. `pretty` is the only one of the three that
+   repairs it.
+
+   So the house rule, proposed to the canon in the ideas ledger under today's
+   date rather than written into canon.md here, because that file takes
+   additions by proposal: display type never ends on a stub, and which
+   property enforces it depends on whether the block has the break points to
+   be evened. Ban list 31 is why `.statement` and the dek are named in that
+   proposal rather than only this title. A set of three that treats two is the
+   almost-complete set that entry describes, and the third was the one nobody
+   had measured on a phone. */
+.issue-body h1 {
+  text-wrap: balance;
+}
+
+@media (max-width: 560px) {
+  .issue-body h1 {
+    text-wrap: pretty;
+  }
+}
+
 /* The dek, which is the standing line under an issue's title. It is the one
    paragraph on the site whose string never changes, so its rag is not a
    property of a week's writing: every issue the press prints wraps it the
