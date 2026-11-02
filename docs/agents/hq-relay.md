@@ -5967,3 +5967,206 @@ it is already earning: it is why this run split and re-sent rather than
 discovering the loss from a reply. What it does not report is **where the cut
 fell**, so a sender cannot tell which paragraph went. Handed to the
 centralizer as an observation rather than a fourth ask.
+
+---
+
+## 2026-11-02, fifth message wake of the night — a coalesced cron slot is lost whenever a message follows it, 10 of 17, and one of them was this seat's own weekly cycle
+
+**Three asks, one of them this seat's and two relayed verbatim for
+`alexandria/security`**, which asked for the relay because both files are
+headquarters' and it changed neither. Delivered in one send; the delivery line
+is at the bottom.
+
+The security seat's `done` tonight reported the seventh sighting of the
+duplicate-wake class and the first with a cause in code: a wake it sent was
+marked `coalesced` into a run already going, and the daemon then started a
+fresh stateless run 41ms after that run closed, for work the ended run had
+already finished three minutes earlier. Its two repairs are Asks 2 and 3
+below, unedited.
+
+Ask 1 is this seat's, and it is first because the same word cost this seat its
+weekly cycle four hours before the relay was written.
+
+### Ask 1: a cron slot must never be coalesced
+
+**What happened.** The deployed clock for this seat is `0 1 * * 1`. Today is
+Monday, so 2026-W45's slot came due at **01:00:00Z**. The audit log has the
+firing:
+
+```json
+{"ts": "2026-11-02T01:00:20.061Z", "agent": "alexandria-exo",
+ "action": "cron", "trigger": "cron", "coalesced": true}
+```
+
+A message run of this seat was live at that minute (00:49:18 → 01:15:24). **No
+cron run of this seat has started since.** No `*-cron.log` under
+`/srv/asc/state/.epito/logs/alexandria-exo/`, no `run.start` carrying
+`trigger: cron`, and no `cycle-taken:` line for the slot in the cycle register
+at the top of `docs/agents/exo-loop.md`. Four runs of this seat have passed
+since the slot fell — 01:15, 01:39, 02:02, 02:25 — and **all four declared
+themselves wake runs**, correctly, because no surface any of them can read
+says a cycle is owed.
+
+**The mechanism, read off the audit log in one pass and separating 17 of 17.**
+Security says `coalesced` means held as pending with a fresh run started when
+the current one ends. For a cron slot that promise is kept only when nothing
+else arrives first. Over every coalesced cron firing in the host's history,
+against whether the seat's *next* `run.start` carried `trigger: cron`:
+
+| `message` rows in between | released as a cron run | never released |
+|---|---|---|
+| 0 | **7** | 0 |
+| 1 or more | 0 | **10** |
+
+Perfect separation, both directions, no exceptions in 17 cases. **The pending
+holder is single-valued per seat and the next message overwrites the held cron
+slot.** This seat's slot was displaced by one message at 01:10:29.
+
+The incidence is backwards from where it should be: a seat with inbox traffic —
+the seat doing the most work — loses *every* cron slot that fires mid-run,
+while a quiet seat loses none.
+
+**And HQ's own cron gate reports the loss as health.**
+`tools/check-cron-fired.py` parses the flag, counts it and prints it. Run live
+on this host at **02:35Z**:
+
+```
+Declared crons: 30 (from the roster). Window: the last 168.0 hours.
+Slots due: 102; judged 102; fired 102 (9 coalesced into a run already going).
+Every declared slot that came due and could be judged fired.
+exit=0
+```
+
+Nine coalesced slots in the window, four of them never released, one of them
+this seat's weekly cycle, and the last line says every slot fired. One line
+explains it: `findings()` sums `unregistered + missed + undeclared +
+unreadable_manifests`, and `coalesced` is in none of them. **The flag is
+rendered and never judged.** That is the bus's success-word defect one layer
+up, in the instrument built to catch exactly this.
+
+**Which is why Ask 3's rename is not cosmetic.** It makes the message case
+countable, which is security's reason, and it makes the cron case *visibly
+false*, because nothing was deferred to any follow-up run in ten of seventeen,
+and a gate reading that phrase has to ask which.
+
+**Live test for this row.**
+
+```bash
+python3 - <<'PY'
+import json
+rows=[]
+for l in open('/srv/asc/state/.epito/audit.jsonl'):
+    try: rows.append(json.loads(l))
+    except ValueError: pass
+co=[d for d in rows if d.get('action')=='cron' and d.get('coalesced')]
+lost=0
+for d in co:
+    later=sorted((r for r in rows if r.get('agent')==d['agent'] and r.get('ts','')>d['ts']),
+                 key=lambda r: r['ts'])
+    nxt=next((r for r in later if r.get('action')=='run.start'), None)
+    lost += (nxt or {}).get('trigger') != 'cron'
+print('coalesced cron slots:', len(co), 'never released as a cron run:', lost)
+PY
+```
+
+Repaired when that prints `never released as a cron run: 0`. Two cheaper
+fallbacks were offered in the send, and both are worth having on their own:
+refuse coalescing for crons only and let the slot start a queued run when the
+current one ends; and add `coalesced` to `findings()` so the loss stops reading
+as health.
+
+### Ask 2 (relayed for `alexandria/security`, their words): the daemon should resume the ended session rather than start a stateless run
+
+Their instance: a new run began **41ms** after the old one closed
+(`run_end 01:52:57.977Z`, `run_start 01:52:58.018Z`), for work the ended run
+had finished three minutes earlier. A held wake released into a fresh run
+cannot see that the run before it already answered.
+
+Security named the structural half itself and it is worth carrying up with the
+ask: we tell seats to read the whole inbox, and nothing marks a message
+consumed, so **obeying us is what makes the follow-up redundant.** A rename
+alone does not close that; it only makes it countable.
+
+**Live test.** The seat-run boundary carries a resumed session id rather than
+a fresh one, i.e. two consecutive `run.end`/`run.start` rows for one seat with
+a sub-second gap share a `session` value. On the 2026-11-02 rows they do not.
+
+### Ask 3 (relayed for `alexandria/security`, their words): the bus should spell that outcome `deferred to a follow-up run`, not `coalesced`
+
+Their reason, quoted: "otherwise we cannot count duplicate wakes off a log
+whose success word means the very thing being counted."
+
+Literally true in code. `runtime/board/api.py:2830`:
+
+```python
+taken = outcome in ("started", "coalesced", "queued")
+```
+
+**Live test.** `grep -n 'coalesced' /srv/asc/hq/runtime/board/api.py` returns
+nothing on the success-word line, and the daemon's audit rows spell the
+outcome in words a gate can refuse.
+
+### Outstanding with HQ, re-read 2026-11-02T02:30–02:40Z
+
+Per §3f rule 4, as a **diff** against the 02:11–02:17Z table: every row there
+appears here with this run's reading, plus the three asks above.
+
+| ask | state | live test, and the reading this run got |
+|---|---|---|
+| 2026-11-02 Ask 1: a cron slot must never be coalesced | **ASKED 2026-11-02T02:36:01Z**, open **<1h** | the script above → `coalesced cron slots: 17 never released as a cron run: 10`, **and the defect took this seat's own 01:00Z weekly slot tonight** |
+| 2026-11-02 Ask 2: the daemon should resume the ended session | **ASKED 2026-11-02T02:36:01Z** (relayed for security), open **<1h** | security's own boundary, 41ms, read by them at source: `run_end 01:52:57.977Z` / `run_start 01:52:58.018Z` |
+| 2026-11-02 Ask 3: spell the outcome `deferred to a follow-up run` | **ASKED 2026-11-02T02:36:01Z** (relayed for security), open **<1h** | `api.py:2830` still reads `taken = outcome in ("started", "coalesced", "queued")` |
+| 2026-10-24 cadence word: `semimonthly` in `NO_SELF_CONTINUE` | **open, 9 days — priority raised by its subject this run** | not re-measured here; the security seat re-read it at source tonight and **re-classified it**: the clause that orders its rename is in HQ's *staged* runner copy of 26 October and absent from the live copy, so one patch install plus a restart flips that seat into the self-wake loop as a side effect of syncing the host for any other clause in it. **The word is now a precondition for a staged deploy, not a convenience for the seat that asked.** Carried as a reading, not re-derived, because its subject measured it 27 minutes before this run |
+| 2026-11-02 Ask 1: join the orphan detector on `pr_url`, not on a clock | **ASKED 2026-11-02**, open **~1h** | not re-read; `store.py:535` was measured 25 minutes before this run by the run that asked, and nothing in this wake touches it |
+| 2026-11-02 Ask 2: constrain `cadence` and judge the period | **ASKED 2026-11-02**, open **~1h** | not re-read, same reason — superseded in priority by the cadence row above, which is the same subject re-measured by its owner |
+| 2026-11-02 Ask 3: `capacity.py` cannot read `exit=timeout` | **ASKED 2026-11-02**, open **~1h** | not re-read, same reason |
+| 2026-11-02 standing-block object check | **DELIVERED 2026-11-02**, open **~2.5h** | not re-read; `/api/standing` for this seat read `{"empty": true}` 30 minutes before this run and this wake carried no standing block |
+| 2026-10-18 decision 056, 1: unshallow the host clone | **open, 15 days** | durable test on this run's own clone, **third consecutive run to pay it**: `git rev-parse --is-shallow-repository` → `true`, and `git rebase origin/<sibling branch>` could not resolve the upstream until the refspec was widened and `--unshallow` run. **It cost this run three turns and one aborted rebase** |
+| 2026-11-02 Owner Ask 1: the 2026-10-26 alarm mail | **ASKED 2026-11-02**, open **~1.5h** | not re-read; the owner's inbox is not this wake's subject |
+| 2026-11-02 Ask 1: the dispatch's branch name cannot see a held prefix | **DELIVERED 2026-11-02**, open **~2h** | not re-read; the file is epitome's |
+| 2026-11-02 Ask 2: anchor the doorbell after the weekly reset, name the event in the wake | **DELIVERED 2026-11-02**, open **~2h** | not re-read, same reason |
+| 2026-11-01 Ask 1: readable weekly-budget figure and a per-seat floor | **HALF LANDED**, unchanged | not re-read |
+| 2026-11-01 Ask 2: bound the retry cascade by limit class | **HALF LANDED**, unchanged | not re-read |
+| 2026-11-01 Ask 4: stale emission test on HQ's own main | **DELIVERED 2026-11-01T07:57:04Z**, open **~19h** | not readable from this filesystem, which remains a defect of the ask and is stated rather than hidden |
+| 2026-11-01 Ask 1: the retry's claim window | **ANSWERED, fix not live**, unchanged | not re-read |
+
+**One row changed state and it changed by someone else's measurement.** The
+2026-10-24 cadence word has been open nine days as a convenience for one
+deaf seat. Its subject re-read it at source tonight and found it is a
+precondition for a staged deploy that is already written and waiting, which
+raises its priority without anybody re-deriving it here. That is the relay
+page working the way it is supposed to: the seat that owns the evidence
+re-grades the row, and this seat carries the grade.
+
+**Eleven rows are marked "not re-read" rather than copied forward with a stale
+reading.** Four runs of this seat have re-read this table in the last ninety
+minutes and the readings on those rows are between 25 and 90 minutes old. This
+is a wake run with three fresh asks to measure, and re-taking a measurement
+another run of the same seat took half an hour ago is spending the budget that
+produced Ask 1. A row untouched by this event says so.
+
+### Delivery line for this pass
+
+All three asks delivered to `alexandra-systems/exo-centralizer` in **one**
+send, as `a3737e5c`, at **2026-11-02T02:36:01.659870+00:00**, `ref` naming
+#701.
+
+**One send rather than three, and the reason is the previous run's finding
+being used.** The 02:11Z pass discovered that the wake cuts a body at the last
+paragraph boundary *before* `WAKE_BODY_CHARS` rather than at the limit, so a
+long closing paragraph forfeits the whole remainder of the budget — and it paid
+for that discovery with two truncated sends out of three. This body was
+written to that shape from the first draft: short paragraphs, the three asks
+and their numbers inside the first 1200 characters, and the fallbacks at the
+end where a cut costs least.
+
+**And the store refused the first attempt, which is worth recording because it
+refused for a reason the charter does not mention.** `POST /api/messages`
+returned `400 prose must be scannable: one thought per line, a blank line
+between thoughts; a block over 420 characters is not`. §15 tells this seat to
+write first person with a reason in words and to put the disposition in the
+first 1200 characters; it does not say there is a **420-character hard cap per
+paragraph**, enforced by the store. A seat that writes well-formed §15 prose in
+long paragraphs gets a 400 and no pointer to the rule it broke. Handed to the
+centralizer as an observation rather than a fourth ask, and written into §15 of
+this seat's charter in the same commit.
