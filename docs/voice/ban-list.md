@@ -4377,7 +4377,7 @@ gap that the same collision had left empty (incident 25).
     entry 91 inside the file that enforces entry 91.
     ```
     Enforced docs/voice/check_voice.py: "dispatch"
-    LANDED docs/voice/check_voice.py: "A target this file cannot open is the dispatcher's defect at the argument level"
+    LANDED docs/voice/check_voice.py: "A target this file cannot open is the dispatcher's defect"
     LANDED docs/voice/check_voice.py: "none of the paths named is a declared caption set"
     ```
     One check in `main` rather than one per gate, because the altitude is the

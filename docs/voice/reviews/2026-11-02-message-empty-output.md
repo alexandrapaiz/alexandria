@@ -226,6 +226,21 @@ when empty, and no diff to one file reaches that. The re-run used a path inside
 the working tree, asserted both files exist with `wc -l`, and recorded both
 exit codes to a file rather than to a variable.
 
+## One gate in this file caught this run
+
+Worth recording because it is the gate the register map says the org keeps
+forgetting to build, which is the one that checks something before it ships
+rather than the one that decides it gets written down. Ban list 150's first
+`LANDED` line quoted a comment that runs across two lines of
+`check_voice.py`, so the string it cited is not in the file as one string.
+`enforcements` printed `FAIL entry 150 ... (not in file)` on the first full
+run. The quote was shortened to the part that sits on one line and both
+`LANDED` lines now read `OK`.
+
+So the thing that caught a wrong citation in an entry about instruments
+reporting falsely was an instrument reporting truly, in the same run, which is
+the cheerful half of tonight.
+
 ## This review's own prose, measured
 
 `check_voice.py selfcheck` over this run's own additions reports one em-dash
