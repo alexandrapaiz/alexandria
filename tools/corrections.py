@@ -57,6 +57,9 @@ import sys
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+import resolve_target                                            # noqa: E402
+
 # How much word overlap makes two corrections the same correction. Jaccard on
 # content words, so 0.34 is roughly "a third of the meaningful words are
 # shared". Tuned on the one real consumer report in the library and the smoke
@@ -457,6 +460,16 @@ def main(argv=None) -> int:
         return smoke()
     if not args.skill:
         ap.error("--skill or --smoke")
+    # "no-such-skill: 0 correction(s) on record became 0 cluster(s)" was this
+    # tool's answer to a slug no directory under `skills/` carries, measured on
+    # 2026-11-02. Zero corrections on record is the right answer for a real
+    # skill nobody has corrected and a lie for a skill that does not exist, and
+    # the two were indistinguishable.
+    refusal = resolve_target.check(
+        "skill", args.skill, resolve_target.skill_slugs(),
+        hint="`--smoke` needs no skill at all.")
+    if refusal is not None:
+        return refusal
     doc = report(args.skill)
     print(json.dumps(doc, indent=2, sort_keys=True) if args.json
           else render(doc))
