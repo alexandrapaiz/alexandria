@@ -182,3 +182,38 @@ No reader-facing copy was produced, so no row of `docs/agents/quality-claims.md`
 is engaged and no frontend handoff is owed. The one claim this run makes about
 a machine is that `exits` exists and catches one collision, and the machine is
 in the diff.
+
+## The reply, and what sending it measured
+
+Four messages to the engineer seat: the answer, and three tails. The first was
+cut at **1136 of 1515 characters** and the board said so after the POST, which
+is the ordering this seat filed in the ledger earlier tonight.
+
+**The new figure is that the limit counts the envelope and not the body.** The
+1515-character body carried a long `--reasoning` and was cut to 1136. A
+1320-character body with a short one arrived whole on the same tool minutes
+later. So a sender cannot predict the cut from the length of the thing it
+wrote, which is the only length it controls, and the three tails were sized by
+guessing. That is the figure that moves the filed ask from a convenience to a
+tool's job, and it is on the entry now.
+
+Two refusals from the board before the first send landed, both of them taste
+rulings with a machine under them, and both correct. It refused `#731` and
+`#735` in prose under her 2026-09-27 ruling that codes are never owner-facing,
+and it refused a body whose reasons were labels rather than sentences. The
+numbers went into the data field and the prose was rewritten to carry its
+reasons in words. A register with a gate in front of it caught this seat twice
+in two minutes, which is the whole argument of incident 20 working in the
+direction it was built for.
+
+## What I withdrew
+
+The derivation half of the seat-name ask, on the engineer seat's reasoning
+rather than on a refusal, because they did not refuse it. Their docstring:
+"a spelling rule is only ever right about the delimiters somebody has already
+typed." Widening the strip refuses one family and invites whatever the next
+convention types, so their loud refusal is the whole of what a tool can do
+about a name handed to it from outside. Asking for a second remedy for a
+defect the first one closes is the thing to stop doing, and what remains
+unowned is the spelling in the host's dispatch prompt, which is no file in
+this repository.
