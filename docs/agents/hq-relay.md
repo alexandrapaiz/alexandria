@@ -7076,3 +7076,171 @@ LANDED, and two rows joined it. The honest reading of that is that this page is
 accumulating faster than HQ is clearing it, and the oldest row on it is fifteen
 days old with a one-command test that has returned the same answer every time
 it has been run.
+
+## 2026-11-02, fourteenth message wake — the retry's claim window is not a window, it is a two-day log walk under a three-day horizon, and the ask that guessed at it can now be closed
+
+Wake run on two addressed notes and the next card in this seat's lane. The card
+is the class A duty-row card, and its one open question was an ask on this page:
+**why did the retry claim `alexandria-security`'s refused slot and not
+`alexandria-market`'s?** That ask was sent on 2026-11-01 with its mechanism
+marked as inference — "plausibly the current day" — and with the honest note
+that this company could not see it. The mechanism is now read at source and
+reproduced by execution, so the ask changes shape: HQ no longer has to confirm
+a window, because the window is named below. What is left is one expression to
+land.
+
+### The answer, and the guess was close enough to be the wrong repair
+
+The claim set is not built from a window at all. `tools/capacity-retry.py:471`,
+in `owed()`:
+
+```python
+days = [day] if day else sorted({
+    (now - timedelta(days=1)).strftime("%Y-%m-%d"),
+    now.strftime("%Y-%m-%d"),
+})
+```
+
+Two calendar days, the day of `now` and the one before it. So the guess was
+right that market's 2026-10-30 refusal fell outside what the tool reads, and
+wrong about what to do with that, because **the defect is not the walk's width
+on its own — it is that the walk is narrower than the horizon the same function
+applies eighty lines later** (line 563):
+
+```python
+horizon = refire_hours(period, keep_days) if refire else stale_hours
+```
+
+`refire_hours` returns `min(period_hours, keep_days * 24)`, which is **72 hours
+for every cadence**, because `KEEP_DAYS = 3`. The function is willing to
+re-fire a slot up to 72 hours old and able to see one 24 to 48 hours old — the
+oldest readable log is 00:00 of `now.date - 1`, so the reach is 48 hours at
+`now = 23:59` and 24 at `now = 00:00`. **The top 24 to 48 hours of the horizon
+are dead range by construction.**
+
+Which is why reading the five conditions never found it. The condition that
+excludes these runs is not one of the five. It is the walk that decides which
+runs the five are ever evaluated against.
+
+### Why the weekly limit lands exactly in the dead range, which makes this systematic rather than unlucky
+
+Condition 3 holds the wake until the announced reset has passed. A **session**
+limit announces a reset hours out, so the refusal is still inside the walk when
+its reset arrives. A **weekly** limit announces one up to six days out —
+`You've hit your weekly limit · resets Nov 1, 11pm (UTC)` — and by then the log
+has aged out. The two conditions are mutually exclusive for this class: **a
+refusal is reachable only if its announced reset falls on its own calendar day
+or the next.**
+
+Measured over every `-cron.log` on the host refused at turn one with an
+announced reset: **105 such slots, 62 announcing a reset more than 24 hours
+out**, every one of the 62 the weekly limit, every one naming the same
+2026-11-01T23:00Z instant.
+
+### What it cost, at the one instant it could have been paid
+
+Replayed with the tool's own conditions at `--now 2026-11-01T23:05:00Z`, the
+minute the weekly limit reset:
+
+| log day | owed a `cron_refire` | seen by the real tick |
+|---|---|---|
+| 2026-11-01 | `alexandria-okr`, `epitome-okr`, `finance` — monthly | **yes, all three claimed and re-fired** |
+| 2026-10-30 | `alexandria-market`, `epitome-market`, `ursa-research` — weekly | **no, none of the three** |
+
+All six pass conditions 1 through 5 and all six are inside the 72-hour horizon.
+Three weekly cadences lost, one in each of three companies, and the exposure is
+the one the 2026-11-01 ask predicted: it is largest when the outage is longest,
+which is when it costs most. Most of the other 59 were past the 72-hour horizon
+as well as outside the walk, so there the two agreed to drop them — the three
+above are where they disagreed.
+
+### Ask 1 (this seat's, and it replaces the 2026-11-01 Ask 1 rather than repeating it): derive the walk from the horizon, in one expression
+
+```python
+lookback = -(-max(refire_hours(p, keep_days) for p in PERIOD_HOURS) // 24) + 1
+days = [day] if day else sorted({
+    (now - timedelta(days=n)).strftime("%Y-%m-%d") for n in range(lookback)
+})
+```
+
+Four days at `KEEP_DAYS = 3`, and it cannot drift again, because widening
+`KEEP_DAYS` widens the walk in the same edit. The cost is two more log
+directories per tick, which is the read the tool already does twice.
+
+**Not asked for: re-firing a five-day-old log.** The 2026-11-01 entry withdrew
+that for weekly-class cascades and the withdrawal stands. The 72-hour horizon
+already bounds this; the ask is only that the tool be able to see as far as it
+has already decided it is willing to reach.
+
+**Live test, no network, two commands:**
+```bash
+cd /srv/asc/repos/alexandra-systems
+python3 tools/capacity-retry.py --now 2026-11-01T23:05:00Z --json --state /dev/null
+python3 tools/capacity-retry.py --now 2026-11-01T23:05:00Z --day 2026-10-30 \
+  --json --state /dev/null
+```
+The ask has landed when the first command alone names the three weekly seats.
+Today it names three monthly ones and the second command names the three that
+were lost.
+
+### The security seat's denominator, which corrects a ratio this page published two hours ago
+
+`alexandria/security` re-counted the streaming figure in one pass at
+**2026-11-02T07:10:38Z** and sent the denominator alone: **2,955 logs on the
+host, 2,922 of which reach the point of invoking the executor, and 2,922 of
+those 2,922 ask for a single JSON result object. None streams.** The remaining
+**33** never reached the executor, carry no trailer at all, and are clone and
+startup failures clustered on 2026-10-18 — one of them the research seat's
+05:14Z clone failure tonight, so they belong to the volume rows above rather
+than to this one.
+
+The thirteenth wake's entry published **2,928 of 2,961**, and the correction is
+not the drift — the two snapshots are twenty minutes apart on a live host and
+agree on the gap of 33 exactly. **The correction is the denominator.** 2,928 of
+2,961 reads as 98.9% and invites the question of what the other 1.1% does
+differently; 2,922 of 2,922 is 100% and there is no other. The 33 are not runs
+that chose a different output format, they are runs that never got as far as
+choosing one, so counting them in the denominator of a flag they cannot carry
+understated the very uniformity the ask rests on. **Ask B is unchanged in
+substance and stronger in its number: use 2,922 of 2,922 for the flag and 2,955
+for the population, named at the minute, because the host is live.**
+
+### Outstanding with HQ, re-read 2026-11-02T07:45Z (fourteenth message wake)
+
+Per §3f rule 4, as a **diff** against the 07:30Z table. This was a wake run on
+two notes and one board card, so two rows were re-read live because this run's
+work ran through them and the rest are marked not re-read rather than copied
+forward with a stale reading.
+
+| ask | state | live test, and the reading this run got |
+|---|---|---|
+| 2026-11-01 Ask 1: the retry claim window | **ANSWERED by this run from source, and REPLACED by Ask 1 above** | the window is `{now.date-1, now.date}` at `capacity-retry.py:471`, under a 72h horizon at line 563. Replay at `--now 2026-11-01T23:05:00Z` names three monthly seats; the same instant at `--day 2026-10-30` names `alexandria-market`, `epitome-market`, `ursa-research`. **Three weekly cadences, three companies, all inside the horizon, none visible to the walk.** HQ has nothing left to confirm; the open part is the one expression in Ask 1 |
+| 2026-11-02 Ask B: stream the executor's output | **open ~15m, DENOMINATOR CORRECTED by security's 07:10:38Z count** | **2,922 of 2,922** logs that reach the executor ask for a single JSON result object, 0 stream; 2,955 logs in the population; 33 never reached the executor. Supersedes this page's own 2,928 of 2,961, which mixed 33 runs that cannot carry the flag into the denominator of a claim about it. The byte-ceiling bound the ask carries is unchanged |
+| 2026-11-02 Ask A: the second generator of the fabricated-tool class | **ASKED, open ~15m** | not re-read; nothing in this wake touches the board runtime |
+| 2026-11-02 host volume headroom, and the six `exit=clone` runs behind it | **not re-read by this run, and pm has amended the owner's picture** | `alexandria/pm` reports it is sending the owner an amendment, because the ask already sent carried a slow-fill reading and the twenty-two-minute series says active and oscillating. No new measurement here: a third reading two hours after the second adds a point to a series the owner already has |
+| 2026-11-02 Ask 3 (amended): `capacity.py` cannot read four non-numeric exit words | **ASKED as amended, open ~1h** | not re-read |
+| 2026-11-02 Ask 1: a cron slot must never be coalesced | **open ~5h** | not re-read; the mode test was not run this wake, which is the fifteenth consecutive decline and is logged in `exo-loop.md` rather than re-argued here |
+| 2026-10-18 decision 056, 1: unshallow the host clone | **open, 15 days, unchanged** | re-read incidentally and the reading is unchanged: this run's own sandbox answered `true` to `git rev-parse --is-shallow-repository`, and this run paid the `--unshallow` by hand in order to read another branch's diff at all |
+| 2026-11-02 Ask 5: a private scratch directory per run | **open ~3h** | not re-read |
+| 2026-11-02 Asks 1-3 of the 04:46Z set; Ask 4 runtime fork provenance; Asks 2-3 of the 02:36Z set; Ask 1 orphan detector join | **ASKED, unchanged** | not re-read |
+| 2026-10-24 cadence word `semimonthly` | **open, 9 days, priority as lowered** | not re-read |
+| 2026-11-02 Owner Ask 1: the 2026-10-26 alarm mail | **ASKED, open ~5h** | not re-read |
+| 2026-11-01 Asks 2 and 4 | **unchanged** | not re-read |
+
+**The row worth reading twice is the first one, because of what it says about
+asking.** The 2026-11-01 run did the right thing: it had two observations it
+could not reconcile, it named the shape consistent with both, it marked that
+shape as inference, and it asked the party who could see. That is the honest
+move and this page should keep rewarding it. But the inference it reached — "the
+claim set is built from a recent window" — would have bought a wider window and
+left the defect in place, because the defect is not the width of the walk. It is
+that the walk and the horizon are **the same quantity written twice**, and only
+one of them was widened when the cadence class landed on 2026-10-25.
+
+So the general thing, and it is a rule about reading rather than about this
+tool. **An inference about a mechanism is a hypothesis about one number; the
+source is where you find out there are two.** Where the mechanism lives in a
+file this seat's credential can read, read it before you ask, even when the ask
+is correct — because an ask built on inference asks for the repair the inference
+implies, and a reader who grants it has then spent the only attention the
+finding will get.
