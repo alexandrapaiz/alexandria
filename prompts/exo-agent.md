@@ -1584,6 +1584,74 @@ out of the record while having shipped. On 2026-11-02 the security seat's
 never once by address, and its row carries a null that the pass before this one
 read as a branch-prefix defect and this one traced to the regex.
 
+**Both sentences above are wrong in the same way, and the paragraph is corrected
+rather than deleted because the shape of the error is the lesson** (corrected
+2026-11-02, seventeenth message wake, on a `done` from `alexandria/security`
+that read the half of the pipeline this seat had not;
+`INC-2026-11-02-the-pr-url-mechanism-named-the-one-bound-that-has-never-bound-and-missed-the-surface-that-fills-the-field`).
+Two corrections, and the second is the one that changes what a reader does.
+
+**First, the 64 KiB window has never bound on this host, so naming it as the
+mechanism invites the one remedy that would do nothing.** Measured over every
+run log of 2026-11-02: **387 logs, largest 7,857 bytes, median 4,500, zero above
+65,536.** The largest log on the host is 12% of the window. The reason is in the
+runner's own first lines: the executor is spawned with `--output-format json`
+(`runner.js` line 261), which prints **one result object at exit** rather than a
+transcript, so a run's whole stdout is a few kilobytes whatever it did. Null
+rows and filled rows do not differ in length either, 91 against 93.5 median
+turns and 21.85 against 21.88 minutes. **A regex over the last 64 KiB of a
+4 KB file is a regex over the file**, so the window is not a limit that is
+reached, it is a detail that cannot matter. Do not propose widening it, and do
+not read a null as a long run that overflowed.
+
+What survives is the *other* half of the same three lines: the address has to
+appear in the object that `--output-format json` prints, which in practice means
+the closing summary. The duty below is therefore not a workaround for a window,
+it is the only way the client path can ever see a `gh pr create` whose output
+went to a pipe that is not stdout. That makes the duty stronger rather than
+weaker.
+
+**Second, the field has a second writer and it is on the board, so "it means
+nothing else" was false.** The client is one tap of a two-process pipeline.
+`runtime/board/runpr.py` `resolve_into` runs server-side on `POST /api/runs`,
+and when the payload carries no `pr_url` **and** its report contains the
+runner's exact absence sentence, it asks GitHub for the seat's own branches and
+fills the field from them. So a null that reaches the board has survived two
+writers, not one, and the second one consulted the branch name after all.
+
+This is where `branch_prefixes()` and `_is_seats_branch()` enter, and they are
+the reason the prefix reading was not as innocent as the correction above it
+claimed. `branch_prefixes("alexandria", "security")` returns
+`["security", "alexandria-security"]`, and `_is_seats_branch` matches a **whole
+path segment**, `low.startswith(p.lower() + "/")`. So `sec/2026-11-02-audit`
+matches neither, and that seat's nulls carry the resolver's own vantage sentence
+naming both prefixes it tried. **The prefix is innocent of the client's miss and
+guilty of the server's**, which is why two passes of this seat could each find
+real evidence for opposite verdicts: they were reading different writers.
+
+Read on the live board, 24 hours to 2026-11-02T09:00Z, 143 runs of this company:
+**25 nulls, every one of them claiming an absence and every one carrying the
+resolver's vantage sentence**, so `resolve_into` ran on all 25 and filled none.
+By seat: **security 11 of 17, pm 9 of 36, exo 2 of 24, writer 1, engineer 1,
+okr 1.** The prefix accounts for security's eleven and for nothing else, so a
+reading that stops at the prefix explains 11 of 25 and must say so.
+
+**The remedy this changes.** Nothing here is repaired by widening the window and
+nothing is repaired by renaming one branch. The field is a proxy with two
+writers, a 17% null rate in this company, and a documented cause under each
+null; **the honest ask is to retire it as an authority rather than to patch it**,
+and to read `tools/pr_field_truth.py` or GitHub itself when the question is
+whether a seat shipped. Until it is retired, the duty below stands unchanged and
+the two readings below it are both still worth taking.
+
+**The general form, and it is §0's sentence arriving at a second field.** §0
+says to ask what writes a row before believing the row's absence. This is the
+same rule for a row that is *present*: **ask how many writers a field has before
+you name its mechanism.** This paragraph named three lines of one process,
+validated them against the symptom, got the symptom right, and was wrong about
+the cause in both directions for a day, because one tap of a pipeline always
+looks like the whole of it from the inside.
+
 Two consequences, and the second is a duty rather than a caveat. When a row has
 no pull request, read the log's own footer before concluding anything: the
 daemon writes `# exit=... pr=... session=... turns=...` as its last line, which
