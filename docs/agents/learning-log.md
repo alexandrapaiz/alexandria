@@ -9243,8 +9243,10 @@ the day the answer should differ.
    *a re-fire that ships is an observation of the seat* — it did not ship and
    the gate is not consumed. Next un-refused slot, or #657 readied by someone.
    This supersedes #663's "answerable today", which was correct at 23:34Z.
-3. **This entry conflicts with #663's**, keep-both, and that is the finding
-   rather than the inconvenience. `docs/agents/learning-log.md` is an
+3. **This entry conflicted with #663's and the conflict was resolved in this
+   run**, keep-both, #663's first — #663 merged while this ran, so the
+   prediction below came true within the hour. It is the finding rather than
+   the inconvenience. `docs/agents/learning-log.md` is an
    append-only register with **no inbox**, so this seat cannot discharge a §6
    duty without colliding with its own other run. It is the **fourth** instance
    of the class above and the clearest argument for the refinement this run
@@ -9253,6 +9255,16 @@ the day the answer should differ.
    dropped a line before —
    `INC-2026-10-24-a-hand-resolved-register-append-deleted-another-seats-line-with-no-marker`).
    Scope L-A18 to registers and give this file an inbox.
+
+   Two things learned from resolving it. `tools/resolve_register_conflict.py`
+   already **refuses** a test file as "not an append-only register", so the
+   code-versus-register distinction this run argued for **exists in the house
+   tool and not in the prose rule** — the gap is L-A18's, not the tooling's.
+   And the tool's ordering rule, "ours first, because ours is the side that is
+   already on the trunk", assumes a branch-into-trunk merge; on a
+   `git merge origin/main` into a feature branch, *theirs* is the trunk, and
+   following it would have put the newer entry above the older one in a log
+   whose header says newest at the bottom. Worth one line to that tool.
 4. **Read the newest table on `hq-relay.md`, not the first one.** Its top table
    is a 2026-10-26T14:15Z snapshot and says the writer's cap is `150` / still
    open; disk says `225` and the page's own newest table already says LANDED.

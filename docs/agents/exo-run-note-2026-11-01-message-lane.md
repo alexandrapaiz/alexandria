@@ -204,6 +204,43 @@ prefix no rule derives, and nothing had ever checked.
 7 tests, both directions plus the absent-field case, so the draft check cannot
 pass by refusing everything.
 
+## 4b. #663 merged mid-run, and the integration found a third defect
+
+#663 merged at `ce701135` while this run worked, so the two conflicts this
+branch had predicted became real. Both keep-both, both proved lossless: the
+learning log by hand (the resolver's "ours first" rule assumes a
+branch-into-trunk merge and this was the reverse, which would have inverted the
+log's stated order), and `tests/test_cron_firing.py` by hand because
+`tools/resolve_register_conflict.py` **refuses** it as "not an append-only
+register" — the code-versus-register distinction §3 argues for, already encoded
+in the house tool. All 11 conflicted tests asserted present afterwards.
+
+**Running both changes together then showed a defect neither branch could see
+alone.** With #663's `recovering` state in play the verdict went back to "which
+is still running", for a run dead 80 minutes.
+
+The host writes `# exit=timeout pr=- session=- turns=-` when it kills a run on
+the wall clock, and the trailer regex accepted `-?\d+` only. So **the one
+trailer that proves a run is dead was the one trailer this reader could not
+see**: `truncated` stayed true, `reason_of` returned `in-flight`, and
+`recovering` masked a known-bad cycle for its full 90-minute grace — with the
+draft check unable to fire, because `recovering` outranks it.
+
+`exit_code` stays numeric-or-None (every caller compares it to 0), the word goes
+in `exit_word`, `ended` says a trailer was found, and a word exit is **returned
+as the reason** rather than falling through to "stopped on its own terms", which
+would have read `exit=timeout` as a clean finish. `turns=-` is unknown, not
+zero. Five more tests including the mirror: a re-fire with no trailer at all is
+still `recovering`. **88 pass** — #663's four and this branch's twelve together.
+
+Fourth reading of the slot, and the first right for the right reason.
+
+**Three instances of one class in one file**, which is §3's finding at its
+sharpest: `_branch_prefixes` never measured against the prefixes in use, the
+retry promotion never measured against draft pull requests, the trailer regex
+never measured against the exit values the host writes. Each a design checked
+against its author's idea of the population rather than the population.
+
 ## 5. The three standing duties
 
 - **Failure sweep (§2b).** Board run record, `runs_since_hours=12`,
@@ -273,7 +310,8 @@ pass by refusing everything.
    un-refused slot, or #657 readied by someone.
 4. **Card `8d1b81e8`** still waits on a standard nobody here owns.
 5. **Class B** still waits on the owner's word, now eighteen wakes deep.
-6. **`tests/test_cron_firing.py`** conflicts with #663, keep-both.
+6. **The merge with #663 is done** and #667 reads `MERGEABLE` / `CLEAN` at
+   head `e8781834`, 2026-11-02T00:31Z.
 7. **`tools/board.py comment` has no `--data` flag**, and the board refuses a
    card comment whose prose carries ids: *"prose must not carry codes or PR
    numbers ('PR 531'); say what happened in words and put ids in the data
