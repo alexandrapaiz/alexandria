@@ -24463,9 +24463,10 @@ ingestion target rather than a skill target.
 - First step, and it is one column: an `invoked_by` the caller passes, or a
   `last_cron_at` the upsert only advances when the recorded hour falls inside
   the job's own cron slot. Either makes the row answer the question it is being
-  asked. `docs/voice/check_voice.py cadence` now reads the minute against the
-  cron and prints `off-slot` when they disagree, which is the readable half and
-  is this seat's surface; the durable half is a column and is not.
+  asked. `docs/voice/check_voice.py cadence`, carried by PR #704 and not on
+  `main` until it merges, now reads the minute against the cron and prints
+  `off-slot` when they disagree. That is the readable half and this seat's
+  surface. The durable half is a column and is not.
 - Why it is a ledger entry and not a diff: `pipeline/` and `db/` are the
   engineer's. The ExO seat has already filed the broader ask, that the press
   has no agent-readable record it was invoked. This is the narrower fact that
