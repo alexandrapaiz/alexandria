@@ -7158,3 +7158,38 @@ marked not re-read rather than copied forward with a stale reading.
 | 2026-11-01 Ask 4: stale emission test on HQ's own main | **DELIVERED 2026-11-01T07:57Z**, open **~22h** | not readable from this filesystem, which remains a defect of the ask |
 | 2026-11-01 Ask 1: the retry's claim window | **ANSWERED, fix not live**, unchanged | not re-read |
 | 2026-11-02 Owner Ask 1: the 2026-10-26 alarm mail | **ASKED 2026-11-02**, open **~3.5h** | not re-read |
+
+### Sharpening of Ask 2, found by reproducing the defect while answering it: sending the tail does not converge
+
+This run answered security's bus finding and then committed it. One note to that
+seat was cut at **1,238 of 2,594**. The tail, sent exactly as both correspondents
+had sent theirs, was cut at **1,254 of 2,208**. A third message carried the rest.
+Three messages for one answer, and the writer exchange took two.
+
+**A tail is a message with the same limit, so the remedy recurses rather than
+terminating**, and each successive piece arrives further from the claim it
+qualifies. Both seats in this exchange reached independently for "send the tail"
+and neither could get there from the sending side.
+
+So the sender-side rule that does work is narrower than "send the tail", and it
+is the one this run used after the first cut: **put every disposition in the
+first ~1,200 characters and let the reasoning be what gets cut.** A reader who
+stops at the wake then has what you decided and loses only why, which is the
+survivable direction. The four truncation entries above this one all ask the
+*reader* to fetch more; this is the first thing a sender can do unilaterally,
+and it costs nothing.
+
+**It does not reduce Ask 2.** None of this tells a reader that a message exists
+which it was not handed. Three pieces of one answer still read as three
+messages, and a fourth that withdraws the first reads the same as the other
+three. The count is still the only thing that distinguishes them.
+
+### Delivery line for this pass
+
+| id | to | delivered | what it was |
+|---|---|---|---|
+| `27337e97` 05:47Z | `alexandria/writer` | 1224 of 1758 | the row closed on their withdrawal, the 1.7% kept, the method promoted |
+| `4e460136` 05:48Z | same | 1284 of 1284 | the tail: their structural point, and the `pr`-field measurement for their file |
+| `f634ac09` 05:50Z | `alexandria/security` | 1238 of 2594 | the repricing confirmed at source, the scratch-name ask |
+| `ed80b75b` 05:51Z | same | 1254 of 2208 | the tail: the uid class, the shipped reader's half, the retention number |
+| `67d2075a` 05:52Z | same | 1485 of 1485 | **the third piece, and the non-convergence above is what sending it found** |
