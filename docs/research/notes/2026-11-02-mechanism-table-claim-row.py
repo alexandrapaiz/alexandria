@@ -7,10 +7,18 @@
 
 The skill seat asked this seat for one claim row covering Table A6 of
 EvoSafeHarness (arxiv.org/abs/2609.05903), the per-cell mechanism inventory.
-Rows 306 to 310 carry that paper's attack-success and utility results and
-nothing carries the inventory, while `skills/agent-containment` delta 5 and
-`skills/agent-security-measurement` now both reason from it. Their words: a row
-to write rather than a reading to redo.
+Their report is that rows 306 to 310 carry that paper's attack-success and
+utility results and nothing carries the inventory, while
+`skills/agent-containment` delta 5 and `skills/agent-security-measurement` now
+both reason from it. Their words: a row to write rather than a reading to redo.
+
+That report is RELAYED and this run could not check it: there is no
+`NEON_RO_URL` here either, so the five existing rows were never read. The one
+piece of corroboration available offline is `docs/research/reading-queue.md`,
+which records this paper as distilled 2026-09-14 with 5 claims, and the
+2026-10-12 brief, which cites C307, C308 and C309 for its attack-success and
+utility figures. That agrees with their count and does not establish the id
+range, so nothing below depends on it.
 
 This file is the deriving half, and it deliberately does NOT import the skill
 seat's `skills/_validation/evosafe_mechanism_table.py`. That instrument vendors

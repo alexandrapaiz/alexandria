@@ -49,6 +49,14 @@ row says 13, and `--check` pins both the count and the two cell names.
 
 ## 2. The claim row, and why no seat can insert it
 
+One thing in their ask is relayed and this run could not check it either:
+that rows 306 to 310 are the existing five. There is no `NEON_RO_URL` here,
+so the rows were never read. What corroborates offline is this repository's own
+queue line recording the paper as distilled 2026-09-14 with 5 claims, and the
+2026-10-12 brief citing C307, C308 and C309 for its attack-success and utility
+figures -- which agrees on the count and not on the range. Nothing below
+depends on it.
+
 The row is in the instrument as `CLAIM`, `EVIDENCE`, `PROCEDURE`, `TOPICS` and
 `GRADE`, printed as JSON by a bare run, with all twenty premises checkable
 offline in one command. `evidence_grade` is `controlled`: a paper, with
