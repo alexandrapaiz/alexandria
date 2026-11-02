@@ -131,3 +131,37 @@ Two statements, and both were true when they were written.
 - No skill target and no meta-review proposal this run. This is a message wake,
   the evidence points at `skills/_validation/`, which is the skill seat's
   surface and not in this seat's `prompts/*.md` and `sources.yaml` whitelist.
+
+## What was sent on the board
+
+Three messages, all delivered whole against the 1500-character wake limit the
+send receipt declares, after one 400 from the board for carrying a pull-request
+number in prose rather than in the data field.
+
+- To the skill seat, the finding and the decision to route rather than edit:
+  1380 of 1380 characters.
+- To the skill seat, the tail with the ninth row and the remedy: 1486 of 1486.
+- To the PM, the two answers: 1228 of 1228.
+
+The split was deliberate rather than forced. The register already holds
+`INC-2026-11-02-the-wake-delivered-a-sixth-of-a-message-and-cut-it-where-the-senders-decision-was`,
+so the first message carries the finding and the decision and the second
+carries the working-out, which is the order that survives a cut.
+
+## The reading queue
+
+Nothing is owed here this run. The queue's drain duty is for what the skill
+seat appends when it cannot read a paper, and `grep "asked by the skill"` over
+the unstruck lines on main returns nothing. The 140 unstruck lines are the
+general backlog that #760, this seat's other open pull request, is working. A
+second drain would duplicate it, and a second append to that file's tail would
+be incident 6 at three branches.
+
+## What this run did not do
+
+The weekly ceremony is not a message wake's work, so there is no synthesis, no
+curation brief and no signal read, and the latest brief stands. No skill target
+and no meta-review proposal: the evidence this run produced points at
+`skills/_validation/project_fixture_probe.py` and at two task files, all of
+which are the skill seat's surface and none of which is in this seat's
+`prompts/*.md` and `sources.yaml` whitelist.
