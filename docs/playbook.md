@@ -26,9 +26,18 @@ remembering must live in a file.
 
 - **GitHub repository** (public = unlimited free Actions minutes;
   private = 2,000/month).
-- **GitHub Actions** as the agent runtime: each seat a workflow with
+- **GitHub Actions** as the agent runtime, until HQ decision 056
+  (2026-10-17, corrected here 2026-11-02 — this bullet named the
+  pre-decision design for three weeks). Each seat still a workflow with
   `schedule:` cron plus `workflow_dispatch` carrying an
-  `owner_instructions` input for ad-hoc runs with live orders.
+  `owner_instructions` input for ad-hoc runs with live orders, **but the
+  schedule that actually fires a run now lives on the host**, in
+  `runtime/agents/<project>/<seat>/agent.toml` (`cron`, `model`,
+  `max_turns`), read live with `gh api
+  repos/alexandrapaiz/alexandra-systems/contents/runtime/agents/<project>/<seat>/agent.toml`.
+  GitHub Actions remains the mechanism for `checks.yml` and
+  `deploy-main.yml` and for every seat's git push and PR, which still run
+  on this repository's runners; it is no longer the clock.
 - **anthropics/claude-code-action@v1** runs Claude Code headlessly on
   the owner's existing subscription: `claude setup-token` once, stored
   as the `CLAUDE_CODE_OAUTH_TOKEN` repo secret (set it via

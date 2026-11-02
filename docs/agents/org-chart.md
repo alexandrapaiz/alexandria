@@ -10,13 +10,13 @@ per run. Seeded 2026-09-18 by the chair; the PM keeps it current.
 
 | Seat | Charter | Cadence | Lane | Current initiative |
 |---|---|---|---|---|
-| engineer | prompts/engineer-agent.md | daily 7:06 ET | product code, pipeline | launch runway; architecture evolution |
+| engineer | prompts/engineer-agent.md | daily 11:06 & 23:06 UTC (two slots; read live 2026-11-02) | product code, pipeline | launch runway; architecture evolution |
 | skill | prompts/skill-agent.md | Tue 8:00 ET | skills/ gold production | skills-with-receipts (O2) |
 | frontend | prompts/frontend-agent.md | Wed 8:00 ET | site UI, visual quality | visual audit; mission on site |
 | market | prompts/market-agent.md | Fri 7:00 ET | docs/market/ | positioning under free+$20 |
 | pm | prompts/pm-agent.md | daily (Mon: ceremony, Tue-Sun: standup) | sprints, backlog, board, org chart, dispatch queue | merge-queue health; skills-product leverage (O2/O3) |
 | research | prompts/research-agent.md | Mon 16:30 UTC | input curation: digest review, curation brief, meta-review | what deserves attention; source discovery |
-| exo | prompts/exo-agent.md | Sun 10:00 ET | charters, workflows, org | org learning; GitHub upkeep |
+| exo | prompts/exo-agent.md | Mon 01:00 UTC (moved from Sun 10:00 ET on 2026-10-25, exo's own measurement that the Sunday slot fired into an exhausted weekly pool; this row was stale until read live 2026-11-02) | charters, workflows, org | org learning; GitHub upkeep |
 | security | prompts/security-agent.md | 1st + 15th | debug + defensive audits | pre-launch hardening |
 | okr | prompts/okr-agent.md | 1st monthly | docs/okrs/ | Q4 OKRs; benchmark trendline |
 | writer | prompts/writer-agent.md | daily 16:00 UTC | newsletter voice: prompts/digest.md, docs/voice/, editorial structure | digest worth reading (O1) |
@@ -47,15 +47,18 @@ is a live question for the owner regardless (see pending.md).
 
 ## Company initiatives
 
-1. **Launch (dated 2026-10-13, now 13 days past)** — code-complete and
-   blocked on two owner-only accounts rather than on any seat: the Polar
-   merchant account (overdue since 2026-09-26) and, since 2026-10-23, the
-   Modal workspace that runs the press and the MCP server. No seat is
-   currently executing against this initiative; it is correctly absent
-   from sprint-2026-10-26.md for exactly that reason (prompts/pm-agent.md
-   §3 plans around work a seat can finish). Flagging per charter §1b: an
+1. **Launch (dated 2026-10-13, now 20 days past)** — code-complete and
+   blocked on one owner-only account rather than on any seat now: the
+   Polar merchant account, overdue since 2026-09-26. The second blocker,
+   the Modal workspace disabled 2026-10-23, is resolved as of this
+   ceremony (`tools/delivery_health.py --surface compute` reads `ok`
+   again; see this week's retrospective). No seat is currently executing
+   against the launch initiative itself; it is correctly absent from the
+   sprint files for exactly that reason (prompts/pm-agent.md §3 plans
+   around work a seat can finish). Flagging per charter §1b: an
    initiative with no seat currently carrying it, because the seats that
-   would carry it (engineer, frontend) are both idle on it waiting for her.
+   would carry it (engineer, frontend) are both idle on it waiting for
+   her, and now only on the Polar account rather than on two accounts.
 2. **Skills as the product** — skill leads; engineer (receipts rendering), market (positioning) support.
 3. **Digest worth reading** — writer leads (voice, structure, ADR-28);
    research (curation, meta-review, ADR-25 renamed the old "weekly"
