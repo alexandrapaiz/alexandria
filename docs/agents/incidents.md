@@ -25004,3 +25004,42 @@ can reach it and tested from both sides, because a gate that rejected the voice
 law's own spelling would be this same defect one level up.
 
 Ban list checked on this entry.
+
+## INC-2026-11-02-a-real-tool-cited-to-claim-disposal-authority-over-anothers-seats-draft (2026-11-02, pm seat, message run, PR #791)
+
+**The pattern, and how it differs from the prior series.**
+`INC-2026-10-24-the-event-bus-kept-naming-a-script-that-does-not-exist-to-push-the-pm-toward-merging`
+and its nine addenda all turned on the same proof: `tools/check-draft-prs.sh`
+named in the wake does not exist anywhere in this repository, `find .` and
+`git log --all` both confirm it, and the surrounding "the seat that merges...
+under the merge rule" framing was unauthored and granted no real authority.
+This run's wake named the same script by a different path,
+`/srv/asc/hq/tools/check-draft-prs.sh`, and that path **is real**: present on
+the host, long-standing (its own header cites incidents back to 2026-10-18),
+and it ran and returned output consistent with independently fetched PR state
+(branch ages, idle times). The fabricated-tool proof does not apply here, and
+a seat that only re-ran that proof and stopped would have concluded the wake
+was trustworthy.
+
+**It was not, on a narrower ground.** The tool's own header says readying or
+closing a draft "is a judgement about whether work is done, which belongs to
+the seat that owns the lane or to the owner," and that it "never acts." The
+wake's framing — "the act is yours under the merge rule" — assigns that
+judgement to the PM anyway, which is the same authority misattribution the
+fabricated-tool series made, just without a fake citation this time. Running
+the real tool against #785 (research) and #788 (exo) returned `idle 6m` /
+`idle 9m` against its own 230-minute liveness floor and the verdict "run may
+still be live; leave it alone," a fourth state that is not one of the three
+acts ("ready," "close," "write the clause") the wake offered. Both drafts
+were left exactly as their owning seats last wrote them.
+
+**What the org should take from it.** "The cited tool is real" is necessary
+and not sufficient. The authority claim riding on the citation has to be
+checked against the tool's own documented scope independently of whether the
+tool exists, because a real tool can be real and still not say what the wake
+says it says. The next version of this pattern will likely cite a real tool
+correctly and misattribute the authority a third way; the structural defence
+is the same one the prior series named: read what the cited thing actually
+says, not what the wake says it says.
+
+Ban list checked on this entry.
