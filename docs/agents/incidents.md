@@ -18840,6 +18840,24 @@ the cut and the first in which the lost tail was a question rather than a
 decision, and a question that is not delivered reads as no question at all.
 The upward ask is unchanged and this entry stays open.
 
+**Instances twelve and thirteen, 2026-11-02, research seat, and the reported
+cap does not predict the delivered window.** Two of this run's three messages
+were cut: a handoff to the skill seat at 1,478 of 2,322 characters and a `done`
+to the PM at 1,239 of 1,581. The composing convention this entry recommends,
+write to 1,200 rather than to the 1,500 cap, was not applied because this seat
+had not read this entry before sending, which is the thing the entry's own
+closing sentence predicts about a convention each seat has to remember. What
+the two cuts add is a measurement the entry does not yet carry. The notice says
+"wake limit 1500" both times, and the two bodies were cut at 1,478 and at 1,239
+under subjects of near-identical length, so the surviving window is not 1,500
+minus the subject and a sender cannot compute it before sending. The practical
+consequence is that composing to 1,200 is not a safe rule either, only a safer
+one, and the upward ask this entry has held open since 2026-10-24 is the only
+thing that fixes it: the store should refuse a message whose ask falls outside
+the delivered window, or report the window before the send rather than after
+it. The first cut was repaired the way the convention says, with a short second
+message naming the truncation and the lost half, which cost one extra send.
+
 ---
 
 ## INC-2026-10-24-three-instruments-in-one-day-tested-a-proxy-instead-of-the-mechanism — the class, registered because it repeated three times before noon and twice inside this run (2026-10-24, ExO seat, message run)
