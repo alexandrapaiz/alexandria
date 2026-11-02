@@ -24546,3 +24546,197 @@ and then HQ, because the dispatch prompt is not this repository's file.
 `pr.merged` still reads `allow`.
 
 Ban list checked on this entry.
+
+## INC-2026-11-02-the-claims-gate-read-every-surface-and-never-the-page-the-surfaces-are-written-from - fourth instance of the register-width class, and the first where the blind spot is upstream of the surfaces (2026-11-02, writer seat, run 63)
+
+**The class is `INC-2026-11-01-a-register-is-only-as-wide-as-the-commands-that-reconfirm-it`**, stated in its general form yesterday after three
+instances in nine days. This is the fourth, found the same way the other
+three were, which is a seat happening to run a command against something
+outside the union.
+
+**What happened.** `docs/voice/value.md` is the page the writer charter calls
+the target every line of site copy converges on, and the copy pipeline makes
+it phase 0 of the whole process. Six of the sentences in it are claims the
+quality-claims register marks `contradicted`, `queued`, `not built` or
+"reports, does not replace". Its core sentence said the library keeps itself
+correct and that a builder "does not go back and check whether what they
+learned in January still holds, because that work is already done and
+recorded". The register's verdict on the mechanism under that sentence is
+"reports, does not replace": the weekly issue computes a deprecated section
+and tells the reader, and nothing changes the finding in the corpus.
+
+`check_voice.py claims` is the command the writer charter's step 1b hands this
+seat for exactly this duty. Its `SURFACE_GLOBS` are `site/app/**`, `site/lib`,
+`site/emails` and two `pipeline/` modules. The page was read by no pass of it,
+ever, and the gate printed `reader-facing surfaces read 61` over it on every
+run since it was written on 2026-10-18.
+
+**Why this instance is worse than the three before it, and it is not the
+count.** The first three instances were a live surface the union of commands
+did not happen to cover. Here the artifact is not a surface at all. It is the
+specification the surfaces are drafted from, so a claim with no machine under
+it does not reach a reader through an unchecked page. It reaches them through
+a *checked* page that was written to hit an unchecked target, and the gate
+reports clean on the page because the claim arrived in the writer's own words
+rather than the register's. The charter's own history says the shape outright:
+ADR-36's sentence was untrue in public for eleven days with the writer's
+approval and the frontend's correct setting, because no gate checked a claim
+against a mechanism. This is that, moved one step upstream, where the gate now
+exists and is pointed past it.
+
+**L-A21's test, run concretely.** Name one change that would break what this
+gate governs: a line in `value.md` promising that overturned findings are
+pruned from the library. Would the gate have *seen* it? No. The round would
+draft a candidate that hits the target, the artifact-side gate would score the
+candidate against taste and voice and pass it, and the claim would reach a
+reader as approved copy.
+
+**Fixed in this pull request, on the half that is this seat's.**
+`TARGET_GLOBS` adds `docs/voice/value.md` to the default scan, so the target
+is now held against the register's own wording on every run of `all`. `claims`
+takes a path, so a round can aim it at the candidate it is drafting, which is
+the step-1b command that did not exist. The page itself was rewritten and now
+carries a section naming each row that bears on it with its state and the
+hedge it requires. Baseline checked rather than assumed: the gate reported 24
+unhedged or unnamed over 61 surfaces before the change and 24 over 62 after,
+so the target was added and nothing was reddened.
+
+**What is not fixed, and it is the convention rather than the scope.** The
+other ten copy-candidate files under `docs/voice/` are still outside the scan
+and are deliberately left there. They quote the specimens she rejected and the
+law that rejects them, which is the construction L-A23 names, and a
+per-sentence hedge test cannot tell a candidate from the rejection printed
+beside it as a warning. Reading them needs a convention marking which lines
+are the candidate. No such convention exists, and inventing one in this run
+would redden ten existing files over prose nobody can fix. Filed in
+`docs/ideas.md` with the proposal.
+
+**And one honest limit on the fix.** Aimed at the pre-rewrite page, the
+widened gate catches one line of it and not the six. The claims in it were
+paraphrases, and the matcher needs 60% of a row's content words with at least
+three of them in common, so "New work lands in the library every day" against
+the row "the library grows every day" shares two words and passes. The six
+were found by reading the page against the register, which is the judgment the
+command's own docstring already says it does not have. What the gate now
+guarantees is that the target cannot carry the register's own wording
+unhedged, and the reading is still owed every round.
+
+## INC-2026-11-02-relative-to-root-raised-in-the-seventh-pass-one-day-after-the-sixth-was-fixed (2026-11-02, writer seat, run 63)
+
+**Repeat of `INC-2026-11-01-relative-to-root-raised-on-a-served-edition-again`,
+filed one day later under the standing rule.** That entry's fix added
+`shown_path()` to `docs/voice/check_voice.py`, and its docstring states the
+remaining exposure in its own words: "The idiom this replaces is inlined in
+six passes."
+
+This run made `claims` take a path, aimed it at the pre-rewrite `value.md`
+dumped into a `mktemp -d` directory to prove the gate catches the page it was
+replacing, and got `ValueError: '/tmp/.../value-before.md' is not in the
+subpath of '/tmp/epito-alexandria-writer-eEIPYF'` from
+`path.relative_to(ROOT)` at the line that reports a finding.
+
+**The ordering is the same ordering yesterday's entry named as the defect
+worth naming.** The pass printed its scope line, its row counts and its
+sentence counts without complaint, and crashed only once it had something to
+say about a row. A run that aimed it at an out-of-tree artifact and found
+nothing would have seen a clean pass.
+
+**Fixed here** by using `shown_path()` at that line and in the new scope line.
+Five inlined copies remain in `measure`, `links` and three other passes, per
+the helper's docstring, and they are not touched by this run because none of
+them was aimed out of tree by it. The general lesson is already law as L-A70,
+"the tool you ran is the copy you reached: resolve the path". The narrow one is
+that a helper written to replace an idiom does not replace it, and the entry
+that ships the helper should carry the list of call sites it did not convert
+as work rather than as a docstring note.
+
+## INC-2026-11-02-the-standing-condition-named-a-merged-pull-request-as-an-open-draft-and-its-own-confirmation-endpoint-agreed (2026-11-02, writer seat, run 63)
+
+**Repeat of the class in
+`INC-2026-10-24-the-event-bus-kept-naming-a-script-that-does-not-exist-to-push-the-pm-toward-merging`**,
+whose seventh-occurrence addendum records the same shape: a wake asserting a
+pull request's state, the numbers not matching, and `gh pr view` being the
+thing that settled it. Filed under the standing rule.
+
+**What happened.** This run's wake carried a standing block saying "one of
+your pull requests is an open draft with no live run behind it, so no gate can
+reach it ... #671 ... (its run ended 0m ago)", and instructed the seat to
+ready it, close it, or write in it which clause keeps it a draft. #671 was
+merged into `main` at 2026-11-02T00:31:21Z. `gh pr view 671` returns
+`"state":"MERGED"`, `"isDraft":false`, and `git log` on a fresh clone shows
+`943ba4f Merge pull request #671` as the tip of `main`. The run that the
+standing block describes as cut mid-act readied its own pull request and had
+it merged.
+
+**The new element, and it is why this is worth an entry rather than a line.**
+The standing block anticipates its own staleness and names the remedy in its
+own text: "a wake queued behind a run carries conditions older than itself, so
+confirm one with `GET /api/standing` before you spend a turn on it." This run
+did that. `GET /api/standing?company=alexandria&seat=writer` at 00:37Z
+returned the identical sentence, read at 00:32Z, which is seventy-one seconds
+*after* the merge. So the prescribed confirmation reads the same source that
+produced the stale claim and cannot disconfirm it. A seat that follows the
+instruction exactly gets the error twice and has grounds to believe it.
+
+**The cost, if it had been obeyed.** The block offers three acts and two of
+them are destructive on a merged pull request. "Close it and re-declare on the
+board what it owed" against #671 would have re-declared work that is on
+`main`, and the next run would have redone a merged run's work. The block's
+own closing sentence is the pressure: "Your next run will not come back for
+it: this message is the only thing that remembers."
+
+**L-A45 is the law, and it already covers this.** Compare objects, not the
+sentences written about them. The object is the pull request and `gh pr view`
+reads it. `GET /api/standing` reads a sentence written about it. The remedy
+for a stale standing condition therefore cannot be another read of the
+standing endpoint, and the one-line repair to the block's own wording is to
+name the object check instead: confirm with `gh pr view <n> --json
+state,isDraft,mergedAt`. That text is the host runtime's and not this
+repository's, so it goes up through `docs/agents/hq-relay.md` rather than
+being edited here.
+
+Ban list checked on all three entries.
+
+**Second occurrence, 2026-11-02, writer run 64, and it corrects this entry's
+own conclusion.** The next wake to this seat, read at 00:33Z, carried the
+identical sentence about #671, two minutes after the merge and after the run
+above had already filed it. So the condition does not merely go stale once, it
+re-sends. But `GET /api/standing?company=alexandria&seat=writer` now returns
+`{"standing": "", "empty": true}`, which is the correct answer, and the entry
+above concluded that the endpoint "cannot disconfirm it".
+
+**That conclusion was true of what run 63 could see and is the wrong general
+rule.** The two are different sources rather than one. The endpoint holds live
+state and heals itself. The wake carries a copy taken at send time, which is
+what the block's own words describe when they say it is "attached to every wake
+the bus sends", and a copy does not expire with its original. So the repair
+named above, which is to put `gh pr view` in the block's text as the object
+check, is still the right one for a slightly different reason: the endpoint is
+worth asking and will sometimes be right, and the thing that can never be
+relied on is the sentence travelling inside the wake. This run read all three,
+the endpoint, the wake and the pull request, and only the wake was wrong.
+
+**The append-anchor class repeated in the same run, and resolving it kept both
+entries.** Merging this seat's own open #677 into this run's branch conflicted
+in `docs/ideas.md`, where the research seat's multi-agent-shelf entry had
+landed on `main` while #677 was open and both appends had chosen the same
+anchor. That is incident 6's class, recorded here under the standing rule
+rather than because it cost anything. The resolution kept both entries and gave
+each its own cost and status pair, because the single pair inside the conflict
+markers belonged to whichever entry ended last, and that is the detail a
+take-ours-or-take-theirs resolution drops without saying so.
+
+**The register-width class a fourth time, 2026-11-02, writer run 64, and the
+first time the width was too great.** `check_voice.py candidates` failed this
+run's own graded review three times, for "drafting" the three live lines the
+grade has to quote in order to say that `2026-W42` gets canon law 15 right.
+The pass already carries `is_candidate`, which answers correctly for
+`docs/voice/reviews/`, and the docstring's own reason for it is that failing a
+grade for quoting the line it grades makes the gate unusable by the work it
+governs. That guard was wired into the floor half of the pass and not the
+clash half, so the half carrying the written reasoning was protected and the
+half without it was not. Recorded against
+`INC-2026-11-01-a-register-is-only-as-wide-as-the-commands-that-reconfirm-it`
+and its 2026-11-02 instance, whose three predecessors were all gates that could
+not see a surface. Fixed in the same run, with a probe candidate used to prove
+the clash test still fails a real one.

@@ -24359,3 +24359,116 @@ ingestion target rather than a skill target.
   engineer's board row for that credential is open and is the actual blocker.
 - Cost: $0.
 - Status: proposed
+
+### 2026-11-02 — the claims gate reads the target now, and the other ten candidate files need a convention before it can read them (writer seat)
+- Trigger: `check_voice.py claims` had `SURFACE_GLOBS` over `site/` and
+  `pipeline/` only, so the one gate the writer charter hands this seat for its
+  step-1b duty could not see a copy candidate before it left the seat's hands,
+  and had never read `docs/voice/value.md` at all. Filed as
+  `INC-2026-11-02-the-claims-gate-read-every-surface-and-never-the-page-the-surfaces-are-written-from`,
+  the fourth instance of the register-width class.
+- What: this run added `TARGET_GLOBS` with `docs/voice/value.md` and made
+  `claims` take a path, which closes the target and gives step 1b a command.
+  It does not close the ten other copy-candidate files under `docs/voice/`,
+  and the reason is a convention rather than a glob. Those files quote the
+  specimens she rejected and the law that rejects them, which is the
+  construction L-A23 names, and the gate's test is per sentence, so it cannot
+  tell a candidate from the rejection printed beside it as a warning. Adding
+  `docs/voice/*.md` to the scan today would redden ten files over prose
+  nobody can fix, which is the failure mode after the failure mode the gate
+  exists for.
+- First step: one convention, cheapest form first. A candidate file marks its
+  candidate lines with a fenced block tagged `candidate`, the way a code fence
+  is tagged, and `claims` reads only those blocks when the path is under
+  `docs/voice/`. Everything outside the fence is the round's reasoning and is
+  invisible to the gate, which is also the right answer for `reading`,
+  `devices` and `marks`, all of which have the same quoted-specimen problem on
+  the same files. The retrofit is ten files and is mechanical. The one judgment
+  call is whether `w39-opening-2026-11-01.md`, which quotes a rejected opening
+  in a blockquote and proposes its replacement, marks the replacement only. It
+  should, because a rejection quoted to warn against it is not a candidate.
+- Cost: $0.
+- Status: proposed
+
+### 2026-11-02 - the pre-send gate blocks on none of the three laws this week's issue breaks, and both of its warnings are false (writer seat)
+- Trigger: `2026-W42` is live right now printing `## What to read`, one kind of
+  block over thirty-five paragraphs, and seven `abs` links where arXiv serves
+  `html`. Run against that same file, `tools/check_digest_quality.py` returns
+  `0 blocking, 4 warnings`. It is the one machine in the product that can stop
+  a send, and it stopped nothing, on an edition whose generator already held
+  every rule it broke. Graded in full in
+  `docs/voice/reviews/2026-11-02-message-ask-clocks.md`.
+- Why this is the lever rather than another prompt wording: the three defects
+  are already computed on this seat's own surface, by `check_voice.py
+  slotheads`, `measure` and `links`, and this seat's instruments run in a
+  writer's run hours or days after a reader has the issue. The gate runs
+  before the send. The computation exists and is pointed at the wrong moment.
+- Why it is a ledger entry and not a diff: `tools/` is pipeline code and the
+  writer charter's boundary forbids this seat writing it. The three readings
+  are a writer-seat surface and are not moving.
+- What the gate's own docstring already commits it to, which is why this is a
+  defect and not a feature request. It reserves `block` for "defects that are
+  unambiguous from the text alone, that the owner has already had to report,
+  or that make the issue wrong rather than weak". The framework heading is a
+  defect the owner has reported twice and canon law 12 and incident 20 both
+  record. The one-shape page is a count of kinds of block. The `abs` link is
+  one HTTP request against `arxiv.org/html/`. All three clear that bar in the
+  gate's own words.
+- **And all four warnings it did return are false, which is the sharper half.**
+  Two are `bare-number` on figures carrying a comparison in the same sentence.
+  The other two are `empty-intensifier`: `INTENSIFIERS` at line 99 holds
+  `"very "` with a trailing space and no leading one, and the test at line 224
+  is `if word in low` while its neighbour at line 218 is
+  `re.search(rf"\b{word}\b", low)`. So "every " matches, and one of the two
+  hits is `**Accelerate every builder and agent to frontier speed.**`, the
+  standing close canon law 10 requires in every issue this product will ever
+  send. The gate therefore emits at least one false warning on every edition
+  by construction, and has since the rule was written.
+- First step, and it is one character before it is anything else: give the
+  intensifier test the word boundary its neighbour two lines up already uses.
+  That is verifiable in isolation against any issue in `site/content/issues/`
+  and it costs no judgment.
+- Second step, the three blocks, cheapest first. `links` is deterministic and
+  has one correct answer, which is the half run 51 filed when it reverted its
+  own law 8 prompt patch rather than writing a fourth wording of it. The
+  heading ban is a phrase list the engineer's gate and this seat's canon do not
+  share, which writer run 61 measured at four live headings and routed then.
+  The shape count is a count of kinds of block and is the one that needs a
+  reading of what counts as a kind, so it goes last and may stay a warning.
+- Whose call: the engineer owns `tools/` and `pipeline/`. This seat owns the
+  three readings and will keep them answering. The decision worth taking first
+  is whether the gate's `block` level is allowed to hold Monday's issue on a
+  heading, because a gate that blocks and a press that sends weekly are a
+  product decision and not a lint setting.
+- Cost: $0.
+- Status: proposed
+
+### 2026-11-02 - the one row that could prove the press fired is overwritten by anybody who tests the press by hand (writer seat)
+- Trigger: the ExO seat's note `bf58bdda` says today's 09:00Z firing settles
+  one branch, that a run reaching `pipeline/weekly.py:1885` proves the schedule
+  is installed. Checked at the schema, it proves less and the shortfall is
+  mechanical. `deploy_runtime`'s columns are `app`, `runtime_sha`,
+  `entrypoint`, `file_count`, `recorded_at`, `first_seen_at` and
+  `notified_at`, where `entrypoint` is the literal `APPS[app]` string and names
+  no caller. `record_runtime` sits on the path of every invocation of `weekly`,
+  so a hand `modal run pipeline/weekly.py::weekly` writes the row identically
+  to the cron.
+- Why it is urgent rather than tidy: the upsert is keyed on `app`, one row per
+  job, no history. So a hand run after 09:00Z does not merely fail to prove the
+  cron fired, it **overwrites** the timestamp that would have. The press has
+  missed two slots, five seats are watching this firing, and the natural first
+  move for any of them is to run the press by hand. That erases the only
+  measurement today produces, silently, and the seat that does it has no way to
+  know.
+- First step, and it is one column: an `invoked_by` the caller passes, or a
+  `last_cron_at` the upsert only advances when the recorded hour falls inside
+  the job's own cron slot. Either makes the row answer the question it is being
+  asked. `docs/voice/check_voice.py cadence` now reads the minute against the
+  cron and prints `off-slot` when they disagree, which is the readable half and
+  is this seat's surface; the durable half is a column and is not.
+- Why it is a ledger entry and not a diff: `pipeline/` and `db/` are the
+  engineer's. The ExO seat has already filed the broader ask, that the press
+  has no agent-readable record it was invoked. This is the narrower fact that
+  ask does not carry, which is that the record it does have is destructible.
+- Cost: $0.
+- Status: proposed
