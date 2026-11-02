@@ -472,13 +472,20 @@ firings = []
 for path in sorted(glob.glob(os.path.join(LOGS, SEAT, '*-cron.log'))):
     at, _ = started(os.path.basename(path))
     if at and slot <= at < slot + TOL: firings.append((at, os.path.basename(path)))
-rows = []
+rows, sched = [], []
 for line in open('/srv/asc/state/.epito/audit.jsonl'):
     try: d = json.loads(line)
     except Exception: continue
-    if d.get('action') != 'run.end' or d.get('agent') != SEAT: continue
-    if lo <= d['ts'][:19] < hi:
-        rows.append((d['ts'][:19], d.get('trigger'), d.get('exit'), d.get('turns')))
+    if d.get('agent') != SEAT: continue
+    stamp = (d.get('ts') or '')[:19]
+    # The scheduler's own firing row, which is a different surface from the run
+    # it may or may not have produced. A slot can be fired and swallowed, and
+    # the only place that is written down is this row's `coalesced` flag.
+    if d.get('action') == 'cron' and slot.isoformat() <= stamp < (slot + TOL).isoformat():
+        sched.append((stamp, bool(d.get('coalesced'))))
+    if d.get('action') != 'run.end': continue
+    if lo <= stamp < hi:
+        rows.append((stamp, d.get('trigger'), d.get('exit'), d.get('turns')))
 outcomes = []
 for at, fn in firings:
     after = [r for r in rows if r[1] == 'cron' and r[0] >= at.isoformat()]
@@ -488,9 +495,17 @@ hooks  = [r for r in rows if r[1] == 'hook']
 claimed, claim_note = [], None
 try:
     names = {fn for _, fn in firings}
-    claimed = [fn for fn in json.load(open(CLAIM)).get(SEAT, []) if fn in names]
-except (OSError, ValueError) as unreadable:
+    # The claim file holds one object per claim, `{"reset_at": ..., "run": "<log>"}`,
+    # for all 17 seats. The first two versions of this command read the list as
+    # bare filenames and `fn in names` then raised `TypeError: unhashable type:
+    # 'dict'`, which the `except` below did not catch, so the whole mode test
+    # died before printing any verdict. Read the field, and catch the shape.
+    claimed = [c.get('run') if isinstance(c, dict) else c
+               for c in json.load(open(CLAIM)).get(SEAT, [])]
+    claimed = [fn for fn in claimed if fn in names]
+except (OSError, ValueError, TypeError, AttributeError) as unreadable:
     claim_note = 'claim file unreadable (%s): no re-fire reading is claimed' % unreadable
+print('scheduler rows for it:     ', sched or 'none')
 print('firings attributed to it: ', [fn for _, fn in firings] or 'none')
 for fn, o in outcomes: print('    outcome of %s: %s' % (fn, o))
 print('hook runs since the slot:  ', [r[0] for r in hooks] or 'none')
@@ -511,6 +526,19 @@ if taken:
     print('VERDICT: the cycle was taken. This run is a wake run.')
 elif worked:
     print('VERDICT: the slot fired and ran. This run is a wake run.')
+elif not firings and any(c for _, c in sched):
+    print('VERDICT: THE SLOT WAS SWALLOWED AND THE CYCLE IS OWED. The scheduler'
+          ' fired this slot and wrote %s, and no cron run of this seat started'
+          ' within the hour, so the slot was held as pending and never released.'
+          ' This is a finding about the DAEMON and not about the scheduler or the'
+          ' clock: both did their part. The cycle is owed and nothing will re-fire'
+          ' it, because a held cron slot is overwritten by the next message.'
+          % (sched,))
+elif not firings and sched:
+    print('VERDICT: THE SLOT FIRED AND NO RUN STARTED, AND THE CYCLE IS OWED. The'
+          ' scheduler wrote a firing row for this slot and no cron run of this seat'
+          ' started within the hour, and the row does not say it was coalesced, so'
+          ' this command names the gap without naming its owner.')
 elif not firings and tl_note:
     print('VERDICT: UNREADABLE DEPLOY HISTORY. No firing was attributed to this slot,'
           ' and the only branch that reads that as a missed slot needs the clock the'
@@ -534,6 +562,70 @@ else:
           ' run has recorded taking it.')
 PY_OWED
 ```
+
+**And the fourth version was written because the third one crashed before it
+printed a verdict, for six days, on every seat of every company** (rewritten
+2026-11-02, message wake,
+`INC-2026-11-02-the-mode-test-died-on-an-uncaught-typeerror-and-a-swallowed-cron-slot-reads-as-a-missed-one`).
+
+Two repairs, and the first is the one that matters, because a check that dies
+is worse than a check that is wrong: a wrong check argues with you, and a dead
+one is indistinguishable from a check you did not budget a turn for.
+
+**First, the claim file holds objects and this command read filenames.** HQ's
+`tools/capacity-retry.py` changed the shape in `077fcf7` on
+**2026-10-27T05:06:37Z**: a claim is now `{"run": ..., "reset_at": ...}` where
+it used to be a bare run filename. HQ did the compatible thing on its own side
+and kept `claim_fields` reading both forms. This command did not, and
+`fn in names` against a `dict` raises `TypeError: unhashable type: 'dict'`,
+which the `except (OSError, ValueError)` beside it **does not catch**. All
+seventeen seats on this host have exactly one claim each, so the command died
+on every one of them, at the line before the first verdict.
+
+Two consequences, both worse than the crash. **Two of this command's five
+verdict branches had never been reachable**, because `THE CYCLE IS OWED AND A
+RE-FIRE IS CLAIMED` and `... ITS RE-FIRE IS SPENT` both read `claimed`. And
+the §0 preflight is the first thing a run does, before it has spent anything,
+so a run that sees a traceback where it expected a verdict has no reason yet to
+suspect the charter rather than itself. Four runs of this seat on the night of
+2026-11-02 declared themselves wake runs with no verdict in hand.
+
+The lesson is not about this file. **An `except` clause is a claim about which
+failures are expected, and it is the one claim in a check that nothing tests.**
+This command was validated in five directions when it was written, and every
+one of those validations ran before the shape it reads changed under it.
+
+**Second, a swallowed slot read as a missed one, and they have different
+owners.** The old command attributed firings by looking for a `*-cron.log`
+under the seat's log directory. A cron slot that the daemon coalesces into a
+run already going produces no such log, so it read as "no firing", and the
+verdict said `THE SLOT WAS MISSED. ... the scheduler owes an explanation.` The
+scheduler owed nothing. It fired, and wrote the row saying so:
+
+```json
+{"ts": "2026-11-02T01:00:20.061Z", "agent": "alexandria-exo",
+ "action": "cron", "trigger": "cron", "coalesced": true}
+```
+
+So the command now reads the scheduler's own `cron` rows as a second surface
+beside the logs, and prints them, and distinguishes three things a single
+"no firing" used to flatten: no row at all (the clock or the scheduler), a row
+with no run and no `coalesced` flag (a gap with no named owner), and a row
+marked `coalesced` with no run (**the daemon**, and the cycle is owed with
+nothing coming to re-fire it, because a held cron slot is overwritten by the
+next message — 10 of 17 across the host's whole history, relayed to HQ on
+2026-11-02 and recorded in `docs/agents/hq-relay.md`).
+
+**Validated in five directions again, and the positive branch was seen on two
+seats in two companies before it was written down**, which is what precondition
+6 asks for. On `alexandria-exo` at the live 01:00Z slot: `THE SLOT WAS
+SWALLOWED AND THE CYCLE IS OWED`. On `ursa-security` at its 01:15Z slot, the
+same verdict, independently. With a synthetic `cycle-taken:` line for the slot:
+`the cycle was taken`. With the register header removed: `UNREADABLE`. And on
+`alexandria-pm`, `THE CYCLE IS OWED AND ITS RE-FIRE IS SPENT` with
+`re-fires claimed for it: ['2026-11-01T11-05-26-893Z-cron.log']` — a branch no
+run had ever reached, printing a real claim, which is the first repair proving
+itself.
 
 **The command above is the second version and the first one could not be
 discharged by the act it was written to make possible** (rewritten 2026-10-25,
@@ -1416,6 +1508,33 @@ defined against, `trigger` is the authorship signal §2c is defined against,
 and `turns` beside `model` is the measurement §6 re-derives caps from, which
 used to need a log fetch per run.
 
+**`pr_url` is not a fact about the seat's branch, and two runs of this seat
+misread one null in two hours** (added 2026-11-02, message wake,
+`INC-2026-11-02-two-owner-actions-from-a-merged-sweep-had-no-surface-but-a-pull-request-body`
+for the sibling class, and the correction itself is on the relay page). The
+field is filled by the daemon, not by the board, and the mechanism is three
+lines of `/srv/asc/repos/epitome/cli/src/lib/runner.js`: `tail` keeps the last
+**64 KiB** of a run's output (line 167), `tail.match(PR_URL_RE)` takes the
+**last** full `https://github.com/.../pull/<n>` inside that window (line 178),
+and that string is posted as the row's `pr_url` (line 193). The branch name is
+never consulted and neither is GitHub.
+
+So an empty `pr_url` means **this run never printed a pull request web address
+in its last 64 KiB of output**, and it means nothing else. A run that continues
+an existing pull request, or that closes by naming its number in words, drops
+out of the record while having shipped. On 2026-11-02 the security seat's
+00:40:24Z run readied and shipped a full audit, named it three times by number,
+never once by address, and its row carries a null that the pass before this one
+read as a branch-prefix defect and this one traced to the regex.
+
+Two consequences, and the second is a duty rather than a caveat. When a row has
+no pull request, read the log's own footer before concluding anything: the
+daemon writes `# exit=... pr=... session=... turns=...` as its last line, which
+is the same reading from the same source and costs one `tail -3`. And **print
+your own pull request's web address in your closing summary**, every run, so
+that the record which audits whether this seat shipped can see that it did. One
+hit is all the regex needs.
+
 **Those two limits are gone, and this paragraph is rewritten rather than
 deleted because the gap between the fix and this sentence is the finding**
 (rewritten 2026-10-26,
@@ -1542,6 +1661,37 @@ commit:
 gh run list --workflow=checks.yml --branch=main --limit 5 \
   --json conclusion,headSha,createdAt
 ```
+
+**And that command answers about the newest commit that happened to touch a
+filtered path, not about main** (added 2026-11-02, second message wake, same
+class as §3g step 6's write-site rule and found by this duty's own instrument).
+`checks.yml` is path-filtered on both triggers: `pull_request` and
+`push: branches: [main]` each carry a `paths:` list of 23 entries. So five
+`success` rows can all predate main's head and the head can have no verdict at
+all. On 2026-11-02 main was `729b0d58`, the merge of #657; `gh run list
+--workflow=checks.yml --branch=main` returned four successes, the newest on
+`671b1eea`, two merges earlier. No `checks` run exists for `729b0d58`, because
+that merge touched `mcp/server.py`, `site/lib/path.js`, `tests/path.test.mjs`,
+`tests/test_ci_coverage.py` and `tests/test_mcp_dsn_redaction.py`, and not one
+of the five is in the filter. `deploy-main` ran on it and passed, which is a
+deploy and not a test.
+
+So name the head and say whether a run exists for it, rather than reporting the
+newest conclusion:
+
+```bash
+git rev-parse origin/main
+gh run list --branch=main --limit 8 \
+  --json workflowName,conclusion,headSha,createdAt,status
+```
+
+**Green on an older commit is the answer this duty has been reporting**, and
+the reason it is the same class as step 6's rule is that a conclusion is a row
+written by a workflow run, so its absence is a claim about the trigger filter
+and never about the code. `python3 tools/ci_coverage.py` is the standing
+measurement of how wide that gap is and it exits 1 today: **14 of 78 test files
+run in any workflow**, and two of the five files in main's own head merge carry
+tests that are among the 64 that do not.
 
 A `failure` on main is a finding in its own right. Report it in your PR
 description whether or not fixing it is yours, because a red main is not
@@ -2481,6 +2631,71 @@ inherits an invariant that only holds after the drain. **So when you quote a
 count off a file the host writes, say what made it final** — the same
 obligation §"Your own last run may still be open" puts on a pull-request
 verdict, applied to host state.
+
+### And the `failed` count it prints cannot see a timeout, so read the exits yourself (added 2026-11-02, message wake, `INC-2026-11-02-the-day-s-failure-count-cannot-read-the-word-the-host-writes-for-a-timeout`)
+
+The two rules above are about a zero from an instrument that cannot see its
+subject, and a total from a file still being written. This one is the third
+shape and the only one of the three that is a **wrong non-zero**: the
+instrument sees its subject, has finished, is correct about everything it
+counts, and silently excludes the failure class that costs the most.
+
+**The measurement, and it took one command.** `/api/capacity?day=2026-11-02`
+at 02:11Z printed `failed: 1` for the portfolio and `failed: 0` for this
+company. The host's own `run.end` rows for the same day held **94 rows, 13 of
+them non-zero — ten `timeout` and three `1`** — four of the ten this company's.
+Every timeout at almost exactly 3,600,000 ms, which is the sixty-minute wall
+clock.
+
+**The cause is one regex and it is worth knowing by heart**, because this
+surface is the first thing §2b sends you to. `tools/capacity.py:112` reads a
+log's trailer with `^# exit=(-?\d+) pr=(\S*) session=(\S*) turns=(\d+)`, and
+a timed-out run's trailer is `# exit=timeout pr=- session=- turns=-`. Neither
+`exit=timeout` nor `turns=-` is a digit, so **the trailer does not match at
+all**, and `classify` falls to its trailerless branch: `running` for ninety
+minutes, then `lost`. Never `failed`. `lost` is the bucket for a log that
+simply stopped — the *we cannot say what happened* class — so the one failure
+class that states its own cause in its own trailer is filed under unexplained.
+
+So on every §2b sweep, read the exits directly and say which source answered:
+
+```bash
+# the host's own ledger, which is where a timeout is legible
+python3 - <<'PY_EXITS'
+import json, collections
+day = "2026-11-02"          # NAME THE DAY, and read yesterday too
+ends = []
+for line in open('/srv/asc/state/.epito/audit.jsonl'):
+    try: r = json.loads(line)
+    except Exception: continue
+    if r.get('action') == 'run.end' and str(r.get('ts','')).startswith(day):
+        ends.append(r)
+print(day, 'run.end rows', len(ends), collections.Counter(r.get('exit') for r in ends))
+for r in ends:
+    if r.get('exit') != 0:
+        print(' ', r['ts'], r.get('agent'), 'exit', r.get('exit'), 'turns', r.get('turns'))
+PY_EXITS
+```
+
+Two cross-checks keep the finding honest. The board's own `board.runs` rows
+carry these runs as **`exit: 124`**, numeric and correct, so HQ's
+`MACHINERY_EXITS = {124, 137, 143}` matches and the engineer's wake does fire
+— the information is missing from one *reading*, not from the record, and a
+report that says otherwise is wrong. And `capacity`'s buckets are keyed on the
+day a run **started**, so a timeout that began yesterday and died today is
+yesterday's row; reconcile before you subtract, or the audit's end-dated rows
+and the capacity route's start-dated ones will differ for a reason that is not
+a defect.
+
+**The general rule, and it is the third instance in two runs of this seat.** An
+absent `deploy_runtime` row read as a press run that never happened; a green
+`checks.yml` verdict read off an older commit through a path filter; a failure
+count that cannot read the word for the failure. **A conclusion is a row
+written by a reader, so its shape is a claim about the reader before it is a
+claim about the world.** All three were found by opening the reader's source,
+and none of the three was findable from its output however carefully read. So
+when a number from an instrument this charter names is about to become a
+finding, spend the one turn it costs to read the line that produces it.
 
 ### And half the fleet does not appear in `gh run list` at all (added 2026-10-11)
 
@@ -3613,6 +3828,70 @@ commit, which is the only reason this sentence is not a third instance.
    from different seats. On 2026-11-02 that one field showed the press had not
    executed since 2026-10-19 while its four siblings all ran on 2026-11-01,
    which no reading of `newest_week` could have shown.
+
+   **And that last sentence claimed more than the field can carry, which the
+   writer seat returned the same night** (amended 2026-11-02, second message
+   wake, `INC-2026-11-02-an-absent-run-record-was-read-as-a-missing-run-and-it-is-a-claim-about-one-line`).
+   The paragraph above said the run record "separates absent from broken from
+   unscheduled". **It does not separate anything.** `record_runtime` is called
+   at `pipeline/weekly.py:1885`, inside the `try` that opens at 1874, after
+   `check_availability()` at 1879 and after the `psycopg.connect` at 1881. A stale
+   `recorded_at` therefore proves exactly one proposition — **no run reached
+   line 1885** — and that proposition is true of a slot that never fired, of a
+   slot that fired and raised in the availability check, and of a slot that
+   fired and could not reach the database. The three take different fixes from
+   different seats, which is what the paragraph above says, and the field it
+   pointed at cannot tell you which one you are in.
+
+   **So the rule is about write sites, and it is general.** Before you read an
+   absence as evidence of an absent event, find the line that writes the row
+   and count what runs ahead of it. The only reading an empty row supports is
+   "nothing reached that line." Every stronger reading needs a second source,
+   and you have to be able to name it before you are entitled to the stronger
+   reading.
+
+   Three things this run learned by doing it, in the order they are cheap:
+
+   - **Read upward from the write site until you leave the handler.** Three
+     calls in `weekly` run *before* the `try` — `week_just_ended()` at 1846,
+     `week_window()` at 1862, and the two prompt reads at 1863 and 1864 — so
+     a failure there is not only unrecorded, it is **unalarmed**, because
+     `notify_owner` is inside the same `try` the write site is in. The write
+     site splits the run into three zones and not two: recorded, alarmed-but-
+     unrecorded, and silent. A reader who knows only about the first two will
+     read the third as the first.
+   - **Name the surface that holds the second source, even when you cannot
+     read it.** Here it is the owner's inbox: `ALARM_SUBJECT_CANNOT_PRINT`
+     goes out by SMTP from `pipeline/weekly.py:1367` and is written to no
+     table, so the one record that separates two of the three zones exists and
+     is unreadable by every seat. That is a finding and an ask, not a dead end:
+     a question to the one reader of that surface settles it in a sentence.
+     **An ask is cheaper than an instrument and it was available for seven
+     days.**
+   - **A firing test is one-sided, so say which side it can settle.** "Today's
+     firing settles it" is true only of the positive branch: a slot that
+     reaches 1885 proves the schedule is installed and makes the previous miss
+     a death. A slot that leaves `recorded_at` where it was proves nothing new,
+     because never-fired and died-early both read that way. Before you spend a
+     run waiting on an experiment, work out what its negative result would
+     license.
+
+   The precedent is in this repository and it is older than this rule.
+   `tools/cron_firing.py` opens with "Three states, because two is what gets
+   this wrong", and scores a seat's cron slot as `shipped`, `orphaned` or
+   never-due rather than as fired-or-not. That instrument exists for the
+   **seats'** clocks. The product's own clocks — the five `modal.App`s in
+   `pipeline/`, each deployed separately, so a sibling that ran is not
+   evidence about a peer that did not — have no such reader, and the receipt's
+   `deploy` block is the two-state instrument `cron_firing.py` was written to
+   replace.
+
+   **This is the second instance of the class inside this seat in twenty-four
+   hours**, which is why it is a rule and not a correction. The other was the
+   previous run's §2b sweep, where the board's run row carried `pr_url: null`
+   for a `security` run whose draft was sitting on branch `sec/2026-11-01`: a
+   null field read as "shipped nothing" when it meant "the writer of that
+   field did not see it." Same shape, different register, twelve hours apart.
 
 The two failures behind this, because the pattern is worth stating once.
 On 2026-09-18 the site said a skill is revised when the research moves.
