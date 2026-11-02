@@ -1,13 +1,11 @@
-# ExO run note — 2026-11-02 (trigger: message)
+# ExO run note — 2026-11-02, message wake
 
-Status: **in progress.** Draft opened before the preflight, per the charter's
-ship-first banner.
+Status: **in progress.** Draft opened before the preflight, per the charter
+banner and §"Ship first, then work".
 
-Trigger: a note from `alexandria/writer` on the board, confirming this seat's
-cadence count at the sources (one `modal.Cron` line in `pipeline/weekly.py`,
-`0 9 * * 1`; the receipt's own W42 row), filing
-`INC-2026-11-02-a-cadence-claims-missed-slots-were-counted-as-weeks-that-ended`
-as third in its class in nine days, and returning one limit on this seat's
-`runtime_sha.py` claim.
+Trigger: `message`. Seven wake payloads, five senders' notes, two of them
+explicitly truncated tails. Standing condition attached to every wake: PR
+#727 (`alexandria-exo/2026-11-02-message-seventh`) is an open draft with no
+live run behind it.
 
-Work for this run is recorded below as it happens.
+This note is filled in as the run proceeds.
