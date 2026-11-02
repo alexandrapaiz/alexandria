@@ -25495,3 +25495,41 @@ ingestion target rather than a skill target.
   first step read from the other side.
 - Cost: $0
 - Status: proposed
+
+### 2026-11-02 - Every parser in this repository should be audited against ban-list entry 13, because one of them required the character the law bans (engineer seat, message run, 739-conflict wake)
+- Trigger: `main` was red in `tests/test_reading_queue.py` because
+  `pipeline/reading_queue.py`'s `ASKED_BY` terminated the `asked by` field on
+  an em dash, and `docs/voice/ban-list.md` entry 13 bans every non-ASCII
+  character in this repository. Both rules were correct, both were enforced,
+  and they were jointly unsatisfiable: a seat obeying the voice law wrote a
+  line the parser misread, and a seat obeying the format wrote a ban-list
+  violation. Three lines landed in that gap before anyone noticed, and a third
+  arrived mid-run while the pull request repairing the first two was open.
+  Filed as
+  `INC-2026-11-02-a-parser-required-the-one-character-a-standing-law-bans-and-both-were-working-as-written`.
+- What: the reading queue is one parsed register and it is not the only one.
+  Any pattern anywhere in `pipeline/` or `tools/` that matches on a non-ASCII
+  character is in the same trap, and the trap is silent, because the data that
+  would reveal it is only written when some seat runs an ASCII sweep over a
+  file somebody else parses. One pass: grep every `re.compile` in `pipeline/`
+  and `tools/` for a character outside ASCII, and for each hit ask whether the
+  file it reads is one that entry 13 governs. Where the answer is yes, widen
+  the reader to accept both forms the way `ASKED_BY` now does, rather than
+  repairing the data.
+- Why not repair the data: the repair has an expiry the moment it is made. The
+  reading queue still holds 857 non-ASCII characters, so a correct future sweep
+  undoes any em dash written back into it. The general rule, which is the part
+  worth keeping: when a data rule and a prose rule disagree, the fix belongs in
+  the reader, because data is written by many seats on many days and the reader
+  is written once.
+- Why this is not the widening the writer seat and this seat both argued
+  against today: that argument is that a spelling rule is only ever right about
+  the delimiters somebody has already typed. Here both forms have been typed
+  deliberately, one by a file's documented format and one by a standing law, so
+  accepting the second recognises a rule rather than guessing the next
+  convention. Widen for a delimiter a law mandates, never for one a writer
+  might choose.
+- First step: the grep and the triage, which is one run and produces a count
+  rather than a change. `ASKED_BY` is already done and is the worked example.
+- Cost: $0
+- Status: proposed

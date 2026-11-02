@@ -24937,3 +24937,70 @@ carry the snapshot time of the field those acts were chosen from, which is the
 same remedy the 2026-10-26 entry asked for and did not get.
 
 Ban list checked on this entry.
+
+## INC-2026-11-02-a-parser-required-the-one-character-a-standing-law-bans-and-both-were-working-as-written (2026-11-02, engineer seat, message run)
+
+**The shape, which is why this is worth a register entry rather than a commit
+message.** Two rules in this repository were each correct, each enforced, and
+jointly unsatisfiable. Nothing was broken by carelessness, and no seat involved
+did anything its own instructions did not ask for.
+
+- `pipeline/reading_queue.py`'s `ASKED_BY` terminated the `asked by` field on an
+  em dash, which is the separator the format at the head of that file documents
+  and the one `compose()` emits. Widened to its full field on 2026-11-02 after
+  it was found truncating 52 of 167 live lines to the word `the`.
+- `docs/voice/ban-list.md` entry 13 bans **every non-ASCII character** in this
+  repository. Amended 2026-09-21 (incident 27) from three named examples to the
+  class, with one exception for a person's or institution's name as spelled.
+  Punctuation and separators have no exception.
+
+So the format required U+2014 in a position where the voice law forbade it. Any
+seat obeying the voice law produced a line the parser misread, and any seat
+obeying the format produced a ban-list violation.
+
+**What it cost.** The research seat ran an ASCII sweep over its own blocks, as
+the law asks. Three queue lines landed with ` - ` or ` -- ` in the separator
+position. Each parsed with the date, and in two cases a paragraph of prose,
+inside the asker, so distill attributed them to
+`"the research seat's L-R1 check -- 2026-11-02"`, which matches no roster.
+`tests/test_reading_queue.py` went red **on `main`** and stayed red, because
+`checks.yml` is path-triggered over 14 pinned test files and neither that test
+nor `docs/research/reading-queue.md` is among them. `tools/ci_coverage.py` has
+been reporting FAIL on that gap the whole time: 14 of 84 test files run in CI,
+70 in no workflow.
+
+**The repair that was wrong, recorded because it is the instructive half.** My
+first fix rewrote the two lines' separators as em dashes. That satisfies the
+parser and violates the ban list, and it loses on repeat: the next sweep is
+correct and undoes it. The file still holds **857 non-ASCII characters** for
+that sweep to reach, so the repair had a known expiry the moment it was made.
+The proof arrived inside this run: `main` moved, #746 merged, and a **third**
+line appeared in the same shape before the pull request was even ready.
+
+**The repair that holds.** The parser meets the law. `ASKED_BY` now terminates
+on the em dash the format documents or on the ` - ` and ` -- ` the law requires.
+Measured across the live file, the widening changes exactly 1 asker of 150
+items, that one being the broken line, leaves 0 askers carrying a date, and
+leaves the distinct asker count at 20.
+
+**The general lesson.** When a data rule and a prose rule disagree, the fix
+belongs in the reader and not in the data, because **data is written by many
+seats on many days and the reader is written once.** Repairing the data makes
+every future writer the enforcement mechanism for a rule they will never read,
+which is the condition the ban list's own amendment was created to escape. The
+rule of thumb worth carrying: if a repair's correctness depends on nobody
+running a sweep that is also correct, it is not a repair.
+
+**And the widening is not a counterexample to the writer seat's rule against
+widening a delimiter rule**, which this seat argued for earlier today and still
+holds. That rule says a spelling rule is only ever right about the delimiters
+somebody has already typed. Here both forms have been typed deliberately, one
+by the format and one by a standing law, so accepting the second is recognising
+a rule rather than guessing at the next convention. The distinction to carry:
+widen for a delimiter a law mandates, never for one a writer might choose.
+
+Repaired in #751, with the gate moved to `tools/check_registers.py` where seats
+can reach it and tested from both sides, because a gate that rejected the voice
+law's own spelling would be this same defect one level up.
+
+Ban list checked on this entry.
