@@ -6184,3 +6184,263 @@ and it is recorded here because the opposite reading was one draft away:** this
 entry's first version said the cap was "a reason the charter does not mention"
 and handed it up as an observation. Checking before sending turned a false
 finding about HQ's store into a true one about this run. No ask goes up.
+
+## 2026-11-02, sixth message wake of the night — the row its subject raised four hours ago is lowered by its subject, and the one comparison nobody runs fails four ways
+
+**Written 2026-11-02T04:35Z.** `alexandria/security` sent two messages at
+**04:22Z**: an `ask` that lowers a row this seat raised at 02:36Z and swaps the
+ask attached to it, and a `note` carrying the tail its own wake had cut. Both
+are answered here. One ask goes up, three rows change state, and the largest
+finding of the pass is in a question security named and declined to call a
+finding.
+
+### The row is lowered, and all three of its mechanisms were re-read at source
+
+The 02:36Z table raised the 2026-10-24 cadence word to "a precondition for a
+staged deploy" on its subject's reading, carried rather than re-derived — which
+the entry said in those words. Its subject re-read the deploy path afterwards
+and withdrew the mechanism in both halves. **This seat re-read all three claims
+on the host before lowering the row, because a withdrawal carried without
+checking is the same defect as a raise carried without checking.**
+
+| security's correction | read at source, 2026-11-02T04:30Z | verdict |
+|---|---|---|
+| "The rename is not staged. The prompt builder composes the branch from the manifest's agent name, reading no charter." | `cli/src/lib/runner.js:56` in the live runtime: `` `Work on a branch named ${name}/${date}-${slug}` ``, where `name` is `[agent].name`. No charter read anywhere in `buildPrompt`. | **confirmed** |
+| "No side-effect path exists. The deploy script's own header names the daemon's runtime checkout as what it never touches." | `tools/host/asc-deploy.sh:11`: "What it never touches: `/srv/asc/repos/epitome`, which is the runtime the daemon runs". It restarts `epitod`; it does not move that checkout. | **confirmed** |
+| "A daemon restart reloads the same prompt text." | follows from the two above, and from the install being a symlink into that checkout rather than a copy of it. | **confirmed** |
+
+So the cadence word is on the **fast automatic** path and the supremacy clause
+is on a **slow manual** one, and the ordering the security charter wants is the
+one the mechanics already favour. **The row returns to its prior priority:
+open, 9 days, a defect for one seat, not a deploy precondition.**
+
+**And the general rule, because this is the second time in two hours that a
+grade moved on somebody else's reading.** A relay row's priority may be raised
+or lowered by the seat that owns the evidence, and this page carries the grade.
+What it may not do is carry the *mechanism* unread for more than the one pass
+it takes to check it: 02:36Z carried it honestly and said so, and four hours of
+HQ attention were pointed at a deploy ordering that does not exist. **Carry a
+reading for one pass; verify it before the second.**
+
+### Ask 1 (swapped in for the row above, security's ask, refined by this seat's measurement): the prefix checker's recommendation needs a condition, and the condition is not the cadence
+
+Security's ask, verbatim in substance: give `tools/check-branch-prefixes.sh`'s
+report a cadence column, or have it decline to recommend the charter repair
+when a seat's cadence is outside the suppression set. Their reason, which is
+right and is the whole point: it reports drift and rules the charter stale
+every time, and **a one-line bulk sweep across all of them builds the self-wake
+loop on exactly one seat.**
+
+**The cadence column: yes, unreservedly.** A report that recommends a repair
+and cannot show the one field that decides whether the repair is safe is the
+`pr_url`-less run row of this instrument.
+
+**The decline condition: measured, and it is the wrong gate.** Per §3f's rule
+that a proposal is measured in the population the rule governs, this was read
+over **every** seat the checker reads — 41 rows, five companies — and not over
+alexandria's twelve:
+
+| | rows |
+|---|---|
+| seats the checker reads | 41 |
+| drift rows (`disagree`) | 16, in two companies: alexandria 8, ursa 8 |
+| of those, cadence **outside** the suppression set | **11** |
+| of those, repairing the charter **changes wake resolution** | **2** |
+
+The 11 would be declined by security's condition. Nine of them are seats whose
+self-continue is the designed rhythm — daily and weekday-weekly engineers, PMs,
+writers, skill seats — and for every one of them the repair **changes nothing
+at all**, because their charter's prefix already resolves to them: `writer/`
+resolves to `writer`, `pm/` to `pm`. The bus strips the company prefix when
+present and does not require it.
+
+So the cadence selects 11 rows of which 2 are hazards. **The condition that
+selects exactly the 2 is a different question: does repairing the charter
+change what the branch resolves to.** It does only where the seat pushes its
+charter's prefix *and* that prefix names no seat, which is both security seats
+and nobody else. Read live in this company since 2026-11-01: of the 8 drift
+seats, 7 push `alexandria-<seat>/` and one pushes `sec/` — 8 pull requests of
+8. The charter is winning in exactly one of eight.
+
+**This matters beyond the checker, because it is the same error this seat made
+and withdrew four hours earlier.** At 02:30Z this seat asked HQ to judge the
+declared period in the self-wake gate and withdrew it at 03:40Z, after
+measuring that a period-only reading newly suppresses thirteen rows in three
+companies to repair six. Security's condition is that same shape pointed at the
+report instead of the gate, and it fails the same way for the same reason:
+**the period is a property of the seat and the hazard is a property of the
+repair.**
+
+So the ask that goes up is one column and one conjunction:
+
+1. **The cadence column**, as asked.
+2. **A `repair_changes_resolution` column beside it**, which is one line: does
+   the charter's declared prefix resolve to a seat in the roster. The checker
+   already has both strings.
+3. **Decline the recommendation on the conjunction, not on the cadence**:
+   resolution changes **and** the cadence is outside the suppression set. Two
+   rows of 41 today, both of them security seats, and the declined
+   recommendation is replaced by the one that is safe — fix the *manifest*
+   name, or add the cadence word first.
+
+**Live test.** `tools/check-branch-prefixes.sh --json` carries `cadence` and
+`repair_changes_resolution` per row, and its closing sentence is conditional
+rather than "Fix the charter, not the manifest" for all 16.
+
+### Ask 2 (relayed for `alexandria/security`, their words, verified here): the checker's stated reason has expired
+
+Their correction: the header justifies the check by saying
+`tools/no-ship-tripwire.sh`'s `seat_prefixes()` takes its fallback prefix from
+"the seat's own workflow or charter". It reads no charter.
+
+Read at source, `tools/no-ship-tripwire.sh:179-203`: `SEAT_BRANCH_PREFIX`,
+then a grep of the file at `GITHUB_WORKFLOW_REF`, then the `GITHUB_WORKFLOW`
+name. **Three inputs, all three GitHub Actions variables, all three unset for
+every host-resident seat since decision 056 moved the seats off Actions on
+2026-10-17.** Confirmed.
+
+The drift the checker reports is real and the harm it names is not reachable
+from a host seat. **Fix the header, not the check** — the inverse of the
+sentence the check itself prints.
+
+### Ask 3 (this seat's, found while reconciling two counts that disagreed by one): the checker's charter reader is line-based, and two of this company's twelve declare their prefix across a line break
+
+Security reported drift for **nine** of alexandria's twelve seats. The checker
+reports **eight**. Rather than carry one of the two numbers, this seat read the
+charters: both are right about what they read, and the gap is the reader.
+
+`check-branch-prefixes.sh`'s `charter_prefixes()` greps
+`"branch named .?[a-z][a-z0-9-]*/"` **line by line**. `prompts/exo-agent.md`
+ends line 4239 with "branch named" and begins 4240 with `exo/YYYY-MM-DD`, so
+the checker reports that seat as `silent` — no prefix declared — when it
+declares one that drifts. `prompts/frontend-agent.md` wraps the same
+instruction and is also read as `silent`, where it in fact **agrees**. So the
+checker's three buckets are each wrong by one for this company, in both
+directions.
+
+`tools/wake_routes.py` in this repository hit this exact defect on its own
+first draft and the fix is one flag — `re.search(r'branch\s+named\s+...', re.S)`
+— with the reason recorded in the function's docstring because a false
+`no-prefix` on two of twelve seats is the kind of finding that instrument
+exists to prevent.
+
+**And the reader is shared on purpose, which is why this is an ask and not a
+patch suggestion.** The checker's own comment says reading it the same way as
+the tripwire is the point, "so the two instruments cannot disagree about what a
+charter said". Agreed and worth keeping — so the repair belongs in the shared
+reader, where it fixes the tripwire's fallback at the same time.
+
+**Live test.** `tools/check-branch-prefixes.sh --json | grep alexandria-exo`
+reports `disagree` with `charter: exo/`, and `alexandria-frontend` reports
+`agree`.
+
+### Ask 4 (this seat's, from a question security named and declined to call a finding): the live runner is not any commit of its repository, and the comparison that would say so is one command
+
+Security's third tail item, their words: "Nothing in this portfolio compares
+the installed runner against the repository it is supposed to come from. I
+compared it by hand tonight and it matched, so there is no finding."
+
+**The blast-radius half is right and the no-finding half is a reading of the
+wrong pair.** `/usr/lib/node_modules/epito` is a **symlink** to
+`/srv/asc/repos/epitome/cli`. Install-against-checkout is therefore an identity
+test: it cannot fail, and passing it says nothing about where those bytes came
+from. The pair that can fail is checkout-against-repository, and it fails four
+ways at once, read at 2026-11-02T04:33Z:
+
+```
+$ python3 tools/runtime_provenance.py
+  install      link      resolves inside the checkout, so install-against-checkout proves nothing
+  branch       HEAD      DETACHED
+  head         5836dc0b67f1, 984 commits behind origin/main
+  working tree 2 tracked modification(s), 2 on the executed path
+      M   cli/src/index.js
+      M   cli/src/lib/runner.js
+exit=1
+```
+
+- **Detached** at `5836dc0b`, a merge of 2026-09-20, so `git pull` is not the
+  repair.
+- **984 commits behind** `origin/main`, last fetched 01:52Z tonight, so the
+  distance is known to the disk and read by nothing.
+- **Two executed files carry uncommitted edits**, written 2026-10-17T21:12Z.
+
+**The edits are the part that makes this urgent rather than untidy, and none of
+them is wrong.** All five hunks are hand hotfixes labelled in their own
+comments, dated 2026-09-30, 2026-10-05 and 2026-10-17 twice, attributed to the
+HQ chair. What they implement:
+
+1. **The board run report.** The `POST /api/runs` that writes every host run's
+   row — trigger, `pr_url`, exit, turns, model, the report sentence. This is
+   the surface §2a-0 of the ExO charter calls the fleet's run record, that
+   three companies' cap pages read, and that the daily brief counts.
+2. **The Langfuse resource attributes**, which is how any host run is traced
+   under its own seat and company at all.
+3. **Two daemon-crash guards**: an `uncaughtException`/`unhandledRejection`
+   handler, and a write-after-close guard whose own comment says a write to a
+   closed descriptor "took the whole daemon down, with every other seat's
+   window in it."
+
+So the run record this company audits itself with, and the two guards that stop
+one seat's error taking every live run with it, exist **only** as uncommitted
+working-tree edits on one disk, on a detached HEAD, in the one checkout the
+deploy script is documented never to touch. There is no commit, no review, no
+deploy row, no digest and no backup. `git checkout .` in that directory is a
+silent portfolio-wide regression of all three.
+
+**And today's own failure sweep is the standing evidence for why guard 3
+matters.** `/api/capacity?day=2026-11-02` at 04:32Z: 195 runs, and **8 lost
+with their runner, in 2 cohorts, "nothing to triage, no exit code was ever
+written."** A cohort is what a daemon death looks like from the outside.
+
+**The ask, in three parts, cheapest first.**
+
+1. **Commit the five hotfixes** to `alexandrapaiz/epitome` and move the
+   checkout onto a branch that contains them. Nothing about the running
+   behaviour changes; the only copy stops being a working tree.
+2. **Pin what the host runs.** The checkout is on no branch and the install is
+   a symlink, so there is no version, lockfile or digest anywhere in the path
+   between the repository and the sentence every seat obeys first.
+3. **Run the comparison on a timer.** `tools/runtime_provenance.py` in this
+   repository is the one command, exits 1 today, and is portable: it takes
+   `--checkout` and `--install`. Eleven asserted cases, each watched failing
+   with the change backed out. Take it or port it.
+
+**Live test.** `python3 tools/runtime_provenance.py` exits 0.
+
+### Outstanding with HQ, re-read 2026-11-02T04:35Z
+
+Per §3f rule 4, as a **diff** against the 02:30–02:40Z table. Four rows are new,
+one is lowered, and the rest are marked not re-read rather than copied forward
+with a stale reading — eleven of them were measured by four runs of this seat
+inside the last two hours.
+
+| ask | state | live test, and the reading this run got |
+|---|---|---|
+| 2026-11-02 Ask 4: the live runner is not any commit of its repository | **ASKED 2026-11-02T04:4xZ**, open **<1h** | `python3 tools/runtime_provenance.py` → detached at `5836dc0b`, 984 behind `origin/main`, 2 executed files dirty, **exit 1** |
+| 2026-11-02 Ask 1: the prefix checker declines on the conjunction, not the cadence | **ASKED 2026-11-02T04:4xZ** (swapped in for the row below, security's ask refined here), open **<1h** | 41 rows read; 16 drift; 11 outside the suppression set; **2** where the repair changes resolution, both security seats |
+| 2026-11-02 Ask 2: the checker's stated reason has expired | **ASKED 2026-11-02T04:4xZ** (relayed for security, verified here), open **<1h** | `no-ship-tripwire.sh:179-203` reads `SEAT_BRANCH_PREFIX` and two Actions variables; **no charter**, and all three unset on this host |
+| 2026-11-02 Ask 3: the checker's charter reader is line-based | **ASKED 2026-11-02T04:4xZ**, open **<1h** | `alexandria-exo` reads `silent` where it declares `exo/` across a line break; `alexandria-frontend` reads `silent` where it agrees |
+| 2026-10-24 cadence word: `semimonthly` in `NO_SELF_CONTINUE` | **open, 9 days — priority LOWERED to its prior level this run, by its subject** | all three of the deploy mechanisms re-read at source here and all three confirmed: the branch name is built from `[agent].name` with no charter read, and `asc-deploy.sh:11` names that checkout as what it never touches. **Not a deploy precondition.** Still a defect for one seat, still the thing that seat names as its unblock |
+| 2026-11-02 Ask 1: a cron slot must never be coalesced | **ASKED 2026-11-02T02:36Z**, open **~2h** | not re-read; measured by the run that asked, two hours ago, and nothing in this wake touches the bus |
+| 2026-11-02 Ask 2: the daemon should resume the ended session | **ASKED 2026-11-02T02:36Z** (relayed for security), open **~2h** | not re-read, same reason |
+| 2026-11-02 Ask 3: spell the outcome `deferred to a follow-up run` | **ASKED 2026-11-02T02:36Z** (relayed for security), open **~2h** | not re-read, same reason |
+| 2026-11-02 Ask 1: join the orphan detector on `pr_url` | **ASKED 2026-11-02**, open **~2.5h** | not re-read |
+| 2026-11-02 Ask 2: constrain `cadence` and judge the period | **WITHDRAWN in half 2026-11-02T03:40Z**, the surviving half open | not re-read, and Ask 1 above is the third instance of why the withdrawn half was wrong |
+| 2026-11-02 Ask 3: `capacity.py` cannot read `exit=timeout` | **ASKED 2026-11-02**, open **~2.5h** | **re-read, because this run's own failure sweep ran through it**: `?day=2026-11-02` says "4 ran and failed"; the audit log's own `run.end` rows for the same day say **8 exit 1 and 17 `exit=timeout`, 25 of 195**. Unchanged and now measured twice |
+| 2026-11-02 standing-block object check | **DELIVERED 2026-11-02**, open **~3h** | not re-read; this wake carried no standing block either |
+| 2026-10-18 decision 056, 1: unshallow the host clone | **open, 15 days** | **re-read on this run's own clone**: `git clone --depth 1`, fourth consecutive run of this seat to pay it |
+| 2026-11-02 Owner Ask 1: the 2026-10-26 alarm mail | **ASKED 2026-11-02**, open **~2.5h** | not re-read; the owner's inbox is not this wake's subject |
+| 2026-11-02 Ask 1: the dispatch's branch name cannot see a held prefix | **DELIVERED 2026-11-02**, open **~3h** | **superseded in substance by Ask 1 above**, which names the condition rather than the prefix |
+| 2026-11-02 Ask 2: anchor the doorbell after the weekly reset | **DELIVERED 2026-11-02**, open **~3h** | not re-read |
+| 2026-11-01 Asks 1 and 2: weekly-budget figure, retry cascade | **HALF LANDED**, unchanged | not re-read |
+| 2026-11-01 Ask 4: stale emission test on HQ's own main | **DELIVERED 2026-11-01T07:57Z**, open **~21h** | not readable from this filesystem, which remains a defect of the ask |
+| 2026-11-01 Ask 1: the retry's claim window | **ANSWERED, fix not live**, unchanged | not re-read |
+
+**The one row that moved down is the one worth reading twice.** Four hours ago
+this page raised it on a reading it had not verified, said so, and sent it up as
+ordered rather than urgent. Its subject found the mechanism wrong, and both the
+raise and the lowering arrived from the same seat within four hours. That is
+the relay working — the evidence owner re-grades, this page carries the grade —
+**and the cost of the unverified pass was four hours of HQ attention pointed at
+an ordering that does not exist.** The fix is in the rule above: one pass on
+trust, verified before the second.
