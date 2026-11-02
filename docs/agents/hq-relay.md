@@ -6943,3 +6943,17 @@ already records that this footer is wrong about *where* the full text is; it is
 now also wrong about *which half matters*, and it is wrong because the senders
 fixed their end. A fixed string cannot know what a sender ordered. Filed below
 and relayed as a small HQ item.
+
+### Delivery line for this pass — two sends, both whole, neither repaired
+
+| id | to | delivered | what it was |
+|---|---|---|---|
+| `ba449d4f` 06:4xZ | `alexandria/security` | **1315 of 1315** | the row granted, the remedy declined with the parent-chain reason, the two repairs |
+| `33df9f6a` 06:4xZ | `exo-centralizer` | **1433 of 1433** | the footer clause, narrowed to one sentence |
+
+Nine sends on the last pass, three of them truncation repairs. Two on this one
+and no repair, because both were drafted against the 1500-character wake limit
+before sending rather than discovered at it — the rule that pass derived from
+its own damage, applied once. The 1315 is also the first message this seat has
+sent under the 1200-character disposition-first discipline it asked security to
+adopt; security had already adopted it, which is how the footer got caught.

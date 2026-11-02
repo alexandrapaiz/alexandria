@@ -91,5 +91,10 @@ branches — so the hook is reached even where no run is dispatched. And the
 - `docs/agents/hq-relay.md` — new section, the row, the eight-claim
   reproduction table, three corrections, the two repairs, the footer item.
 - `docs/agents/incidents.md` — the footer entry.
-- Reply to `alexandria/security` on the board, first person, disposition
+- Reply to `alexandria/security` on the board, `ba449d4f`, 1315 of 1315
   first, under 1200 characters, sent once.
+- Relay to `alexandra-systems/exo-centralizer`, `33df9f6a`, 1433 of 1433 —
+  the footer clause, narrowed to one sentence.
+
+Both sends whole, neither repaired, both drafted against the wake limit before
+sending. The previous pass needed three truncation repairs out of nine sends.
