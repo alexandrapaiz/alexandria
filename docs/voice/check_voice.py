@@ -117,6 +117,11 @@ GENERATOR = ROOT / "prompts/digest.md"
 GENERATORS = [DIGEST, SHORT]
 CANON = ROOT / "docs/voice/canon.md"
 TASTE = ROOT / "docs/voice/taste.md"
+#: The database's own column declarations, read rather than restated.
+#: `receipt_columns` below is the only user, and it is here with the
+#: other paths because the rule it enforces is the rule this block is an
+#: instance of: a name this file needs lives in exactly one place.
+SCHEMA = ROOT / "db/schema.sql"
 
 # The tell from ban list 89, which is the entry's own giveaway. "the last
 # issue" and "the newest print" are here because both are referents that move
@@ -5660,7 +5665,7 @@ def press():
     and concludes the press is current has made the mistake this whole file was
     built to stop.
     """
-    rc = press_cases()
+    rc = press_cases() | column_cases()
     print()
     found = press_deploy()
     if found is None:
@@ -5688,6 +5693,7 @@ def press():
           f"{row.get('runtime_sha')}")
     print(f"recorded at                                "
           f"{row.get('recorded_at')}")
+    rc |= receipt_columns(row)
     print(f"deployed commit                            {deployed or 'unknown'}")
     print(f"commits searched                           "
           f"{found.get('searched', 0)} of a {PRESS_WINDOW} window")
@@ -5765,6 +5771,237 @@ def receipt_json(url):
     except ValueError as e:
         print(f"  UNREACHED {url}: {type(e).__name__}: {e}")
         return None
+
+
+# ------------------------------------------------- the receipt's column set
+#
+# A column that exists in the table and reaches no reader is the partial-landing
+# class arriving from the other end, and on 2026-11-02 the engineer seat sent
+# this seat two live instances of it: `entrypoint` and `file_count` have been in
+# `deploy_runtime` since the table was created, the schema's own comment calls
+# `entrypoint` the value "for the deploy command", and `tools/delivery_health.py`
+# named five columns and dropped both.
+#
+# The reason nobody caught it is the part worth building on. That suite's fake
+# connection answered every query with anonymous tuples and no `description`, so
+# a reader naming five columns and a reader naming all seven were
+# indistinguishable from inside it. The column list was unobservable to the one
+# suite that exists to watch the column.
+#
+# This is that measurement, for the reader this seat actually runs. `press` and
+# `cadence` both read the deploy rows off the public receipt rather than off a
+# connection, because no agent seat holds `DATABASE_URL` and
+# `site/lib/delivery-core.js` says so in its own opening comment. So the column
+# list those two commands see is the one in `site/lib/delivery.js`, and the
+# question this gate asks is whether it still carries everything the schema
+# declares.
+#
+# Both functions are pure and the schema text is passed in, which is the
+# property that makes the cases below worth having: they pin the comparison and
+# not the file.
+
+
+def declared_columns(table, text):
+    """The column names `text` declares for `table`, in order, or None.
+
+    None rather than `()` when the table is not there, because an empty tuple
+    says "this table declares no columns" and every caller would read that as
+    nothing missing. That is the same refusal `row_writers` makes for a file it
+    cannot read, and for the same reason.
+
+    Comments are stripped before the parentheses are matched, because
+    `deploy_runtime`'s own comments contain both a comma and a `()`, and a
+    parser that counts depth first reads the column list as ending inside a
+    sentence about `runtime_sha.digest()`.
+    """
+    stripped = "\n".join(re.sub(r"--.*$", "", line) for line in text.splitlines())
+    m = re.search(r"create\s+table\s+(?:if\s+not\s+exists\s+)?"
+                  + re.escape(table) + r"\s*\(", stripped, re.I)
+    if not m:
+        return None
+    depth, start = 1, m.end()
+    for i in range(start, len(stripped)):
+        depth += {"(": 1, ")": -1}.get(stripped[i], 0)
+        if depth == 0:
+            body = stripped[start:i]
+            break
+    else:
+        return None
+    parts, depth, cur = [], 0, ""
+    for c in body:
+        depth += {"(": 1, ")": -1}.get(c, 0)
+        if c == "," and depth == 0:
+            parts.append(cur)
+            cur = ""
+        else:
+            cur += c
+    parts.append(cur)
+    names = []
+    for part in parts:
+        words = part.split()
+        if not words:
+            continue
+        # A table-level constraint is not a column. Dropped by its leading
+        # keyword rather than by position, because `primary key (app)` and
+        # `app text primary key` are the same constraint written two ways and
+        # only the second one names a column.
+        if words[0].lower() in ("primary", "unique", "constraint", "check",
+                                "foreign", "exclude", "like", "partition"):
+            continue
+        names.append(words[0].strip('"'))
+    return tuple(names)
+
+
+def unreached_columns(declared, carried):
+    """Declared columns the row does not carry, in declaration order.
+
+    `carried` is the row as a consumer received it, so a mapping. A row that
+    names nothing returns every declared column rather than none: that is the
+    anonymous-tuple case the engineer seat's fake could not see, and reading it
+    as complete is the only answer that would make this gate worthless.
+
+    Columns the row carries that the schema does not declare are NOT graded,
+    and the reason is worth stating. A receipt is allowed to publish a field it
+    computed, and failing on one would make this gate refuse the next honest
+    addition to the endpoint. The direction that matters is the one with the
+    silence in it: a column lands in the table, every job writes it, and no
+    reader asks.
+    """
+    if declared is None:
+        return None
+    keys = set(carried or ())
+    return tuple(c for c in declared if c not in keys)
+
+
+# The parser against the shapes `db/schema.sql` actually contains, and the
+# comparison against the exact row the old reader produced. Case 2 is the one
+# the whole block is for: five names against seven declared must print two, and
+# the suite that could not tell those apart is the reason this file now has a
+# case for it.
+COLUMN_CASES = (
+    # `deploy_runtime` reduced to its skeleton, with both the comma and the
+    # `()` that live inside its comments kept, because they are what a
+    # depth-first parser breaks on.
+    ("create table if not exists deploy_runtime (\n"
+     "    app           text primary key,          -- 'triage' | 'weekly'\n"
+     "    runtime_sha   text not null,             -- runtime_sha.digest()\n"
+     "    entrypoint    text not null,             -- 'pipeline/triage.py'\n"
+     "    file_count    integer not null,          -- how many files\n"
+     "    recorded_at   timestamptz not null default now(),\n"
+     "    notified_at   timestamptz\n"
+     ");\n", "deploy_runtime",
+     ("app", "runtime_sha", "entrypoint", "file_count", "recorded_at",
+      "notified_at")),
+    # A type with a comma inside its own parentheses, which is the other way
+    # the split goes wrong.
+    ("create table t (\n    a numeric(10, 2) not null,\n    b text\n);\n",
+     "t", ("a", "b")),
+    # A table-level constraint, which names columns and is not one.
+    ("create table t (\n    a text,\n    b text,\n    primary key (a, b)\n);\n",
+     "t", ("a", "b")),
+    # The table is not in the text. Refused, because `()` here would read as
+    # nothing missing from every caller below.
+    ("create table if not exists other (a text);\n", "deploy_runtime", None),
+    # A longer name that starts with the one asked for must not match it.
+    ("create table if not exists deploy_runtime_old (a text);\n",
+     "deploy_runtime", None),
+)
+
+# `unreached_columns` against the seven columns `deploy_runtime` declares today.
+SEVEN = ("app", "runtime_sha", "entrypoint", "file_count", "recorded_at",
+         "first_seen_at", "notified_at")
+UNREACHED_CASES = (
+    # The row the receipt serves today, which is complete.
+    (SEVEN, dict.fromkeys(SEVEN), ()),
+    # The row `deploy_facts` produced until 2026-11-02. This is the engineer
+    # seat's finding, pinned: two columns in the table, written by every job,
+    # reaching no reader.
+    (SEVEN, {"app": 1, "runtime_sha": 1, "recorded_at": 1,
+             "first_seen_at": 1, "notified_at": 1},
+     ("entrypoint", "file_count")),
+    # The column that is carded and not yet migrated. Declared nowhere yet, so
+    # a receipt that lacks it is correct and this gate must stay quiet about
+    # it; the day it lands in the schema this same case starts naming it.
+    (SEVEN, dict.fromkeys(SEVEN + ("invoked_by",)), ()),
+    # The anonymous row. No keys at all is not a complete row, and a gate that
+    # read it as one would be the fake that could not tell five from seven.
+    (SEVEN, {}, SEVEN),
+    (SEVEN, None, SEVEN),
+    # No declaration to compare against is refused rather than passed.
+    (None, dict.fromkeys(SEVEN), None),
+)
+
+
+def column_cases():
+    """The parser and the comparison, before either touches a file or the net."""
+    bad = 0
+    for i, (text, table, want) in enumerate(COLUMN_CASES):
+        got = declared_columns(table, text)
+        if got != want:
+            bad = 1
+            print(f"  CASE    declared_columns case {i} wanted {want} and "
+                  f"got {got}")
+    print(f"COLUMN_CASES                               "
+          f"{len(COLUMN_CASES) - bad} of {len(COLUMN_CASES)}")
+    worse = 0
+    for declared, carried, want in UNREACHED_CASES:
+        got = unreached_columns(declared, carried)
+        if got != want:
+            worse = 1
+            print(f"  CASE    unreached_columns({carried!r}) wanted {want} "
+                  f"and got {got}")
+    print(f"UNREACHED_CASES                            "
+          f"{len(UNREACHED_CASES) - worse} of {len(UNREACHED_CASES)}")
+    return bad | worse
+
+
+def receipt_columns(row):
+    """Does the receipt still carry every column `deploy_runtime` declares.
+
+    Printed and graded inside `press`, off the row that command already read,
+    because a second fetch of one URL in this file would be the parallel
+    structure this charter forbids before it forbids anything else.
+
+    It fails rather than warns. The whole lesson of the two columns is that an
+    unread column produces no complaint from anybody: the job writes it, the
+    table holds it, and every consumer is silently a version behind. A warning
+    is what that already looks like.
+
+    It compares a schema read from this checkout against a receipt served by
+    the deployed site, so the window between a merged migration and a site
+    deploy reads as a failure here. That is the intended answer and not a false
+    one: during that window the column really is in the table and really is
+    invisible to every reader, which is the state this gate exists to name. The
+    line it prints says which file closes it.
+    """
+    try:
+        text = SCHEMA.read_text()
+    except OSError as e:
+        print(f"  FAIL    db/schema.sql could not be read "
+              f"({type(e).__name__}), so the receipt's column set was "
+              f"compared against nothing")
+        return 1
+    declared = declared_columns("deploy_runtime", text)
+    if declared is None:
+        print("  FAIL    db/schema.sql declares no `deploy_runtime`, so this "
+              "gate cannot say what the receipt owes")
+        return 1
+    missing = unreached_columns(declared, row)
+    print(f"columns deploy_runtime declares            {len(declared)}  "
+          f"{', '.join(declared)}")
+    print(f"columns the receipt carries                {len(row or ())}  "
+          f"{', '.join(sorted(row or ()))}")
+    if not missing:
+        print("  OK      every declared column reaches this gate")
+        return 0
+    print(f"  FAIL    {len(missing)} column(s) are in `deploy_runtime` and no "
+          f"consumer of the receipt can see them: {', '.join(missing)}")
+    print("          The receipt's deploy rows are built by the hand-written")
+    print("          column list in `site/lib/delivery.js`, not by")
+    print("          `tools/delivery_health.py:deploy_facts`, because no agent")
+    print("          seat holds DATABASE_URL and every seat reads the HTTP")
+    print("          receipt. So widening `deploy_facts` does not widen this.")
+    return 1
 
 
 # The press's schedule, read off the job rather than restated here. A copy of
