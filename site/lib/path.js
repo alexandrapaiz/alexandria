@@ -50,8 +50,16 @@ function db() {
 // fault.
 const UNDEFINED_TABLE = "42P01";
 
+// 42703 is undefined_column, which is the same fault one notch narrower: the
+// table is there and the schema behind it is older than this file. Same hand,
+// same command, so it names the command too.
+const UNDEFINED_COLUMN = "42703";
+
 export const NO_TABLE_REASON =
   "path_events does not exist yet; apply db/schema.sql with modal run pipeline/db_setup.py::apply_schema";
+
+export const NO_COLUMN_REASON =
+  "a column path_events should have is absent; apply db/schema.sql with modal run pipeline/db_setup.py::apply_schema";
 
 let lastError = null;
 
@@ -59,10 +67,26 @@ export function lastRecordError() {
   return lastError;
 }
 
+// A closed vocabulary and never the driver's message. Every string this
+// returns is one this codebase wrote, because all three of its callers are
+// published at a stable public URL by site/app/api/funnel/route.js, as
+// `counts_reason`, `skills_reason` and `last_record_error`.
+//
+// This is the rule site/lib/delivery-core.js states beside
+// `UNREADABLE_REASONS` and site/lib/delivery.js keeps in its own catch: a Neon
+// error's message carries the host and the role it failed to authenticate, so
+// the classification may reach a public response and the prose it came from may
+// not. That file is the older of the two and the argument is written there at
+// length, so it is not repeated here.
+//
+// The distinction this file exists to protect survives the change. A count that
+// never arrived is still told apart from a count of zero, because the reason is
+// still non-null and still names the one command that closes the two cases that
+// have one. Only the sentence a stranger could read is different.
 function reasonFor(error) {
   if (error?.code === UNDEFINED_TABLE) return NO_TABLE_REASON;
-  if (error?.message) return String(error.message).slice(0, 200);
-  return "the insert failed";
+  if (error?.code === UNDEFINED_COLUMN) return NO_COLUMN_REASON;
+  return `a query failed: ${error?.name ?? "Error"}`;
 }
 
 // One variable turns the whole measurement off, and it exists because the

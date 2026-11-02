@@ -3,40 +3,56 @@
 A table of the present, not a log. Each pass writes its own narrative to
 `docs/sprints/pending/YYYY-MM-DD-HHMM-<trigger>.md`; only the ceremony run
 rewrites this file, in full, from the newest evidence (`prompts/pm-agent.md`
-§1d). The ceremony run before this one ran 2026-10-12; this is the first
-rewrite under the new rule, so the file below starts from today's reading
-rather than from a carried-forward table. The lines this file held before
-today are unchanged in `docs/sprints/pending/archive-to-2026-10-26.md`
-(5,458 lines, 2026-09-24 through 2026-10-24).
+§1d). The prior rebuild was 2026-10-26, ~00:40 UTC, inside PR #531, which
+stayed open 7 days (a PM-authored Tier B PR cannot be merged by any PM run)
+and was superseded this ceremony by #683. Everything below is read live
+against `main` and the open-PR list at the time of this rebuild, not carried
+from #531's copy.
 
-Last rebuilt: 2026-10-26, ~00:40 UTC, by the pm seat (ceremony run).
+Last rebuilt: 2026-11-02, ~01:30 UTC, by the pm seat (ceremony run, PR #683).
 
 ## Owed by a seat
 
 | Seat | Owes | Since / directive | Dated |
 |---|---|---|---|
-| writer | Rebase PR #517 against main (CONFLICTING); it checked clear on the authority question | Tier B condition 5, `docs/standards/pm.md` §10 | 2026-10-26 |
-| writer | Ask the ExO/HQ relay to confirm its manifest cap move from 150 to 225 (already asked once, unresolved); currently reading ~99% of the live 150 | `docs/agents/turn-caps.md`, rule 5 sweep | 2026-10-25 |
-| skill | Rebase PR #466 against main (CONFLICTING); it checked clear on the authority question | Tier B condition 5 | 2026-10-26 |
-| skill | The receipts retrofit #464 described still "waits for the owner" per its own text (unmeasured) | #464's own description, carried forward by #466 | 2026-10-24 |
-| frontend | Ready PR #435 (still draft, 42+ hours old) and rebase it (CONFLICTING) | Ship-first + Tier B condition 5 | 2026-10-26 |
-| exo | No alexandria-local blocker as of this reading; #529 (the Monday-slot fix) merged this pass. The slot move itself (HQ PR 467) and the re-fire widening are HQ-side and not this repo's to act on | exo's own PR #529 body | 2026-10-26 |
-| engineer | Nothing blocking as of this reading; #530 is a live in-progress run and not actioned by this pass | — | 2026-10-26 |
-| pm (me) | 21 of my own Tier B pull requests sit open and unmergeable by me (Tier B condition 1); one chain (#483) is 13 deep. Filed as `INC-2026-10-26-pm-own-tier-b-prs-piled-up-to-twenty-two-and-one-chain-reached-depth-thirteen` | `docs/standards/pm.md` §10 condition 1 | 2026-10-26 |
+| frontend | Ready PR #678 (draft, clean, supersedes #559 depth 3) and it merges under Tier B the moment it is | Ship-first + Tier B | 2026-11-02 |
+| engineer | PR #659 is open, draft, `CONFLICTING`/`DIRTY`, body still "work in progress," names closed-not-merged #649 as its predecessor — rebase and verify #649's work is actually contained before readying | Ship-first + Tier B condition 5 | 2026-11-01 |
+| engineer | This sprint's items 1-5 (sprint-2026-11-02.md) all depend on the Modal workspace, now restored; item 4 depends on reading #542's own unbuilt half rather than re-describing its three owner-only blockers | sprint-2026-11-02.md | 2026-11-02 |
+| skill | PR #675 is open, not draft, `CONFLICTING`/`DIRTY` — rebase against current `main` | Tier B condition 5 | 2026-11-02 |
+| pm (me) | 25 of my own Tier B pull requests sit open and unmergeable by me (Tier B condition 1), oldest #483 at depth 13, now 8.3 days old. Unchanged in kind since 2026-10-24; the count has grown (9 -> 21 -> 25) across three ceremonies | `docs/standards/pm.md` §10 condition 1 | 2026-11-02 |
 
 ## Waiting on the owner, with the reason
 
 | What | Why it is hers | Asked | Proceeds on silence? |
 |---|---|---|---|
-| PR #473 (re-vendor `docs/standards/pm.md`) | One hunk edits §21 itself; §21 is reserved regardless of content (`tools/check_authority.py --pr 473` → `reserved`) | 2026-10-26, this pass, board ask to owner | Yes, not money/account/secret — recommendation given: merge |
-| The alexandria MCP workspace answers "disabled" instead of its challenge | Account-state restoration, not a code change (distribution's handoff, confirmed by this seat) | 2026-10-26, this pass, board ask to owner | Unclear; treating as hers until she says otherwise |
-| The Polar merchant account does not exist | O1's checkout path has no account to point at; a decision with the owner's name on it per the OKR seat | Open since 2026-09-26, ~5 weeks, re-flagged in every OKR check-in since | No — opening an account |
-| Who owns "the organization's weekly provider budget" | A newly-discovered unowned duty (`docs/agents/unowned-duties.md`, 2026-10-25 row); proposed owners are pm or the dormant finance seat | 2026-10-25, ExO | Not yet asked with a clock; naming it here so it is not lost |
-| 22 of the PM's own open pull requests (see above) | Tier B condition 1: a PM's own Tier B PR waits for the owner or a chair | Carried across every pass since 2026-10-24 | N/A — not a silence item, a standing structural wait |
+| The Polar merchant account does not exist | O1's checkout path has no account to point at; opening an account is an owner-only act | Open since 2026-09-26, ~5.5 weeks, re-flagged every OKR check-in since | No — opening an account |
+| Who owns "the organization's weekly provider budget" | A standing unowned duty (`docs/agents/unowned-duties.md`, row found 2026-10-25); proposed owners are pm or the dormant finance seat | 2026-10-25, ExO; carried every ceremony since with no ruling | Not yet asked with a clock |
+| 636 ledger entries are `proposed`, 478 of them (75%) two or more weeks old with no verdict, up from 552/387 at the last ceremony | A status decision the charter gives to the owner alone; too many to list individually, and this is itself the finding carried from #531 | First raised 2026-10-26 (#531), unresolved, growing | Not asked with a clock — this needs a policy ruling, not a 48-hour default |
+| Two writer copy questions, each posted with a 48-hour clock | §22: a reservation proceeds on her silence after 48 hours unless money/account/secret/authority | 2026-11-02T00:32Z, per PR #673's report | Yes — 2026-11-04T00:32Z |
+| Reviewer-panel's three owner-only blockers (ADR-12 whitelist refusing every real proposal; the same whitelist over-admitting `prompts/*.md`; `PANEL_MERGE_TOKEN` and the commit-status write grant missing) | Named in `docs/product/reviewer-panel.md`'s own numbered list; none is engineer-buildable | First named 2026-10-26 (#542) | Unclear — not re-asked with a clock this pass, carried as-is |
 
 ## Reconciled this pass (struck, not carried forward)
 
-- PR #471 (re-vendor `docs/standards/lessons.md`) — merged 2026-10-24T18:21:50Z. Struck.
-- PR #510 (plugin manifests point at the real site) — merged 2026-10-25T03:20:34Z; confirmed back to distribution on the board this pass. Struck.
-- The nine-sibling PM pull request pileup of 2026-10-24 (`INC-2026-10-24-nine-of-the-pm-seats-own-prs-forked-the-same-anchor-and-none-contained-any-other`) — eight merged, #442 was the ninth; none of #440/#442/#444/#445/#447/#448/#450/#452/#454 remain open as of this reading. Struck, superseded by the fresh pileup logged above.
-- The Tier C carve-out ambiguity (`INC-2026-10-24-tier-c-was-repealed-on-2026-10-05-and-a-charter-was-held-under-it-anyway` and its siblings) — `tools/check_authority.py` (merged 2026-10-24) now answers the question from the diff rather than the path, and this pass used it successfully on #473, #529, #517, #466 above. The tool is the fix; §10's prose carve-out is still unamended on `main`, which is exactly why #473 (which would have fixed that prose) is itself held as reserved. Not struck — carried as the "waiting on the owner" row for #473.
+- The MCP workspace answering "disabled" — struck. `tools/delivery_health.py`
+  this ceremony reads `mcp: ok` and `compute: ok`; the Modal workspace
+  restoration also closes the press/backfill half of this ask, though the
+  press itself still shows a missed `2026-W43` issue (new row above, under
+  engineer).
+- PR #473 (re-vendor `docs/standards/pm.md`, held on a §21 hunk) — merged
+  2026-11-02T00:something UTC per PR #673's report ("five Tier B merges
+  unstall the queue"). Struck.
+- Writer's manifest-cap ask (150 -> 225) — confirmed live this ceremony by
+  reading `runtime/agents/alexandria/writer/agent.toml` directly:
+  `max_turns = 225`. Struck.
+- PR #517 (writer, rebase), PR #466 (skill, rebase), PR #435 (frontend,
+  ready+rebase), PR #529 (exo, Monday-slot fix), PR #530 (engineer,
+  in-progress run) — all merged or closed as superseded as of this
+  reading (`gh pr view` on each, live). Struck as a batch; none remains
+  open under these numbers.
+- exo: "no blocker as of 2026-10-26" — struck as stale phrasing now that a
+  full week has passed; exo's current open PR (#680, draft, clean) is not
+  blocked on anything found this pass.
+- The nine-sibling PM pull-request pileup and the Tier C carve-out
+  ambiguity, both already struck or superseded before the 2026-10-26
+  rebuild — not restated here; see `docs/sprints/pending/archive-to-2026-10-26.md`
+  if the detail is needed.

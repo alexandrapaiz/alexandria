@@ -150,14 +150,63 @@ def serve():
 
         # No startup options: Neon's pooler (PgBouncer) rejects them — timeouts
         # are set per-transaction with `set local` where untrusted SQL runs.
-        url = os.environ["DATABASE_URL"]
+        #
+        # `.strip()` is not tidiness, it is the fix for the leak contained
+        # below, applied one step earlier where it stops the error instead of
+        # hiding it. libpq treats a string as a URI only when it begins exactly
+        # with `postgres://` or `postgresql://`. One leading space and it is
+        # parsed as a keyword/value string instead, whose first error is
+        # `missing "=" after "<the whole DSN>"`. Measured on psycopg 3.2.4,
+        # 2026-11-01: a leading space or tab, or a value stored with its
+        # quotes, echoes the password; a trailing one is tolerated and does not.
+        url = os.environ["DATABASE_URL"].strip().strip('"').strip("'")
         kwargs = {}
         try:
             host = urlparse(url).hostname
             kwargs["hostaddr"] = socket.getaddrinfo(host, 5432, socket.AF_INET)[0][4][0]
         except OSError:
             pass  # fall back to default resolution
-        return psycopg.connect(url, **kwargs)
+        # And the containment, because the strip above fixes the malformations
+        # we know about and this fixes the class. Every exception psycopg raises
+        # here leaves through an MCP tool call to whoever called it, and the
+        # ones raised while parsing carry the argument they failed to parse.
+        # That argument is the production database password.
+        #
+        # The class and the message both survive, redacted. A caller debugging
+        # its own integration still learns that the host did not resolve, which
+        # is the message that makes this worth keeping rather than swallowing.
+        # `from None` is deliberate: a chained original would print the
+        # unredacted message straight back out through the traceback.
+        try:
+            return psycopg.connect(url, **kwargs)
+        except Exception as exc:
+            raise RuntimeError(
+                f"the database connection failed ({type(exc).__name__}): "
+                f"{_redact(exc, url)}"
+            ) from None
+
+    def _redact(value, url: str) -> str:
+        """Strike the connection string and its password out of a message.
+
+        Both, and the raw environment value too, because the three differ: the
+        error raised on a leading space quotes the value as it arrived, and the
+        one raised deeper quotes the password alone.
+        """
+        from urllib.parse import urlparse
+
+        text = str(value)
+        candidates = {url, os.environ.get("DATABASE_URL", "")}
+        for dsn in list(candidates):
+            try:
+                candidates.add(urlparse(dsn).password or "")
+            except ValueError:
+                pass
+        # Longest first, so striking the password does not leave a shortened
+        # copy of the whole DSN behind to match nothing.
+        for secret in sorted(candidates, key=len, reverse=True):
+            if len(secret) >= 6:
+                text = text.replace(secret, "<redacted>")
+        return text
 
     def call_synthesis(api_key: str, system: str, user: str):
         """One walk down synthesis.FALLBACK_MODELS. Raises SynthesisUnavailable."""

@@ -66,6 +66,28 @@ test("neither does the half that talks to the database", async () => {
   }
 });
 
+// Found red on 2026-11-01: `reasonFor` returned `error.message` for every code
+// but 42P01, and all three of its callers are published by /api/funnel. The
+// rule it broke is site/lib/delivery-core.js's, written down beside
+// `UNREADABLE_REASONS`: a Neon error's message carries the host and the role it
+// failed to authenticate, so a classification may reach a public response and
+// the prose it came from may not. Recording that rule in one file is what let
+// the next file past it, so this is the gate rather than the comment.
+test("the funnel's failure reasons are this codebase's words, not the driver's", async () => {
+  const source = codeOnly(await readFile(
+    fileURLToPath(new URL("../site/lib/path.js", import.meta.url)), "utf8"));
+  for (const banned of ["error.message", "error?.message", "err.message",
+                        "String(error)", "error.detail", "error?.detail"]) {
+    assert.ok(!source.includes(banned),
+      `path.js publishes ${banned} through a reason /api/funnel serves`);
+  }
+  // The classification still has to survive, or the fix traded a leak for the
+  // one thing this measurement exists to prevent: a count that never arrived
+  // reading as a count of zero.
+  assert.ok(source.includes("NO_TABLE_REASON"));
+  assert.ok(source.includes("a query failed:"));
+});
+
 test("the row a request becomes holds three fields and none of them is a person", () => {
   const row = core.pathRow({ pathname: "/skills/agent-memory-selection" });
   assert.deepEqual(Object.keys(row).sort(), ["detail", "path", "step"]);
