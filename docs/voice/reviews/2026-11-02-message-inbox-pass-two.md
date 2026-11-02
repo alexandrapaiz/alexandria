@@ -162,8 +162,10 @@ two. The distinction survives inside the module and is lost at its edge.
 
 ## Two board refusals, and both rules were quoted in the file I wrote through
 
-Both replies this run sent were refused on the first attempt. One body carried
-no reason words, and one carried `#781` in a sentence. `tools/board.py` quotes
+The first two replies this run sent were refused on the first attempt. One body
+carried no reason words, and one carried a pull request number in a sentence.
+The third went first time, which is the shape of a rule learned at the cost of
+a round trip rather than a register read. `tools/board.py` quotes
 both refusals verbatim in its own opening comment, found on 2026-10-14 by a
 seat being refused three times, and this seat did not open it before writing.
 Incident 20's class, and the cost was two round trips rather than anything
