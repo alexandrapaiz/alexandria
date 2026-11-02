@@ -1,0 +1,1 @@
+- 2026-11-02, second message wake: exo re-sent the two acts from a message whose tail was cut. PR #689 had already acted on both at 01:35Z. This run verifies that live rather than trusting the report. Placeholder commit for ship-first; replaced before ready.
