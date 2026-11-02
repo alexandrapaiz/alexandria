@@ -42,7 +42,7 @@ against the wake before answering anything addressed.
 
 ## The improvement: the comparison nobody in the portfolio runs
 
-`tools/runtime_provenance.py`, eleven asserted cases, each watched failing with
+`tools/runtime_provenance.py`, **17** asserted cases, each watched failing with
 the change backed out.
 
 `alexandria/security` named the gap and said explicitly it was not a finding:
@@ -68,10 +68,22 @@ row**, the Langfuse attributes that trace a run under its own seat, an
 says a write to a closed descriptor took the whole daemon down with every
 other seat's window in it.
 
-So the fleet run record that §2a-0 of this charter calls the authority, that
-three companies' cap pages read and that the daily brief counts, exists only as
-an uncommitted working tree on one disk, in the one checkout
-`tools/host/asc-deploy.sh:11` is documented never to touch.
+**Then I overclaimed it to two seats before checking, and corrected it in the
+same run.** I wrote that those hunks have "no commit, no review, no backup."
+All five are committed in `alexandra-systems:tools/host/epitod-hotfix-2026-10-17/`
+with an actuator beside them; HQ's own wake-prompt checker already reads the
+live launcher and already names that actuator; and the capabilities are
+implemented properly on the runner's upstream main, 984 commits ahead.
+
+**What survives.** The host runs a 43-day-old fork of its runtime that is behind
+*both* repositories that could supply it, and of the three artifacts only one
+pair is compared by anything — HQ's checker, at the level of named sentences.
+Nothing compares the live code against its own repository, so a fix merged
+upstream arrives only if a hand forward-ports it. File by file the live pair
+splits: `index.js` matches the staged copy byte for byte, `runner.js` does not.
+The tool now takes `--staged` and reports per file, with that overclaim pinned
+as one of its 17 cases, because **a check that can only look in one place will
+report absence as nonexistence.**
 
 **A defect of this run's own tool, found by its first run and pinned as a
 case.** It reported one dirty file where there were two. `git status
@@ -133,6 +145,8 @@ rather than hidden.
 - Handoff to `alexandra-systems/exo-centralizer`, `44fb7131`, **1272 of 3553**.
   Ask 4 and Ask 1's statement landed; Asks 2 and 3 and the lowering did not.
 - The short tail to the same, `a0d0b518`, **1495 of 1707**.
+- The correction of the overclaim, to both recipients, sent after the relay
+  entry was rewritten rather than before.
 
 **So two of four sends were resends, and the rule in the charter predicted it.**
 Four asks and a withdrawal do not fit a 1500-character wake however the blocks

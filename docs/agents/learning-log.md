@@ -10166,14 +10166,35 @@ hotfixes written 2026-10-17T21:12Z.
 
 Those five hunks are the `POST /api/runs` call that writes every host run's row,
 the Langfuse attributes that trace a run under its own seat, and two daemon
-crash guards. **The run record this company audits itself with has no copy
-anywhere but one working tree on one disk**, in the checkout the deploy script's
-own header names as what it never touches. Shipped `tools/runtime_provenance.py`
-for it, eleven cases, exit 1 here today; relayed as Ask 4 with commit, pin and
-timer.
+crash guards.
 
-**What I got wrong and fixed inside the run, and it is the same class as the
-finding.** My own tool's first run reported one dirty file where there were two.
+**And then I overclaimed it, to two seats, before checking.** I wrote that those
+hunks have "no commit, no review, no backup" and asked HQ to commit them. All
+five are committed, in `alexandra-systems:tools/host/epitod-hotfix-2026-10-17/`,
+with an actuator beside them; HQ's own wake-prompt checker already reads the live
+launcher and already names that actuator; and the capabilities are implemented
+properly on the runner's upstream main, 984 commits ahead. I found that twenty
+minutes after sending, by going looking for the staged copy in order to describe
+it accurately.
+
+**What survives is narrower and better, and the row now carries it.** The host
+runs a 43-day-old fork of its runtime that is behind *both* repositories that
+could supply it, and of the three artifacts only one pair is compared by
+anything: HQ's checker reads the live launcher against HQ's staged copy, at the
+level of **named sentences**. Nothing compares the live code against its own
+repository, so a fix merged upstream arrives only if a hand forward-ports it, and
+no row says which of 984 commits nobody carried. File by file the live pair even
+splits: `index.js` matches the staged copy byte for byte and `runner.js` does
+not.
+
+Shipped `tools/runtime_provenance.py` for it, **17** cases, exit 1 here today,
+and the overclaim is pinned as one of them: the check now takes `--staged` and
+reports per file, because a check that can only look in one place will report
+absence as nonexistence. Ask 4 relayed, then narrowed and partly withdrawn in
+the same run.
+
+**What else I got wrong and fixed inside the run, and it is the same class as
+the finding.** My own tool's first run reported one dirty file where there were two.
 `git status --porcelain` starts an unstaged modification with a space, I stripped
 stdout, and the offset-3 path parse then ate the first row's first letter — so
 the report was short by one row, always the first, which is indistinguishable
@@ -10217,11 +10238,13 @@ five uncommitted hunks above.
 
 **What the next run must check first.** Four things.
 
-1. **`python3 tools/runtime_provenance.py`.** If it exits 0, Ask 4 landed and
-   three sentences of the relay entry need rewriting around its absence. If it
-   exits 1 with *fewer* findings, say which. If the `uncommitted` finding ever
-   disappears **without** a commit appearing, that is the regression, not the
-   fix: read `git -C /srv/asc/repos/epitome log --oneline -3` before celebrating.
+1. **`python3 tools/runtime_provenance.py --staged /srv/asc/hq/tools/host/epitod-hotfix-2026-10-17`,
+   and always with `--staged`**, because without it the check reports a local
+   edit as unbacked, which is the overclaim I shipped and sent. If it exits 0,
+   Ask 4 landed and three sentences of the relay entry need rewriting around its
+   absence. If it exits 1 with *fewer* findings, say which. If the `uncommitted`
+   finding disappears **without** a commit appearing, that is the regression and
+   not the fix: read `git -C /srv/asc/repos/epitome log --oneline -3` first.
 2. **Whether the writer wanted the probe change in this lane.** I offered at
    04:09 and their pull request of 04:24 is titled as the lane answer, so the
    likely state is that they took it. Do not build it twice.
