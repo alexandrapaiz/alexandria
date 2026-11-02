@@ -22882,3 +22882,59 @@ has nothing to go red against.
   separator, which is a change to a company standard and not ours.
 - Cost: $0.
 - Status: proposed
+
+### 2026-11-02 - the shelf has no multi-agent file, and the trigger suite has been reporting it as three separate skill defects (research seat)
+
+Step 3 of this seat's charter proposes targets, not files; ADR-22 gives the
+drafting to the skill seat. This is a target, and the first half of it is an
+ingestion target rather than a skill target.
+
+- **What the instrument says.** `skills/_validation/results/2026-11-02-lexical-2.1-routed-corrections.txt`
+  on the skill seat's #669 branch is 61 of 67. Three of the six failures are one
+  prompt shape: `ac-conf-2`, `cwe-conf-1` and `he-conf-2`, all of the form "our
+  five-agent pipeline fails about a third of its tasks and we cannot tell which
+  sub-agent is responsible." The skill seat repointed two of them at
+  `recursive-harness-self-improvement`, whose third section owns attributing a
+  failure inside a long execution log, and all three still fail: two to
+  `decoy-product-copy` and one to `evaluation-integrity`. Its own note says the
+  defect is about what the shelf covers rather than about any one file, and
+  handed that half here.
+- **The diagnosis, and it is not a description defect.** The subject of all three
+  prompts is multi-agent failure attribution: which agent in an assembled system
+  caused the failure. Nothing on this shelf is about multi-agent systems. The
+  nine skills are containment, memory selection, security measurement, context
+  window, evaluation integrity, harness engineering, recursive harness
+  self-improvement, self-improving post-training loops and skill library
+  engineering. Layer 4 of the standing research program names "handoff and
+  topology patterns with their measured failure modes" by the owner's order of
+  2026-09-19, and the shelf is empty there.
+- **The library's own evidence predicts it.** `skill-library-engineering` delta 5
+  says each class of failure wants one file or one section that owns it. This
+  class is owned by a section of a skill about a different subject, which is the
+  condition delta 5 names. No rewriting of three confusion cases argues a lexical
+  router out of that, and the three failures are the instrument reporting the gap
+  correctly rather than misfiring.
+- **Why this is an ingestion target first, stated as a limit rather than as
+  confidence.** This seat has had no corpus for eight consecutive runs, so it
+  cannot run the `semantic_search` and supports-edge queries the charter requires
+  before proposing a cluster, and it cannot produce the citation-velocity evidence
+  the relevance law requires before ranking anything. The nearest material
+  visible from a checkout is `arxiv:2609.18094` (Agora section 8), which the skill
+  seat queued on 2026-11-02 with the right question attached - whether a second
+  multi-agent-population run exists anywhere in the corpus - and `arxiv:2607.08938`
+  section IV-D, whose census of optimised harnesses found sub-agent creation the
+  one adaptation strategy that never succeeded. Neither is failure attribution.
+  So the probable truth is that the shelf gap is real and the corpus gap behind it
+  is real too, and a skill proposed on today's corpus would be padded.
+- **First step, and it costs one query rather than a run.** When a corpus reaches
+  this seat: `semantic_search` for multi-agent failure attribution, who-and-when
+  style localisation, and handoff failure modes, then count the supports edges. If
+  a cluster exists, the target is a Layer 4 skill and the three trigger cases are
+  its ready-made confusion set. If it does not, the output is a sources.yaml
+  proposal and an arXiv cs.MA sweep, which is the charter's own remedy for a
+  measured reach gap.
+- **Whose call:** the skill seat drafts, this seat supplies the cluster, and
+  neither can start until the Modal workspace or `NEON_RO_URL` comes back. The
+  engineer's board row for that credential is open and is the actual blocker.
+- Cost: $0.
+- Status: proposed
