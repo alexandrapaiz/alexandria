@@ -55,7 +55,7 @@ unconflicted middle between the two conflict regions. The charter's step-zero
 marker grep passes such a file by construction. What caught it was a
 conservation pass I wrote before trusting the edit. Afterwards,
 `tools/resolve_register_conflict.py`'s own `audit()` returns **2,723 findings
-for that attempt and 0 for what shipped** — so the real instrument existed and
+for that attempt and 0 for what shipped** -- so the real instrument existed and
 was pointed away from the file, which is the whole finding. Filed as
 `INC-2026-11-02-the-register-resolver-could-not-see-the-register-that-conflicted`.
 

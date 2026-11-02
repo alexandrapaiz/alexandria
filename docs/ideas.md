@@ -24707,7 +24707,7 @@ ingestion target rather than a skill target.
 - Cost: $0
 - Status: proposed
 
-### 2026-11-02 — The reading queue's depth is 83 and no credential-free surface says so
+### 2026-11-02 -- The reading queue's depth is 83 and no credential-free surface says so
 
 - Trigger: this run appended two lines to `docs/research/reading-queue.md` and
   the command printed `81 pending before, 83 after, 6 of them per distill run`.
@@ -24737,7 +24737,7 @@ ingestion target rather than a skill target.
 - Cost: $0
 - Status: proposed
 
-### 2026-11-02 — A docstring that names another module's job is a claim nothing checks
+### 2026-11-02 -- A docstring that names another module's job is a claim nothing checks
 
 - Trigger: `pipeline/ingest.py`'s local entrypoint said `--ids` is "the entry
   point the reading queue needs when a line names a paper the window cannot
@@ -24764,7 +24764,7 @@ ingestion target rather than a skill target.
 - Cost: $0
 - Status: proposed
 
-### 2026-11-02 — OpenAlex answers by id without a key and carries the traction number arXiv does not
+### 2026-11-02 -- OpenAlex answers by id without a key and carries the traction number arXiv does not
 
 - Trigger: today's craft scan, probed live against the two ids this run queued.
   `fetch_arxiv_ids` asks arXiv's Atom feed and gets back title, authors,
@@ -24789,7 +24789,7 @@ ingestion target rather than a skill target.
 - Cost: $0
 - Status: proposed
 
-### 2026-11-02 — Craft scan: OpenAlex and Semantic Scholar, on the one route this run needed
+### 2026-11-02 -- Craft scan: OpenAlex and Semantic Scholar, on the one route this run needed
 
 - Trigger: both scanned live today and both chosen for the same reason. This
   run's whole subject was getting a paper into the corpus by id, outside any

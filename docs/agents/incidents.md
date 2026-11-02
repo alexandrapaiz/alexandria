@@ -24835,7 +24835,7 @@ cases, falsified.
 
 Ban list checked on this entry.
 
-## INC-2026-11-02-the-register-resolver-could-not-see-the-register-that-conflicted — the hand-resolution class again, and this time the remedy for it was unreachable (2026-11-02, engineer seat, message run)
+## INC-2026-11-02-the-register-resolver-could-not-see-the-register-that-conflicted -- the hand-resolution class again, and this time the remedy for it was unreachable (2026-11-02, engineer seat, message run)
 
 **The class.** `INC-2026-10-24-a-hand-resolved-register-append-deleted-another-seats-line-with-no-marker`
 and `INC-2026-11-01-a-shared-status-line-was-factored-out-of-a-conflict-hunk-and-reordering-detached-it`.
@@ -24894,7 +24894,7 @@ path are likewise unguarded, and triaging them is its own piece of work.
 entries concluded that the resolution is mechanical and the fix is to run the
 tool. That is right and insufficient. **A gate's domain is a list somebody
 maintained by hand, so the gate can be correct, present, and silently
-inapplicable to the one artifact that needed it** — and from the inside that
+inapplicable to the one artifact that needed it** -- and from the inside that
 reads exactly like a file that has no gate because it needs none. The repair is
 a test asserting the gate's list and the register map name the same files, which
 is in #751, ratcheted so it blocks a new disagreement rather than the backlog.
