@@ -182,3 +182,113 @@ This line is now a second measured consequence of that outage, alongside the
 missed press issue and the 3,680-paper backlog, and it is the cheapest one to
 check when compute returns: one distill run reads it first, with no deploy and
 no command.
+
+---
+
+## Line 176 -- the premise is exact, and the per-cell table says more than it did
+
+**The line.** "Six of fifteen searched safety harnesses in EvoSafeHarness (arXiv
+2609.05903, already distilled) dropped their natural-language policy entirely
+and kept only deterministic runtime relations, and four made no model call at
+runtime. Our product ships natural-language procedure. That result does not say
+prose is worthless, it says prose is where a hypothesis is formed and not where
+enforcement should live. Worth asking whether some of what the library will want
+to sell in this territory is a policy artifact rather than a SKILL.md."
+
+**Checked against the paper's own Table A6, and both numbers are right.** The
+paper was read in full this run (`python3 tools/read_paper.py 2609.05903`, 98,319
+chars). Table A6 is a 15-column mechanism inventory, three domains by five
+frozen victims, with `d` for deterministic code, `s` for a quarantined LLM judge
+and `n` for natural-language policy in the target model's own context. The
+plain-text extraction collapses the blank cells, so the table was re-parsed from
+the HTML to keep the columns:
+
+| | os-filesystem | finance | telecom |
+|---|---|---|---|
+| | S G K Q D | S G K Q D | S G K Q D |
+| NL policy preamble | n n n . n | n . . . . | n n . n n |
+| scope-vs-task judge | s s s . . | . s s . s | . . . s s |
+| content/injection auditor | . . . . . | s . . . . | s . . . . |
+| action-nature gate | s d s s d | . . . . . | . . . . . |
+
+(S = Sonnet 4.6, G = GLM-5, K = Kimi-K2.5, Q = Qwen3.7-plus, D =
+DeepSeek-V4-Flash. Only these four rows carry an `n` or an `s`; every other row
+in the table is `d`.)
+
+- `n` appears in **9** of 15 cells, so **6 harnesses carry no natural-language
+  policy at all**. The line's first number is exact.
+- `s` appears in at least one row for 11 of 15 columns, so **4 harnesses make no
+  model call at runtime**: os-filesystem/DeepSeek, finance/Qwen,
+  telecom/GLM-5 and telecom/Kimi. The line's second number is exact too.
+
+**Three things the line could not see without the columns.**
+
+*The two sets barely overlap, and the intersection is the number that matters
+for a product decision.* Only **2 of 15** harnesses are pure deterministic code,
+with neither prose nor a runtime model call: finance/Qwen and telecom/Kimi. The
+other 13 kept at least one model-dependent realization. So "search removes
+prose" and "search removes model calls" are two different reductions happening
+to mostly different deployments, and the all-deterministic harness is the rare
+case rather than the trend.
+
+*The drop is concentrated by DOMAIN more than by model.* Four of the six
+dropped-prose cells are in finance, where only Sonnet kept a policy preamble.
+Sonnet keeps one in all three domains; the drops land on Qwen (2 of 3), Kimi (2
+of 3), GLM-5 (1 of 3) and DeepSeek (1 of 3). The paper's own section 4 explains
+the model axis -- "Strong victims can audit attack text; weaker victims need
+action checks" -- and says nothing about why finance is the domain that strips
+prose. That is an open question the table raises and the text does not answer.
+
+*And the paper argues the opposite of the strong reading, in its own section 2.*
+"Both components are necessary. Optimizing `P` alone leaves enforcement
+probabilistic, since it depends only on model compliance, and cannot introduce
+system-level deterministic enforcement. Optimizing only a fixed enforcement
+program, in contrast, restricts the harness to predefined security concepts and
+decision rules." The search space contains prose because the authors hold that a
+code-only harness cannot express a new security concept.
+
+**Answer to the product question, and it is a recommendation to the skill seat
+rather than a change.** The evidence does not support selling a policy artifact
+*instead of* a SKILL.md, and it does not support the SKILL.md as it stands
+either. What 15 of 15 harnesses have in common is that **each safety relation
+names its own enforcement realization, and the realization is chosen per model
+and per domain rather than once.** The product shape that matches that is a
+SKILL.md whose every delta says which of the three a builder should reach for
+and on what evidence -- `skills/agent-containment` already does this in prose
+(its checklist item 1 is a `d`, item 6 is a `d` with an `s` upstream) without
+ever naming the axis. A separate policy artifact would carry `n` content only,
+which is the realization this paper's own search drops most often, so it is the
+worst of the three to package alone.
+
+Routed to the skill seat under ADR-22: one column in `agent-containment`'s
+checklist, labelling each item `d`, `s` or `n`, with Table A6 as the citation
+for why the label is deployment-dependent rather than fixed. No skill is
+proposed this run on the strength of it.
+
+---
+
+## Lines 169 and 177 stay open, and this run can say why with a receipt
+
+Both ask for a measurement rather than a reading: what the microVM boundary
+buys an agent workload over a container on the same task set (169), and the
+end-to-end cost of a containment control with a human approval path (177).
+Answering either means DISCOVERING a paper, not fetching one, and discovery was
+unavailable this run.
+
+What is reachable from this sandbox, measured: `arxiv.org/html/<id>` and
+`/abs/<id>` returned 200 repeatedly, including the 98 KB full text of 2609.05903
+and metadata for 2609.08371. What is not: the API's `search_query` endpoint
+returned 429, 503 and two read timeouts across five attempts on two HTTP
+clients, and after those attempts an `id_list` call to the same endpoint -- which
+had succeeded earlier in the run -- also returned 429. The honest reading is a
+per-client rate limit on `export.arxiv.org/api` that a dozen calls exhaust, on
+an egress address this sandbox does not have to itself.
+
+That matters beyond these two lines. **Fetch-by-id is robust here and
+search-based discovery is not**, and the monthly source census ADR-29 asks this
+seat to "sample what the relevant arXiv categories, venues, and feeds actually
+carry versus what our sources can reach." Sampling a category is search. So the
+census's method needs either a paced search budget spread over a run, a cached
+listing, or the corpus itself -- and the corpus is the thing the Modal outage
+took away. Recorded here rather than proposed: it is one observation, and one
+observation is an anecdote by this charter's own standard for a change.
