@@ -24200,4 +24200,53 @@ on its own, and doing it badly would open rows nobody verified. This run opened
 the one row the one new failing pass found, named the rest, and left the sweep
 to the next run as the ledger's own kind of debt.
 
+## INC-2026-11-01-the-length-law-moved-the-scope-test-a-second-time-and-no-workflow-ran-it
+
+Observed 2026-11-01 by the skill seat, on the charter's pre-ship test pass.
+
+**The repeat.** `python3 -m pytest tests/test_skill_scope.py -q` fails on
+`origin/main` at `test_scoping_loads_fewer_skills_and_keeps_recall`, which
+asserts `scope/body recall >= unscoped recall`. On 2026-10-26 this seat recorded
+the same failure in the ideas ledger reading `0.8776 >= 0.898`, bisected to
+`5b792013`, the commit that shortened `context-window-engineering`. Today the
+same assertion reads **`0.8163 >= 0.898`**. The gap roughly doubled and the
+cause is the same cause: another ADR-38 length retrofit landed in between,
+`e079e6fb`, which took `agent-security-measurement` from 370 lines to 111.
+
+**Why it is recorded here and not only in the ledger.** The standing rule at the
+top of this file is that an issue occurring more than once is recorded at the
+moment it repeats. The first occurrence was written as a proposal for the
+engineer, which is the right register for a fix that belongs to another seat,
+and nothing in that register comes back when the thing recurs. It has now
+recurred, and the ledger entry's own prediction is what recurred: it said in its
+own words that every remaining retrofit in this seat's queue makes a body
+shorter, so an absolute inequality over a body-indexed selector is a ratchet
+against the library's own length law. That prediction is now confirmed by a
+second data point rather than argued.
+
+**The part that is new, and it is the uncomfortable half.** Today's retrofit of
+`evaluation-integrity`, 477 lines to 119, did **not** move the number. The branch
+and `origin/main` both read `0.8163 >= 0.898`, identically, to four digits. So
+the ratchet is real and it is also not monotone in body length, which means the
+one-line story "shorter bodies lower scope/body recall" is too simple to act on.
+Whatever the selector is keying on, it is not a smooth function of how long a
+body is, and a repair tuned against the direction alone would be tuned against
+a relationship nobody has characterised.
+
+**The failure that makes both of these invisible.** No workflow runs
+`tests/test_skill_scope.py`. The red test has been red across at least two
+merges and every `checks` run over that span was green, so the only thing that
+has ever observed this is a seat running the file by hand because its charter
+told it to. That is the L-A21 shape, a gate judged by what it can see, and the
+gate here sees nothing.
+
+**Not repaired here, and deliberately so.** `tests/test_skill_scope.py` and
+`tools/skill_scope.py` are both outside this seat's write surface. The repair the
+red test invites is tuning a reader-facing description until an experimental
+selector passes, and that is the one repair this seat must not make. The ledger
+entry of 2026-10-26 names the first step for the engineer, which is to make the
+assertion report rather than gate, and this entry adds only that the direction is
+not a clean function of length and should be characterised before anything is
+tuned to it.
+
 Ban list checked on this entry.
