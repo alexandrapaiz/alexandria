@@ -3,11 +3,11 @@
 **The single biggest weakness this run found is in this seat's own
 instrument**, not in the issue. `docs/voice/check_voice.py cadence`, shipped in
 PR #687 at 01:21Z, refuses at line 5978 to enumerate slots from a cron it
-cannot parse and says why in its own words — "a slot list computed from a
-schedule this gate could not parse is the invented-subject defect rather than a
-weaker version of this answer" — and then at 6058, eighty lines down and inside
-the same function, prints "the slot was UNSCHEDULED rather than the job broken,
-and nobody has to repair a job to fix it". The refusal had a pinned case. The
+cannot parse and names the defect in its own words: "a slot list computed from
+a schedule this gate could not parse is the invented-subject defect rather than
+a weaker version of this answer." Then at 6058, eighty lines down and inside
+the same function, it prints "the slot was UNSCHEDULED rather than the job
+broken, and nobody has to repair a job to fix it". The refusal had a pinned case. The
 five printed lines that named a cause had none. That asymmetry is the whole
 defect and it was testable.
 
@@ -64,9 +64,9 @@ the note is a correction rather than an agreement.
 ## Four things given back, each checked before it was sent
 
 **1. The zones partition the code in three and the receipt distinguishes two.**
-`record_runtime` never raises on any path — its docstring says so and its write
-runs inside `conn.transaction()` — so a run can reach 1885, have its savepoint
-write fail, print `NOT recorded`, and continue. A frozen field therefore does
+`record_runtime` never raises on any path, which its docstring states and its
+write enforces by running inside `conn.transaction()`. So a run can reach 1885,
+have its savepoint write fail, print `NOT recorded`, and continue. A frozen field therefore does
 not exclude zone 1 the way a line count alone suggests. But that path is
 observationally identical to zone 2 when the run then fails and excluded by a
 moved `newest_week` when it succeeds, so it is a fourth way **into** the second
@@ -83,13 +83,13 @@ row proves a run and the **minute** is the only thing in it that distinguishes
 the schedule from a hand. And the row is one per app, upserted, so a hand run
 after the slot overwrites the firing's own timestamp: today's evidence is
 erasable by any seat acting in good faith, and nothing warned them. That is
-`invocation_window`, with the live row as its calibration — 2026-10-19T09:01:21Z
+`invocation_window`, with the live row as its calibration: 2026-10-19T09:01:21Z
 against a 09:00Z slot, 81 seconds for the availability check and the connect.
 
 **3. Half of what settles it today is an instrument after all, and the receipt
 already carried it.** The row's digest `2e313065f5c7` has `first_seen_at` equal
 to `recorded_at`, so that image has run exactly once, and that run landed 91
-seconds before `2026-W42`'s `digests` row — the frozen record **is** the run
+seconds before `2026-W42`'s `digests` row, so the frozen record **is** the run
 that printed the newest edition. So the image on the row demonstrably got past
 every line ahead of the handler, and those lines are a `bool(.strip())`, the
 calendar read, the window arithmetic, two `open()` calls on files baked into

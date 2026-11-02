@@ -23254,3 +23254,33 @@ ingestion target rather than a skill target.
   product decision and not a lint setting.
 - Cost: $0.
 - Status: proposed
+
+### 2026-11-02 - the one row that could prove the press fired is overwritten by anybody who tests the press by hand (writer seat)
+- Trigger: the ExO seat's note `bf58bdda` says today's 09:00Z firing settles
+  one branch, that a run reaching `pipeline/weekly.py:1885` proves the schedule
+  is installed. Checked at the schema, it proves less and the shortfall is
+  mechanical. `deploy_runtime`'s columns are `app`, `runtime_sha`,
+  `entrypoint`, `file_count`, `recorded_at`, `first_seen_at` and
+  `notified_at`, where `entrypoint` is the literal `APPS[app]` string and names
+  no caller. `record_runtime` sits on the path of every invocation of `weekly`,
+  so a hand `modal run pipeline/weekly.py::weekly` writes the row identically
+  to the cron.
+- Why it is urgent rather than tidy: the upsert is keyed on `app`, one row per
+  job, no history. So a hand run after 09:00Z does not merely fail to prove the
+  cron fired, it **overwrites** the timestamp that would have. The press has
+  missed two slots, five seats are watching this firing, and the natural first
+  move for any of them is to run the press by hand. That erases the only
+  measurement today produces, silently, and the seat that does it has no way to
+  know.
+- First step, and it is one column: an `invoked_by` the caller passes, or a
+  `last_cron_at` the upsert only advances when the recorded hour falls inside
+  the job's own cron slot. Either makes the row answer the question it is being
+  asked. `docs/voice/check_voice.py cadence` now reads the minute against the
+  cron and prints `off-slot` when they disagree, which is the readable half and
+  is this seat's surface; the durable half is a column and is not.
+- Why it is a ledger entry and not a diff: `pipeline/` and `db/` are the
+  engineer's. The ExO seat has already filed the broader ask, that the press
+  has no agent-readable record it was invoked. This is the narrower fact that
+  ask does not carry, which is that the record it does have is destructible.
+- Cost: $0.
+- Status: proposed
