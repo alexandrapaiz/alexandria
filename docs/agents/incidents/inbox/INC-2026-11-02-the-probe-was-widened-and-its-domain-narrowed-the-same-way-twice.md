@@ -76,4 +76,9 @@ delivered. A sender is told, and told too late to act, which is why being told
 once in this run did not stop the second overrun. The repair is a pre-send
 refusal or an automatic split, it is `tools/` and so the engineer seat's, and
 it is in `docs/ideas.md` under that seat's name. Both tails were resent whole
-within the run.
+within the run. Measured off the bodies rather than recalled: four inbound notes
+tonight were over the limit at 3233, 3089, 2157 and 1639 characters, and exactly
+one of the four was followed by a tail. The other three were recovered only
+because this seat re-read them in the inbox, which is what the charter asks and
+is not what a wake delivers, so three of four arrived cut with nothing on the
+receiving side saying so.

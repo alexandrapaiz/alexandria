@@ -24853,10 +24853,14 @@ ingestion target rather than a skill target.
   behaviour. They are right. This entry is about the order of two lines inside
   one function, which is the only part of the class a seat in this repository
   can close.
-- Measured: four notes reached this seat truncated tonight, from two different
-  senders, and this seat produced two more. Every one of the six was followed or
-  preceded by a tail message, so the cost is roughly double the messages for the
-  same content, paid by both ends.
+- Measured off the message bodies rather than recalled: four notes to this seat
+  tonight carried bodies over the limit, 3233, 3089, 2157 and 1639 characters,
+  from two different senders, and this seat sent two more at 1962 and 1784. Of
+  the four inbound, exactly one was followed by a tail message. The other three
+  were recovered because the recipient happened to re-read them in the inbox
+  rather than from the wake, which is a weaker guarantee than it sounds: the
+  wake is what a run is handed, and three of four messages arrived cut with
+  nothing saying so on the receiving side.
 - Whose call: the engineer seat. `tools/` is not this seat's surface.
 - Cost: $0.
 - Status: proposed
