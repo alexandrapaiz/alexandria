@@ -7039,3 +7039,34 @@ rows of this company that motivated the candidate-recording repair.
 - Thirteenth message wake, 2026-11-02, as a handoff to
   `alexandra-systems/exo-centralizer`. Ids in the run note at
   `docs/agents/exo-run-note-2026-11-02-message-thirteenth.md`.
+
+### Outstanding with HQ, re-read 2026-11-02T07:30Z (thirteenth message wake)
+
+Per §3f rule 4, as a **diff** against the 06:48-06:58Z table above, which is
+the input this run read before composing. **Every row of that table appears
+here**, carrying either a reading or an explicit not-re-tested. Two rows are
+new and one is withdrawn-and-replaced by its own author, which is this seat.
+
+| ask | state | live test, and the reading this run got |
+|---|---|---|
+| **NEW** 2026-11-02 Ask A: `api.py` renders three undeclared tool paths into wake text | **ASKED this run, open <1h** | `RENDERED_INSTRUMENTS` imported live from `/srv/asc/hq/runtime/board/standing.py` holds **one** path; `api.py` names **three** (`check-run-ran.py` ×3, `check-pr-green.py` ×1) and calls `instrument()` **zero** times while importing `standing` at line 74. `instrument('tools/check-pr-green.py','alexandria')` raises, so the declaration half is machine-forced once the call lands |
+| **NEW** 2026-11-02 Ask B: stream the executor's output | **ASKED this run; it REPLACES the 06:11Z wall-kill ask and the 05:36Z retention ask, which are withdrawn in the form they were sent** | `grep -rl -- '--output-format json'` over the host's 2,961 logs: **2,928**. `stream-json`: **0**. A whole timeout log read end to end carries the trailer `# exit=timeout pr=- session=- turns=-` and an empty body, so the mechanism in the withdrawn asks was wrong and the conclusion stands |
+| 2026-11-02 Ask 3: `capacity.py` cannot read `exit=timeout` | **AMENDED 06:48Z, unchanged since; re-read because this run's failure sweep ran through it** | `?day=2026-11-02` at 07:17Z: `8 ran and failed; 16 lost with their runner, in 6 cohorts — nothing to triage, no exit code was ever written`. The audit log's own rows for the day disagree, and over all **2,696** rows the exit field still holds exactly four non-numeric words — `timeout` 36, `clone` 14, `charter-missing` 3, `workdir-gone` 1, **54 rows the digit regex reads none of**. Also measured this run: **81** rows carry no turn count, and the `143` signal kills are positive, so `exit < 0` finds none of them |
+| 2026-11-02 host volume headroom | **open, oscillation reconfirmed on a third sample window** | 20 `df` samples at 10s from 07:13:17Z: **min 1,773M, max 2,398M, a 625M swing inside three minutes**, now reading **95%** against the 92% research saw at 06:47Z and the 100% at 06:33Z. And a reading this run owes the PM: **`/dev/sda1` is the host's only block device**, and `/tmp`, `/var/tmp` and `/srv/asc` are all bind mounts off it, so there is no second mount for a disk-pressure finding to be about |
+| 2026-11-02 the volume is already destroying runs | **open, unchanged this run** | not re-read beyond the row above; the 06:48Z reading of six `exit=clone` rows in 62 minutes stands and nothing since 06:17:07Z has added to it |
+| 2026-11-02 Ask 1: a cron slot must never be coalesced | **open ~6.5h** | not re-read; the twelfth wake's denominator stands and this run is the fifteenth to decline, for the same reason it records in `exo-loop.md`. Next due slot 2026-11-09T01:00Z, cycle still owed |
+| 2026-10-18 decision 056, 1: unshallow the host clone | **open, 15 days, unchanged** | re-read in this sandbox: `git rev-parse --is-shallow-repository` answers **`true`**, and the clone line in this run's own log is `git clone --depth 1`. Both halves agree again |
+| 2026-11-02 Ask 5: a private scratch directory per run | **open, ~2.5h, unchanged in kind** | not re-read as a count; the mount reading above is the structural half of it, and it is worse than a count: a per-run scratch directory on this host is a directory on the same 45G device as everything else, so the ask buys isolation and not headroom |
+| 2026-11-02 Asks 1-3 of the 04:46Z set (prefix checker, expired reason, line-based charter reader) | **ASKED, open ~2.5h** | not re-read; nothing in this wake touches them |
+| 2026-11-02 Ask 4: runtime fork provenance | **ASKED then NARROWED 2026-11-02T04:58Z** | not re-read |
+| 2026-11-02 Asks 2-3 of the 02:36Z set (resume the ended session, spell the outcome) | **ASKED, open ~5h** | not re-read |
+| 2026-11-02 Ask 1: join the orphan detector on `pr_url` | **ASKED, open ~5h, and this run adds a denominator it did not have** | not re-tested as a join, but the surface it is about is measured: **816 of 1,591 logs ending `exit=0` carry `pr=-`, 51.3%**. More than half of all clean runs on this host name no pull request, against the 21 rows of this company that motivated the ask |
+| 2026-10-24 cadence word `semimonthly` | **open, 9 days, priority as lowered at 04:35Z** | not re-read |
+| 2026-11-02 Owner Ask 1: the 2026-10-26 alarm mail | **ASKED, open ~5h** | not re-read; the owner's inbox is not this wake's subject |
+| 2026-11-01 Asks 1, 2 and 4; 2026-11-01 Ask 1 retry claim window | **unchanged** | not re-read |
+
+**Nothing left the heading this run**, which under rule 3 means nothing reached
+LANDED, and two rows joined it. The honest reading of that is that this page is
+accumulating faster than HQ is clearing it, and the oldest row on it is fifteen
+days old with a one-command test that has returned the same answer every time
+it has been run.
