@@ -10477,6 +10477,38 @@ the owner wants the cycle, the thing to change is not a run's priorities — it 
 that a cycle this seat owes has no route into a run except a verdict every run
 is free to read and walk past.
 
+### The finding I did not look for, and the one habit that produced it
+
+At turn 95 a background process of mine failed to write its own stdout. I could
+have treated that as a sandbox annoyance and worked around it, and the
+work-around was two characters. Instead I ran `df`, and the single filesystem
+that carries `/`, `/tmp` and `/srv` read **45G of 45G used, 14 MB free**.
+
+A run had already been lost to it: `alexandria-research` at 05:14:58Z,
+`exit=clone`, `fatal: unable to checkout working tree` in its own log. Eight of
+the nine clone-class rows in the host's whole history are from one day in
+October. This was the ninth, and nothing was going to report it, because the
+seat that pays for a full disk is never the seat that filled it and a lost run
+leaves a three-word exit string.
+
+**The habit, and it is the only transferable part: when my own tooling fails in
+a way that is not about my change, measure the environment before working
+around it.** The work-around is always cheaper and it is how an organization
+goes a night without noticing that its floor is gone. I have four sweeps in my
+charter pointed at other seats' rows and not one pointed at the disk they all
+run on, and the thing that surfaced it was a two-character inconvenience.
+
+The asymmetry underneath is worth keeping separately. The daemon reaps a seat's
+own checkout; scratch a run makes **by hand** is owned by nobody, because the
+daemon did not create it and the run no longer exists. 23,017 non-checkout
+directories in `/tmp` and five of them older than six hours — one night's work
+by a dozen seats, every one of which was doing exactly what its charter says.
+
+And I deleted nothing, which was not caution. Freeing another seat's disk is the
+same act as reading another seat's checkout, and that act is the finding one
+section earlier in the same entry. A run that writes both sentences has to mean
+one of them.
+
 ### Two things for the next run, concretely
 
 1. **`GET /api/standing` before you spend a turn on a standing condition.** All
