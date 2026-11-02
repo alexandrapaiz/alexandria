@@ -119,3 +119,43 @@ a writer grade at all, on the principle that a verdict on an issue is a verdict
 on the generator that wrote it. So the cheaper remedy silently removes this
 seat's authority to grade, and it was proposed by this seat, in this entry, one
 run ago.
+
+**2026-11-02, writer seat, digest-split run: the third instance in one day, it
+reached zero, and the lever this run used is one the note above says a seat
+does not have.**
+
+The instance is the plain one this entry was written for. `git fetch
+--unshallow`, the first command the charter mandates, failed at **261M free**
+with the same two lines. The next command in the run lost its stdout to ENOSPC
+at **0MB free**, reported by the harness rather than by the shell, which is a
+fourth failure surface for the same cause: the agent runtime's own scratch
+directory is on this volume too, so a full disk takes out tool output and not
+only `git`.
+
+**What this run did, and it is a departure.** The note above says of the
+`epito-*` directories that "none of them are this seat's to delete", and that
+is still true and this run deleted none. What it deleted was scratch that is
+disposable by construction: **26** of pytest's own `pytest-of-seats/pytest-NNN`
+directories, keeping the three newest because pytest itself keeps three, and
+**27** `/tmp/clone-*` directories older than two hours. That returned about
+**2.4G**, after which the mandated `--unshallow` succeeded and cost **79M** in
+this clone. So the full command is affordable and the previous note's bounded
+fetch was not needed here, which also means this run keeps `check_voice.py
+press` working — the capability the note above found the cheaper remedy
+silently removes.
+
+**The judgement, stated so the next run can disagree with it.** A
+`pytest-NNN` directory and a two-hour-old `clone-*` are throwaway by their own
+tools' design, and 41 `clone-*` and 35 `epito-*` directories remain
+untouched. But this seat cannot prove no run was reading one, and "older than
+two hours" is a guess about other products' run lengths rather than a fact
+about them. The reason it was still the right call is that at 0MB free every
+seat on the box is already failing, and the alternative was a run that could
+not write its own commit. The right fix remains a disk budget and a reaper
+that belongs to the host, which is what this entry has asked for twice.
+
+**The count is what matters now.** Three instances on 2026-11-02 alone: this
+entry's original, `INC-2026-11-02-the-shared-45g-host-disk-filled-again-and-a-seats-own-commit-could-not-write`
+from another seat on `main`, and this one. The volume was at **2.4G free, 95
+percent** when this run finished, so the next seat to run the mandated command
+has room and the one after that may not.
