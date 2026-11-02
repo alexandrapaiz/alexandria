@@ -146,10 +146,28 @@
         "type": "tests_pass",
         "answer_path": "answer.py",
         "command": "python -m pytest test_compact.py -q",
-        "pass_condition": "exit code 0; the harness reports the passing count in both arms so a partial improvement is visible",
+        "pass_condition": "exit code 0. `tools/skill_eval.py:tests_pass` is binary, 1.0 on exit 0 and 0.0 on anything else, so the per-probe counts are invisible to the delta and the floor below is recorded for the reader rather than scored. This condition said the opposite until 2026-11-02.",
         "files": {
           "test_compact.py": "import pytest\n\nimport answer\nfrom compact import Item, SYSTEM, TASK, QUESTION, DURABLE, TRACE\n\n\ndef _items(n_trace=40):\n    items = [\n        Item(SYSTEM, \"you are an agent \" * 5, score=0.0),\n        Item(TASK, \"reconcile the invoices \" * 4, score=0.0),\n        Item(QUESTION, \"which invoice is duplicated \" * 3, score=0.0),\n        Item(DURABLE, \"account id 88213\", score=0.0),\n        Item(DURABLE, \"threshold is 0.62\", score=0.0),\n    ]\n    items += [Item(TRACE, f\"step {i} reasoning text here\", score=i) for i in range(n_trace)]\n    return items\n\n\ndef _protected(kept):\n    return {i.kind for i in kept if i.kind in (SYSTEM, TASK, QUESTION, DURABLE)}\n\n\ndef _floor(items):\n    return sum(i.tokens for i in items if i.kind in (SYSTEM, TASK, QUESTION, DURABLE))\n\n\ndef test_protected_kinds_survive_every_feasible_budget():\n    items = _items()\n    floor = _floor(items)\n    for budget in range(floor, floor + 200, 7):\n        kept = answer.compact(items, budget)\n        assert _protected(kept) == {SYSTEM, TASK, QUESTION, DURABLE}, budget\n\n\ndef test_every_durable_item_survives_not_just_one():\n    items = _items()\n    kept = answer.compact(items, _floor(items) + 5)\n    durable = [i.text for i in kept if i.kind == DURABLE]\n    assert \"account id 88213\" in durable and \"threshold is 0.62\" in durable\n\n\ndef test_zero_score_protected_items_beat_high_score_trace():\n    items = _items()\n    kept = answer.compact(items, _floor(items))\n    assert all(i.kind != TRACE for i in kept)\n    assert _protected(kept) == {SYSTEM, TASK, QUESTION, DURABLE}\n\n\ndef test_budget_is_respected():\n    items = _items()\n    for budget in (_floor(items), _floor(items) + 30, 10_000):\n        kept = answer.compact(items, budget)\n        if budget >= _floor(items):\n            assert sum(i.tokens for i in kept) <= budget\n\n\ndef test_infeasible_budget_fails_loudly():\n    items = _items()\n    with pytest.raises(Exception):\n        answer.compact(items, _floor(items) - 1)\n\n\ndef test_trace_is_still_admitted_when_there_is_room():\n    items = _items()\n    kept = answer.compact(items, 10_000)\n    assert sum(1 for i in kept if i.kind == TRACE) >= 30\n\n\ndef _inverted(n_trace=40):\n    \"\"\"Newest trace items carry the lowest scores, which is where a score-only\n    fix fails: the recent window is the other protected boundary and the score\n    is not what keeps it.\"\"\"\n    items = [\n        Item(SYSTEM, \"you are an agent \" * 5, score=0.0),\n        Item(TASK, \"reconcile the invoices \" * 4, score=0.0),\n        Item(QUESTION, \"which invoice is duplicated \" * 3, score=0.0),\n        Item(DURABLE, \"account id 88213\", score=0.0),\n    ]\n    items += [Item(TRACE, f\"step {i} reasoning text here\", score=n_trace - i) for i in range(n_trace)]\n    return items\n\n\ndef test_newest_trace_survives_even_when_it_scores_lowest():\n    items = _inverted()\n    kept = answer.compact(items, _floor(items) + 40)\n    newest = [i.text for i in items if i.kind == TRACE][-3:]\n    kept_text = [i.text for i in kept]\n    assert any(t in kept_text for t in newest)\n\n\ndef test_protected_set_is_not_subject_to_the_score_at_either_end():\n    items = _inverted()\n    kept = answer.compact(items, _floor(items) + 40)\n    assert _protected(kept) == {SYSTEM, TASK, QUESTION, DURABLE}\n    kept_text = [i.text for i in kept]\n    newest = [i.text for i in items if i.kind == TRACE][-1]\n    assert newest in kept_text\n"
         }
+      },
+      "fixture_leak": {
+        "hands_over": [
+          "def compact(items, budget):",
+          "Current behaviour: rank everything by score and take until full.",
+          "for item in sorted(items, key=lambda i: -i.score):",
+          "SYSTEM = \"system\"",
+          "DURABLE = \"durable\"",
+          "def tokens(self):"
+        ],
+        "withheld": "nothing in `compact.py` names keeping an item because of what it is rather than what it scores. Every retention decision the starter offers runs through one comparable float, which is the error the section corrects: a score makes retention likely and a pin makes it certain, and at a tight budget the difference is the whole finding.",
+        "hands_over_note": "Literal strings from `compact.py`, which is what `skills/_validation/project_fixture_probe.py:declaration_problems` requires: a declaration has to be a reading of the fixture and not prose about it. The kind constants are handed over as names, so the vocabulary of roles is given and the idea of pinning by role is not.",
+        "stub_score": {
+          "passed": 2,
+          "of": 8
+        },
+        "measures": "Measured 2026-11-02 by `python3 skills/_validation/project_fixture_probe.py`, which runs the starter unchanged as the answer. 2 of 8 probes pass before any subject sees the task. Because `tests_pass` is binary the floor costs this row no separation, since 2 of 8 and 0 of 8 are both 0.0; what it costs is meaning, so the honest claim is that this row measures six eighths of what it claims. Declared here rather than left in prose because the instrument had already printed the number and the task file still asserted the opposite.",
+        "swept": true
       }
     },
     {

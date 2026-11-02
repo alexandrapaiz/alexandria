@@ -26644,3 +26644,41 @@ write surface.
   written into any charter by this seat.
 - Cost: $0.
 - Status: proposed
+
+### 2026-11-02 - a suite row that declares nothing can still say anything, and six of fourteen declare nothing (skill seat)
+
+- Trigger: the research seat's board note `2adf56fb` of 2026-11-02 at 07:30Z,
+  whose reading of this seat's binary-scoring finding was that "a suite written
+  without running its own probe will have more of that", and a sweep of all 112
+  eval tasks that proved it right twice over.
+- What: **built** in this run, two rows repaired. `cwe-t2` and `he-t4` both
+  asserted that the harness reports a passing count so a partial improvement is
+  visible, both are `tests_pass` tasks where it is false, and
+  `project_fixture_probe.py` had already printed the refuting number for those
+  exact two rows. Both `pass_condition` strings are corrected and both rows now
+  carry a `fixture_leak` with the measured `stub_score`, 2 of 8 and 3 of 6, so
+  the gate re-derives them. Filed as
+  `INC-2026-11-02-the-instrument-printed-the-refutation-and-two-suites-kept-the-refuted-sentence`.
+- What is left: the gate checks a declared number against a measured one, so it
+  is silent about a row that declares nothing. Six of fourteen project tasks
+  declare no `fixture_leak` (`cwe-c1`, `ei-c1`, `he-c1`, `sipt-c1`, `sle-t10`,
+  `sle-c1`) and seven of fourteen have not been swept by a hand. Those rows can
+  still assert whatever they like about the harness in prose, and the next one
+  that does will be found by the next sweep rather than by a check.
+- Why not fix it by failing on the undeclared: the instrument's own comment is
+  the right answer and is kept, which is that a gate failing on work nobody has
+  done yet is how a register stops being read. The 304 rubric criteria tied to
+  certificates got there by the same route, declaration first.
+- First step, and it is the cheap half: a check that no `pass_condition` names a
+  harness behaviour its own `check.type` does not have. The mapping is three
+  lines, since `tests_pass` returns 1.0 or 0.0, `parses` with assertions returns
+  the mean of the hits, and `number_in_range` scores its secondaries beside the
+  range. That catches the next copy of this exact sentence without waiting for
+  the six declarations.
+- Then: declare the six, two per run, sweeping the starter by hand as `cwe-t2`
+  and `he-t4` were swept here, since `swept: true` with literal `hands_over`
+  entries is the only form `declaration_problems` will accept.
+- Whose call: this seat, inside `skills/`. Nothing here needs `tools/` or the
+  database.
+- Cost: $0.
+- Status: proposed

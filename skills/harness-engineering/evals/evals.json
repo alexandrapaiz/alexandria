@@ -295,12 +295,30 @@
         "type": "tests_pass",
         "answer_path": "answer.py",
         "command": "python -m pytest test_feedback.py -q",
-        "pass_condition": "exit code 0; the harness reports the count of passing assertions in both arms so a partial improvement is visible",
+        "pass_condition": "exit code 0. `tools/skill_eval.py:tests_pass` is binary, 1.0 on exit 0 and 0.0 on anything else, so the count of passing assertions is invisible to the delta and the floor below is recorded for the reader rather than scored. This condition said the opposite until 2026-11-02.",
         "files": {
           "test_feedback.py": "import answer as t\n\n\ndef _fail(r):\n    assert r[\"ok\"] is False\n    return r\n\n\ndef test_unknown_and_insufficient_are_distinguishable():\n    a = _fail(t.reserve_stock(\"SKU-9\", 1))\n    b = _fail(t.reserve_stock(\"SKU-2\", 1))\n    assert a != b, \"an unknown sku and an empty sku must not return the same failure\"\n\n\ndef test_failure_names_cause_and_observed_state():\n    r = _fail(t.reserve_stock(\"SKU-1\", 99))\n    flat = repr(r)\n    assert \"4\" in flat, \"the failure must report the quantity actually available\"\n    assert \"99\" in flat, \"the failure must report the quantity requested\"\n\n\ndef test_failure_shape_is_identical_across_classes():\n    keys = [\n        set(_fail(t.reserve_stock(\"SKU-9\", 1)).keys()),\n        set(_fail(t.reserve_stock(\"SKU-1\", 99)).keys()),\n        set(_fail(t.charge_budget(\"nope\", 1)).keys()),\n        set(_fail(t.charge_budget(\"eng\", 5)).keys()),\n    ]\n    assert len(set(map(frozenset, keys))) == 1, f\"failure dicts differ in shape: {keys}\"\n\n\ndef test_shape_is_identical_across_tools():\n    a = set(_fail(t.reserve_stock(\"SKU-9\", 1)).keys())\n    b = set(_fail(t.submit_order(\"SKU-9\", \"ops\", 1)).keys())\n    assert a == b, \"two tools must fail in the same shape\"\n\n\ndef test_composite_failure_reports_partial_progress():\n    r = _fail(t.submit_order(\"SKU-1\", \"eng\", 2))\n    flat = repr(r).lower()\n    assert \"reserve\" in flat or \"stock\" in flat, \"must say which step succeeded\"\n    assert \"budget\" in flat or \"charge\" in flat, \"must say which step failed\"\n\n\ndef test_success_path_unchanged():\n    assert t.reserve_stock(\"SKU-1\", 1)[\"ok\"] is True\n    assert t.charge_budget(\"ops\", 10)[\"ok\"] is True\n"
         }
       },
-      "excluded_reason": "Written 2026-09-30 against feedback shape and consistency, a section the same day's delta rewrite cut after the bare-arm screen produced it unprompted. The section is gone, so this task measures nothing about this skill and is excluded from the delta. Kept rather than deleted because it is the recorded evidence for the cut, and ADR-38 rule 5 keeps a task the bare subject passes as a control. Reclassified 2026-10-13; the heading it named had been dangling for 13 days."
+      "excluded_reason": "Written 2026-09-30 against feedback shape and consistency, a section the same day's delta rewrite cut after the bare-arm screen produced it unprompted. The section is gone, so this task measures nothing about this skill and is excluded from the delta. Kept rather than deleted because it is the recorded evidence for the cut, and ADR-38 rule 5 keeps a task the bare subject passes as a control. Reclassified 2026-10-13; the heading it named had been dangling for 13 days.",
+      "fixture_leak": {
+        "hands_over": [
+          "# The tool layer the agent calls. Do not change the three names or signatures.",
+          "def reserve_stock(sku: str, qty: int) -> dict:",
+          "def charge_budget(team: str, amount: int) -> dict:",
+          "def submit_order(sku: str, team: str, qty: int) -> dict:",
+          "return {\"ok\": False, \"error\": \"failed\"}",
+          "BUDGETS = {\"ops\": 500, \"eng\": 0}"
+        ],
+        "withheld": "nothing in `tools.py` names a failure shape an agent can act on. Every branch returns the same flat `\"failed\"`, so the starter withholds the two things the section asks for: which precondition failed, and how far `submit_order` got before it stopped, which is the half that decides whether a retry is safe.",
+        "hands_over_note": "Literal strings from `tools.py`. The signatures and the frozen-name comment are handed over, which is why a bare subject reliably reaches for better error strings inside the same shape rather than for a different shape.",
+        "stub_score": {
+          "passed": 3,
+          "of": 6
+        },
+        "measures": "Measured 2026-11-02 by `python3 skills/_validation/project_fixture_probe.py`, which runs the starter unchanged as the answer. 3 of 6 probes pass before any subject sees the task, the highest floor of any treatment task in the library. Because `tests_pass` is binary the floor costs this row no separation, since 3 of 6 and 0 of 6 are both 0.0; what it costs is meaning, so half of what this row claims to measure is already true of the file the subject is handed.",
+        "swept": true
+      }
     },
     {
       "id": "he-t5",
