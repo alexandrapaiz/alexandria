@@ -460,10 +460,23 @@ def render_census(data: dict) -> str:
     return "\n".join(out)
 
 
-#: The contract-field count measured on `main` on 2026-11-01, with the parser
-#: this file carries today. Same rule as `BASELINE`: it may fall and it may not
-#: rise, and it is pinned in `tests/test_ledger.py` rather than here because it
-#: is a measurement rather than a gate.
+#: The contract-field count measured on `main` on 2026-11-02, with the parser
+#: this file carries today. It is pinned in `tests/test_ledger.py` rather than
+#: here because it is a measurement rather than a gate.
+#:
+#: **It is re-measured against `main`, and that is not the same rule as
+#: `BASELINE`'s.** This constant said "it may fall and it may not rise" when it
+#: was written, and the two paragraphs below it already explained why it has to
+#: rise: it absorbs every seat's history, so a merge that brings in an
+#: incomplete entry raises it through no act of the branch that next reads it.
+#: Held to the stricter rule, the number is a gate on other seats' backlog
+#: wearing a measurement's clothes, and the first branch to meet it pays for a
+#: defect it cannot see. So: re-measure on `origin/main`, set it to that, and
+#: say in the pull request what the delta was and whose entries moved it. What
+#: may never rise is `PATCH_INCOMPLETE`, which is the branch's own appends and
+#: has no budget at all. 2026-11-02: 202 to 205, every one of the three from
+#: `main` (`origin/main` measures 205 on its own, and this branch's 31 new
+#: entries add none).
 #:
 #: Why it is not the gate. On 2026-11-01 this number was 196 when the engineer
 #: branch was cut and 202 ninety minutes later, because six pull requests
@@ -471,7 +484,7 @@ def render_census(data: dict) -> str:
 #: of the six was the branch's. A ratchet on a whole-file number cannot tell
 #: those apart, which is what `patch` below is for: the project number absorbs
 #: everybody's history and the patch number has no budget at all.
-PROJECT_INCOMPLETE = 202
+PROJECT_INCOMPLETE = 205
 
 
 def ledger_at(ref: str, path: str = "docs/ideas.md") -> str | None:

@@ -249,7 +249,9 @@ def test_every_live_entry_carrying_a_readable_status_has_the_contract_fields():
     incomplete = [e for e in entries if e.readable and e.missing_fields]
     assert len(incomplete) <= ledger.PROJECT_INCOMPLETE, (
         f"{len(incomplete)} readable entries are missing contract fields, "
-        f"up from the {ledger.PROJECT_INCOMPLETE} measured on 2026-11-01"
+        f"up from the {ledger.PROJECT_INCOMPLETE} measured on 2026-11-02. "
+        f"Re-measure it on origin/main before raising it, and say in the pull "
+        f"request whose entries moved it; see tools/ledger.py"
     )
 
 
