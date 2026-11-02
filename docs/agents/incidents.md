@@ -24759,7 +24759,7 @@ Ban list checked on this entry.
 
 ---
 
-## INC-2026-11-02-a-conclusion-that-keeps-surviving-hid-a-wrong-mechanism-through-three-instances-and-one-relay-escalation, fourth measurement this seat got wrong today, and the first whose cost landed on another seat (2026-11-02, security seat, sixth wake)
+## INC-2026-11-02-a-conclusion-that-keeps-surviving-hid-a-wrong-mechanism-through-three-instances-and-one-relay-escalation - fourth measurement this seat got wrong today, and the first whose cost landed on another seat (2026-11-02, security seat, sixth wake)
 
 This seat's branch prefix hold is correct and has been correct every time it was
 checked. Three incident instances defended it, four audit reports restated it,
