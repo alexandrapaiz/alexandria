@@ -485,13 +485,42 @@ for at, fn in firings:
     outcomes.append((fn, after[0] if after else None))
 worked = [o for _, o in outcomes if o and o[2] in (0, None) and (o[3] or 0) > 1]
 hooks  = [r for r in rows if r[1] == 'hook']
+# THE SLOT MAY HAVE FIRED WITHOUT STARTING A RUN. `firings` above is built from
+# `*-cron.log` filenames, and the host writes a log when it STARTS a run; when a
+# slot comes due while this seat is already running it records the firing and
+# starts nothing. So a coalesced slot is invisible to every line above and the
+# `not firings` branch below reads it as "the scheduler never fired", which is a
+# finding about the host when the truth is a finding about dispatch. The audit
+# log is the only surface that carries it, as `coalesced` on the firing's row.
+folded = []
+for line in open('/srv/asc/state/.epito/audit.jsonl'):
+    try: d = json.loads(line)
+    except Exception: continue
+    if d.get('action') != 'cron' or d.get('agent') != SEAT: continue
+    if not d.get('coalesced'): continue
+    at = dt.datetime.fromisoformat(d['ts'].replace('Z', '+00:00')).replace(tzinfo=None)
+    if slot <= at < slot + TOL: folded.append(d['ts'][:19])
+# A coalesced firing the host dispatched when the in-flight run ended is ten
+# minutes late rather than lost, and that dispatch is a `cron` run.start.
+carried = [r for r in rows if r[1] == 'cron' and folded and r[0] >= folded[0]]
+
 claimed, claim_note = [], None
 try:
     names = {fn for _, fn in firings}
-    claimed = [fn for fn in json.load(open(CLAIM)).get(SEAT, []) if fn in names]
-except (OSError, ValueError) as unreadable:
+    # The claim file's per-seat value was a list of log filenames and is now a
+    # list of `{"run", "reset_at"}` objects, which HQ's own granted narrowing
+    # put there. Read both shapes: the first version of this command indexed a
+    # dict with `in` and died on `TypeError: unhashable type`, which `except
+    # (OSError, ValueError)` does not catch, so the whole verdict was replaced
+    # by a traceback on 2026-11-02 — the day this seat's slot was coalesced.
+    entries = json.load(open(CLAIM)).get(SEAT, [])
+    names_claimed = [e.get('run') if isinstance(e, dict) else e for e in entries]
+    claimed = [fn for fn in names_claimed if fn in names]
+except (OSError, ValueError, TypeError, AttributeError) as unreadable:
     claim_note = 'claim file unreadable (%s): no re-fire reading is claimed' % unreadable
 print('firings attributed to it: ', [fn for _, fn in firings] or 'none')
+print('coalesced firings:         ', folded or 'none')
+print('cron runs after one:       ', [r[0] for r in carried] or 'none')
 for fn, o in outcomes: print('    outcome of %s: %s' % (fn, o))
 print('hook runs since the slot:  ', [r[0] for r in hooks] or 'none')
 print('re-fires claimed for it:   ', claimed or 'none')
@@ -511,6 +540,14 @@ if taken:
     print('VERDICT: the cycle was taken. This run is a wake run.')
 elif worked:
     print('VERDICT: the slot fired and ran. This run is a wake run.')
+elif folded and not carried:
+    print('VERDICT: THE CYCLE IS OWED AND NO RUN WAS EVER STARTED FOR IT. The slot'
+          ' fired at %s and the host folded it into a run of this seat already going,'
+          ' which was doing some other wake\'s work. No cron run of this seat'
+          ' followed, so nothing carried it late either. This is a finding about'
+          ' dispatch, not about the clock and not about the provider: no run was'
+          ' refused and no run failed. This run takes the cycle or names the gap.'
+          % folded[0])
 elif not firings and tl_note:
     print('VERDICT: UNREADABLE DEPLOY HISTORY. No firing was attributed to this slot,'
           ' and the only branch that reads that as a missed slot needs the clock the'
@@ -534,6 +571,64 @@ else:
           ' run has recorded taking it.')
 PY_OWED
 ```
+
+**And it is the third version, because the slot can fire into a run of this
+seat that is already going** (rewritten 2026-11-02, message wake, the sixth of
+that day, `INC-2026-11-02-three-weekly-slots-were-folded-into-runs-already-going-and-both-instruments-called-the-night-clean`).
+
+Two things were wrong with the second version and both were live on the slot
+this clause was written about.
+
+**It crashed.** `claimed` indexed the retry's claim file expecting a list of log
+filenames, and HQ's own granted narrowing had since made each entry an object,
+`{"run": ..., "reset_at": ...}`. `fn in names` on a dict raises `TypeError`,
+which `except (OSError, ValueError)` does not catch, so the command printed
+three lines and a traceback and **no verdict at all**. A run reading §0
+literally on 2026-11-02 got nothing from the instrument the mode rule is built
+on. Note what kind of defect that is: not a wrong answer, which argues with
+you, but a missing one, which a run in a hurry reads as "the detector is broken,
+carry on" — and carrying on means reading the trigger, and the trigger said
+`message`.
+
+**And it read firings off `*-cron.log` filenames, which a coalesced slot does
+not have.** The host writes a log when it *starts* a run. When a slot comes due
+while that seat is already running, it records the firing and starts nothing, so
+the slot leaves no log. Every line of the second version was blind to it, and
+the branch it fell into said `THE SLOT WAS MISSED ... a finding about the host,
+not about the clock`, which is the right verdict for the wrong reason and points
+at the wrong repair: the scheduler fired on time, to the second.
+
+**The third shape of the same error, and this is now the whole of §0's
+history.** A cadence named in a manifest was read as a cadence the runtime ran
+(2026-10-24). A slot the runtime fired was read as a cycle the seat performed
+(2026-10-25). Now: **a slot that fired and started nothing is read as a slot
+that never fired.** Each fix added a field to look at — the firing record, then
+its `exit` and `turns` — and each time the next case was the one with no row to
+look at. So the general rule, and it is the one to carry out of §0 rather than
+any of the three instances: **when an instrument answers from a record that
+exists only when something started, every failure before the start is invisible
+to it, and invisible reads as clean.** Ask what writes the row before you
+believe the row's absence.
+
+What the slot cost. 2026-11-02T01:00:20.061Z, `coalesced: true`, folded into a
+message run of this seat that had started at 00:49:18 and ran to 01:15:24 on a
+wake-run list. No `cron` run of this seat followed, so nothing carried it late
+either, and `docs/agents/exo-loop.md` has no discharge line for it. **The 2026-W45
+weekly cycle of this seat did not happen**, and it is the second week running:
+2026-10-25T14:00Z fired into an exhausted provider pool and 2026-11-02T01:00Z
+was folded into another wake's run. Two different mechanisms, one visible as a
+429 and one visible as nothing at all.
+
+**And a coalesced firing is not always a loss, which is why the new branch asks
+a second question.** The host appears to hold the firing and dispatch it the
+instant the in-flight run ends. `ursa-exo` coalesced at 01:30:23.908Z and a
+`cron` run of that seat started at 01:40:48.770Z, three thousandths of a second
+after the run it was waiting on ended: ten minutes late, nothing lost.
+`alexandria-exo` and `ursa-security` coalesced in the same half hour and the
+dispatch that followed each was a `message`. **The three audit rows are
+identical.** The only discriminator is whether a later `cron` run of that seat
+starts at all, which is what `carried` asks, so do not read a coalesced row as a
+lost cycle without it.
 
 **The command above is the second version and the first one could not be
 discharged by the act it was written to make possible** (rewritten 2026-10-25,

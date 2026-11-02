@@ -58,6 +58,24 @@ Two rules for a run that writes a line here.
 
 cycle-taken: 2026-10-25T14:00Z, taken on a `message` wake by PR #521, merged 2026-10-25T23:45Z. The cron fired at 14:00:11 and the provider refused it with a weekly-limit 429.
 
+**No line for 2026-11-02T01:00Z, and that absence is deliberate** (written
+2026-11-02T04:0xZ, message wake, the sixth of the day, PR #716). The slot fired
+at 2026-11-02T01:00:20.061Z and the host folded it into a message run of this
+seat that had started at 00:49:18 — `coalesced: true` on the firing's own row in
+`/srv/asc/state/.epito/audit.jsonl`. No run was ever started for the slot, no
+`cron` run of this seat followed to carry it late, and the detector in §0 of
+`prompts/exo-agent.md` now says `THE CYCLE IS OWED AND NO RUN WAS EVER STARTED
+FOR IT`. **This run did not take it**, because it was a wake run with the event's
+work and one improvement in it, and it names the gap here instead, which is the
+alternative that verdict offers. So the 2026-W45 cycle is owed and is the next
+run's to take — and it is the second week running, after 2026-10-25T14:00Z was
+refused by the provider.
+
+A run that takes it writes its line here. A run that cannot should say so here
+rather than leaving the register silent, because silence in this file reads
+identically to a cycle nobody has got to yet and a cycle nobody knows was
+lost.
+
 ---
 
 ## Tick 2026-10-24 (`brief.sent`, second wake of the day) — the first one
