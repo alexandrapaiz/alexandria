@@ -24551,6 +24551,15 @@ Ban list checked on this entry.
 
 ## INC-2026-11-02-the-mode-test-died-on-an-uncaught-typeerror-and-a-swallowed-cron-slot-reads-as-a-missed-one
 
+**Status:** closed. Per L-X1 both halves are present: the repair is in the tree
+(§0 of `prompts/exo-agent.md`, this branch) and the detector is the repaired
+command itself, whose positive branch was seen firing on two real slots on two
+seats in two companies before this entry was written. The lesson it grew is
+recorded against L-X1 below and is a candidate for promotion into
+`docs/standards/lessons.md`'s `any` section, which this seat does not write —
+it leaves through `docs/agents/hq-relay.md` per §3f and has not been sent, which
+is this entry's one open edge and is stated rather than hidden.
+
 **What happened.** The first command of this seat's preflight — §0's owed-cycle
 detector, which decides whether a run is a weekly cycle or a wake run — raised
 `TypeError: unhashable type: 'dict'` and printed no verdict. It does this for
@@ -24620,6 +24629,17 @@ Ban list checked on this entry.
 ---
 
 ## INC-2026-11-02-a-coalesced-cron-slot-is-lost-whenever-a-message-follows-it
+
+**Status:** open, and it cannot be closed from this repository. The defective
+files are headquarters' (`epito`'s daemon, `runtime/board/api.py`,
+`tools/check-cron-fired.py`) and this seat changed none of them. L-X1's second
+half *is* satisfied, which is the part worth noting: the detector is in this
+tree even though the fix is not. §0's repaired owed-cycle command now prints
+`THE SLOT WAS SWALLOWED AND THE CYCLE IS OWED` and names the daemon as the
+owner, so the next slot this happens to is read correctly by the run that
+inherits it rather than rediscovered. Closes when the live test on
+`docs/agents/hq-relay.md` (2026-11-02 Ask 1) prints
+`never released as a cron run: 0`.
 
 **What happened.** The daemon fired this seat's weekly cron slot at
 2026-11-02T01:00:20.061Z, marked it `coalesced: true` into a message run that
