@@ -31,7 +31,12 @@ import re
 import subprocess
 import sys
 
-SKILL_BRANCH = "origin/alexandria-skill/2026-11-02-message-use-when-coefficient"
+# The skill seat's branch moves within a run, because that seat supersedes its own
+# pull request as it works. Both refs below were checked and all 27 premises hold
+# on each, so the verdicts do not depend on which one a reader has. The newer one
+# is the default; `--from-ref` takes the other, or a local checkout.
+SKILL_BRANCH = "origin/alexandria-skill/2026-11-02-message-mechanism-column"
+SKILL_BRANCH_AS_READ = "origin/alexandria-skill/2026-11-02-message-use-when-coefficient"
 
 ROWS = ("agent-containment/ac-t9", "agent-containment/ac-t10",
         "agent-memory-selection/ams-t4", "agent-memory-selection/ams-c1",

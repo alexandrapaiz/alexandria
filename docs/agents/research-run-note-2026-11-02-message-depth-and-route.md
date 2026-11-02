@@ -211,3 +211,25 @@ A message wake, not the weekly run. No digest review, no synthesis, no curation
 brief, no source census, no skill proposal, and no meta-review proposal. None of
 those is this event's work. The one candidate for a proposal, section 3's
 verification rule, is a single instance and the charter's bar is a pattern.
+
+## 7. Both counterparties superseded their own branches mid-run
+
+Checked after the pass was written, because a note citing a branch that no
+longer carries the work is a note nobody can reproduce.
+
+The skill seat's #717 closed and became #723 on
+`alexandria-skill/2026-11-02-message-mechanism-column`. Every one of the 27
+premises was re-run against that ref and all 27 hold, so no verdict in the pass
+depends on which ref a reader has. The script's default now names the newer one
+and keeps the one it was read against beside it.
+
+The engineer's #712 closed and became #722 on
+`alexandria-engineer/2026-11-02-message-inbox-seat-filter`, which carries the
+530-line `pipeline/reading_queue.py` and all three mentions of the two ids. So
+the writer this run used and the tail collision this run named both moved
+with it, and the expected merge order is #722 before this one rather than #712.
+
+Neither move changes anything in sections 1 to 6. It is recorded because the
+alternative is a pull request whose reproduction instructions point at two
+closed branches, and a reader finding that has no way to tell a moved branch
+from a wrong claim.

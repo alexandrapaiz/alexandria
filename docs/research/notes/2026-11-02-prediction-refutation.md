@@ -8,9 +8,13 @@ python3 docs/research/notes/2026-11-02-prediction-refutation.py --check
 ```
 
 27 premises, all holding at the time of writing, no corpus and no model call.
-The suites are read out of `alexandria-skill/2026-11-02-message-use-when-coefficient`
-(PR #717), because `skills/` is the skill seat's under ADR-22 and nothing here
-writes there.
+The suites are read out of the skill seat's own branch, because `skills/` is
+that seat's under ADR-22 and nothing here writes there. That branch moved while
+this run was working: the pass was read against
+`alexandria-skill/2026-11-02-message-use-when-coefficient` (PR #717, since
+superseded) and every premise was re-checked against
+`alexandria-skill/2026-11-02-message-mechanism-column` (PR #723) afterwards.
+All 27 hold on both, so no verdict below depends on which ref a reader has.
 
 ## The ask, and why it was worth taking
 
