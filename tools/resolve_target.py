@@ -35,6 +35,7 @@ four already refused. The three this module repairs are the three that did not.
 
 from __future__ import annotations
 
+import argparse
 import pathlib
 import sys
 
@@ -120,7 +121,30 @@ def smoke() -> int:
     return 0 if all(checks.values()) else 1
 
 
+def parser() -> argparse.ArgumentParser:
+    """The declaration, so this file is inside the flag gate's domain.
+
+    This shipped reading `sys.argv` directly, which worked and put the file
+    outside the sweep that classifies every flag in the tree. The writer seat
+    found it from that side: its gate has no row for a file that declares no
+    parser, so a clean sweep read wider than the sweep actually was. A module
+    whose whole subject is refusing an unknown target was the one module the
+    target census could not see.
+
+    `--smoke` is a boolean switch. It names nothing, so it belongs to the 102
+    the census already excludes, and that is the answer the gate needed rather
+    than an exemption.
+    """
+    ap = argparse.ArgumentParser(
+        prog="resolve_target.py",
+        description="One answer for \"you named something that does not exist\".")
+    ap.add_argument("--smoke", action="store_true",
+                    help="run this module's own checks and exit")
+    return ap
+
+
 if __name__ == "__main__":
-    if "--smoke" in sys.argv:
+    args = parser().parse_args()
+    if args.smoke:
         sys.exit(smoke())
     print(__doc__.strip())

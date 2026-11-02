@@ -158,14 +158,78 @@ def test_a_filename_outside_the_scheme_is_refused():
 
 def test_an_inbox_file_with_no_heading_is_refused():
     problems = inc.check(REGISTER, [("INC-2026-10-24-x.md", "Just prose.\n")])
-    assert any("no level-two heading" in p for p in problems)
+    assert any("no heading carries an INC id" in p for p in problems)
 
 
 def test_two_entries_in_one_inbox_file_are_refused():
     """One file per entry is the mechanism. Two reintroduces the shared anchor."""
     two = entry("INC-2026-10-24-x") + "\n" + entry("INC-2026-10-24-y")
     problems = inc.check(REGISTER, [("INC-2026-10-24-x.md", two)])
-    assert any("level-two headings" in p for p in problems)
+    assert any("INC ids in one file" in p for p in problems)
+    assert any("INC-2026-10-24-y" in p for p in problems)
+
+
+# --------------------------------------------------------------------------
+# The three shapes this gate used to call a collision, and none of them is one
+# --------------------------------------------------------------------------
+#
+# `check` counted level-two headings as its proxy for "one entry per file". On
+# 2026-11-02 that proxy was wrong about three files on `main`, so
+# `test_the_live_register_passes_its_own_gate` was red there and the four
+# findings it reported were all false. Two of the three were a seat appending a
+# new instance to the entry it repeats, which is exactly what this register's
+# standing rule asks for, and the third titles itself at level one and sections
+# itself at level two, which is ordinary Markdown.
+#
+# The mechanism is the id, not the heading count: two entries collide when two
+# headings carry two different INC ids. A section heading and an appended
+# instance heading carry none, so they cannot collide with anything.
+
+
+def test_an_appended_instance_is_not_a_second_entry():
+    """What the standing rule asks a seat to do must not read as a collision."""
+    text = (entry("INC-2026-10-24-x")
+            + "\n## Instance appended 2026-11-02, ExO seat, PR #759: it repeated\n\n"
+            + "More body.\n")
+    problems = inc.check(REGISTER, [("INC-2026-10-24-x.md", text)])
+    assert problems == []
+
+
+def test_section_headings_inside_one_entry_are_not_a_second_entry():
+    text = (entry("INC-2026-10-24-x")
+            + "\n## What happened\n\nProse.\n"
+            + "\n## The repair, which is one flag\n\nProse.\n")
+    problems = inc.check(REGISTER, [("INC-2026-10-24-x.md", text)])
+    assert problems == []
+
+
+def test_a_level_one_title_with_level_two_sections_is_accepted():
+    """Three files on main are written this way and none of them is malformed."""
+    text = ("# INC-2026-10-24-x - a title (2026-10-24, research seat)\n\n"
+            "**Observed** 2026-10-24.\n\n## What happened\n\nProse.\n")
+    problems = inc.check(REGISTER, [("INC-2026-10-24-x.md", text)])
+    assert problems == []
+
+
+def test_the_id_is_still_checked_against_the_filename_wherever_the_heading_sits():
+    """The level-one form must not be a way past the filename check."""
+    text = "# INC-2026-10-24-y - a title (2026-10-24, research seat)\n\nProse.\n"
+    problems = inc.check(REGISTER, [("INC-2026-10-24-x.md", text)])
+    assert any("the filename says" in p for p in problems)
+
+
+def test_two_ids_collide_even_when_one_of_them_is_a_level_one_title():
+    text = ("# INC-2026-10-24-x - a title (2026-10-24, research seat)\n\nProse.\n"
+            + entry("INC-2026-10-24-y"))
+    problems = inc.check(REGISTER, [("INC-2026-10-24-x.md", text)])
+    assert any("INC ids in one file" in p for p in problems)
+
+
+def test_the_same_id_twice_in_one_file_is_not_counted_as_two_entries():
+    """A repeated id is one entry written twice, which the register check catches."""
+    text = entry("INC-2026-10-24-x") + "\n" + entry("INC-2026-10-24-x")
+    problems = inc.check(REGISTER, [("INC-2026-10-24-x.md", text)])
+    assert not any("INC ids in one file" in p for p in problems)
 
 
 def test_a_new_duplicate_inc_id_in_the_register_is_a_problem():

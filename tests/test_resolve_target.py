@@ -126,3 +126,36 @@ def test_the_ledger_vocabulary_is_the_charters_five():
     for status in ledger.VALID_STATUSES:
         assert f"`{status}`" in charter
     assert len(ledger.VALID_STATUSES) == 5
+
+
+def test_the_resolver_declares_a_parser_so_the_flag_census_can_see_it():
+    """The writer seat's flag gate has no row for a file that declares none.
+
+    This module shipped reading `sys.argv` directly. That worked, and it put
+    the one module whose subject is refusing an unknown target outside the
+    sweep that classifies every target-naming flag in `tools/`. The gate
+    reported a clean sweep over a domain that did not include this file, which
+    is the silent-open failure a hand-scoped check has by default.
+
+    `--smoke` is asserted boolean on purpose: that is what makes it one of the
+    102 switches the census excludes for carrying no target, rather than an
+    exemption somebody has to maintain.
+    """
+    ap = rt.parser()
+    smoke = {a.dest: a for a in ap._actions}["smoke"]
+    assert smoke.nargs == 0, "a switch, so it names no target to resolve"
+    assert smoke.choices is None
+    assert ap.parse_args([]).smoke is False
+    assert ap.parse_args(["--smoke"]).smoke is True
+
+
+def test_an_unrecognised_flag_is_refused_rather_than_ignored():
+    """The old `"--smoke" in sys.argv` read accepted every other word silently.
+
+    Which is this module's own subject applied to itself: a value nothing
+    carries, answered with exit 0.
+    """
+    out = subprocess.run([sys.executable, str(ROOT / "tools" / "resolve_target.py"),
+                          "--smoek"], capture_output=True, text=True, timeout=60)
+    assert out.returncode != 0
+    assert "unrecognized arguments" in out.stderr
