@@ -5987,7 +5987,7 @@ def press():
     print("A verdict on an issue is a verdict on the generator that wrote it,")
     print("so the run that cannot name that generator is grading an unnamed")
     print("artifact. REFUSED never means the press is current, and it does")
-    print("not mean one thing: the line under it says which of three causes")
+    print("not mean one thing. The line under it says which of three causes")
     print("was read and who clears it, because the depth of this checkout is")
     print("the run's own to fix in two commands and the other two are not.")
     return rc | (verdict != "CURRENT")

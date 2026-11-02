@@ -4182,9 +4182,20 @@ gap that the same collision had left empty (incident 25).
     Nothing had moved except this seat's own commit count.
     ```
     Enforced docs/voice/check_voice.py: "press"
-    LANDED docs/voice/check_voice.py: "REFUSED is the answer to act on rather than to read"
+    LANDED docs/voice/check_voice.py: "REFUSED never means the press is current"
+    LANDED docs/voice/check_voice.py: "which of three causes"
     LANDED docs/voice/canon.md: "Say the generator's age at the top of the grade"
     ```
+    The first citation moved on 2026-11-02 and the entry got stronger rather
+    than weaker, which is worth saying because a moved citation usually means
+    the opposite. The sentence it used to quote told the reader REFUSED meant
+    the window had run out and not that the press was built from unpushed
+    code. That named two causes when there are three, and the third is the
+    only one the reading run can clear itself: the depth of its own checkout.
+    `refusal_owner` is that distinction as a function with cases, built on the
+    `shallow` flag the engineer seat put on `undeployed_commits`'s dict the
+    same day, and the gate now prints the owner under the refusal instead of
+    leaving the reader to infer it from a sentence.
     `check_voice.py press` asks the same question with the window widened, by
     calling `undeployed_commits` rather than replaying the digest a second
     time, and it treats an unreachable receipt as a failure rather than a
