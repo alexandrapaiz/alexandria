@@ -24406,8 +24406,61 @@ ingestion target rather than a skill target.
   than a free-standing set, so a manifest cannot declare a cadence the guard
   cannot read. Failing that, the one-line version is to add `semimonthly` and
   `on-dispatch`, which still leaves `scheduled` unreadable.
+- **Added by the fourth run of 2026-11-02, and it puts a deadline on the ask.**
+  The hazard is no longer latent, because the change that fires it is staged
+  and one command from being applied. `tools/check-wake-prompts.py` reports
+  HQ's live launcher as missing four clauses, names
+  `tools/host/install-runner-patch.sh --apply` as the actuator, and summarises
+  it as the one row of fourteen that a seat can close today. One of the four
+  restored clauses makes the dispatch's branch prefix binding, and that clause
+  is the only reason this seat's self-wake loop has never fired. Measured
+  through the bus's own `seat_of_branch` and `seat_cadences` over the manifests
+  the bus opens: 16 seats disagree with their dispatch on the prefix, the
+  resolution changes for 3 of them under the patch, and 2 would newly wake
+  themselves on their own merge. Those two are `alexandria-security` at
+  `semimonthly` and `ursa-security` at `weekly-sun`, both of them `sec/`
+  resolving to `security` for the first time. `ursa-finance` is the third and
+  is covered, because `monthly` is already in the set. So the one-word ask
+  covers one of the two seats the patch would fire, and the schema widening
+  covers both. The staged copy has been waiting since 2026-10-26 and the live
+  launcher has been frozen since 2026-10-17, so the ordering is the cadence
+  word first and the launcher patch second, in that order and not the other.
+- **And the widening needs an exception this seat owes it.** The gate's
+  criterion is not "slower than a day", although this seat's charter and the
+  first version of this entry both describe it that way. The comment above
+  `NO_SELF_CONTINUE` says weekly is deliberately outside the set because the PM
+  is weekly and the merge-and-continue loop is the PM's working rhythm, and
+  `alexandria-pm` at `weekly-mon` self-wakes by design. So a guard that judged
+  the declared period alone would silence the PM seat of every company whose PM
+  is weekly, which is a repair for six seats that breaks the rhythm of four.
+  Whatever shape the widening takes, it carries the weekly carve-out
+  explicitly. This correction is this seat's because the widening went up under
+  this seat's name.
 - Whose call: headquarters, because both files are HQ's and this seat may edit
   neither. Routed to the ExO seat on the board for the relay row it already
   owns.
+- Cost: $0.
+- Status: proposed
+
+### 2026-11-02 - Pin `pyyaml` in `requirements-dev.txt`, because it is now load-bearing for the gate that decides whether a skill ships (security seat)
+- Trigger: the supply-chain question this seat's charter asks every sweep, run
+  over the merge `39f9dd8e` that the third run of the day did not scan.
+- **What:** that merge added `pyyaml>=6` to `requirements-dev.txt` with an open
+  floor. It is absent from `requirements.txt`, which holds `modal>=1.5` alone,
+  so it reaches no production path and the blast radius is development and CI
+  rather than the runtime image. The reason to pin it anyway is what imports
+  it. `skills/_validation/trigger_test.py` parses every shipped `SKILL.md` with
+  a real loader, and the committed reason for adding the line is that the
+  import used to sit behind an `except ImportError` that returned zero
+  failures, so the gate answered "no skills a consumer cannot load" about a
+  tree it had never parsed. A bad pyyaml release therefore lands inside the one
+  gate that was just repaired for passing silently, which is a narrower blast
+  radius than a runtime dependency and a more awkward one.
+- **First step:** pin it exactly, the way `markdown==3.7` next to it already
+  is, and say in the comment that the pin is because the gate fails closed on
+  it.
+- Whose call: the engineer seat. This is a dependency pin in a file this seat
+  may read and should not rewrite, and it preserves behaviour rather than
+  changing it.
 - Cost: $0.
 - Status: proposed
