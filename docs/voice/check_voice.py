@@ -7979,6 +7979,187 @@ COVERAGE_CASES = (
 )
 
 
+# ---- the seventh altitude: a numerator that is no member of its domain ----
+#
+# The engineer seat corrected this gate's denominator on 2026-11-02. 246 was
+# right as a count of declarations and wrong as a coverage domain, because 102
+# of the 242 flags are boolean switches with no value to get wrong and 7 carry
+# a `choices` list that argparse refuses before any tool sees it. 109 of the
+# 246 can never enter the numerator, so dividing by 246 reports a share of a
+# domain the sweep was never measured over. That is ban list 36 and L-A26 for
+# the third time in this block, one layer in from where the last two were.
+#
+# The sender's narrower figure is 56, and the correction carried this seat's
+# numerator across into it: "your sweep covered four of fifty-six". It did
+# not. The 56 are flags, `SWEPT` is three positional names, and the overlap is
+# empty, so the sweep covered zero of the 56. The sender's own next note is
+# the proof, because it reports probing "eight of the fifty-six" as new work,
+# which would read as twelve if four had already been reached.
+#
+# So the lesson is not that the denominator was wrong. Both of us had a
+# numerator and a denominator that were separately defensible and belonged to
+# different populations, and every check this gate already runs passed on the
+# pair: 4 is less than 56, and 7.1 percent of 56 reconstructs to 4. A
+# coverage figure needs to prove its numerator is a SUBSET of its denominator
+# and not merely smaller than it, which is what `outside_domain` is for.
+#
+# What is mechanised here is the partition, because a parser declaration says
+# in the tree whether a value can be wrong. What is NOT mechanised is the
+# sender's split of the remaining 133 into 77 that take a number or free text
+# and 56 that name something a tool could resolve. That one is a judgment
+# about what a string means, this seat reproduced the 133 exactly and cannot
+# reproduce the split without making the same judgment, and encoding a
+# judgment as a measurement is the defect one altitude above this one.
+_SWITCH_ACTIONS = frozenset((
+    "store_true", "store_false", "store_const", "append_const",
+    "count", "help", "version",
+))
+
+
+def arg_classes(source):
+    """The declared arguments split by whether a value can be wrong.
+
+    Four tuples of names, in parser order: positional, resolvable, switch,
+    constrained. `None` for a file that declares no parser, for the reason
+    `declared_args` returns `None`.
+
+    Read with `ast` and not the regex `declared_args` uses, because the two
+    keywords that decide the split, `action` and `choices`, sit after the name
+    literals and wrap over lines in most of this repo's declarations. A regex
+    that reads only the leading run of literals is correct for the NAME and
+    blind to exactly the two facts this function exists to read.
+
+    `resolvable` is the domain a coverage figure may divide by: an argument
+    that takes a value which argparse does not already constrain, so a tool
+    receiving a value it cannot resolve is the tool's own answer to give.
+    """
+    try:
+        tree = ast.parse(source or "")
+    except SyntaxError:
+        return None
+    positional, resolvable, switch, constrained = [], [], [], []
+    found = False
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.Call):
+            continue
+        func = node.func
+        if not (isinstance(func, ast.Attribute)
+                and func.attr == "add_argument"):
+            continue
+        lits = [a.value for a in node.args
+                if isinstance(a, ast.Constant) and isinstance(a.value, str)]
+        if not lits:
+            continue
+        found = True
+        keywords = {k.arg: k.value for k in node.keywords if k.arg}
+        longs = [x for x in lits if x.startswith("--")]
+        if longs:
+            name = max(longs, key=len).lstrip("-").replace("-", "_")
+        elif lits[0].startswith("-"):
+            name = lits[0].lstrip("-").replace("-", "_")
+        else:
+            positional.append(lits[0])
+            continue
+        action = keywords.get("action")
+        action = action.value if isinstance(action, ast.Constant) else None
+        if action in _SWITCH_ACTIONS:
+            switch.append(name)
+        elif "choices" in keywords:
+            constrained.append(name)
+        else:
+            resolvable.append(name)
+    if not found:
+        return None
+    return (tuple(positional), tuple(resolvable), tuple(switch),
+            tuple(constrained))
+
+
+def outside_domain(numerator, domain):
+    """The numerator's names that are not members of the domain it divides by.
+
+    The check `coverage_figure` cannot do and this gate needed. A pair can
+    satisfy every arithmetic check a share admits -- numerator no greater than
+    denominator, percentage reconstructing the pair -- while the two numbers
+    count different populations, and then the figure is not small or large, it
+    is about nothing.
+
+    `None` propagates from an unreadable domain rather than reporting that
+    every name is inside it, which would be the pass-shaped answer.
+    """
+    if domain is None:
+        return None
+    inside = set(domain)
+    return tuple(n for n in dict.fromkeys(numerator or ()) if n not in inside)
+
+
+ARG_CLASS_CASES = (
+    # The live instance, and the reason this function is not the regex. The
+    # switch keyword wraps onto the next line, which is how most of this
+    # repo's declarations are written.
+    ('ap.add_argument("--broadcast",\n                action="store_true")',
+     ((), (), ("broadcast",), ())),
+    # A flag taking a value argparse does not constrain. This is the class the
+    # coverage figure may divide by.
+    ('ap.add_argument("--seat", help="the seat acting")',
+     ((), ("seat",), (), ())),
+    # A choices list is refused by argparse before a tool sees it, so it is
+    # out of the domain even though it takes a value.
+    ('ap.add_argument("--kind", choices=("note", "ask"))',
+     ((), (), (), ("kind",))),
+    # A number is still resolvable BY THIS PARTITION, and the comment above
+    # says why the narrower judgment is not made here: `--limit 999` takes a
+    # value a tool could in principle refuse, and whether it should is not a
+    # fact the tree carries.
+    ('ap.add_argument("--limit", type=int, default=50)',
+     ((), ("limit",), (), ())),
+    # A positional is its own class, because both of this seat's sweeps
+    # reached these and nothing else.
+    ('ap.add_argument("paths", nargs="+")', (("paths",), (), (), ())),
+    # Parser order is preserved within each class, the way `declared_args`
+    # preserves it, because a caller reading the gap needs the parser's order.
+    ('ap.add_argument("--company")\nap.add_argument("--quiet",'
+     ' action="store_true")\nap.add_argument("--seat")\n'
+     'ap.add_argument("key", nargs="?")',
+     (("key",), ("company", "seat"), ("quiet",), ())),
+    # A subparser name is not an argument, matching `declared_args`.
+    ('sub.add_parser("show", help="print the board")', None),
+    # No parser at all is refused rather than reported as a clean surface.
+    ("print('hello')", None),
+    # A file this gate cannot parse is refused too. `declared_args` would
+    # happily regex a name out of a broken file and report a surface.
+    ('ap.add_argument("--seat"', None),
+    # `action="append"` is not a switch: it takes a value, so a value can be
+    # wrong. The mutation that folded it in with the switches survives every
+    # case above.
+    ('ap.add_argument("--ref", action="append")', ((), ("ref",), (), ())),
+)
+
+OUTSIDE_CASES = (
+    # Tonight's defect, which is the case this function was written for. The
+    # three swept names against the flag domain the correction named: every
+    # one of them is outside it, so the pair "4 of 56" has an empty overlap.
+    (("paths", "ids", "key"), ("seat", "company", "skill"),
+     ("paths", "ids", "key")),
+    # The same numerator against the domain it does belong to is clean, which
+    # is what makes the case above a measurement rather than an assertion.
+    (("paths", "ids", "key"), ("paths", "ids", "key"), ()),
+    # A subset is clean.
+    (("paths",), ("paths", "ids"), ()),
+    # Partial overlap reports only the strangers, in the numerator's order.
+    (("key", "seat", "paths"), ("paths", "key"), ("seat",)),
+    # An unreadable domain propagates rather than answering "all inside",
+    # which is the pass-shaped answer this file refuses everywhere else.
+    (("paths",), None, None),
+    # An empty numerator is inside every domain, including an empty one. This
+    # is the honest reading of a sweep that passed nothing: no stranger, and
+    # the coverage figure beside it is what says it reached nothing.
+    ((), (), ()),
+    # A repeated name is one stranger and not two, because the domain question
+    # is about membership and the count belongs to the figure.
+    (("paths", "paths"), ("ids",), ("paths",)),
+)
+
+
 # What this seat's two sweeps actually passed a value for, as a record rather
 # than as a memory. The first sweep passed a nonsense first argument to all
 # 46 files under `tools/`, which reaches the subcommand name and no declared
@@ -8069,6 +8250,30 @@ def flags():
                   f"{want!r} and got {got!r}")
     print(f"COVERAGE_CASES                             "
           f"{len(COVERAGE_CASES) - rough} of {len(COVERAGE_CASES)}")
+    crude = 0
+    for i, (text, want) in enumerate(ARG_CLASS_CASES):
+        try:
+            got = arg_classes(text)
+        except Exception as exc:
+            got = f"{type(exc).__name__}: {exc}"
+        if got != want:
+            crude = 1
+            print(f"  CASE    arg_classes case {i} wanted {want!r} and "
+                  f"got {got!r}")
+    print(f"ARG_CLASS_CASES                            "
+          f"{len(ARG_CLASS_CASES) - crude} of {len(ARG_CLASS_CASES)}")
+    stray = 0
+    for numerator, domain, want in OUTSIDE_CASES:
+        try:
+            got = outside_domain(numerator, domain)
+        except Exception as exc:
+            got = f"{type(exc).__name__}: {exc}"
+        if got != want:
+            stray = 1
+            print(f"  CASE    outside_domain({numerator!r}, {domain!r}) "
+                  f"wanted {want!r} and got {got!r}")
+    print(f"OUTSIDE_CASES                              "
+          f"{len(OUTSIDE_CASES) - stray} of {len(OUTSIDE_CASES)}")
     print()
 
     unreadable, positional, flagged, gap = [], 0, 0, 0
@@ -8092,8 +8297,67 @@ def flags():
     print(f"  positional, which both sweeps reached    {positional}")
     print(f"  carried by a flag, which neither did     {flagged}")
     print(f"never passed a value by either sweep       {gap}")
-    domain = positional + flagged
-    covered = domain - gap
+
+    # The partition, which is the correction of 2026-11-02. The count of
+    # declarations is not the coverage domain: a switch has no value to get
+    # wrong and a `choices` list is refused by argparse before a tool is
+    # reached, so neither can ever enter the numerator. Dividing by the whole
+    # count reports a share of a population the sweep was never measured over.
+    positional_names, resolvable_names, switches, constrained = [], [], 0, 0
+    for path in files:
+        classes = arg_classes(path.read_text(encoding="utf-8"))
+        if classes is None:
+            continue
+        here_pos, here_resolvable, here_switch, here_constrained = classes
+        positional_names.extend(here_pos)
+        resolvable_names.extend(here_resolvable)
+        switches += len(here_switch)
+        constrained += len(here_constrained)
+    # The two classes are kept apart and concatenated only for the blended
+    # figure, because the split is the reading and the blend hides it.
+    in_domain = positional_names + resolvable_names
+    resolvable = len(resolvable_names)
+    print(f"  of which a value can be wrong            "
+          f"{len(in_domain)}")
+    print(f"    boolean switches, nothing to resolve   {switches}")
+    print(f"    a choices list, argparse refuses it    {constrained}")
+
+    domain = len(in_domain)
+    covered = domain - len(uncovered_args(
+        tuple(("x", n) for n in in_domain), SWEPT))
+    # The check the arithmetic ones below cannot do, and the one this gate
+    # needed. `coverage_figure` sees two integers and every check under it
+    # compares them as integers, so a numerator counting one population and a
+    # denominator counting another satisfies all of them: 4 is less than 56,
+    # and 7.1 percent of 56 reconstructs to 4. The pair is still about
+    # nothing. So the names are checked for membership and not only the
+    # counts for size.
+    # The dual check, and the one that holds the correction in place. The
+    # guard below catches a numerator with members outside its domain; this
+    # catches a domain with members that can never be in the numerator, which
+    # is what 246 was. Without it, restoring `domain = positional + flagged`
+    # passes every other check in this gate: the reconstruction uses whatever
+    # domain it is handed, the halves still sum, and the figure prints 1.6
+    # with the same confidence it prints 2.9.
+    #
+    # It is an identity on counts and not a membership test on names, because
+    # a membership test is wrong here and the wrongness is in the live tree.
+    # `status` and `surface` are each declared with a `choices` list in one
+    # tool and as free text in another, so "no switch name appears in the
+    # domain" fails a correct tree. A name is not a class; a declaration is.
+    if domain != positional + flagged - switches - constrained:
+        worse = 1
+        print(f"  FAIL    the domain is {domain} and the declarations minus "
+              f"the switches and the choices lists give "
+              f"{positional + flagged - switches - constrained}, so the "
+              f"denominator below holds arguments no sweep could ever cover")
+    strangers = outside_domain(SWEPT, in_domain)
+    if strangers:
+        worse = 1
+        print(f"  FAIL    SWEPT names {', '.join(strangers)}, which the "
+              f"domain printed above does not contain, so the coverage pair "
+              f"below counts two different populations and the percentage is "
+              f"not a share of anything")
     # `covered` is 4 today and so is `positional`, and a mutation replacing
     # one with the other survives every check below. They are equal only
     # because `SWEPT` happens to name three positionals and no flag, so the
@@ -8106,11 +8370,15 @@ def flags():
     # numerator and printed 98.4 percent coverage of a domain it had covered
     # 1.6 percent of. A figure that confident is the whole defect class this
     # gate was built for, so it gets a check and not a comment.
-    swept = 0
-    for path in files:
-        declared = declared_args(path.read_text(encoding="utf-8"))
-        if declared is not None:
-            swept += sum(1 for _, n in declared if n in SWEPT)
+    # Counted over the SAME population as `covered` since the correction of
+    # 2026-11-02, and by the opposite method. Before the correction this
+    # counted SWEPT across all 246 declarations while `covered` was a share
+    # of the whole 246, so the populations agreed by accident. Narrowing the
+    # domain and leaving this loop alone would have made the two disagree
+    # whenever a swept name was a switch, and the gate would have failed a
+    # correct tree. Membership counted up here, non-membership subtracted
+    # there: two methods, one population.
+    swept = sum(1 for n in in_domain if n in SWEPT)
     if swept != covered:
         worse = 1
         print(f"  FAIL    the coverage numerator is wired wrong: counting the "
@@ -8149,6 +8417,28 @@ def flags():
     else:
         print(f"the sweep's coverage of its own domain     {pct}%  "
               f"{covered} of {domain}")
+
+    # The two halves apart, because the blend hides the finding. Every
+    # argument either sweep reached is positional, so one half is finished and
+    # the other has not been started, and a single number between them reads
+    # as slow progress on one job rather than as the two jobs it is. The
+    # engineer seat's narrower count of 56 is a subset of the flag
+    # denominator here, and its overlap with SWEPT is empty too, so this zero
+    # is what "four of fifty-six" was reporting either way.
+    pos_swept = sum(1 for n in positional_names if n in SWEPT)
+    flag_swept = sum(1 for n in resolvable_names if n in SWEPT)
+    print(f"  positional                               "
+          f"{coverage_figure(pos_swept, positional)}%  "
+          f"{pos_swept} of {positional}")
+    print(f"  carried by a flag                        "
+          f"{coverage_figure(flag_swept, resolvable)}%  "
+          f"{flag_swept} of {resolvable}")
+    if pos_swept + flag_swept != covered:
+        worse = 1
+        print(f"  FAIL    the two halves sum to "
+              f"{pos_swept + flag_swept} and the blended numerator is "
+              f"{covered}, so the split above is not a partition of the "
+              f"figure printed over it")
     print()
 
     unfiled = [n for n in unreadable if n not in ARG_FILED]
@@ -8185,7 +8475,22 @@ def flags():
     print("positional arguments, because `main` had merged five more")
     print("declarations. Keeping the figure and quoting the figure turned out")
     print("to be opposite instructions.")
-    return bad | worse | rough
+    print()
+    print("Then the denominator itself was wrong, which no amount of")
+    print("printing would have caught. 246 counts declarations and the")
+    print("domain counts arguments a value can be wrong in, and 109 of the")
+    print("246 are neither: a switch has nothing to resolve and a choices")
+    print("list is refused by argparse before a tool is reached. So the")
+    print("figure was a share of a population the sweep was never measured")
+    print("over, and the correction came from the seat that reads the tools")
+    print("rather than from any check in here.")
+    # `crude` and `stray` are in this sum because they were not, for the
+    # length of one run. The two tables added on 2026-11-02 printed their
+    # CASE lines and the gate returned `bad | worse | rough`, so a failing
+    # new case was visible to a reader and invisible to a caller, which is
+    # this file's own opening defect: a gate that prints a failure and exits
+    # 0 is unfalsifiable from the outside. Every table above owes the return.
+    return bad | worse | rough | crude | stray
 
 
 # ---- the sixth altitude: the number an ask names was already spent ----
