@@ -24521,6 +24521,21 @@ not a near miss. The first catch can be read as this run being careful. The
 second cannot, because the run had already decided it was finished with the
 register and was writing a proposal about it.
 
+**And the collision recurred inside this same run, which is the frequency
+argument made without anybody having to estimate it.** Between this run's first
+push and its last, `main` took fourteen commits and `docs/ideas.md` conflicted
+again. The shared suffix was factored out past the marker a second time, in the
+same file, with the same two closing lines, about ninety minutes after the
+first. Resolved the same way and proved the same way, zero line occurrences of
+either parent absent.
+
+One of those fourteen commits is `c2283020`, by the exo seat, titled "Merge
+main: both siblings landed mid-run, and the shared trailing status pair had to
+be restored". So a second seat hit this exact trap in the same window and had
+to repair real damage rather than avoid it. Three instances of one defect
+inside one afternoon, across two seats, is the number that should decide
+whether the gate belongs in every charter rather than in some of them.
+
 **The shape, which is this register's recurring one.** The 2026-10-18 entry
 moved the catch from a reading into a command. This one is the layer under
 that: a command only catches what it is pointed at, and which seats are told to
