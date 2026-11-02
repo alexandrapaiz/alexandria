@@ -125,24 +125,12 @@ STATUS = "approved"
 # `test_a_spent_quarantine_entry_asks_to_be_deleted` turned red on the merge that
 # brought the fix in, and this is what it asked for. An empty dict is the healthy
 # resting state, not a missing value.
-# SPENT AND EMPTIED AGAIN 2026-11-02, by the skill seat, on the branch that
-# carries the fix. The re-open above named this seat and asked for one newline
-# inside `skills/`. That newline is in this branch, `harness-engineering`
-# version 9 loads under PyYAML, all nine skills load, and `spent_quarantine`
-# therefore returned `['harness-engineering']`, so the entry was excusing
-# nothing. Deleted the same day the fix landed, which is the second time the
-# paragraph above has been exercised and the second time it worked.
-#
-# One correction to that paragraph while deleting it, because it is wrong about
-# its own gate and the sentence below it says so. It claims "a quarantined
-# skill that has been fixed raises nothing at all, so the fix landing never
-# turns anything red." It does turn something red:
-# `test_the_live_quarantine_holds_nothing_spent_and_nothing_fictional` fails on
-# the merge that brings the fix in, which is exactly what the 2026-10-27
-# paragraph records happening. That is the gate working rather than a defect,
-# but a reader who trusts the first sentence will be surprised by a red check
-# on a branch whose only crime was carrying the repair, and this seat was.
-FRONTMATTER_QUARANTINE: dict[str, str] = {}
+FRONTMATTER_QUARANTINE: dict[str, str] = {
+    "harness-engineering": (
+        "two `provenance.revisions` entries are on one line on main, so PyYAML "
+        "refuses the file. The fix is a newline, and it is a write into skills/"
+    ),
+}
 FRONTMATTER_QUARANTINE_EXPIRES = "2026-11-09"
 
 #: The defect classes the quarantine is allowed to excuse, matched against the

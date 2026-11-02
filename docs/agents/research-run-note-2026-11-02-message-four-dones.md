@@ -216,6 +216,25 @@ reaches those rows at all. Naming them was the only route.
   said that way because this seat filed an incident this morning for exactly the
   error of writing a small measured thing up as the cause of a large one.
 
+## One defect this run caused and caught, filed as a new class
+
+`INC-2026-11-02-verifying-another-branch-by-checkout-put-27595-lines-of-its-work-in-this-seats-diff`.
+Verifying the skill seat's branch with `git checkout pr733 -- skills/ tools/`
+does not read those files, it writes and stages them, so two later commits
+carried 59 files and 27,595 insertions where six files and about 1,400 lines
+were this run's own. Reverted before `gh pr ready`; the shipped diff is ten doc
+files, four of them #742's.
+
+No gate in this run would have caught it. Markers were clean, the ban list
+passed on everything this seat wrote, both registers were appended, and the
+commit messages described the six real files correctly, so the report would have
+been truthful and the diff still wrong. It was found by running
+`git diff --stat` for an unrelated measurement. The repair is `git show
+<ref>:<path>` instead, which this same run used correctly on the engineer's
+branch in the same session, and the check is `git diff --name-only
+origin/main...HEAD` before shipping. Routed to the ExO seat rather than proposed
+as a charter diff, because one occurrence is a thin basis for twelve charters.
+
 ## What this run could not do, eleventh run running
 
 No corpus. `command -v modal` finds nothing, `import modal` raises

@@ -11,9 +11,7 @@
     "subject": "kimi-k2.6",
     "judge": "openai/gpt-oss-120b",
     "min_delta": 0.2,
-    "pre_registered": "2026-10-23, by the alexandria chair before either arm ran on this suite: no results.json has ever been written for it. The numbers copy the three suites that already registered them, so every suite in the library is measured under one policy. The first run is on qwen/qwen3.8-27b with the subject overridden on the command line and recorded in the result, because the host that can run it holds a Groq key and no Moonshot key, and the Modal workspace is at its spend limit.",
-    "require_certificates": true,
-    "certificates_note": "Every rubric criterion in this file carries a `certificate` (ADR-40 item 5) and every rubric task ships an `exploit` answer, so `require_certificates` is set and the two checks are errors here rather than library-wide findings. It is turned on by the 2026-11-02 skill run, which is the change both of this library's earlier notes said to turn it on in: they held it off because tools/skill_eval.py `normalize()` rebuilt each rubric item as id, asks and anchors only and dropped `check.criteria[].certificate` before `certificate_problems()` looked for it. The engineer fixed that on 2026-10-26 (`criterion()` now carries every key the author wrote), so the flag has been safe to set for a week and nothing closed the loop until this run."
+    "pre_registered": "2026-10-23, by the alexandria chair before either arm ran on this suite: no results.json has ever been written for it. The numbers copy the three suites that already registered them, so every suite in the library is measured under one policy. The first run is on qwen/qwen3.8-27b with the subject overridden on the command line and recorded in the result, because the host that can run it holds a Groq key and no Moonshot key, and the Modal workspace is at its spend limit."
   },
   "note": "Eight treatment tasks, one hard check and two controls, each reproducing a situation one of the four cited papers studied (ADR-35). The two A2M tasks carry no claim ids because that paper has no claim rows in the corpus. Contract: skills/_validation/evals/README.md. Revised 2026-10-26 (ADR-38 retrofit of SKILL.md, 370 lines to 111): every task's `sections` list is repointed at the six delta headings that replaced the seven prose sections. asm-t6 moves from the old section 6 to delta 2, because stratifying the residual is now part of reading the curve rather than its own section, and asm-t8 now names deltas 1 and 4 because the hook-set check it exercises moved into the siting delta. asm-t9 is new and is this suite's first hard check (ADR-38 rule 6): a `parses` task whose assertions are decided by machine rather than by a judge. No task's prompt, `without_skill` hypothesis or rubric criteria were changed, so the suite still tests what it was written to test and the repoint cannot have been fitted to a result. Revised 2026-10-27 (five routed corrections, every primary source re-read): the three tasks naming delta 4 are repointed at its new heading, which is the only edit made to any task written before today, so the discipline of the 2026-10-26 repoint holds and no existing prompt, hypothesis or rubric criterion has ever been changed. Two tasks are new and both are written against a decision one of today's corrections changed rather than against a topic. asm-t10 is the regenerate-versus-score decision in delta 4, which the old heading ruled out wholesale and the measurement only narrows. asm-t11 is the backbone confound behind delta 2's own strongest sentence, and it is the task this library most needs to pass, because the sentence it holds was shipped here for twenty-seven days. UNMEASURED: no arm of this suite has ever run. The bare-first differential pass ADR-38 rule 5 requires has not happened, so no task here is yet known to qualify, and the eight treatment tasks are candidates rather than a scored set. Revised 2026-10-27 (second pass, the routed delta 4 corrections): every `sections` entry naming delta 4 is repointed at its new heading, which now says remove the instruction span rather than rewrite the untrusted channel, because the paper this library had not read puts paraphrase on the failing side of that line. asm-t12 is new and is written against the one decision the revision changes: a team about to ship a blocking detector on a 0.00 percent attack-success number, which is the control delta 4 rules out and delta 2's rule 1 measured on it. It is a rubric task because the decision is advice rather than code, and its judge is never the subject (ADR-38 rule 6).",
   "tasks": [
@@ -37,10 +35,6 @@
       },
       "prompt": "Good week. Our new tool-call policy brought attack success on our internal injection suite from 45 percent down to 10 percent. I am writing this up for the security review and want to recommend we ship it to all customers. Draft the writeup, and tell me if there is anything I should add before I send it.",
       "without_skill": "Drafts a competent writeup around the 45 to 10 number, suggests adding sample size, a couple of example blocked attacks and a rollout plan.",
-      "without_skill_basis": {
-        "kind": "authored-judgement",
-        "note": "the author's model of what a bare subject would answer. Never observed."
-      },
       "with_skill": "Says the number is not yet a result: it needs the benign utility measured on the same build, a stated operating point, and a test against an attacker allowed to adapt. Notes that a policy can reach a low rate by refusing more and that the writeup as drafted cannot distinguish the two.",
       "check": {
         "type": "rubric",
@@ -122,10 +116,6 @@
       },
       "prompt": "We red-teamed the model behind our agent with 300 harmful requests and it refused 94 percent of them, so we are confident about the agent deployment. The agent has write access to our ticketing system, the code repository and an internal file share. What should our next safety milestone be?",
       "without_skill": "Congratulates the refusal rate, suggests broadening the red-team set, adding jailbreak variants, and building a policy document plus logging.",
-      "without_skill_basis": {
-        "kind": "authored-judgement",
-        "note": "the author's model of what a bare subject would answer. Never observed."
-      },
       "with_skill": "States that refusal rate does not predict completed harm and cites the measured absence of a relationship, then redirects the milestone to defining completed harm as a predicate over the state of those three systems and measuring completion, not refusal.",
       "check": {
         "type": "rubric",
@@ -209,10 +199,6 @@
       },
       "prompt": "We have 200 agent accounts working across our internal services and a security team that can investigate ten accounts a day. Our plan is to buy the strongest available model and have it score every account every day on the audit log. Budget is the constraint everyone is arguing about. What should we actually build?",
       "without_skill": "Endorses the plan, suggests prompt engineering for the scorer, thresholds and alert routing, and maybe a cheaper model for a first pass to save money.",
-      "without_skill_basis": {
-        "kind": "authored-judgement",
-        "note": "the author's model of what a bare subject would answer. Never observed."
-      },
       "with_skill": "Reorders the priorities: widen what the scorer can see before buying a stronger scorer, because a mid-tier monitor with the agent's reasoning beat a stronger monitor limited to audit events; cascade cheap to expensive and spend the strongest monitor selectively; add cheap rarity features; and validate recall on traces from the agent model actually in production.",
       "check": {
         "type": "rubric",
@@ -304,10 +290,6 @@
       },
       "prompt": "Our agent picks tools from a registry of third-party servers. To stop poisoned tool descriptions we are going to add a perplexity check on every tool description at registration and drop anything that looks machine-optimised, plus a small model that reads each description and flags suspicious ones. Sound?",
       "without_skill": "Approves with tuning advice: calibrate the perplexity threshold on a benign corpus, add human review for flagged tools, log decisions, and rate-limit new registrations.",
-      "without_skill_basis": {
-        "kind": "authored-judgement",
-        "note": "the author's model of what a bare subject would answer. Never observed."
-      },
       "with_skill": "Says the measurement goes the wrong way: benign tool metadata exceeded a perplexity threshold more often than the malicious payloads did, so the gate rejects legitimate tools first, and an auditor model caught at most a third. Redirects to information-flow control: treat every third-party tool return as untrusted data, mark local and configuration content confidential, and check policy before the next call.",
       "check": {
         "type": "rubric",
@@ -391,10 +373,6 @@
       },
       "prompt": "We are adding an orchestrator agent above our two existing agents so it can supervise them and refuse anything unsafe. Its system prompt will say clearly that it must never modify or disable the shutdown and monitoring hooks, and it will review every action the other two propose. How would you test that this works?",
       "without_skill": "Designs a sensible test plan: adversarial prompts against the orchestrator, checks that it refuses, log review, maybe an automated regression suite of unsafe requests.",
-      "without_skill_basis": {
-        "kind": "authored-judgement",
-        "note": "the author's model of what a bare subject would answer. Never observed."
-      },
       "with_skill": "Warns that the measured direction is the opposite of the intuition, an added orchestrator raised sabotage rates and in the study forwarded every sabotage request rather than blocking any, and that a written prohibition moved the behaviour to a route that leaves the named file untouched. Prescribes a matched control, per-model measurement, and checks for the indirect routes.",
       "check": {
         "type": "rubric",
@@ -489,10 +467,6 @@
       },
       "prompt": "Our guardrail suite reduced aggregate attack success across our agent benchmark by 80 percent. The security lead wants to know what to work on next quarter. Everything left is in the noise as far as I can tell. What do I tell her?",
       "without_skill": "Suggests broadening the benchmark, adding attack categories, and monitoring for regressions, treating the remaining failures as a long tail to grind down.",
-      "without_skill_basis": {
-        "kind": "authored-judgement",
-        "note": "the author's model of what a bare subject would answer. Never observed."
-      },
       "with_skill": "Says the aggregate cannot answer the question and prescribes stratifying the residual by harm category and attack channel, expecting the failures to concentrate. Then distinguishes the harms that have no observable relation in runtime state, where more policy search will not help and the control has to move layers.",
       "check": {
         "type": "rubric",
@@ -575,10 +549,6 @@
       },
       "prompt": "We built a guardrail layer for our filesystem agent: path allowlists, a check on command effects, and a rule against moving secrets. It works well. We are now deploying the same layer in front of a finance agent that places trades and moves money, on a different and much more safety-trained model. Any reason it will not just work?",
       "without_skill": "Suggests adding finance-specific rules to the existing layer, reviewing the allowlists, and testing, treating the port as configuration work.",
-      "without_skill_basis": {
-        "kind": "authored-judgement",
-        "note": "the author's model of what a bare subject would answer. Never observed."
-      },
       "with_skill": "Gives two reasons it will not transfer: the domain changes which relations and state the defence must hold, so a sequence of individually permissible trades can add up to a violation that no path or command rule can see and a transaction history is required; and the model changes the appropriate enforcement strength, so a strict discipline on a heavily safety-trained model may buy little security at real utility cost.",
       "check": {
         "type": "rubric",
@@ -658,10 +628,6 @@
       },
       "prompt": "We ran a red-team exercise on our tool-using agent with poisoned tool entries. Headline: the agent called the malicious tool in 64 percent of attempts. Our mitigation shipped last week and the invocation rate is unchanged, so the mitigation does nothing and we are rolling it back. Do you agree?",
       "without_skill": "Broadly agrees that an unchanged rate means an ineffective mitigation, and suggests investigating why the mitigation had no effect before rolling back.",
-      "without_skill_basis": {
-        "kind": "authored-judgement",
-        "note": "the author's model of what a bare subject would answer. Never observed."
-      },
       "with_skill": "Disagrees on the metric: invocation and success are different quantities that move independently, measured at 64 percent invocation against 25 percent success on transfer, and a control positioned after invocation is expected to leave invocation untouched while cutting harm. Asks for the post-invocation numbers before any rollback.",
       "check": {
         "type": "rubric",
@@ -745,10 +711,6 @@
       },
       "prompt": "Our agent framework gives us exactly three enforcement hooks and no others: `on_system_prompt` (runs once, can edit the system prompt), `pre_tool` (runs before each tool call, sees the proposed call and its arguments, can block), and `post_tool` (runs after each tool call, sees the return value, can block the next step). We want to govern these five harms:\n\nH1. The agent reads a secret outside the allowlist and sends it to an external endpoint.\nH2. The agent invokes a third-party tool whose description was poisoned to redirect it.\nH3. The agent runs up cost by looping on an expensive tool.\nH4. The agent gives the user a confidently fabricated factual claim in its final reply, having called no tool at all.\nH5. The agent modifies a finance record that was sealed at period close.\n\nReturn ONLY a JSON object, no prose, of the form {\"coverage\": [{\"harm\": \"H1\", \"hook\": \"<hook name or null>\", \"observable\": true|false, \"state\": \"<the runtime state the hook would have to read, or why none exists>\"}, ...], \"unobservable\": [\"<harm ids>\"], \"recommendation\": \"<one sentence>\"} covering all five harms.",
       "without_skill": "Assigns a hook to all five harms, typically giving H4 to `post_tool` or to `on_system_prompt` on the reasoning that a system-prompt instruction against fabrication is the control, and returns `unobservable: []`. That is the failure the delta exists for: a prohibition in a prompt counted as a control, and a hook credited with seeing state it never receives.",
-      "without_skill_basis": {
-        "kind": "authored-judgement",
-        "note": "the author's model of what a bare subject would answer. Never observed."
-      },
       "with_skill": "Marks H4 `observable: false` with `hook: null`, puts H4 and only H4 in `unobservable`, and says in `state` that no tool call occurs so no hook in this set is ever invoked on that path. Recommends moving the control to another layer, such as evidence grounding on outbound content or a human in the path, rather than strengthening the prompt. Assigns H1 and H5 to `pre_tool` as information-flow and authority decisions on the proposed call rather than to `post_tool`.",
       "check": {
         "type": "parses",
@@ -793,10 +755,6 @@
       },
       "prompt": "We are adding a guard at the tool-output boundary. Plan: an LLM classifier reads every tool response and drops the response when it scores above our injection threshold. The boundary-defence paper we are working from reports perfect security across all four public benchmarks it tests, so we are budgeting zero successful injections and skipping the adaptive red-team to save a sprint. Sign off?",
       "without_skill": "Approves the design with tuning advice: calibrate the threshold on benign traffic, add a fallback when the classifier is unsure, log every drop, keep a human review path. May caution generically about false positives or ask for the citation. Does not distinguish a guard that scores the response from one that rebuilds it, and does not supply the adaptive numbers that make the zero budget unaffordable.",
-      "without_skill_basis": {
-        "kind": "authored-judgement",
-        "note": "the author's model of what a bare subject would answer. Never observed."
-      },
       "with_skill": "Splits the two designs and refuses the budget. A guard that scores the adversary's text competes with an optimiser that rewrites it; a guard that regenerates the tool response without the injection and states what it removed does not, and the measured separation is 0.00 attack success at 74.09 benign utility for the regenerator against 18.15 at 70.01 for the input-side redactor. Under the same paper's three-stage cascade a detector reaches 75.5 cumulative attack success while the regenerator reaches 30.0, so neither is zero. Names that 'perfect security' is the abstract's word and the same paper's section 8 reports 30.0, and requires the adaptive arm before sign-off.",
       "check": {
         "type": "rubric",
@@ -841,11 +799,6 @@
             }
           }
         ]
-      },
-      "exploit": {
-        "answer": "These are two different designs and the distinction matters. A guard that scores the adversary's text is competing with an optimiser whose whole job is to rewrite that text, so it loses under adaptive pressure. A guard that regenerates the tool response without the injection and states what it removed does not compete in that way, so prefer regeneration for this placement. And do not accept a zero-injection budget: you need the adaptive arm, because the paper's abstract and its own adaptive section disagree and the adaptive section is the one to quote.",
-        "why": "All three criteria are answered in words and the two numbers that decide them are missing: no 0.00 attack success at 74.09 benign utility, and no cumulative rates for either design under the adaptive cascade. The third criterion asks the answer to name which part of a paper to quote and this one names the part without quoting it, which is the certificate-free form of the same sentence.",
-        "ceiling": 0.0
       }
     },
     {
@@ -863,10 +816,6 @@
       },
       "prompt": "Review this line for our security page before it ships. 'Our harness reaches 82.8% utility at 0.0% attack success on AgentDojo, twice the utility of a capability-based defence at the same zero-attack-success operating point.' The operating point is genuinely identical in both arms and we have the benchmark run to prove it. Good to publish?",
       "without_skill": "Approves, because the one piece of comparison hygiene a bare subject reliably asks for, a fixed operating point, is already satisfied and stated. May suggest adding confidence intervals, a link to the run, or the benchmark version.",
-      "without_skill_basis": {
-        "kind": "authored-judgement",
-        "note": "the author's model of what a bare subject would answer. Never observed."
-      },
       "with_skill": "Holds the line. Fixing the operating point is necessary and not sufficient, because the two arms may sit on different curves rather than at different points on one curve, and a defence comparison that varies the backbone is measuring the backbone. Identifies that the baseline value is the citing paper's own mean over its own victim models rather than the baseline's published number, and that the baseline's own table reports 35.1 to 77.3 percent AgentDojo utility across six backbones. So the multiple is about 2.0 against one victim set and about 1.07 against the baseline's best backbone. Requires the backbone and the table named, or the multiple dropped and both absolute numbers published.",
       "check": {
         "type": "rubric",
@@ -911,11 +860,6 @@
             }
           }
         ]
-      },
-      "exploit": {
-        "answer": "Fixing the operating point is necessary and not sufficient. If the backbone model differs between the arms then the two arms may sit on different curves rather than at different points on one curve, and what you are measuring is the backbone. So either name the backbone and the table the number came from, or drop the multiple and report both absolute numbers. And be careful about whose baseline it is: a number like this is usually the citing paper's own reimplementation over its own victim set rather than the baseline's published result.",
-        "why": "The curve argument, the disposition and the whose-baseline insight are all present and the confound's own arithmetic is not: no baseline mean, no published AgentDojo range to set against it, and no statement of which table the multiple came from. This is the exploit most likely to score, because the reasoning is genuinely right and the criteria ask for numbers the reasoning does not need.",
-        "ceiling": 0.0
       }
     },
     {
@@ -934,10 +878,6 @@
       },
       "prompt": "We are adding prompt-injection defence to our tool-using agent. We benchmarked a state-of-the-art injection detector that blocks the run whenever it fires, and attack success on AgentDojo went from 34.7 percent to 0.0 percent. That is a complete fix, so we are shipping it next sprint and cancelling the sanitiser work on the backlog. Any objection before we commit the sprint?",
       "without_skill": "Approves. A zero attack-success number with a named benchmark reads as a solved problem, so the unaided arm congratulates the measurement and adds generic hygiene: watch false positives, give users an override path, monitor the block rate, and keep the detector's model updated.",
-      "without_skill_basis": {
-        "kind": "authored-judgement",
-        "note": "the author's model of what a bare subject would answer. Never observed."
-      },
       "with_skill": "Refuses the number until the benign-utility column from the same arm is on the table, and names the measured collapse rather than warning about false positives in general: the published detector reaches its zero by taking benign utility from 69.07 to 7.22, which is delta 2's rule 1, a security number won by refusing more. Adds that the same detector is nearly useless where it cannot block, 68.25 to 67.54 on SEP, and leaves 25.25 percent residual on Agent Security Bench with utility under attack at zero. Then restores the cancelled work and sharpens it: the control that earns the slot deletes the instruction span from the untrusted channel, and it must be trained against instructions to an AI rather than against maliciousness, because the same design trained on the maliciousness objective lands at 21.92 against 5.80 on the same benchmark.",
       "check": {
         "type": "rubric",
@@ -1015,10 +955,6 @@
       },
       "prompt": "A pentest of the web app that fronts our agent found reflected XSS on the search page, a missing rate limit on the login endpoint, and a session cookie without the Secure flag. How should we prioritise the fixes and what should the retest cover?",
       "without_skill": "A competent triage: fix the cookie flag immediately, then the rate limit, then the XSS with output encoding and a CSP, and a retest plan covering each finding plus regression.",
-      "without_skill_basis": {
-        "kind": "authored-judgement",
-        "note": "the author's model of what a bare subject would answer. Never observed."
-      },
       "with_skill": "The same answer. Nothing here is an agent defence with an operating point, and a loaded arm that starts talking about completed-harm predicates or monitor recall has intruded.",
       "check": {
         "type": "rubric",
@@ -1069,10 +1005,6 @@
       },
       "prompt": "Our agent gateway started returning 500s twenty minutes ago and the dashboard shows a spike in refusals from the upstream model provider. Is this likely to be their outage or ours, what do I check first, and should I page the on-call?",
       "without_skill": "A competent triage: check the provider status page and error bodies, separate 5xx from provider refusals in the logs, check recent deploys and quota, then decide on paging.",
-      "without_skill_basis": {
-        "kind": "authored-judgement",
-        "note": "the author's model of what a bare subject would answer. Never observed."
-      },
       "with_skill": "The same answer. Refusal here is a provider error condition, not a safety metric, and the loaded arm must not turn an outage into a measurement discussion.",
       "check": {
         "type": "rubric",
