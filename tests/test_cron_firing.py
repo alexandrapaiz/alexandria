@@ -1052,3 +1052,101 @@ def test_a_claim_with_no_hook_after_it_orphans_nothing_silently(tmp_path):
     assert result["orphaned"] == []
     finding, = result["lost"]
     assert finding["slot"] == "11:05Z"
+
+
+# --- the pull request index can be blind to a seat, and that is not a verdict
+#
+# Added 2026-11-02. Three readings of one slot in one run, in this order:
+# `LOST?` because the index was blind to `sec/`, then `retried` because the
+# alias made #657 visible, then `LOST?` again because #657 is a draft. Only
+# the third is both right and right for the right reason, and the first two
+# are what these tests stand against.
+
+def test_a_seat_whose_branch_prefix_no_rule_derives_is_still_matched():
+    """`alexandria-security` ships from `sec/`, which neither prefix forms."""
+    assert "sec" in cf._branch_prefixes("alexandria-security")
+    assert "alexandria-security" in cf._branch_prefixes("alexandria-security")
+
+
+def test_an_index_that_knows_no_branch_of_a_seats_is_blind_to_it():
+    index = [pr_entry(660, "alexandria-writer/2026-11-01-hook", "2026-11-01T23:16:37Z")]
+    assert cf.index_is_blind_to("alexandria-okr", index) is True
+    assert cf.index_is_blind_to("alexandria-writer", index) is False
+
+
+def test_an_empty_index_is_not_blindness_because_it_was_never_passed():
+    """`--prs` unpassed is the ordinary case; calling it blindness cries wolf."""
+    assert cf.index_is_blind_to("alexandria-writer", []) is False
+
+
+def test_a_blind_index_says_so_rather_than_reporting_no_pull_request(tmp_path, capsys):
+    write_log(tmp_path, "alexandria-security", "2026-11-01T13-00-27-000Z", "cron",
+              refused("You've hit your weekly limit · resets 11am (UTC)"),
+              exit_code=1, turns=1)
+    index = [pr_entry(660, "alexandria-writer/2026-11-01-hook", "2026-11-01T23:16:37Z")]
+    cf.judge(cf.read_runs(tmp_path), "2026-11-01", pr_index=index,
+             now=datetime(2026, 11, 1, 23, 59, tzinfo=UTC))
+    finding, = cf.judge(cf.read_runs(tmp_path), "2026-11-01", pr_index=index,
+                        now=datetime(2026, 11, 1, 23, 59, tzinfo=UTC))["lost"]
+    assert finding["pr_index_blind"] is True
+
+
+def test_a_re_fire_that_left_its_pull_request_a_draft_has_not_carried_the_cycle(tmp_path):
+    """L-A32: no gate can reach a draft, so a draft is not an arrival.
+
+    Security's 13:00Z slot on 2026-11-01, as the host recorded it: refused at
+    turn one, claimed by the retry, re-fired at 23:04:44Z, and that run opened
+    #657 and exited 124 before `gh pr ready`.
+    """
+    write_log(tmp_path, "alexandria-security", "2026-11-01T13-00-27-000Z", "cron",
+              refused("You've hit your weekly limit · resets 11am (UTC)"),
+              exit_code=1, turns=1)
+    write_log(tmp_path, "alexandria-security", "2026-11-01T23-04-44-320Z", "hook",
+              None, exit_code=124, turns=None)
+    claims = cf.read_retry_claims(claim_file(
+        tmp_path,
+        **{"alexandria-security": ["2026-11-01T13-00-27-000Z-cron.log"]}))
+    index = [dict(pr_entry(657, "sec/2026-11-01", "2026-11-01T23:06:23Z"),
+                  isDraft=True)]
+    result = cf.judge(cf.read_runs(tmp_path), "2026-11-01", claims=claims,
+                      pr_index=index, now=datetime(2026, 11, 2, 0, 5, tzinfo=UTC))
+    assert result["retried"] == []
+    finding, = result["lost"]
+    assert finding["retry_pr_is_draft"] is True
+    assert finding["retry_pr"] == "https://github.com/o/r/pull/657"
+
+
+def test_the_same_re_fire_with_the_draft_readied_does_carry_the_cycle(tmp_path):
+    """The mirror, so the draft check cannot pass by refusing everything."""
+    write_log(tmp_path, "alexandria-security", "2026-11-01T13-00-27-000Z", "cron",
+              refused("You've hit your weekly limit · resets 11am (UTC)"),
+              exit_code=1, turns=1)
+    write_log(tmp_path, "alexandria-security", "2026-11-01T23-04-44-320Z", "hook",
+              None, exit_code=124, turns=None)
+    claims = cf.read_retry_claims(claim_file(
+        tmp_path,
+        **{"alexandria-security": ["2026-11-01T13-00-27-000Z-cron.log"]}))
+    index = [dict(pr_entry(657, "sec/2026-11-01", "2026-11-01T23:06:23Z"),
+                  isDraft=False)]
+    result = cf.judge(cf.read_runs(tmp_path), "2026-11-01", claims=claims,
+                      pr_index=index, now=datetime(2026, 11, 2, 0, 5, tzinfo=UTC))
+    assert result["lost"] == []
+    finding, = result["retried"]
+    assert finding["retry_pr_is_draft"] is False
+
+
+def test_an_index_built_without_isdraft_is_unknown_rather_than_readied(tmp_path):
+    """An absent field is not a false one, which is how the claim file is read."""
+    write_log(tmp_path, "alexandria-security", "2026-11-01T13-00-27-000Z", "cron",
+              refused("You've hit your weekly limit · resets 11am (UTC)"),
+              exit_code=1, turns=1)
+    write_log(tmp_path, "alexandria-security", "2026-11-01T23-04-44-320Z", "hook",
+              None, exit_code=124, turns=None)
+    claims = cf.read_retry_claims(claim_file(
+        tmp_path,
+        **{"alexandria-security": ["2026-11-01T13-00-27-000Z-cron.log"]}))
+    index = [pr_entry(657, "sec/2026-11-01", "2026-11-01T23:06:23Z")]
+    result = cf.judge(cf.read_runs(tmp_path), "2026-11-01", claims=claims,
+                      pr_index=index, now=datetime(2026, 11, 2, 0, 5, tzinfo=UTC))
+    finding, = result["retried"]
+    assert finding["retry_pr_is_draft"] is False

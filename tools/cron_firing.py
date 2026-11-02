@@ -365,6 +365,11 @@ def pr_absence_is_evidence(run):
             and run["exit_code"] == 0)
 
 
+# Branch prefixes no rule derives from the seat directory name. One entry is
+# not a pattern; `index_is_blind_to` is what catches the second one.
+ALIASES = {"alexandria-security": {"sec"}}
+
+
 def _branch_prefixes(seat):
     """The branch prefixes a seat's own pull requests use.
 
@@ -373,11 +378,49 @@ def _branch_prefixes(seat):
     repository's history is the bare role, `engineer/2026-10-18-slug`, and both
     are still in the pull request list. Matching on either is what makes a
     reading of an older day work.
+
+    A third form exists and no rule derives it. The security seat's branches
+    are `sec/2026-11-01`, not `alexandria-security/` and not `security/`, so
+    the two prefixes above are both blind to the only pull request that seat
+    has ever opened. On 2026-11-01 that blindness produced a verdict rather
+    than a question: the re-fire of security's 13:00Z slot had opened #657
+    twenty minutes before the reading, and this file reported that it "opened
+    no pull request either, so the cycle is lost after a recovery attempt."
+    The answer happened to be right for another reason -- #657 was left a
+    draft by a run that exited 124 -- which is the worst way for an instrument
+    to be wrong, because nothing finds it until the day the answer differs.
+
+    `ALIASES` is a maintained list and maintained lists rot, so it is not the
+    remedy here; it is the repair of one instance. The remedy is
+    `index_is_blind_to` below, which costs nothing to keep true and fires for
+    the next seat whose convention nobody wrote down.
     """
     prefixes = {seat}
     if "-" in seat:
         prefixes.add(seat.split("-", 1)[1])
+    prefixes |= ALIASES.get(seat, set())
     return prefixes
+
+
+def index_is_blind_to(seat, pr_index):
+    """Does the pull request list carry any branch at all for this seat?
+
+    "This seat opened no pull request" and "I cannot see this seat's branches"
+    are different claims, and only the first is evidence. The file already
+    draws exactly this distinction for the firing record, where a slot with no
+    row is `unseen` rather than failed, because a retired clock and a clock
+    that did not fire leave the same absence. A pull request index that knows
+    no branch of a seat's is the same absence one surface over, and until
+    2026-11-02 this file read it as the other thing.
+    """
+    if not pr_index:
+        return False
+    prefixes = _branch_prefixes(seat)
+    for entry in pr_index:
+        branch = entry.get("headRefName") or ""
+        if any(branch.startswith(f"{prefix}/") for prefix in prefixes):
+            return False
+    return True
 
 
 def resolve_shipped(runs, pr_index, max_run_hours=MAX_RUN_HOURS):
@@ -403,6 +446,10 @@ def resolve_shipped(runs, pr_index, max_run_hours=MAX_RUN_HOURS):
 
     for seat, seat_runs in by_seat.items():
         seat_runs.sort(key=lambda r: r["started"])
+        blind = index_is_blind_to(seat, pr_index)
+        if blind:
+            for run in seat_runs:
+                run["pr_index_blind"] = True
         prefixes = _branch_prefixes(seat)
         candidates = []
         for entry in pr_index:
@@ -425,6 +472,12 @@ def resolve_shipped(runs, pr_index, max_run_hours=MAX_RUN_HOURS):
                 if opens <= created < closes:
                     run["pr"] = entry.get("url") or f"#{entry.get('number')}"
                     run["pr_source"] = "pull request list"
+                    # A draft is not a shipped cycle. `isDraft` is absent from
+                    # an index built without it, and an absent field is read as
+                    # unknown rather than as false, which is the same rule the
+                    # claim file is read by.
+                    if entry.get("isDraft") is True:
+                        run["pr_is_draft"] = True
                     break
     return runs
 
@@ -619,9 +672,12 @@ def judge(runs, day, tolerance=15, history_days=14, now=None, pr_index=None,
             "pr": run["pr"],
             "pr_source": run.get("pr_source", "trailer" if run["pr"] else None),
             "pr_unknown": not pr_absence_is_evidence(run),
+            "pr_index_blind": bool(run.get("pr_index_blind")),
+            "pr_is_draft": bool(run.get("pr_is_draft")),
             "retry_claimed": bool(run.get("retry_claimed")),
             "retried_by": None,
             "retry_pr": None,
+            "retry_pr_is_draft": False,
             "orphaned_behind": run.get("orphaned_behind"),
         }
         # A slot the retry claimed and re-fired successfully is not a lost
@@ -631,7 +687,15 @@ def judge(runs, day, tolerance=15, history_days=14, now=None, pr_index=None,
         if state == "lost" and successor is not None:
             finding["retried_by"] = successor["run_id"]
             finding["retry_pr"] = successor["pr"]
-            if run.get("retry_claimed") and successor["pr"]:
+            finding["retry_pr_is_draft"] = bool(successor.get("pr_is_draft"))
+            # L-A32: a gate cannot reach a draft, and GitHub refuses to merge
+            # one at all. So a re-fire that opened a draft and stopped has not
+            # carried the cycle, however complete its branch looks. Measured
+            # on 2026-11-01: security's re-fire opened #657 and exited 124
+            # before `gh pr ready`, and promoting on the pull request's
+            # existence alone reported that cycle as arrived.
+            if (run.get("retry_claimed") and successor["pr"]
+                    and not successor.get("pr_is_draft")):
                 finding["state"] = "retried"
                 finding["late_minutes"] = int(
                     (successor["started"] - run["started"]).total_seconds() // 60)
@@ -725,7 +789,17 @@ def render(result, root, prs_given=False):
                 # Two different absences, and telling a reader to pass a flag
                 # they already passed sends them back to the step they just
                 # took. Say which evidence is actually missing.
-                if finding["retried_by"]:
+                if finding["retry_pr"] and finding["retry_pr_is_draft"]:
+                    hint = (f"The retry re-fired it as {finding['retried_by']}, "
+                            f"and that run opened {finding['retry_pr']} and left "
+                            f"it a draft, which no gate can reach, so the cycle "
+                            f"is owed by a branch that exists")
+                elif finding["pr_index_blind"]:
+                    hint = ("The pull request list carries no branch with this "
+                            "seat's prefixes at all, so it is blind to this "
+                            "seat and `pr=-` is not evidence either way. Add "
+                            "the seat's real prefix to ALIASES")
+                elif finding["retried_by"]:
                     hint = (f"The retry re-fired it as {finding['retried_by']}, "
                             f"and that run opened no pull request either, so "
                             f"the cycle is lost after a recovery attempt")
