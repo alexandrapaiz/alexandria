@@ -65,7 +65,13 @@ missing.**
 | 12a, the outsider test and density | **PASS with one concession** | The value sections are two-to-four-sentence paragraphs. The constraint sections are a checklist with bold labels, which the page now says out loud so the next round does not imitate the cadence: "The constraint sections are a working checklist and their bold labels are not a model for a page." |
 | 6 and 7, evidence grades in line | **FAIL, repaired** | The old page made six claims and graded none. The new "What holds and what does not" section grades each one against the register's row, in line, with the receipt's own timestamp. |
 
-**The ban list.** One new entry, 148, "the relieved duty". Three specimens,
+**The ban list.** One new entry, 148, "the relieved duty". The first draft
+of the rewritten page committed it in its own lead paragraph, "The library is
+where the second job is already done", which asserts the upkeep the register
+calls "reports, does not replace". Struck for "The library does the noticing",
+which is the altitude the page's own claims section prescribes, because the
+contradiction edges and the issue's deprecated section do the noticing and
+nothing does the replacing. Three specimens,
 two of them live. The old `value.md` carried two and
 `site/app/skills/page.jsx:31` carries the third, approved. It is appended with
 the enforcement it reached and the half it did not, per the 2026-09-25 rule at

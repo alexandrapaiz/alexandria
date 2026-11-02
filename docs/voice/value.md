@@ -42,8 +42,8 @@ refused.
 
 Knowing which techniques currently work is part of a builder's job, and
 noticing when that stops being true is the part nobody has time for.
-The library is where the second job is already done, and what a builder
-ends up holding is the library rather than any issue of it. The library
+The library does the noticing, and what a builder ends up holding is
+the library rather than any issue of it. The library
 holds what the research has established, with the paper behind each
 finding and the later work that bore on it, and new findings arrive
 every day.
