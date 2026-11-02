@@ -19,6 +19,7 @@ and in what order, not that anyone reimplemented Postgres.
 
 import os
 import pathlib
+import re
 import sys
 
 import pytest
@@ -627,7 +628,11 @@ def test_the_asker_shown_is_the_text_and_the_asker_obeyed_is_the_slug():
     """
     by_id = {i.paper_id: i for i in rq.parse(PROSE_ASKERS)}
     chair = by_id["arxiv:2609.40115"]
-    assert chair.asked_by == "the"
+    # Was `"the"` until 2026-11-02, which is what this assertion said and what
+    # the field actually held. A display field answering `the` to "who asked for
+    # this" displays nothing, so the pattern now reads to the format's own
+    # separator and this gate reads the asker the chair signed.
+    assert chair.asked_by == "the chair (owner: make sure the corpus includes RLVR)"
     assert chair.asking_skill == ""
     skill = by_id["arxiv:2609.08371"]
     assert skill.asked_by == "skills/agent-containment"
@@ -813,7 +818,11 @@ def test_the_added_line_is_read_back_by_the_parser_that_decides_the_fetch():
     added = [i for i in served if i.paper_id == "arxiv:2602.05366"]
     assert len(added) == 1, [i.paper_id for i in served]
     assert added[0].checked is False
-    assert added[0].asked_by == "the"          # the display token, as documented
+    # Was `"the"` with the comment "the display token, as documented". It was
+    # documented, and the documentation was the defect: this is the gate on the
+    # writer-checked-by-the-reader path, and it asserted that the asker the
+    # caller passed arrives truncated. The whole asker now survives.
+    assert added[0].asked_by == "the research seat"
     assert added[0].asking_skill == ""         # a seat is not a blocked skill
     assert line in after
     assert after.startswith(QUEUE.rstrip("\n"))   # append, never insert
@@ -975,3 +984,98 @@ def test_the_live_file_is_still_writable_by_this_path():
                          "the engineer seat", "2026-11-02")
     assert len(rq.pending(after, limit=None)) == len(rq.pending(text, limit=None)) + 1
     assert rq.parse(line)[0].paper_id == "arxiv:2699.99999"
+
+
+# --- the asker guard, which could not fail until 2026-11-02 ------------------
+
+
+def test_a_multi_word_asker_survives_the_write_whole():
+    """The defect the research seat measured on the first outside use of `--add`.
+
+    They queued a paper with `--asked-by "the research seat"`, and the line they
+    got composed, passed every check `compose` makes, and read back as `the`. The
+    reason is the shape of the check rather than the value: `compose` compared the
+    parsed asker against `asked_by.split()[0]`, and the parser took one
+    whitespace token, so both sides were the first word and the guard was an
+    identity. It cost them nothing only because they read the parser before
+    trusting the writer.
+    """
+    line = rq.compose("2606.01234", "a reason", "the research seat", "2026-11-02")
+    assert rq.parse(line)[0].asked_by == "the research seat"
+
+
+def test_the_asker_guard_can_refuse_a_line_whose_asker_does_not_survive():
+    """The guard, pointed at a reader that truncates, which is what it is for.
+
+    Reverting `ASKED_BY` to one whitespace token must make this raise. That is
+    the whole claim: before this change the same monkeypatch left `compose`
+    perfectly happy, because the thing it compared against was truncated by the
+    same rule.
+    """
+    monkey = re.compile(r"asked by\s+(?P<who>\S+)")
+    original = rq.ASKED_BY
+    rq.ASKED_BY = monkey
+    try:
+        with pytest.raises(ValueError, match="reads back as"):
+            rq.compose("2606.01234", "a reason", "the research seat", "2026-11-02")
+    finally:
+        rq.ASKED_BY = original
+
+
+def test_the_asker_is_read_to_the_separator_and_not_past_it():
+    """A widened pattern must stop at the field boundary or it swallows the date.
+
+    This is the risk the widening carries, and it is the reason `compose` refuses
+    an em dash inside either text field: the separator has to mean one thing.
+    """
+    line = rq.compose("2606.01234", "a reason", "the chair (owner: do the thing)",
+                      "2026-11-02")
+    item = rq.parse(line)[0]
+    assert item.asked_by == "the chair (owner: do the thing)"
+    assert "2026-11-02" not in item.asked_by
+
+
+def test_every_asker_on_the_live_file_stops_at_the_separator():
+    """The fixture is four lines; the file is 167 paper lines by three seats.
+
+    A widened pattern is only safe if the em dash really terminates the field
+    everywhere it has been written by hand, including on struck lines that carry
+    a paragraph of answer after the date. Measured before shipping: 52 of 167
+    lines changed, all 14 distinct values are askers, and none of them carries a
+    date or a strike marker.
+    """
+    items = rq.parse(rq.read_file(rq.QUEUE_PATH))
+    assert len(items) > 100, len(items)
+    for item in items:
+        assert "\u2014" not in item.asked_by, item.raw
+        assert "~~" not in item.asked_by, item.raw
+        assert not re.search(r"\d{4}-\d{2}-\d{2}", item.asked_by), item.raw
+    recovered = [i for i in items if i.asked_by and not i.asking_skill]
+    assert len(recovered) >= 50, len(recovered)
+    assert all(i.asked_by != "the" for i in recovered)
+
+
+def test_widening_the_display_field_moved_no_decision():
+    """`asked_by` is display and `asking_skill` decides. Only one of them changed.
+
+    The gate that matters for the blast radius: `pending`'s ordering reads
+    `asking_skill`, which `SKILL_ASKER` supplies and this change did not touch,
+    so the live file's grouping is byte-for-byte what it was.
+    """
+    items = rq.parse(rq.read_file(rq.QUEUE_PATH))
+    for item in items:
+        assert item.asking_skill in ("", item.asked_by) or item.asked_by.startswith(
+            item.asking_skill), (item.asking_skill, item.asked_by)
+        if item.asking_skill:
+            assert item.asking_skill.startswith("skills/")
+
+
+def test_a_trailing_comma_on_the_asker_is_normalised_the_same_on_both_sides():
+    """`compose` checks the writer against the reader, so the two must agree.
+
+    A check whose sides normalise differently fires on its own normalisation. One
+    function does it for both, which is why this composes rather than raising.
+    """
+    line = rq.compose("2606.01234", "a reason", "the research seat,", "2026-11-02")
+    assert rq.parse(line)[0].asked_by == "the research seat"
+    assert rq.normalise_asker("  the   research  seat.  ") == "the research seat"

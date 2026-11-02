@@ -43,17 +43,31 @@ QUEUE_PATH = "docs/research/reading-queue.md"
 ITEM = re.compile(r"^\s*-\s*\[(?P<mark>[ xX])\]\s*(?P<body>.*)$")
 ARXIV = re.compile(r"arxiv:\s*(?P<id>\d{4}\.\d{4,5}|[a-z\-]+(?:\.[A-Z]{2})?/\d{7})(?:v\d+)?",
                    re.IGNORECASE)
-ASKED_BY = re.compile(r"asked by\s+(?P<who>\S+)")
+# The asker, read to this format's own field separator, the way `why` above it
+# already is. **It used to take one whitespace token, and that was wrong about
+# 52 of the 167 lines in the live file** (measured 2026-11-02): every line the
+# chair signs "asked by the chair (owner: ...)" and every line a seat signs
+# "asked by the research seat's L-R1 check" displayed as the single word `the`.
+# The comment below used to record that truncation as acceptable because the
+# field is only for display, which it is, and a display field that answers `the`
+# to "who asked for this" is not displaying anything.
+#
+# The research seat found the sharp end of it on 2026-11-02: `compose` guards
+# this field by comparing the parsed value against the first word of what was
+# passed, so with a one-token pattern the two sides were the same word and the
+# guard could not fail. An asker of "the research seat" composed, passed every
+# check, and read back as "the". Widening the pattern is what gives that guard
+# something to compare, and `compose` refuses an em dash in either text field,
+# so nothing a writer can pass is cut short here.
+ASKED_BY = re.compile(r"asked by\s+(?P<who>[^—]+)")
 
-# The asker, when the asker is a skill. `ASKED_BY` above takes one whitespace
-# token for display, which is right for display and wrong for any decision: the
-# chair signs lines "asked by the chair (owner: ...)" and the research seat signs
-# them "asked by the research seat's L-R1 check", and both of those read as the
-# single token `the`. On 2026-10-05 that token became load-bearing, because
-# `pending` started treating an asker outside `sourced` as a blocked skill, and
-# `the` is outside every set. The documented format is the only thing that may
-# answer "which skill is stuck on this line", so this pattern matches that format
-# and nothing else.
+# The asker, when the asker is a skill. `ASKED_BY` above is for display and is
+# still wrong for any decision, because "the chair" and "skills/x" are both
+# askers and only one of them is a skill waiting on a read. On 2026-10-05 that
+# distinction became load-bearing, because `pending` started treating an asker
+# outside `sourced` as a blocked skill. The documented format is the only thing
+# that may answer "which skill is stuck on this line", so this pattern matches
+# that format and nothing else.
 SKILL_ASKER = re.compile(r"asked by\s+(?P<slug>skills/[A-Za-z0-9_-]+)")
 
 # How many queue lines one run will take. The queue is drained by two seats and
@@ -73,13 +87,27 @@ class Item(NamedTuple):
     arxiv_id: str          # 2602.12670
     paper_id: str          # arxiv:2602.12670, the key in `papers`
     checked: bool
-    asked_by: str          # the asker as written, for display: "skills/x", "the"
+    # The asker as written, for display: "skills/x", "the chair (owner: ...)".
+    # Read to the em dash, so it is the whole asker and not its first word.
+    asked_by: str
     line_no: int
     raw: str
     # The skill this line is blocked on, or "" when the asker is not a skill.
     # A seat, a person or an unsigned line all give "", because none of them is
     # a skill waiting on a read. Only this field may decide the order.
     asking_skill: str = ""
+
+
+def normalise_asker(raw: str) -> str:
+    """One asker, as the reader of this format sees it: `the chair (owner: x)`.
+
+    One function rather than two expressions, because `compose` checks the
+    writer against the reader and a check whose two sides normalise differently
+    fires on its own normalisation rather than on the line. Both callers go
+    through here, so the only way that guard can disagree is if the line itself
+    does not carry what the writer passed, which is the one thing it is for.
+    """
+    return " ".join(raw.split()).rstrip(",.").strip()
 
 
 def parse(text: str) -> list[Item]:
@@ -99,7 +127,7 @@ def parse(text: str) -> list[Item]:
             arxiv_id=arxiv_id,
             paper_id=f"arxiv:{arxiv_id}",
             checked=m.group("mark").lower() == "x",
-            asked_by=who.group("who").rstrip(",.") if who else "",
+            asked_by=normalise_asker(who.group("who")) if who else "",
             line_no=n,
             raw=line.strip(),
             asking_skill=slug.group("slug").rstrip("/") if slug else "",
@@ -370,7 +398,13 @@ def compose(arxiv_id: str, why: str, asked_by: str, date: str) -> str:
     if len(read) != 1 or read[0].arxiv_id != want or read[0].checked:
         raise ValueError(f"composed a line this module's own parser does not "
                          f"read back as one unchecked request: {line!r}")
-    if read[0].asked_by != asked_by.split()[0].rstrip(",."):
+    # The whole asker, not its first word. Until 2026-11-02 this compared
+    # `read[0].asked_by` against `asked_by.split()[0]`, and the reader took one
+    # whitespace token, so the two sides were the same word by construction and
+    # this guard could not refuse any asker a writer could pass. The research
+    # seat measured it: "the research seat" composed, passed every check here,
+    # and went into an append-only file reading "the".
+    if read[0].asked_by != normalise_asker(asked_by):
         raise ValueError(f"composed a line whose asker reads back as "
                          f"{read[0].asked_by!r} rather than {asked_by!r}")
     return line

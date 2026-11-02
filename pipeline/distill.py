@@ -1281,8 +1281,17 @@ def distill(max_papers: int = MAX_PAPERS_PER_RUN, queue_text: str | None = None,
             sourced = queue.skills_with_claims(conn)
             waiting = queue.pending(text, limit=None, sourced=sourced)
             requested = waiting[:queue.MAX_PER_RUN]
-            blocked_first = [i.asked_by for i in requested
-                             if i.asked_by and i.asked_by.rstrip("/") not in sourced]
+            # `asking_skill`, not `asked_by`. This sentence counts "skill(s) in
+            # this batch that cite none", and `asked_by` is the display field, so
+            # it counted the chair and the research seat among the skills: both
+            # sign lines in prose, neither is in any `sourced` set, and the real
+            # starved skill was one entry in a list of three. It read `the` for
+            # all of them until the display field was widened on 2026-11-02,
+            # which would have made this log print the chair's whole signature
+            # under a sentence that says skill. The ordering above has always
+            # used `asking_skill`; this is the log catching up to it.
+            blocked_first = [i.asking_skill for i in requested
+                             if i.asking_skill and i.asking_skill not in sourced]
             print(f"reading queue: {len(waiting)} pending, {len(requested)} taken this run")
             print(f"reading-queue: {len(sourced)} skills cite claims; "
                   f"{len(set(blocked_first))} skill(s) in this batch cite none "
