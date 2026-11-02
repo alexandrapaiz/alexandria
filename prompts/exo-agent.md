@@ -86,6 +86,10 @@ gets.
 **How a run knows it is the doorbell, because the trigger column cannot tell
 it.** Over all 1,695 `run.end` rows the host has written, `trigger` has held
 exactly four values: `message` 1,478, `hook` 104, `window` 76 and `cron` 37.
+**Re-read 2026-11-02T04:10Z at 2,558 rows and the set is unchanged**: `message`
+2,175, `hook` 179, `cron` 128, `window` 76. Eight hundred and sixty-three more
+rows without a fifth value is what turns this from a small sample into a
+property of the field, so quote the later pair.
 **No event type has ever appeared there**, so `week.started` will arrive under
 one of those four words and no column will say which event it was. That is the
 same asymmetry §0 already records for the capacity re-fire: a woken run can

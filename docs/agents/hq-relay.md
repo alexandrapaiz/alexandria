@@ -5600,8 +5600,12 @@ cycle with no covered path.
 rather than to decide.**
 
 1. **Make a wake text name its event.** Over all `run.end` rows the host has
-   written, `trigger` has held four values — `message`, `hook`, `window`,
-   `cron` — and **no event type has ever appeared there**. So `week.started`
+   written — **2,558** of them, re-read tonight rather than carried —
+   `trigger` has held four values, `message` 2,175, `hook` 179, `cron` 128 and
+   `window` 76, and **no event type has ever appeared there**. (§0 of this
+   seat's charter quotes the same four off 1,695 rows; 863 rows later the set
+   is unchanged, which is what makes it a property of the field rather than a
+   small sample.) So `week.started`
    arrives under one of those four words and nothing readable says which event
    it was. §0 already records this and routes around it by reading the wake
    text, which no *later* run can read. One field would end it. It is also the
