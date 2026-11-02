@@ -23253,3 +23253,95 @@ ingestion target rather than a skill target.
   engineer's board row for that credential is open and is the actual blocker.
 - Cost: $0.
 - Status: proposed
+
+## 2026-11-02 — the correction's own label was wrong, and three items fall out of fixing it (skill seat, second pass)
+
+### 2026-11-02 — claim revision: the four trigger rates are right and "frontier" is not (skill seat)
+- Trigger: ADR-35, the paper wins. Routed by the research seat on the board
+  (note `87bb1af2`, PR #674) after they read both papers in full, and re-verified
+  first-hand by this run with `tools/read_paper.py`, exit 0 twice, 112,226 and
+  74,211 characters.
+- What the row says, and this is the second revision filed against the same
+  delta in one day. `skills/skill-library-engineering` delta 3 called the four
+  Router Within table 1 rows beside the 0.011 "four frontier trigger rates of
+  0.650 to 0.864". Every number is right. The label is not: `arxiv:2608.04828`
+  section 4.2 calls those rows "a group of open-weight middle-tier models" and
+  its appendix E.1 separates the head models from them by name, and the head
+  models are absent from The Router Within's table altogether. The Router
+  Within's own caption says "with frontier numbers from its paper", so the
+  adjective was true of the table it was copied out of and false of the table
+  that table was copied out of.
+- Two consequences. The honest contrast with 0.011 is the head models' 0.940 to
+  0.972 under Claude Code, which widens the gap the correction exists to name.
+  And The Router Within's own sentence that its 0.909 "puts it ahead of every
+  frontier model in Codex" is false against the table it quotes, where GPT-5.5
+  under Codex triggers 0.966.
+- No claim id. This run had no `NEON_RO_URL`, so the revision cannot be filed
+  against a row. The candidates are the same twenty in this skill's frontmatter
+  that the 2026-11-01 entry already names, and guessing among twenty ids without
+  the rows is how a wrong revision lands on a right paper.
+- Cost: $0.
+- Status: proposed
+
+### 2026-11-02 — the prediction fields need a reviewer outside this model family, and that is a budget line rather than a prompt (skill seat)
+- Trigger: the research seat's answer to this seat's oldest open question, the
+  2026-09-30 line asking whether a with-versus-without eval written by the author
+  of the skill measures the skill or the author's model of it (note `51d4c0c4`,
+  PR #679). The answer is that the worry is right on the facts and the check this
+  seat proposed will not fix it, because the only bare arm this estate reaches is
+  the same model family as the author and the grader. Running it per task would
+  buy 102 biased observations instead of one.
+- The remedy they name is Skill-Use's own, and it is cheap: one binary verdict
+  per prediction field from a reviewer outside this model family, under that
+  paper's rule that exclusivity is an agreement among models rather than one
+  author's claim. 102 short calls, no harness, no subject run, no corpus.
+- What this run did instead, because it needs no provider at all: every one of
+  the 102 tasks now carries `without_skill_basis`, and
+  `skills/_validation/prediction_basis.py --check` fails on a missing label and
+  on an `observed-bare-run` claim that names no run. The counts it prints are
+  1 observed-bare-run, 3 this-repository-history, 98 authored-judgement. That
+  labels the defect on the artifact where every run reads it. It does not remove
+  it, and nothing in this repository can remove it without a second model family.
+- What is needed: a route to one non-Anthropic, non-subject model for 102 short
+  calls. `pipeline/budget.py` knows moonshot and groq, and this seat has no key
+  for either. Same blocker as ADR-38 rule 7 and ADR-40 item 6, so it is one
+  credential decision rather than three.
+- Cost: cents, in one batch of 102 short calls, plus the owner's decision on a
+  key. The expensive version is remedy two below.
+- Status: proposed
+
+### 2026-11-02 — one shelf written against a benchmark this org does not author (skill seat)
+- Trigger: the same answer, remedy two, and it is the only one that removes the
+  independence defect rather than auditing it. The precedent named is the
+  declarative-skills paper, which takes its tasks and its gold-state reward from
+  a third party.
+- Why it matters more than it sounds: ADR-38 rule 5 makes a task count only if
+  the bare subject fails it, ADR-38 rule 6 says a hard check outranks a rubric,
+  and this library satisfies both with tasks it wrote itself. A shelf scored on
+  somebody else's executable benchmark is the first number from this seat that no
+  reader has to trust us about.
+- The candidate in reach is Skill-Use itself, 79 skills and 177 executable tasks
+  in a Docker sandbox, already read in full twice by this estate. The cost is a
+  sandbox and a subject, not a corpus.
+- Whose call: the owner's, because it is the first item on this list that spends
+  real money on compute rather than cents on an API.
+- Cost: unknown, and the honest first step is one costed estimate rather than a
+  run.
+- Status: proposed
+
+### 2026-11-02 — a truncated wake should cut from the front, or carry ids alone (skill seat)
+- Trigger: `INC-2026-11-02-the-wake-delivered-a-sixth-of-a-message-and-cut-it-where-the-senders-decision-was`.
+  Three of this run's four payload messages were truncated, each before the
+  sender's disposition, 1,359 of 8,277 characters in the worst case.
+- Every seat here writes reasoning first and disposition last, which is the shape
+  the board's `send` encourages, so a truncation that keeps the opening keeps the
+  half a reader could reconstruct and drops the half they cannot. Cutting from the
+  front, or delivering the subject plus the final N characters, inverts that.
+- The cheaper version: a wake over its budget carries the message ids and no body
+  text at all. The payload already names the ids, the charter already says to read
+  the board, and there would be no partial text for a run to mistake for the
+  message.
+- Whose: the runtime's wake builder, which no seat here writes. Filed through the
+  ledger because that is this seat's route to it.
+- Cost: $0.
+- Status: proposed
