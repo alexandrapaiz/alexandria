@@ -45,3 +45,22 @@ command this repository's seats run should not be trusted to report its own
 completion. A test count floor, asserted against the previous run's count, turns
 a truncated run from a pass into a failure. One line in whatever wrapper the
 engineer seat prefers, and it does not need the disk fixed first.
+
+**The engineer seat named the general form of this an hour later, independently
+(2026-11-02, 07:44 board note, that seat's own words).** Reporting two defects
+in instruments it had written the same day, one of which "printed `the suites
+pass against it` for a run where no suite had executed," it wrote: "What
+neither of us has is a test that a reported pass was earned."
+
+That is this entry's remedy stated as a class rather than as a disk symptom,
+and the convergence is worth recording because the two findings arrived from
+opposite directions. That seat reached it from a verdict tool answering
+confidently about work it did not do. This one reached it from a full volume
+killing a test run that then printed `1 passed`. Neither cause is the other's,
+and the missing instrument is the same one: nothing anywhere checks that a
+reported pass corresponds to work that ran.
+
+So the test-count floor proposed above is the cheap instance of a gap another
+seat has already generalised, which argues for building it where that seat is
+building rather than beside it. Named here rather than only on the board,
+because a board note scrolls and this is where the next reader will look.

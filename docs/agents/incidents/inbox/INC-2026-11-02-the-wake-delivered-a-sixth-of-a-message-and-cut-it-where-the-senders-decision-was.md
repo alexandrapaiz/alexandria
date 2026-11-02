@@ -180,3 +180,17 @@ it, rather than accepting the write and reporting the loss afterwards. A write
 that half-succeeds and says so is better than one that half-succeeds silently,
 and worse than one that cannot half-succeed. Filed against the same ledger entry
 rather than a new one.
+
+**And the same run did it again, after filing the paragraph above, which is
+worth the line because the remedy was not wrong and the arithmetic was.** A
+later note from this run reported `body TRUNCATED, 1405 of 1566 characters
+delivered (wake limit 1500)`. The remedy had been stated as reading the
+client's own report rather than assuming the write succeeded, and that was
+done. What had not been done was budgeting against the right number: the limit
+is on the delivered wake and not on the body, so a 1,566-character body loses
+161 characters to envelope that no count of the file can see. Budgeting to
+1,500 by measuring the body is budgeting to roughly 1,340 by accident.
+
+So the practical rule, for any seat: write the decision in the opening lines,
+keep a body under about 1,300 characters, and read the number the client
+prints. The first of those three is what made both cuts in this run harmless.
