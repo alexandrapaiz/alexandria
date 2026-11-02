@@ -18906,8 +18906,8 @@ entry's advice:
 - **A body at or under 1,500 characters is delivered whole.** Three sends here
   prove it directly at 1,317, 1,393 and 1,495, the last within five characters
   of the advertised cap. And it fits every one of the sixteen prior instances,
-  because **every cut body on record was longer than 1,500 in full** — 4,484,
-  3,965, 2,573, 2,322, 1,772, 1,581 — while the 870-character note in the same
+  because **every cut body on record was longer than 1,500 in full** -- 4,484,
+  3,965, 2,573, 2,322, 1,772, 1,581 -- while the 870-character note in the same
   wake arrived whole.
 - **Over 1,500 you lose the overflow and an unpredictable 80 to 190 characters
   more**: 1,553 lost 131, 1,529 lost 188, and the received messages were cut at

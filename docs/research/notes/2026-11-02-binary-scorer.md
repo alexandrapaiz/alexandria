@@ -8,8 +8,8 @@ than read from the message.
 ## Their correction is right, and I accept it as stated
 
 `tools/skill_eval.py:1447` reads, on `alexandria-skill/2026-11-02-message-containment-horizon`:
-`tests_pass` returns `(1.0, "exit 0")` when the exit code is zero, `(0.0, …)`
-on any other code, `(0.0, …)` on a timeout, and `(None, "UNMEASURED, …")` only
+`tests_pass` returns `(1.0, "exit 0")` when the exit code is zero, `(0.0, ...)`
+on any other code, `(0.0, ...)` on a timeout, and `(None, "UNMEASURED, ...")` only
 on exit 127. There is no path that returns a fraction. So a candidate that
 passes three of four probes under one `pytest` command scores exactly what a
 candidate that passes none scores.
@@ -51,7 +51,7 @@ in each suite are passed in the prediction's own without-skill arm, so they
 contribute nothing to the delta.
 
 Under a binary scorer that is not a small loss averaged away by the other
-probes — it is the entire measurement resting on one `assert`. A subject that
+probes -- it is the entire measurement resting on one `assert`. A subject that
 segments for an unrelated reason flips the row from 0.0 to 1.0 on its own, and
 `--reps` is the only defence left, since there is no partial credit to absorb
 the variance. Worth knowing before either row is read as a strong result; not
@@ -100,7 +100,7 @@ dead rows of the same kind as `rhsi-c1`.
 
 It is not, and the harness is why. `tools/skill_eval.py:1422` sets
 `UNRUNNABLE = 127` and `tests_pass` maps that code alone to `None`,
-**UNMEASURED**, rather than to 0.0 — explicitly because "a command that could
+**UNMEASURED**, rather than to 0.0 -- explicitly because "a command that could
 not be started at all is unmeasured, since that is a fact about this machine and
 not about the answer." And `command_env()` writes a `python` shim onto `PATH`
 before the command runs, with a docstring recording that every `tests_pass` task

@@ -1,4 +1,4 @@
-# Research run note — 2026-11-02 (message, four dispositions)
+# Research run note -- 2026-11-02 (message, four dispositions)
 
 **PR #746.** Supersedes #742, merged into this branch in the first few turns.
 Depth one: #742 branched from main.
@@ -29,7 +29,7 @@ disposition below was read from the board rather than from the payload.
 5. **The engineer's route is verified in the code**, and one consequence is
    routed back that belongs to my lane rather than theirs.
 
-## 1 and 2 — the binary scorer, and what the leak actually cost
+## 1 and 2 -- the binary scorer, and what the leak actually cost
 
 Full note: `docs/research/notes/2026-11-02-binary-scorer.md`. In brief:
 
@@ -48,7 +48,7 @@ Full note: `docs/research/notes/2026-11-02-binary-scorer.md`. In brief:
   Worth knowing before either row is read as a strong result.
 - **`rhsi-c1` is live again**, verified rather than assumed: an ordinary binary
   search passes all four probes, exit 0, inside the `ceil(log2(n)) + 1` budget.
-  And the sharper framing is that it was never a control that passed — a control
+  And the sharper framing is that it was never a control that passed -- a control
   that cannot score anything but zero cannot disagree, and a test that cannot
   fail is not evidence.
 - **The class is swept and empty.** All 22 project tasks' starter and suite
@@ -58,12 +58,12 @@ Full note: `docs/research/notes/2026-11-02-binary-scorer.md`. In brief:
   (`python` is absent; this host ships `python3`), which looked like twelve dead
   rows. It is not: `UNRUNNABLE = 127` maps to UNMEASURED by design, and
   `command_env()` shims `python` onto `PATH`, which `project_fixture_probe.py`
-  imports rather than reimplements. The near-miss is the point — reading the
+  imports rather than reimplements. The near-miss is the point -- reading the
   scorer is what caught it, which is the lesson of the correction itself.
 - **`ac-t12` confirmed** as a third project task. My stale premise was theirs to
   correct and they were right.
 
-## 3 — the field identification, resolved and adverse
+## 3 -- the field identification, resolved and adverse
 
 Full note: `docs/research/notes/2026-11-02-field-identification.md`. Both papers
 read in full this run with `tools/read_paper.py`, 71,443 and 73,954 characters.
@@ -81,7 +81,7 @@ the unwelcome way:
   `{query, api_call}` pairs. The content match for MFTR's `examples` is the
   **`query` half of `example_usage`**.
 - So the weight citation is a wrong-**field** citation, not a wrong number.
-  `USE_WHEN_BOOST`'s fixed 1.25× now rests on no published weight at all.
+  `USE_WHEN_BOOST`'s fixed 1.25x now rests on no published weight at all.
 - **And it could not have transferred even if the fields had matched**, which is
   the stronger half: MFTR scores `examples` against the query's own User Intent
   field, same genre and register, so its weight is partly query-to-query
@@ -89,39 +89,39 @@ the unwelcome way:
   utterance that way.
 - **A seventh weight cell**, in the same paper, that neither seat counted:
   Table 4's Gorilla/BM25 case study publishes `examples` at 42.3% against
-  `description` at 21.4%, a ratio of **1.977×**, half again above Table 5's
+  `description` at 21.4%, a ratio of **1.977x**, half again above Table 5's
   maximum and the paper's only sparse-retriever cell. Not commensurable with
-  Table 5's dataset distributions, and reported as what it is — but it cuts the
+  Table 5's dataset distributions, and reported as what it is -- but it cuts the
   skill seat's own way and harder: MFTR's weights are adaptive **per query**, so
   no fixed coefficient is defensible from this paper in either direction.
 - **The papers are not actually in conflict, and the reconciliation is the
   builder-facing finding.** 2510.22670 merges every field into one document
-  (`d_expansion = d_original ∪ d_profile`) and embeds it as one vector; its own
-  §4.3 names the Similarity Dilution. MFTR scores each field independently, so a
+  (`d_expansion = d_original  union  d_profile`) and embeds it as one vector; its own
+  section 4.3 names the Similarity Dilution. MFTR scores each field independently, so a
   weak field earns a low weight instead of diluting its neighbours. So: **a
   worked-example field hurts retrieval when the retriever embeds the whole
   document as one vector and helps when it scores fields separately.** Which
   regime you are in is a property of your retriever. This library retrieves
   skill descriptions as whole documents, so 2510.22670 is the applicable regime.
-- **One error in 2510.22670**, which is what sent the identification wrong. §2.2
+- **One error in 2510.22670**, which is what sent the identification wrong. section 2.2
   says "removing `when_to_use` yields better performance. Based on this finding,
-  we exclude `example_usage` … and retain … `when_to_use` …" — a sentence that
-  contradicts itself in three clauses. §4.1 names `example_usage` three times.
+  we exclude `example_usage` ... and retain ... `when_to_use` ..." -- a sentence that
+  contradicts itself in three clauses. section 4.1 names `example_usage` three times.
   That is the third self-contradiction in that paper on this one field, and
   three is a reason to hold the citation at presence and not magnitude.
 
-## 4 — the 13-of-15 closure, which was mine
+## 4 -- the 13-of-15 closure, which was mine
 
 The skill seat grepped its own files and the sentence I routed was not there:
 what shipped is "15 of 15 ship deterministic code," which is true. The mixing
 claim stayed in my procedure, so this was the only side it had to be struck
 from, and it is struck in two places:
 
-- `docs/research/reading-queue.md` — the ANSWERED line for the 2026-09-30
+- `docs/research/reading-queue.md` -- the ANSWERED line for the 2026-09-30
   product question, whose closing sentence said the realization "is chosen per
   model and per domain." Replaced, with the 1-of-16 and 13-of-15 counts as the
   reason.
-- `docs/research/notes/2026-11-02-containment-queue.md` — the same clause and
+- `docs/research/notes/2026-11-02-containment-queue.md` -- the same clause and
   the routing line calling the label "deployment-dependent rather than fixed."
   Both withdrawn in a dated correction block. **The recommendation survives**,
   because it never depended on the clause.
@@ -130,7 +130,7 @@ Their reading of my write-route finding matches mine and they are right to leave
 it alone: the surface is the engineer's and the credential was never what
 stopped a claim row.
 
-## 5 — the engineer's route, verified, with one consequence routed back
+## 5 -- the engineer's route, verified, with one consequence routed back
 
 Checked against `pipeline/distill.py` on their branch, not taken from the
 message. All as reported: the query selects from `papers` with a
@@ -144,7 +144,7 @@ promise is in the code at the caller.
 Their answer to my design question is right, and right for the reason they give:
 a claim this route writes carries a real `prompt_sha`, so a second reading is
 separable from the first by the column that exists for that question. Carding
-the sentinel rather than improvising it is the correct call — a by-hand sentinel
+the sentinel rather than improvising it is the correct call -- a by-hand sentinel
 added while NULL still means legacy gives the column three meanings and two of
 them silent.
 
@@ -156,7 +156,7 @@ duplicates are handled downstream as `duplicates` **edges** that
 mechanism in this pipeline that *deliberately* creates near-duplicate claims on
 one paper, and the duplicate-detection load it creates grows with re-reads while
 nothing measures whether interpret catches them. Not a defect and not a reason
-to change the route — `--force` is opt-in and the alternative is worse. It is a
+to change the route -- `--force` is opt-in and the alternative is worse. It is a
 measurement owed after the **first** forced re-read, and it is on this seat's
 graph-health watchlist for the next meta-review.
 
@@ -170,14 +170,14 @@ reaches those rows at all. Naming them was the only route.
 - **`INC-2026-10-24-the-wake-cuts-the-disposition-and-every-sender-sends-twice`,
   instances fourteen to sixteen.** One wake carried four messages and cut three:
   1,309 of 4,484, 1,367 of 1,772, 1,320 of 2,573; the 870-character note arrived
-  whole. The cap is per message, not per wake — the four deliveries sum to about
+  whole. The cap is per message, not per wake -- the four deliveries sum to about
   4,870 in one wake under an advertised 1,500.
 
   The engineer proposed that the subject and the `reasoning` field spend the same
   budget. Tested against all three cut messages: `delivered+subject` is 1,417 /
   1,469 / 1,411, all under 1,500, and `delivered+subject+reasoning` is 1,741 /
   1,809 / 1,801, all over. **So the subject plausibly spends from it and the
-  reasoning does not — half the hypothesis survives and half is refuted — and
+  reasoning does not -- half the hypothesis survives and half is refuted -- and
   neither sum is constant, so no client-side formula reproduces the window.**
 
   And no reading of this repository can settle the residual: `wake_limit`,
@@ -190,20 +190,20 @@ reaches those rows at all. Naming them was the only route.
   which is the one population that cannot reveal a safe ceiling. Reading the
   send report on all five replies: **1,317, 1,393 and 1,495 delivered whole**,
   and **1,553 cut to 1,422** and **1,529 cut to 1,341**. So a body at or under
-  1,500 goes whole — proven three times here within five characters of the cap,
+  1,500 goes whole -- proven three times here within five characters of the cap,
   and consistent with all sixteen prior instances, since every cut body on
   record was over 1,500 in full while the 870-character note arrived whole.
   Over 1,500 you lose the overflow plus an unpredictable 80 to 190 characters.
 
   **So the entry's "compose to 1,200" is over-cautious by 300 characters a
-  message**, and the engineer's response to being cut twice — dropping to a
-  thousand — spends 500 a message against a limit that was never at a thousand.
+  message**, and the engineer's response to being cut twice -- dropping to a
+  thousand -- spends 500 a message against a limit that was never at a thousand.
   The revised convention is two rules: compose under 1,500, and read the send
   report and resend the tail when it says TRUNCATED. This run used the second on
   itself twice, which is the only reason instances seventeen and eighteen were
   measurable at all.
 - **The 45G volume, third fill, and the first to reach 100%.** Appended to
-  `INC-2026-11-02-the-45g-volume-…-a-seat-write-already-failed`. Three commands
+  `INC-2026-11-02-the-45g-volume-...-a-seat-write-already-failed`. Three commands
   in this run lost their output to `ENOSPC` rather than failing visibly, which is
   the new symptom: at 98% a write fails and is retried; at 100% a command runs
   and its stdout cannot be written, so it reads from inside the run as a broken
@@ -212,7 +212,7 @@ reaches those rows at all. Naming them was the only route.
 
   The leak that made the 355 is ours and is one line: `command_env()` calls
   `tempfile.mkdtemp()` unconditionally and never removes it. **13,845 bytes
-  against a 44G fill** — six orders of magnitude short of being the cause, and
+  against a 44G fill** -- six orders of magnitude short of being the cause, and
   said that way because this seat filed an incident this morning for exactly the
   error of writing a small measured thing up as the cause of a large one.
 

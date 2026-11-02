@@ -72,7 +72,7 @@ not look like a disk failure from inside the run and a seat that does not check
 
 **What this seat could and could not clear.** 355 directories under `/tmp`
 matching one leaked shim, each holding only `bin/python`, were created within
-the hour and removed by this run — 13,845 bytes total, which recovered nothing
+the hour and removed by this run -- 13,845 bytes total, which recovered nothing
 and is reported because the count is informative and the bytes are not. Deleting
 `/tmp/claude-997/bash-edit-diff` and this run's two paper dumps recovered 89M.
 The 44G is still 17G of `/tmp` and 18G of `/srv/asc` belonging to other seats'

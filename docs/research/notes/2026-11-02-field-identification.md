@@ -1,4 +1,4 @@
-# Is MFTR's `examples` our when-to-use field? No — and the weight evidence goes with it
+# Is MFTR's `examples` our when-to-use field? No -- and the weight evidence goes with it
 
 **Run:** research seat, 2026-11-02 (message), PR #746.
 **Answers:** `docs/research/reading-queue.md` on `alexandria-skill/2026-11-02-message-containment-horizon`,
@@ -20,7 +20,7 @@ field in its own words." That is true of one sentence and false of the paper's
 own definition and data, and the definition is what a field identification has
 to rest on.
 
-**What MFTR's four-field gloss says** (§3, schema definition): the fields
+**What MFTR's four-field gloss says** (section 3, schema definition): the fields
 `description`, `parameters`, `response`, `examples` "correspond to a tool's
 purpose, inputs, outputs, and usage scenarios, respectively." This is the
 sentence that supports the mapping, and it is a one-word summary of a
@@ -43,11 +43,11 @@ queries. They are not activation conditions.
 
 Against that, 2510.22670 keeps the two apart and defines both:
 
-- `when_to_use` — "specifies realistic usage scenarios," and in the expansion
+- `when_to_use` -- "specifies realistic usage scenarios," and in the expansion
   prompt "less than 20 words; actual usage scenarios." What it renders as:
   "When planning movie outings or researching new releases in China."
   A condition clause, grammatically a *when*.
-- `example_usage` — "illustrates API calls or queries derivable from the
+- `example_usage` -- "illustrates API calls or queries derivable from the
   documentation," and in the expansion prompt "Maximum of 2 ... Each project
   may contain: `query`: A natural or keyword-based question. `api_call`: An
   actual API usage call consistent with the tool's actual parameters."
@@ -67,9 +67,9 @@ half," not "same field."
 2602.05366 was the library's only published **weight** measurement for the
 when-to-use field, the half that 2510.22670 does not answer. Under the
 resolution above it is not a measurement of that field at all. The presence
-evidence survives untouched — 2510.22670 ablates `when_to_use` add-one and
-one-out and keeps it — but the magnitude evidence is gone, and
-`USE_WHEN_BOOST`'s fixed 1.25× now rests on no published weight at all.
+evidence survives untouched -- 2510.22670 ablates `when_to_use` add-one and
+one-out and keeps it -- but the magnitude evidence is gone, and
+`USE_WHEN_BOOST`'s fixed 1.25x now rests on no published weight at all.
 
 And there is a second reason the number could not have transferred even if the
 fields had matched. MFTR's `examples` field is scored against the query's own
@@ -93,17 +93,17 @@ reproduces.
 **Table 4 publishes a seventh.** It is the Gorilla case study on BM25, and its
 weight column sums to 100% like Table 5's: `description` 21.4%, `parameters`
 13.3%, `response` 23.0%, `examples` **42.3%**. That is `examples` over
-`description` at **1.977×**, half again above Table 5's maximum, and the only
-cell in the paper drawn from a sparse retriever — Table 5's two retrievers,
+`description` at **1.977x**, half again above Table 5's maximum, and the only
+cell in the paper drawn from a sparse retriever -- Table 5's two retrievers,
 E5-Base and GTE, are both dense.
 
 The two are not commensurable and the note should not pretend they are: Table 5
 is a distribution learned over a dataset, Table 4 is one query's adaptive
 weights. Reported as a seventh cell, the published range for this field is
-0.269× to 1.977× and five of seven sit below one.
+0.269x to 1.977x and five of seven sit below one.
 
 It cuts the same way as the skill seat's existing conclusion and cuts harder.
-MFTR's weights are **adaptive per query** — that is what the module is for, and
+MFTR's weights are **adaptive per query** -- that is what the module is for, and
 Table 4 is the paper demonstrating it. So no fixed coefficient in either
 direction is defensible from this paper, and a median quoted as if it bounded
 the field understates how far a single query can move it.
@@ -113,8 +113,8 @@ the field understates how far a single query can move it.
 1. The weight citation for `USE_WHEN_BOOST` is withdrawn, as a wrong-field
    citation rather than a wrong number. Routed to the skill seat, which owns
    both the queue line and `use_when_evidence.py`.
-2. The settling condition the queue line names — one paper scoring an
-   activation-condition field and a worked-example field separately — is still
+2. The settling condition the queue line names -- one paper scoring an
+   activation-condition field and a worked-example field separately -- is still
    unmet, and this run narrows why it is hard. MFTR *does* score fields
    independently, which is half the condition; it simply has no
    activation-condition field among its four. 2510.22670 has both fields and
@@ -131,8 +131,8 @@ single-field retrieval. Read as results about *architectures*, they agree, and
 the architecture is the variable:
 
 - 2510.22670 merges every generated field into one document,
-  `d_expansion = d_original ∪ d_profile`, and embeds that as one
-  representation. Its own §4.3 is titled "Document Expansion at Evaluation
+  `d_expansion = d_original  union  d_profile`, and embeds that as one
+  representation. Its own section 4.3 is titled "Document Expansion at Evaluation
   Time: Discriminative Gains Despite Similarity **Dilution**." An added field
   competes with every other field inside one vector.
 - MFTR scores each field independently and aggregates with learned weights, so
@@ -148,22 +148,22 @@ whole documents, 2510.22670 is the applicable regime and MFTR is not.
 
 ## One error in 2510.22670, which is what sent the identification wrong
 
-§2.2 of 2510.22670 reads, in one sentence: "The ablation results show that
+section 2.2 of 2510.22670 reads, in one sentence: "The ablation results show that
 removing **`when_to_use`** yields better performance. Based on this finding, we
 exclude **`example_usage`** from the expanded profiles used for retrieval, and
 retain `function_description`, **`when_to_use`**, `limitations`, and `tags`."
 
 That sentence contradicts itself. It cannot both drop `when_to_use` for better
-performance and retain `when_to_use` two clauses later. §4.1 names
+performance and retain `when_to_use` two clauses later. section 4.1 names
 `example_usage` three times with no mention of `when_to_use` being dropped:
 "removing `example_usage` in the One-out protocol yields higher N@10 than
 keeping it," "`example_usage` provides the smallest (often negative) gains in
 Add-one," and "we exclude `example_usage` from the expanded profiles and retain
 `function_description`, `when_to_use`, `limitations`, and `tags`." The first
-clause of §2.2 is a typo for `example_usage`, and the paper's finding is: drop
+clause of section 2.2 is a typo for `example_usage`, and the paper's finding is: drop
 the worked examples, keep the when-to-use.
 
-The skill seat's queue line already warns a reader to read §4.1 and not §2.2,
+The skill seat's queue line already warns a reader to read section 4.1 and not section 2.2,
 which is the right instruction. This note records the third self-contradiction
 in that paper on this one field, after the figure caption crediting
 "when-to-use" where its own body credits `tags`, and the retriever named two
