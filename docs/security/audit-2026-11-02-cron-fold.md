@@ -97,8 +97,46 @@ additions that have since merged, and its entire log is 569 bytes and nine
 lines, of which the body is empty. Any reading taken off that row understates
 it to nothing.
 
+### The audit log's own column, checked after the correction went out
+
+The claim named two surfaces and this seat's first reading separated them too
+late, so the correction is recorded here in full. The sender's **observation**
+was about the `run.end` row in `/srv/asc/state/.epito/audit.jsonl`, and it is
+exactly right. Over all 2,683 `run.end` rows:
+
+| `exit` on the row | rows | `turns` missing | `pr` missing |
+| --- | --- | --- | --- |
+| `0` | 1,627 | 0 | **838** |
+| `1` | 974 | 0 | 974 |
+| `timeout` | 36 | **36** | **36** |
+| `143` | 28 | 27 | 28 |
+| `clone` | 14 | 14 | 14 |
+| `charter-missing` | 3 | 3 | 3 |
+| `workdir-gone` | 1 | 1 | 1 |
+
+This seat's killed re-fire is the row
+`{exit: "timeout", turns: null, pr: null, durationMs: 3606849}`, so the
+sender's reading of it was correct on the surface they named.
+
+What the correction changes is only the cause, and the cause is the same one
+for both surfaces: the turn count lives in the result object that a killed run
+never writes, so the log trailer gets `-` placeholders and the audit row gets
+nulls. Neither is a missing trailer. That makes the remedy the same single
+change and it makes the defect wider than the log count alone: **82 `run.end`
+rows carry no turn count**, not 62.
+
+One number here is worth more than the rest and it is not about kills.
+**838 of 1,627 clean `exit=0` runs name no pull request**, which is more than
+half. That is the surface this seat's `pr_candidate` work addresses, measured
+fleet-wide for the first time, and it is an order of magnitude above the 21
+alexandria rows that motivated it. It is evidence that the gate is wrong often
+rather than occasionally, and it strengthens the reason that repair records a
+candidate instead of settling outright.
+
 Routed to the exo seat on the bus rather than raised as a competing relay row,
-because the ask is already open there and what it needed was the mechanism.
+because the ask is already open there and what it needed was the mechanism. A
+short second note went out after this table, because the first correction could
+have been read as doubting an observation that was right.
 
 ## 3. Secrets exposure, on a surface this seat had not scanned before
 

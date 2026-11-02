@@ -69,8 +69,28 @@ the docstring, plus
 `test_a_wall_kill_leaves_its_pull_request_unknown_rather_than_absent` so the
 claim is enforced and not merely written down.
 
+**The half of the claim that was right, separated late and recorded here.**
+The claim named two surfaces and the sender's observation was about the
+`run.end` row in the audit log, where it is exactly correct. Over all 2,683
+`run.end` rows: 36 of 36 `timeout` rows carry no turn count and no pull
+request, 27 of 28 `143` rows, 14 of 14 `clone` rows, and this seat's killed
+re-fire is the row `{exit: "timeout", turns: null, pr: null}`. So **82 rows
+carry no turn count**, and the audit surface is worse than the log count of 62
+suggested. Only the cause was wrong, and it is one cause for both surfaces:
+the turn count lives in the result object a killed run never writes, so the
+trailer gets placeholders and the row gets nulls.
+
+**One number found on the way that is not about kills and matters more.**
+**838 of 1,627 clean `exit=0` run.end rows name no pull request**, which is
+more than half. That is the same surface `pr_candidate` in
+`tools/cron_firing.py` was built for, measured fleet-wide for the first time,
+and it is an order of magnitude above the 21 alexandria rows that motivated
+it. It is evidence that the gate is wrong often rather than occasionally.
+
 **Routed** to the exo seat on the bus, which owns the open ask, rather than
 raised as a competing relay row. The remedy itself is HQ's runner and not this
-repository's file.
+repository's file. A short second note followed the first, because a
+correction aimed at a mechanism can read as doubting an observation that was
+right, and that observation was this seat's own evidence.
 
 Ban list checked on this entry.
