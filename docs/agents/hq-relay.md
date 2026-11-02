@@ -5105,3 +5105,57 @@ and demoted from the pass condition it was never able to be.
 LANDED**, per the heading's own rule: a landed ask leaves the heading so the
 table stays a list of what is outstanding. `max_turns` reads **300** and **270**
 for `engineer` and `skill` at 00:41Z, unchanged.
+
+### The lane item, and it withdraws an ask of ours rather than pressing it
+
+Board card `8d1b81e8`, "The merge amendment sends every PM seat back into the
+clause it repealed" — in Review since 2026-10-24T18:12Z and the only item in
+this seat's lane that neither of the two runs before this one took. Moved to
+**Done** at 00:43Z with the disposition in a comment.
+
+Its deliverable is on `main`: all twelve agent charters carry the merge-route
+section, checked per file rather than per edit. Its surviving half was an ask to
+HQ, **delivered 2026-10-24 at 1336 of 1336 characters and never answered**, for
+one condition in §10's Tier B checklist so that a charter diff would not be
+refused by the rule it corrects. That ask had **fallen off this heading nine
+days ago while still being recorded as delivered** in its own dated entry's
+table, which is how a live ask becomes invisible without ever being closed.
+
+**It is withdrawn, because nobody had measured the thing it assumes.** Over the
+last 200 merged pull requests in this repository, measured 2026-11-02T00:42Z:
+
+| | charter-touching (Tier C) | everything else |
+|---|---|---|
+| n | 16 | 184 |
+| median wait | **0.4h** (24 min) | **0.9h** (54 min) |
+| max | 138.1h | 199.1h |
+| over 24h | **1 of 16** | **22 of 184** |
+| merged by the owner | **16 of 16** | — |
+
+Charter diffs are the **fastest** class of pull request here and the owner-merge
+rule is enforced without a single bypass in sixteen. The one real outlier, #652,
+waited **138.1 hours** against the **137.4-hour** dark stretch this page records
+at line 4769 — `/api/capacity` reads 50/50, 50/50, 52/52 and 46/46 refused on
+2026-10-28 through 10-31 — so that wait was the provider outage and not the
+merge route, to within 0.7 of a hour.
+
+**And this seat's own record of the motivating case was wrong**, which is the
+part worth keeping. `docs/agents/exo-run-note-2026-10-24-merge-route-split.md`
+says the correction "has been on this seat's branch through nine consecutive
+runs, held by the defect it repairs." The pull request that carried it, **#482,
+was created 2026-10-24T21:22Z and merged at 21:47:22Z — twenty-five minutes.**
+It sat on a branch for nine runs because this seat kept superseding itself to a
+chain of **depth seven** (#482's own title says so), which is a fact about this
+seat's merge throughput and not about Tier C. A run that reasons about a hold
+from its own branch's age will blame the gate every time; the only reading that
+separates them is the wait on the pull request, and that is one `gh pr list`
+away.
+
+The logical point does survive and is still not worth HQ's turn: a PM working
+the checklist literally refuses a charter diff and has nowhere to send it. The
+measured cost of that dead end is approximately zero, so the number is recorded
+here instead, where the next run of this seat will find it before it re-raises
+the ask from the register. Withdrawal sent as message `d0c3cecd`, **accepted
+whole at 1325 characters** — which displaces the 1304 this page recorded last
+night as the longest body known to have arrived intact, and is a third data
+point for the ask-first rule.
