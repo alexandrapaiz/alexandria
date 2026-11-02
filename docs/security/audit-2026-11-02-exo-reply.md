@@ -223,3 +223,87 @@ and sent on the bus.
 
 **Deliberately not changed.** `read_coalesced`'s cron-only predicate, for the
 reason in Finding 4.
+
+## Finding 5, severe and live: the volume is still full, and it has moved from killing runs to disabling this seat's own verification
+
+The 05:30Z run of this seat reported the host's only data volume full and
+filed `INC-2026-11-02-the-only-disk-filled-again-and-a-seat-run-died-at-clone`.
+That finding is not stale and it is not fixed. Three readings from this run:
+193M free at 100% at 05:52Z, 799M at 99% at 06:01Z, 532M at 99% at 06:05Z.
+
+**What is new is which step it broke.** The charter's debug sweep says to build
+and exercise what can be exercised here. This run's attempt to do that died
+inside Python's `tempfile._get_default_tempdir`:
+
+```
+FileNotFoundError: [Errno 2] No usable temporary directory found in
+['/tmp', '/var/tmp', '/usr/tmp', ...]
+```
+
+The predecessor's evidence was a seat run dying at clone, which reads as one
+run's bad luck. This is the seat that audits the others being unable to run
+the suite that finds defects, because the volume it needs 50 megabytes of is
+owned by nobody. That is worth separating from the availability finding: the
+cost is not a lost run, it is a lost sweep, and a lost sweep is invisible.
+
+**The composition, which the predecessor's remedy needed and did not have.**
+It asked for "a cap or a predictable reaper on seat scratch" without saying
+which scratch. The two candidates are not the same size and a reaper aimed at
+the wrong one reclaims nothing:
+
+| What | Count | Space |
+|---|---|---|
+| `epito-<seat>-<suffix>` live seat checkouts in `/tmp` | 22 | 5.2G, largest five 745M to 816M |
+| `tmp*` per-run scratch directories in `/tmp` | 18,031 | about 0.9G, sampled mean 52K |
+| `/tmp` total | | 17G |
+| `/srv/asc` total | | 18G |
+
+So the space is in the checkouts and the count is in the scratch directories.
+A cap belongs on the checkouts and a reaper belongs on the scratch
+directories, and they are different remedies. Mode on the scratch directories
+is `0700`, which is the one thing on this list that is already right and is
+the subject of the separate thread with alexandria/exo.
+
+**`diskwatch` still has no reader, and this is now its best evidence.**
+`/srv/asc/state/diskwatch.last` reads `crit 1793592679`, which is 04:11:19Z.
+Unchanged across all three of this run's readings, two of them at 100%. The
+verdict was correct, it was written down nearly two hours ago, and nothing has
+opened the file since. The predecessor listed that third. On the evidence it is
+first, because the other two remedies need somebody to decide a number and
+this one needs somebody to read a file that already has the right answer in it.
+
+**Owner or host action, unchanged in substance from the 05:30Z report and
+restated because it is still owed:** reclaim headroom now, cap the seat
+checkouts, reap the scratch directories, and give `diskwatch`'s verdict a
+reader.
+
+## Test results, stated with the disk caveat
+
+The full suite does run, and it took 14m54s: **1 failed, 2474 passed, 2
+skipped, 1 error**, with the failure and the error both worth separating.
+
+**The failure was this chain's own and is fixed in this run.**
+`tests/test_incidents.py::test_the_live_register_ids_all_parse` is green on
+`main` and was red on this branch. The 05:00Z wake's entry separated its id
+from its summary with a comma, and `INC_ID`'s lookahead ends a slug on
+whitespace, an em or en dash, or a colon. So the match failed and `heading_key`
+fell through to keying the entry on its whole heading, which means a charter
+citing the id would not have found it and a second filing of the same id would
+not have collided with it. That is the one guarantee the id scheme exists for.
+Corrected by giving the heading the ` - ` separator every other entry uses. The
+id string itself is unchanged and the entry is unmerged, so nothing that cites
+it breaks. `tests/test_incidents.py` is 43 green after the fix.
+
+The comment above that regex records the same mistake made with a colon by this
+same seat earlier today, and repaired then by widening the lookahead. It is
+deliberately not widened again here. Correcting one heading restores the
+documented form; widening the pattern a second time would make the convention
+whatever the register happens to contain.
+
+**The error is not reproducible in isolation and the disk is the likely
+cause.** `tests/test_skill_gate.py::test_a_version_with_no_trigger_in_the_history_is_refused`
+errored in the full run and passes on its own. An error rather than a failure
+means setup or teardown, the full run was executing while the volume sat at
+100%, and this run has already seen `tempfile` refuse outright at that moment.
+That is a reading rather than a proof: the detail lines for it were lost from
+the captured output. It is stated as unresolved rather than as passing.

@@ -76,3 +76,33 @@ this repository. Three things are owed, and the first is the only urgent one.
    no gate has ever looked. That is incident 20's shape exactly: a register that
    decides something gets written down, with nothing that decides it gets
    checked before it matters.
+
+**Third reading of the same fill, 36 minutes later, and it has now disabled a
+charter step rather than a run** (2026-11-02, security seat, exo-reply wake).
+At 05:52Z `/dev/sda1` read 193M free at 100%, and at 06:05Z it read 532M free
+at 99%, so the oscillation the entry above describes is still running. What is
+new is the failure mode. This run's attempt at the charter's "build and
+exercise what can be exercised here" step died inside Python's own
+`tempfile._get_default_tempdir` with `No usable temporary directory found in
+['/tmp', '/var/tmp', '/usr/tmp', ...]`. The full suite could not be collected,
+let alone run. A seat whose job is finding defects before users do cannot run
+the suite that finds them, and the cause is a volume nobody budgets.
+
+**The composition, because the entry above asked for a cap without a number.**
+`/tmp` holds 17G and `/srv/asc` 18G of the 45G volume. Inside `/tmp` the
+largest consumers are 22 live seat checkouts named `epito-<seat>-<suffix>`,
+5.2G between them, the biggest five at 745M to 816M each. Beside them sit
+18,031 directories named `tmp*`, which are the per-run scratch directories, at
+a sampled mean of 52K for about 0.9G total. So the space is in the checkouts
+and the **count** is in the scratch directories, and a reaper aimed at the
+wrong one of those two reclaims almost nothing. Mode on the scratch
+directories is `0700`, which is the one thing here that is correct.
+
+**And `diskwatch` still has no reader.** `/srv/asc/state/diskwatch.last` reads
+`crit 1793592679`, which is 04:11:19Z, unchanged across all three readings
+including the two where the volume sat at 100%. The entry above named that as
+the third remedy. It is now the one with the most evidence: the verdict was
+right, it was written down, and two hours of seat failures followed it with
+nothing opening the file.
+
+Ban list checked on this append.
