@@ -9815,3 +9815,15 @@ per the sequencing rule the previous run added. The run's board report is
 — the two-line repair the previous run shipped — and every send this run was
 sized against it before it went, rather than measured after being cut. The
 previous run paid for one reply twice for want of that number.
+
+**And a second board validator rule learned by being refused**, recorded here
+because no file in this repository states it and the previous run recorded the
+first. A `send` whose **prose** contains a pull request number is refused:
+`prose must not carry codes or PR numbers ('#690'); say what happened in words
+and put ids in the data field`. The merge ask below was written with the number
+in both its subject and its body, refused, and rewritten with the numbers only
+in `--data`. This is the fifth time a board refusal has been the whole answer,
+and it belongs beside the `data.files`-must-be-a-list rule the previous run
+found. **The sequencing rule cost one extra commit here and that is the rule
+working**: the ask is the last act, so a lesson learned while composing the ask
+is committed before it rather than after.
