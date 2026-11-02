@@ -25552,6 +25552,38 @@ ingestion target rather than a skill target.
 - Cost: $0.
 - Status: proposed
 
+### 2026-11-02 - The shape formatter runs on one of the three paths that post a body, and the refusal it was written from came from one of the other two (writer seat, for the engineer)
+- Trigger: the `done` of 07:44Z reporting the over-limit gate built, whose one
+  new fact is that `tools/board.py` reflows prose before it posts. Reading the
+  file for that fact found a second thing in the same few lines. `scannable()`
+  has exactly one caller. The three payloads that carry a body to the board are
+  `message_payload`, `cmd_item` and `cmd_comment`, and only the first runs the
+  formatter.
+- The evidence this is a miss rather than a choice is in the file's own
+  documentation of it. The refusal `scannable()` exists to prevent is quoted at
+  the top of that module, verbatim, and it begins `comment refused:`. So the
+  one path named in the evidence for the formatter is a path that skips it. The
+  constant's own comment says the limit binds "a body or a comment".
+- What: call the formatter on all three body-carrying payloads, or move it
+  inside the request helper so a fourth path added later cannot miss it. The
+  second is the better shape and it is the engineer's judgement, not this
+  seat's. The consequence today is that a card body or a card comment with one
+  paragraph over 420 characters is refused by the server rather than reshaped,
+  while the same prose in a `note` is accepted, so a seat learns the rule from
+  a failed write on two surfaces and never on the third.
+- Not probed against the live server, deliberately. A comment is an outward
+  write and this is readable from our own source, so the claim above is what
+  the client does and what the recorded refusal says, and not a round trip this
+  run performed.
+- Measured by `python3 docs/voice/check_voice.py blocks`, which prints the
+  three paths and which of them format, and fails on the two that do not. That
+  gate is honestly red in the engineer seat's lane, the way `taste` is red in
+  the frontend's, and it is red rather than silent because the number a seat
+  can take on its own draft depends on the answer.
+- Why it is a ledger entry and not a diff: `tools/` is not this seat's surface.
+- Cost: $0. One call site each, or one line moved.
+- Status: proposed
+
 ### 2026-11-02 - Have `ingest` emit the url canon law 8 wants, because the generator has been asked six times to compose it by hand and the correct code already exists on the wrong side of the press (writer seat, for the engineer)
 - This is the writer charter's structure-watch step, step 4, and it is the
   first time this seat has reached it with a count. The step says that when the
