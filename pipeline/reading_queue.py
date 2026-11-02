@@ -36,7 +36,10 @@ from typing import Callable, NamedTuple
 QUEUE_PATH = "docs/research/reading-queue.md"
 
 # The format the file documents at its own head:
-#     - [ ] arxiv:<id> — why — asked by skills/<slug> — YYYY-MM-DD
+#     - [ ] arxiv:<id> -- why -- asked by skills/<slug> -- YYYY-MM-DD
+# The separator is U+2014 or the plain ` - ` / ` -- ` above, which is what
+# docs/voice/ban-list.md entry 13 requires and what the file now mostly holds.
+# Written in ASCII here so this file holds none of the character it reads.
 # Lines without an arXiv id are the questions the reading raised, addressed to
 # the research seat rather than to a fetcher, and they are skipped here rather
 # than treated as malformed.
@@ -63,7 +66,7 @@ ARXIV = re.compile(r"arxiv:\s*(?P<id>\d{4}\.\d{4,5}|[a-z\-]+(?:\.[A-Z]{2})?/\d{7
 # 2026-11-02.** `docs/voice/ban-list.md` entry 13 bans every non-ASCII
 # character in this repository, amended 2026-09-21 to be the class rather than
 # three examples. So the research seat's ASCII sweep of its own blocks is the
-# law working, and it writes ` - ` or ` -- ` where this pattern required `—`.
+# law working, and it writes ` - ` or ` -- ` where this pattern required U+2014.
 # Three lines arrived that way and each one parsed with the date, and sometimes
 # a paragraph, inside the asker. Repairing the data loses: the next sweep is
 # correct and undoes it, and the file still holds 857 non-ASCII characters for
@@ -75,7 +78,7 @@ ARXIV = re.compile(r"arxiv:\s*(?P<id>\d{4}\.\d{4,5}|[a-z\-]+(?:\.[A-Z]{2})?/\d{7
 # typed, and here BOTH forms have been typed deliberately, one by this format
 # and one by a standing law. Accepting a form a law mandates is not inviting
 # the next convention.
-ASKED_BY = re.compile(r"asked by\s+(?P<who>.+?)(?:\s+—|\s+--(?=\s)|\s+-(?=\s)|\s*$)")
+ASKED_BY = re.compile("asked by\\s+(?P<who>.+?)(?:\\s+\u2014|\\s+--(?=\\s)|\\s+-(?=\\s)|\\s*$)")
 
 # The asker, when the asker is a skill. `ASKED_BY` above is for display and is
 # still wrong for any decision, because "the chair" and "skills/x" are both
