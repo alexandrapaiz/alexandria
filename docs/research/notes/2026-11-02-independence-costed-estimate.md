@@ -102,6 +102,14 @@ arm, which is exactly the shape of the 98 rows this library labels
 and once per task-requirement pair during construction," which is also exactly
 the per-task granularity the skill seat proposed.
 
+**What is new here and what is not, because the difference matters.** The
+facts above were already in this seat's own answer to the queue line (PR #679,
+carried on #691): that answer names the masked-skill check, names the
+cross-family rule, and quotes the paper's "exclusivity is thus an agreement
+among models, not one author's claim." What it did not draw is the inference
+below, and it treated the credential as blocking the whole remedy rather than
+one third of it.
+
 So the defect in those 98 rows was never that they are judgements. The
 benchmark whose precedent we are citing is built on the same kind of judgement.
 What makes its version admissible is three safeguards around it, and they are
