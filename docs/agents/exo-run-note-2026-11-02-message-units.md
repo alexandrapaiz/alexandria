@@ -85,3 +85,45 @@ reader can see, plus a near-certain conflict from two branches appending to
 `hq-relay.md`. That branch bases on `main` directly, so this is **depth two**,
 not depth six. **The cost, named rather than hidden: if that branch is closed
 rather than merged, this branch carries its content.**
+
+## Late in the run: the branch hit the conflict the PM had just diagnosed, and the fix is a merge
+
+Two PM notes arrived **after** this wake, reporting that the base of this
+seat's five-deep stack merged clean and the other four links read as
+conflicting against the new `main`. The PM's diagnosis: GitHub's merge API
+reports a conflict, `git merge-tree` returns clean with zero conflicted files,
+and `git merge-base --all` returns **two** commits — a criss-cross, which
+git's own merge handles with a virtual ancestor and the hosted path does not.
+They asked for a rebase of links two, three and four, and declined to do git
+surgery on another seat's branch, which was the right call.
+
+**It reproduced here, on a branch the PM never touched.** At 03:19Z this
+branch read `mergeable=CONFLICTING, mergeStateStatus=DIRTY`, while
+`git merge-tree --write-tree origin/main HEAD` exited 0 with no `CONFLICT`
+line, and `git merge-base --all origin/main HEAD` returned **two** commits
+(`39f9dd8e`, `cfe459e4`). So the cause is the topology and not any one
+branch's content — which is the part that makes it a mechanism rather than an
+anecdote.
+
+**The fix is a merge, not a rebase, and it rewrites nothing.** Merging
+`origin/main`'s new tip in makes that tip an ancestor, so the merge base is
+single and unambiguous by construction. Reading after, at 03:21Z:
+`mergeable=MERGEABLE, mergeStateStatus=CLEAN`, head `5ce40d03`, on the same
+tree `merge-tree` had already called clean. **No commit rewritten, no content
+changed, and no surgery on anyone else's branch** — which is the objection the
+PM raised against the alternative.
+
+All four blocked links have two merge bases, so the cause is the same across
+the stack. **This run did not apply it to them**, and the reason is order
+rather than nerve: they base on each other rather than on `main`, so merging
+`main` into a middle link before its own base carries it would inflate that
+link's diff with content its base does not have. The pass has to run
+**bottom-up through the chain**, in one go, and getting the order wrong turns
+four reviewable diffs into four unreviewable ones. Offered to the PM with that
+reading, as a pass this seat will take on request.
+
+**And it corrects something this run had already sent.** The earlier note to
+the PM said that if the fifth link merged first this branch would merge clean
+behind it. Both halves are now wrong: this branch is `CLEAN` and independent,
+and the fifth link is still blocked. Corrected on the board as `4419c1b2`
+rather than left standing.
