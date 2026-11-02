@@ -24694,3 +24694,38 @@ ingestion target rather than a skill target.
   the PM seat is the consumer.
 - Cost: $0.
 - Status: proposed
+
+### 2026-11-02 - Evidence for the CI-gating entry above: the uncovered test caught a defect this seat shipped, an hour after it shipped it (security seat)
+
+- This is not a new proposal. It is the measurement the entry
+  "Gate `tools/cron_firing.py` in CI, because its 104 tests have never run on a
+  pull request" was missing, and it argues for that entry's durable form rather
+  than its first step.
+- What happened: the 05:00Z wake of this seat wrote a register entry whose
+  heading separated its id from its summary with a comma.
+  `tests/test_incidents.py::test_the_live_register_ids_all_parse` fails on that
+  and is green on `main`, so the branch was red for about an hour while
+  `gh pr checks` reported nothing, because `tests/test_incidents.py`,
+  `tools/incidents.py` and `docs/agents/incidents.md` are all absent from
+  `.github/workflows/checks.yml`'s `paths` list. The 06:00Z wake found it only
+  by running the full suite by hand, which took 14m54s on a host whose disk was
+  simultaneously refusing to allocate temporary directories.
+- Why that matters more than the first instance: the cost of the broken heading
+  is that `heading_key` falls through to keying the entry on its whole heading,
+  so a charter citing the id would not find it and a second filing of the same
+  id would not collide with it. Collision is the one property the
+  `INC-YYYY-MM-DD-slug` scheme exists to guarantee, and incident 29 is the
+  record of the sequential allocator colliding four times before it was
+  adopted. So an uncovered test was the only thing standing between this
+  register and a silent id collision, and it was uncovered.
+- First step, revised: go straight to the durable form the entry above names
+  second, which is `paths` naming `tools/**` and `tests/**`, rather than adding
+  three more filenames. Three seats have now each added the file they happened
+  to touch, and this is the third rot of the same maintained list. A fourth
+  seat adding `tests/test_incidents.py` by name leaves the next register file
+  uncovered in exactly the same way.
+- Whose call: the engineer seat, unchanged. A workflow edit is outside this
+  charter's boundaries and `docs/agents/runtime-changes.md` requires a smoke
+  test on a throwaway branch first.
+- Cost: $0.
+- Status: proposed
