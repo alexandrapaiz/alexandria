@@ -22712,3 +22712,93 @@ has nothing to go red against.
   separator, which is a change to a company standard and not ours.
 - Cost: $0.
 - Status: proposed
+
+## 2026-11-02 — the routed corrections landed, and three findings came out of applying them (skill seat)
+
+### 2026-11-02 — claim revision: the 1.1 percent trigger figure was quoted correctly and used as the wrong headline (skill seat)
+- Filed under ADR-35, which says the paper wins and the claim row gets filed for
+  revision. Routed by the research seat on the board (note `05e67ee7`, PR #664)
+  rather than applied there, because the text belongs to this seat.
+- What the claim says, and it is not wrong: on 177 executable tasks over 79
+  skills, Qwen3-32B under progressive disclosure loaded the correct skill on 1.1
+  percent of them against 90.9 percent with a native router (*The Router Within*,
+  `arxiv:2609.15982`). `skills/skill-library-engineering` delta 3 quoted it
+  accurately and attributed it correctly.
+- What is wrong is the generalisation the quote was carrying. That 0.011 is the
+  paper's own reimplemented progressive-disclosure prompt on one mid-size open
+  model in `mini-swe-agent`, and its own table 1 prints four frontier trigger
+  rates of 0.650 to 0.864 under Codex in the rows immediately above it. The
+  benchmark's authors measure the same quantity on the identical 79 skills and
+  177 tasks for eight models under two deployed harnesses and report 0.324 to
+  0.972 (*Skill-Use*, `arxiv:2608.04828` table 1). Both papers were read in full
+  this run and both tables verified against the HTML rather than against the
+  brief.
+- So nothing in the benchmark is within an order of magnitude of the figure, and
+  the within-paper comparison the claim describes is real. The defect is a claim
+  about one configuration being stored in a form that reads as a claim about the
+  mechanism, which is the shape that makes it quotable in public.
+- Which claim ids carry it cannot be determined this run: `NEON_RO_URL` is absent,
+  so the 20 ids in that skill's provenance block cannot be resolved to rows. The
+  research seat or the engineer should land the revision against whichever of
+  320, 321, 322, 328, 329, 396 to 400, 565 to 569 and 625 to 629 holds the 1.1
+  percent, and the replacement sentence is in delta 3 of the shipped file.
+- Cost: $0.
+- Status: proposed
+
+### 2026-11-02 — a cut section cannot take its claim ids with it, because the ids are a flat list (skill seat)
+- Trigger: this run's retrofit of `recursive-harness-self-improvement` cut section
+  8, the Agora population finding, and could not remove the claim ids that section
+  cited, because `provenance.claims` is one flat array of 28 integers for the
+  whole file with nothing recording which section asked for which id.
+- Why it matters rather than being tidy: the claims list is the address a
+  contradiction lands on, which every skill in this library says in its own last
+  caveat. A file that still cites an id for content it no longer carries will
+  accept a revision for a section that is gone, and the seat handling that
+  revision has no way to discover it from the file. The Agora paper had to stay in
+  `papers` for the same reason, so the provenance block now describes a section
+  that is not there, which is the most honest state reachable without the database
+  and is still wrong.
+- The 2026-09-30 retrofit of `harness-engineering` did this correctly: its
+  revision note names claims 199, 136, 140, 190 and 243 as leaving with the
+  sections they supported. That was possible because that run could see the rows.
+  A run with no database cannot, and three of this seat's last four runs had no
+  database.
+- First step, and it is small: let `claims` be a map from section heading to ids
+  rather than a flat list, or failing that let each delta's `*Validation:*` tag
+  name the ids it rests on, which it already does for eval tasks. Either makes a
+  cut self-documenting and neither needs a database to write.
+- Whose call: the engineer owns `tools/panel_provenance.py` and
+  `site/lib/content.js`, which both read this field, and the format contract is
+  `prompts/skill-extract.md` §2, which is this seat's file but a Tier C path. So
+  this is filed rather than attempted for the same reason the papers-separator
+  entry above it was.
+- Cost: $0.
+- Status: proposed
+
+### 2026-11-02 — the cross-file confusion case has no owner on the side that can break it (skill seat)
+- Already filed as an incident by the research seat,
+  `INC-2026-11-01-a-confusion-case-names-a-skill-it-does-not-live-with-and-outlived-the-content-it-tests`,
+  on PR #664. This entry is the repair proposal rather than a second filing, and
+  it is here because this run paid the cost the incident describes.
+- What was measured: four confusion cases in four skills' `triggers.json` files
+  expected `harness-engineering` to win prompts testing the two things its
+  2026-09-30 rewrite deliberately cut. They had reported as failures for 32 days.
+  None of them printed under `harness-engineering`'s own suite, because the report
+  aggregates by the asking skill, so the skill at 6 of 11 was invisible in a page
+  of per-suite numbers while the other seven read 32 of 32.
+- The structural half: a revision to skill Y never sees the cases in skill X's
+  file that name Y as their expected answer. There is no reverse index, so the
+  seat with the authority to cut content has no way to find the tests that depend
+  on it.
+- First step, in `skills/_validation/trigger_test.py`, which this seat does not
+  own: print a second table keyed by the skill each case EXPECTS alongside the
+  existing per-suite table, and have `tools/skill_gate.py` fail when a case names
+  an expected skill whose description no longer contains the case's own `anchor`
+  string. The anchor field already exists on the positive cases and is already
+  quoted from the description, so the gate has its input.
+- Why this run did not do it: `skills/_validation/` is inside this seat's write
+  surface and the instrument is not. Changing the instrument and the artifact in
+  one commit is the thing that file's own policy history refuses, in its own
+  words, and this run changed six cases and three descriptions.
+- Cost: $0.
+- Status: proposed
