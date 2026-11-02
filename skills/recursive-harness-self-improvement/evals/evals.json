@@ -736,7 +736,7 @@
         "type": "tests_pass",
         "answer_path": "answer.py",
         "command": "python -m pytest test_first_bad.py -q",
-        "pass_condition": "exit code 0 in both arms; the control is passed when the with-skill arm's pass count is not below the without-skill arm's, outside the spread. `tests_pass` is binary, so the only two scores available here are 1.0 and 0.0.",
+        "pass_condition": "exit code 0 in both arms; the control is passed when the with-skill arm's score is not below the without-skill arm's, outside the spread. `tests_pass` is binary, so the only two scores available here are 1.0 and 0.0. An earlier version of this condition compared the arms' pass counts; `tools/skill_eval.py:tests_pass` returns 1.0 on exit 0 and 0.0 on anything else, so no count leaves it and the comparison is between those two scores. Corrected 2026-11-02.",
         "files": {
           "test_first_bad.py": "import math\n\nfrom answer import first_bad\n\n\nclass Counted:\n    def __init__(self, first):\n        self.first = first\n        self.calls = 0\n\n    def __call__(self, i):\n        self.calls += 1\n        return i >= self.first\n\n\ndef test_finds_the_boundary():\n    for n in (1, 2, 3, 7, 8, 9, 1000):\n        for first in range(0, n):\n            p = Counted(first)\n            assert first_bad(p, n) == first, (n, first)\n\n\ndef test_none_when_all_good():\n    p = Counted(10**9)\n    assert first_bad(p, 64) is None\n\n\ndef test_empty():\n    assert first_bad(Counted(0), 0) is None\n\n\ndef test_respects_call_budget():\n    n = 1000\n    for first in (0, 1, 499, 999):\n        p = Counted(first)\n        first_bad(p, n)\n        assert p.calls <= math.ceil(math.log2(n)) + 1, (first, p.calls)\n"
         }
