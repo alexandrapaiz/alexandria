@@ -25294,3 +25294,114 @@ write surface.
   This run changed neither.
 - Cost: $0.
 - Status: proposed
+
+## 2026-11-02 - the volume that broke the shallow-clone remedy, and three smaller things (skill seat, sixth pass)
+
+### 2026-11-02 - the shared 45G volume is at 100 percent and it disables the charter's own shallow-clone fix (skill seat)
+
+- What: this run began with 35 MB free on `/`, the only writable filesystem on
+  the host. `git fetch --unshallow` died with `No space left on device`, and the
+  harness's own tool-output capture died with ENOSPC twice, returning two tool
+  calls with no output while the commands themselves had succeeded. Filed as
+  `INC-2026-11-02-the-full-volume-broke-the-charters-own-unshallow-remedy-and-twice-ate-tool-output`,
+  a repeat of the research seat's
+  `INC-2026-11-02-the-45g-volume-that-filled-in-october-is-at-98-percent-again-and-a-seat-write-already-failed`
+  in PR #742.
+- Why it is worse than a capacity nuisance: `--unshallow` is the charter's
+  mitigation for a class that has already cost three runs and once committed
+  2,456 lines of conflict markers. A full volume disables that mitigation and
+  the failure is a non-zero exit a run can miss, after which every
+  `git merge-base` and `A...B` comparison silently lies. The ENOSPC half is
+  worse still, because a command that succeeds with no visible output is
+  indistinguishable from a command whose answer was "nothing".
+- The structural fact: twelve seats of six products run as one user on one 45 GB
+  volume, each holding a clone of 170 MB or more plus caches, and `--unshallow`
+  makes every clone bigger.
+- First step, cheapest first: a host-side reaper for `/tmp/pytest-of-seats`
+  (it held 40 pytest directories where pytest's own policy keeps 3) and for
+  `/tmp` scratch older than a few hours that does not match the live seat-clone
+  pattern `epito-<seat>-XXXXXX`. Then a per-seat quota, then a larger volume.
+  Also worth one line in every charter next to the two shallow-clone commands:
+  `df -h /` before them, because a volume at 100 percent breaks the pair quietly.
+- Twice this run the seat reclaimed scratch itself to keep working, about 2 GB
+  across two passes. That worked and **it should not be a seat's call.** It is
+  recorded in the incident entry so the pattern is visible rather than copied
+  silently by five more seats.
+- Whose call: whoever owns the host, for all three remedies. This run changed no
+  configuration and only deleted scratch.
+- Cost: $0 for the reaper; a larger volume is the owner's.
+- Status: proposed
+
+### 2026-11-02 - a zero-claim skill has two gates that disagree on the word (skill seat)
+
+- What: `skills/agent-approval-paths` cites no claim ids, because its three
+  papers have no rows and the ingestion queue is blocked on the compute
+  workspace. Two gates govern that state and they ask for different words.
+  `tests/skill-provenance.test.mjs` requires `status: draft` for a zero-claim
+  skill and allows exactly one of them library-wide. `prompts/skill-extract.md`
+  §2 prescribes `status: provisional` for anything unmeasured and never mentions
+  `draft` at all. A seat that follows the format contract writes `provisional`
+  and the test fails; a seat that follows the test writes a status its own
+  contract does not document.
+- The third gate is subtler and it is the one worth keeping: the registrar
+  fails a zero-claim skill outright, and `tools/panel_provenance.py`
+  `waiting_on_the_queue` excuses it only when all three of status-is-draft,
+  papers-are-named and at-least-one-paper-is-an-open-queue-line-asked-for-by-
+  this-skill hold. That is a good gate and it caught this run honestly: the
+  registrar read `failing` until the three ingestion lines were appended, then
+  `waiting`. Nothing here proposes weakening it.
+- First step: this run added the missing sentence to `prompts/skill-extract.md`
+  §2, because that file is in this seat's write surface and the omission is what
+  misleads the next seat. What is left for someone else is whether `draft` and
+  `provisional` should be two statuses at all, given that the site renders
+  `status` verbatim and no code anywhere validates the vocabulary.
+- Whose call: the engineer seat for the status vocabulary; the prompt sentence
+  is done.
+- Cost: $0.
+- Status: proposed
+
+### 2026-11-02 - the trigger engine routes a paraphrase to the wrong neighbour (skill seat)
+
+- What: writing this run's confusion cases surfaced how narrow the margin between
+  two neighbouring skills is. A prompt describing a within-tool prompt injection
+  routes to `agent-containment` at 0.3779 against `agent-security-measurement`
+  at 0.2064 when it contains the words *prompt injection* and *deny list*, and
+  routes to `agent-security-measurement` with containment second when the same
+  question is paraphrased without them. Two phrasings of one question, opposite
+  answers, and the substantive subject never changed.
+- Why it matters beyond one case: the engine is lexical and pre-registered, which
+  is a deliberate choice and not the defect. The defect is that nothing measures
+  this sensitivity, so a trigger suite's pass rate partly records how closely its
+  author happened to echo the target description. The library's positives are at
+  33 of 33, and this is one reason to trust that number less than it reads.
+- First step: a paraphrase arm for the trigger suite. For each positive and
+  confusion case, one restatement that preserves the subject and deliberately
+  avoids the target description's distinctive vocabulary, scored separately. The
+  gap between the two arms is the number nobody has.
+- Whose call: this seat owns the instrument, so this is a note to its own next
+  run rather than a request. Queued here because the previous run already owes
+  the panel one rewrite (decoy panel v3) and two instrument changes in one run
+  leave no way to tell which moved the number.
+- Cost: $0, no model calls.
+- Status: proposed
+
+### 2026-11-02 - a release-engineering prompt fires harness-engineering (skill seat)
+
+- What: `ap-neg-1` in this run's new trigger suite is a pull-request-approval and
+  deploy-pipeline question with no agent in it. It should be silent and it is
+  not: `harness-engineering` fires at 0.0933 against a 0.05 floor and a best
+  decoy of 0.050. The new skill scores below the floor and never appears, so this
+  is not the new skill's over-fire; the case merely exposed it.
+- It is the same class as `pt-neg-1`, which has been failing on `main` and is
+  also `harness-engineering` firing on vocabulary it shares with ordinary
+  engineering work. Two of the library's five failing negatives are now one skill
+  on one class.
+- First step: the decoy panel has no release-engineering or code-review decoy. A
+  prompt about reviewers, approvals, merges and deploy pipelines has nothing in
+  the null model to lose to, so the floor is the only thing standing in the way
+  and 0.0933 clears it. One decoy covering CI, review and release process is the
+  cheap repair, and it belongs in the decoy panel v3 rewrite already filed.
+- Whose call: this seat, in the v3 panel rewrite, deliberately not in the same
+  commit that reports a pass rate.
+- Cost: $0.
+- Status: proposed

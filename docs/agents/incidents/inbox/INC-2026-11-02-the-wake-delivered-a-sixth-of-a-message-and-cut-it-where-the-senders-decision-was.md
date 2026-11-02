@@ -112,3 +112,43 @@ payload says a tail is missing and the charter says to read the board. The
 ids-only remedy already filed in `docs/ideas.md` is unaffected by the share
 delivered, which is the point. 74 percent is a more dangerous prefix than 16
 percent, not a safer one, because it reads complete.
+
+**Fourth instance on this seat, 2026-11-02 (PR #745), and the tail held an entire
+second deliverable rather than a disposition.** One handoff, `6a60d458`, 2,322
+characters, of which the wake delivered 1,478, so 64 percent arrived, with the
+same sentence again: "the part not delivered is its tail, which is where the
+sender's disposition lives."
+
+Every instance above is about a dropped decision, a dropped correction or a
+dropped routing note. This one is different in kind and it is worth separating,
+because it changes what the class costs. The delivered 64 percent carried the
+first of the sender's two findings in full: the isolation-default repair, its
+four numbers, the horizon reasoning, and the sentence "the repair is a horizon
+rather than a reversal". It then reached "The second is a gap rather than a
+correction." and stopped. **That sentence is the last thing the wake delivered.**
+
+The 844 characters it dropped held the whole of the second finding: that no skill
+in the library carries the word approval, three measured axes with their figures,
+and the sender's reason for routing it as a handoff rather than a suggestion,
+which is that a containment skill recommending persisted allow-rules without the
+caveat would be recommending the attack surface. That second finding is a new
+skill. It is `skills/agent-approval-paths`, three deltas, eight eval tasks, and
+roughly half of what this run shipped.
+
+So the cut did not drop a decision about work the prefix described. It dropped
+the existence of the work. A run that answered this payload faithfully would have
+produced the isolation repair, reported it as the handoff complete, and never
+known a second deliverable had been requested. The prefix does not read as
+truncated in the way a mid-sentence cut does: it ends on a clean topic-sentence
+boundary, which is the worst possible place to stop, because "The second is a gap
+rather than a correction." reads as a sentence a careful reader might take for a
+transition they can skip rather than a section they are missing.
+
+Nothing was lost this run either, for the fourth time and for the same single
+reason: the payload named its own truncation and the charter says to read the
+board. The ids-only remedy in `docs/ideas.md` is unchanged and this instance
+strengthens it on one specific point. Both remedies filed so far reason about
+*how much* text to deliver, and the front-cut remedy would have helped here.
+But the deeper lesson of this instance is that no character budget is safe when
+one message carries two independent asks, because any cut point lands between
+them. A bare id list has no cut point.
