@@ -157,3 +157,68 @@ explicitly argues against.
   database, data science, and security and compliance among its categories in
   prose; the full nine are in a figure this seat cannot read from the text.
   Nobody should cost a shelf-scoring run before that count exists.
+
+## 5. The live-world check (L-R1), and it changes remedy one's design
+
+`docs/standards/lessons.md` L-R1 makes an ecosystem check against the live web
+mandatory every run. Pointed at this run's territory -- cross-family reviewers
+and whether a cheap one can be trusted -- it returned a paper that bears
+directly on the recommendation above, and read in full it moves it.
+
+**`arxiv:2606.19544`, Reliability without Validity: a systematic evaluation of
+LLM-as-a-judge across agreement, consistency and bias.** 21 judges from 9
+providers, three benchmarks, three protocols, 118 runs and about 541,000
+individual judgments, executed in a five-week window in March and April 2026.
+Four results matter here.
+
+1. **Chance-correction is not optional.** Exact match overstates Cohen's kappa
+   by 33.8 to 41.3 percentage points on MT-Bench, cohort mean 38.6, universal
+   across all three capability tiers. The best judge on kappa, Gemini 3.1 Pro,
+   still shows a 33.8-point gap between EM 0.849 and kappa 0.511. The deflation
+   tracks the benchmark's label distribution rather than the judge: 38.6 points
+   on balanced ternary labels, 23.7 on JudgeBench, 10.2 on imbalanced binary
+   pairs. **Our label distribution is 1, 3 and 98.** So whatever the reviewer
+   pass returns, a raw agreement count is the wrong headline for it, and the
+   distribution has to be part of how it reports itself rather than a footnote.
+2. **Judge quality is not transferable.** Rankings shift by as many as 14
+   positions across benchmarks, and JudgeBench discriminates 4.5 times more
+   sharply than MT-Bench (60.4 against 13.5 points of kappa spread). Picking a
+   free-tier reviewer on general reputation is therefore not evidence that it
+   judges *our* task, and no amount of reading about it substitutes for the
+   measurement.
+3. **The cheapest judges carry the worst position bias**, by nearly two orders
+   of magnitude: Llama 3 8B at 0.192 against 0.002 at the top, with "small, and
+   cost-optimized models" named as the high-bias class and within-family spread
+   of a factor of 70 between Gemini 2.5 Pro and Flash. This is the one place
+   the two free-tier candidates are the wrong class of model. **It also does
+   not apply to the instrument as proposed**, because a pointwise binary
+   verdict has no positions to swap -- which is an argument for keeping the
+   call pointwise, and an argument for running a paired A-then-B variant once
+   as a free diagnostic if anyone wants the bias number anyway.
+4. **Verbosity bias has collapsed and is worth knowing as a negative.** All 21
+   models register below 0.011 under a single pairwise rubric, against the 20
+   to 40 percent variance the 2023 literature reported. A 2023 precaution
+   carried forward into a 2026 design is cargo.
+
+**The protocol it hands us, which is the real find.** Section 5.3 states a
+Minimum Viable Validation Protocol: chance-correct and report kappa as the
+headline; measure position bias by paired AB and BA; replicate over at least
+three runs at temperature 0 with caching disabled; cross-validate on at least
+two benchmarks spanning preference-style and correctness-style labels; and
+audit the paradox, because test-retest above 0.95 with position bias above 0.10
+is a failure mode rather than a strength. The paper names selective adoption as
+its own first indirect risk: "reporting Cohen's kappa alone without the paired
+position-swap and consistency checks can produce a false sense of having
+addressed judge reliability."
+
+That is a third-party validation protocol for the third-party reviewer, which
+is the same authorship-independence move remedy two makes, at the price of
+remedy one.
+
+**And it changes one number above.** Three replicates at temperature 0 turn 102
+calls into 306 and 97,946 tokens into 293,838. That still fits groq's 1,000 RPD
+but **exceeds its 200,000 TPD**, so the validated sweep is 1.47 free-tier days
+rather than one twelve-minute pass. The paid route is 34 cents. So the finding
+is narrow and worth stating exactly: the unvalidated sweep is free and fits one
+run; the sweep that can defend its own number does not fit one free-tier day,
+and costs a third of a dollar to stop being a two-day job.

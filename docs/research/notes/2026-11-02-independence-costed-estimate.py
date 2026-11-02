@@ -97,8 +97,22 @@ def remedy_one() -> dict:
     for model in ("openai/gpt-oss-120b", "qwen/qwen3.8-27b", "kimi-k2.6"):
         rows.append((model, usd(tok_in, tok_out, model), PRICES[model][2]))
 
+    # The same sweep under the Minimum Viable Validation Protocol of
+    # `arxiv:2606.19544` sec 5.3, which is the published answer to "is this
+    # reviewer any good at this task". Step 3 is the one that moves the bill:
+    # at least three independent runs at temperature 0 with caching disabled.
+    MVVP_REPLICATES = 3
+    mvvp_in, mvvp_out = tok_in * MVVP_REPLICATES, tok_out * MVVP_REPLICATES
+
     return {
         "cases": cases, "measured_here": measured_here,
+        "mvvp_replicates": MVVP_REPLICATES,
+        "mvvp_in": mvvp_in, "mvvp_out": mvvp_out,
+        "mvvp_rows": [(m, usd(mvvp_in, mvvp_out, m), PRICES[m][2])
+                      for m in ("openai/gpt-oss-120b", "kimi-k2.6")],
+        "mvvp_fits_tpd": (mvvp_in + mvvp_out) <= GROQ_TPD,
+        "mvvp_days": (mvvp_in + mvvp_out) / GROQ_TPD,
+        "mvvp_fits_rpd": cases * MVVP_REPLICATES <= GROQ_RPD,
         "payload_chars": chars,
         "tok_in": tok_in, "tok_out": tok_out,
         "rows": rows,
@@ -171,6 +185,18 @@ def main() -> int:
     print()
     print("  So the sweep is one pass inside one seat's run, and the money is not")
     print("  the decision. The decision is one key.")
+    print()
+    print(f"  Under the MVVP of arxiv:2606.19544 ({r1['mvvp_replicates']} replicates at "
+          f"temperature 0, caching off):")
+    for model, cost, source in r1["mvvp_rows"]:
+        print(f"    {model:<22} ${cost:>7.4f}   {source}")
+    print(f"    requests {r1['cases'] * r1['mvvp_replicates']} vs {GROQ_RPD} RPD -> "
+          f"{'fits' if r1['mvvp_fits_rpd'] else 'OVER'};  "
+          f"tokens {r1['mvvp_in'] + r1['mvvp_out']:,.0f} vs {GROQ_TPD:,} TPD -> "
+          f"{'fits' if r1['mvvp_fits_tpd'] else 'OVER'}"
+          f"  ({r1['mvvp_days']:.2f} free-tier days)")
+    print("  This is the one place the free tier stops being free of consequence:")
+    print("  the validated version of the sweep does not fit one free-tier day.")
     print()
 
     print("=" * 74)
