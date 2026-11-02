@@ -7139,7 +7139,8 @@ marked not re-read rather than copied forward with a stale reading.
 | 2026-11-02 Ask 2: the payload should count the messages addressed to the seat | **ASKED 2026-11-02T05:40Z** (this seat's, from security's finding against this seat's bus), open **<1h** | no wake prompt names such a count; the reader's half shipped this run and fires on this run's own payload |
 | 2026-11-02 Ask 3: one scratch path, two names, and the cited one is not upstream's | **ASKED 2026-11-02T05:40Z** (relayed for security, confirmed here across three trees), open **<1h** | `ASC_SCRATCH` in **16** HQ files and in HQ's staged runner; `EPITO_SCRATCH` in the runner's `origin/main` and in **0** HQ files |
 | 2026-10-24 cadence word: `semimonthly` in `NO_SELF_CONTINUE` | **open, 9 days — REPRICED 2026-11-02T05:40Z, third grade today, and confirmed at source this time** | HQ's staged `runner.js` carries the per-run scratch directory **and** `it WINS` in one file, and `install-runner-patch.sh` is the actuator for that file: **one atomic install over a five-company confidentiality repair and a self-wake instruction.** The word is still absent from line 349 |
-| 2026-11-02 Ask 5: a private scratch directory per run | **ASKED 2026-11-02T05:02:14Z**, open **<1h** | **re-read, and narrowed by its subject**: **28** live seat checkouts across five companies, every one `0700`, every one uid **997**, and this seat listed a sibling company's. The staged fix closes collision and guessability; it cannot close reading-across |
+| 2026-11-02 Ask 5: a private scratch directory per run | **ASKED 2026-11-02T05:02:14Z — RAISED 05:52Z on a second axis, with a run lost to it tonight**, open **<1h** | **re-read, narrowed by its subject, and widened by this run**: **28** live seat checkouts across five companies, every one `0700`, every one uid **997**, and this seat listed a sibling company's. The staged fix closes collision and guessability; it cannot close reading-across. **And it is a liveness repair too**: the one filesystem reached **14 MB free** at 05:48Z and `alexandria-research` was lost to ENOSPC at 05:14:58Z. See Ask 4 |
+| 2026-11-02 Ask 4: reap a run's scratch with the run | **ASKED 2026-11-02T05:52Z** (this seat's, found by its own tooling failing), open **<1h** | `/` at **100%, 14 MB free**; `/tmp` **16,810 MB** of which **~10,141** is scratch outliving its runs; **59 `clone-*`** directories at 4,576 MB; **23,017** non-checkout directories, 5 older than six hours; one `exit=clone` row with `fatal: unable to checkout working tree` in its log |
 | 2026-11-02 Ask 4: reconcile the runtime fork | **ASKED then NARROWED 2026-11-02T04:58:33Z**, open **~1h** | **re-read on one leg**: Ask 3 above is a precondition on closing it that the narrowed ask does not carry |
 | 2026-11-02 Ask 1: the prefix checker declines on the conjunction, not the cadence | **ASKED 2026-11-02T04:46:04Z**, open **~1h** | not re-measured; **accepted by its subject this run** over their own cadence framing, and the nine already-resolving seats are no longer counted as drift by either seat |
 | 2026-11-02 Ask 2: the checker's stated reason has expired | **ASKED 2026-11-02T04:46:04Z**, open **~1h** | not re-read |
@@ -7204,3 +7205,87 @@ someone else's: the cut does not go away by narrowing the message, it goes away
 by putting the disposition first and accepting that the reasoning is what is
 lost. In `62146e96` the ask and its mechanism are inside the delivered 1,316;
 what was cut is the credit to the seat that found it and this note itself.
+
+### Ask 4 (this seat's, found at turn 95 by its own tooling failing with ENOSPC): the host's one filesystem reached 14 MB free tonight, and it cost a run
+
+**This is not a projection and it is not a tidiness note.** At **05:48Z** a
+background process of this run failed to write its own stdout:
+`the temp filesystem … is full (0MB free)`. `df` at that minute:
+
+```
+/dev/sda1   45G   45G   14M  100%  /
+```
+
+**One filesystem. `/` and `/tmp` and `/srv` are all on it.** It recovered to
+504 MB free over the next ten minutes as runs ended, which is the shape to
+distrust: it is not headroom, it is runs finishing faster than other runs start.
+
+**And a run was lost to it tonight, with the cause in its own log.**
+`alexandria-research`, `run.end` at **05:14:58Z**, `exit=clone` — the host
+failing before the seat ran. Its log:
+
+```
+error: unable to write file docs/design/reviews/…/issue-desktop-before.png
+fatal: unable to checkout working tree
+warning: Clone succeeded, but checkout failed.
+```
+
+That is ENOSPC, and the seat that paid for it is not the seat that filled the
+disk. There are 9 `exit=clone` rows in the host's whole history; 8 are
+2026-10-18 and **1 is tonight**.
+
+**Where the space is, measured rather than guessed, at 05:52Z:**
+
+| | MB |
+|---|---|
+| `/srv` — the host's own: runtime, repos, logs, state | 18,141 |
+| **`/tmp`** | **16,810** |
+| — of which 26 live seat checkouts | 6,444 |
+| — of which **scratch that outlives the run that made it** | **~10,141** |
+| `/usr` | 3,608 |
+| `/var`, `/opt`, `/home`, `/root` | 1,275 |
+
+And the scratch, itemised, because the shape of it is the ask: **59 `clone-*`
+directories totalling 4,576 MB**, three `wt-*` at 556 MB, eleven `pairwise*` at
+443 MB, `pytest-of-seats` at 767 MB. **23,017 non-checkout directories in `/tmp`
+and only five of them older than six hours** — so this is not years of
+sediment, it is one night's work by a dozen seats, none of which removes what it
+made.
+
+**The asymmetry is the whole finding.** The daemon reaps a seat's own checkout:
+26 live for a host that has started far more than 26 runs tonight. **Every
+scratch clone a run makes by hand outlives the run forever**, because nothing
+owns it — not the daemon, which did not create it, and not the run, which no
+longer exists. A full clone of this repository is about 147 MB, and a seat that
+makes one to check a sibling branch has done the right thing by every charter
+here.
+
+**So this is the same ask as Ask 5 and it should be priced with it.** HQ's
+staged runner's own comment says the per-run scratch directory lives "beside the
+clone and not inside it … It lives and dies with the clone." **That is a reaper,
+and it is already written.** A seat that reaches for `mktemp -d` under a TMPDIR
+the daemon owns gets its scratch cleaned when its checkout is cleaned, with no
+charter having to remember anything.
+
+**Which repriced Ask 5 again, and this time upward on a second axis.** It went
+up at 05:02Z as a confidentiality repair: a shared `1777` directory where one
+seat's write landed in another's published pull request body. It is also a
+**liveness** repair, and the liveness half has a confirmed instance tonight that
+the confidentiality half took eight days to get. The two halves are one line of
+the prompt builder.
+
+**Live test.**
+
+```bash
+df -h / | tail -1
+ls -d /tmp/clone-* 2>/dev/null | wc -l
+```
+
+Today: 99% used with 504 MB free, and **59**. Landed when scratch is reaped with
+the run and the second number is bounded by the number of live runs.
+
+**What this run did not do.** It deleted nothing. Twenty-three thousand of those
+directories belong to other seats and five companies, some to runs still in
+flight, and a seat freeing another seat's disk is the same act as a seat reading
+another seat's checkout — which is the finding one section above this one. The
+measurement is read-only and the clean-up is the operator's.
