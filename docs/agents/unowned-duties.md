@@ -2254,3 +2254,116 @@ is carrying security's cycle right now. The question this page raises, and
 routes rather than answers, is why market's refused log was never claimed when
 security's was. That is HQ's claim logic, not this company's clock, and it goes
 to the relay.
+
+## 2026-11-02: security's row closes, and it closes on a chain of four runs the gate's wording sees as two
+
+The 2026-11-01 section above ends by handing one reading to the next run of
+this seat: security's row is "answerable today and not on 2026-11-15, on
+whether 657 ships." This is that reading. **It shipped**, so the row closes —
+and the way it shipped is the finding, because no clause of the gate that was
+written to receive this answer describes what happened.
+
+### The chain, every link read off the record
+
+| when | what | evidence |
+|---|---|---|
+| `2026-11-01T13:00:27Z` | the `0 13 1,15 * *` slot fires **on time** | `run.end` at `13:00:33.928Z`, trigger `cron`, **exit 1, turns 1**, 6 seconds, no pull request |
+| — | the weekly limit, not this seat's fault | `?day=2026-11-01`: **63 of 114 runs refused, 55% of the day, 62 before their first turn, 21.3 h dark**; the `13:00:27Z→13:00:36Z` window holds 4 runs across `alexandria` and `ursa` |
+| `23:04:44Z` | HQ's retry claims the log and re-fires it as a **hook** | `capacity-retry.json` → `alexandria-security: 2026-11-01T13-00-27-477Z-cron.log` |
+| `23:06:23Z` | the re-fire opens **#657**, and works it | 1,061 additions, 4 deletions |
+| `2026-11-02T00:04:49Z` | **the re-fire is killed at the one-hour wall**, its pull request still a draft | `run.end`, trigger `hook`, **`exit=timeout`**, **60.11 min**, **turns `None`**, **`pr` `None`** |
+| `01:09:39Z` | a **later** security run readies #657 — 65 minutes after its author died | `ready_for_review`; that run is `00:40:24Z→01:11:21Z`, 75 turns, exit 0 |
+| `01:13:17Z` | #657 **merges** | "semimonthly debug and security sweep, one credential-disclosure path closed" |
+
+### Why this closes the row, and what it does not prove
+
+The gate as restated on 2026-11-01 reads: *a slot rescued by HQ's retry does
+consume the gate, **because a re-fire that ships** is an observation of the
+seat.* Read literally, the re-fire **did not ship**. It was killed at the wall
+with its draft unreadied. What shipped the sweep was a third run, 35 minutes
+later, that found an orphaned draft and readied it.
+
+So the clause's stated reason is false here and its verdict is still right,
+which is the worst combination a gate can have — it will be read as settled by
+whoever reaches it next. Both binary readings of it fail:
+
+- *"did the re-fire ship?"* → **no** → the gate is not consumed → security
+  re-dated to 2026-11-15, **a fortnight of recorded exposure while the sweep
+  sits merged on main.**
+- *"did a pull request appear?"* → **yes** → consumed → but that says nothing
+  about the seat, because the completing act came from a different run.
+
+The row closes on the evidence: the slot fired on time, the retry rescued it,
+the sweep was done, and it is on main. **What it does not prove is that this
+seat can complete a cycle inside one run**, and the one-hour wall is why. That
+is a separate exposure and it is recorded below rather than folded into this
+row.
+
+### The fourth outcome, restored — this page dropped it and then met it 23 minutes later
+
+The 2026-10-26 comment on the duty-classes card already had this right:
+
+> the gate as this card words it has two outcomes and the thing it measures has
+> four: fired and shipped, fired and refused, **fired and killed**, never fired.
+
+The 2026-11-01 restatement went back to two and the one it dropped was *fired
+and killed*. It was written at `23:41Z`; the re-fire it was written about was
+killed at `00:04:49Z`, **23 minutes later**. So the gate is restated once more,
+and this time the carrying mechanism is named rather than assumed:
+
+> A class A row is answerable on the seat's **first slot that is not refused**.
+> A refused slot re-dates the gate and the refusal is recorded with it.
+> **The unit observed is the cycle, not the run.** A cycle may be carried
+> across several runs — a refused slot, a re-fire killed at the wall, and a
+> later wake that readies the draft are one observation, not three failures —
+> and it is consumed when the work **merges**. Four outcomes, and the reading
+> must name which: fired and shipped, fired and refused, **fired and killed**,
+> never fired. A gate with fewer terms than its subject will be right for the
+> wrong reason, which is how this clause survived five days.
+
+**Three times now this page has sized a gate smaller than the thing it
+measures**, and each correction has widened it and then the next narrowed it
+again: an absence measured where no clock existed (2026-10-24), three dates
+that fell where no run could pass turn one (2026-11-01), and a two-term gate
+met by its third term (today). The general shape, because it is not about
+security: **a correction that narrows a taxonomy its own author had already
+widened is the most expensive kind, because it carries the authority of a fix.**
+
+### Where this leaves class A and class B
+
+- **research** — closed 2026-10-27 on a rescued slot. Unchanged.
+- **security** — **closed today**, on the chain above, with the within-one-run
+  question split out below.
+- **market** — still the one genuinely unanswered row. Two refusals, neither
+  its own fault, its refused log never claimed by the retry, re-dated to
+  `2026-11-06T11:00Z`. Why security's log was claimed and market's was not is
+  with HQ and is still open.
+- **class B** — four rows naming this seat, still waiting on the owner's word,
+  which no silence rule reaches because it widens this seat's own budget. The
+  card stays in Backlog for them.
+
+### The one-hour wall, which this run measured because security's row ran into it
+
+Not a class A row and not a duty row — an exposure this page is the right place
+to record, because every gate on it reads the run record.
+
+**The wall is uniform and it is real.** All 36 `exit=timeout` rows the host has
+ever written fall between **60.02 and 61.10 minutes**, median **60.21** — a
+hard one-hour cap, not a distribution.
+
+**Every one of the 36 carries `turns = None` and `pr = None`.** Both columns are
+written from the run's trailer and a killed run writes no trailer. So in the
+host's own record a run killed at the wall is **indistinguishable from a run
+that never started and shipped nothing** — and security's re-fire is one of the
+36, with a merged pull request of 1,061 additions behind a row that reads
+`pr = None`.
+
+The 2026-11-01 run fixed this hole in `tools/cron_firing.py`'s *liveness*
+reading, for exactly this re-fire. **The same hole is still open in the run
+record itself**, which is the surface every other instrument reads.
+
+**And today is the spike: 19 of the 36 happened on 2026-11-02** — more than the
+previous four days combined (17) — five of them in `alexandria`
+(`security` 00:04Z, `engineer` 00:06Z and 02:03Z, `skill` 01:29Z and 05:03Z).
+Whether that is related to the host filesystem reaching 99 MB free tonight is a
+**question and not a finding**; it is routed, not asserted.
