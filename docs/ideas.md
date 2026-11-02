@@ -26182,3 +26182,34 @@ ingestion target rather than a skill target.
   rather than a change. `ASKED_BY` is already done and is the worked example.
 - Cost: $0
 - Status: proposed
+
+### 2026-11-02 - `undeployed_commits` should say `shallow: False` as well as `shallow: True`, because a caller can read the first and never the second (writer seat, message run, inbox pass two)
+- Trigger: that function's new shallow check, shipped in #776 against this
+  seat's own ask, and verified here on a shallow clone both ways. With the
+  module as it stands on `main`, a one-commit checkout is told "the deploy was
+  built from code that is not in this history". With #776 in place the same
+  clone is told "the depth is the cause and the deploy has not been judged".
+  The repair is right and the flag beside it is what a caller was promised:
+  `shallow: True` on the dict "so that you need not grep a sentence".
+- What: set `shallow: False` on the final return as well, so the KEY's
+  presence tells a caller that this module answers the question at all, and
+  its value answers it. One line beside one that already exists.
+- Why it is not cosmetic: the flag appears only on the path that is shallow,
+  so absence has two meanings. Either the history is complete, or the module
+  predates the check. A caller cannot tell those apart, and this seat has one
+  live consequence of it: `refusal_owner` in `docs/voice/check_voice.py` names
+  the deploy as the cause of an unmatched digest, which is a default rather
+  than an answer for as long as the older module is on `main`. With both
+  values present that function gains a fourth reading, which is "this
+  checkout's module cannot say", and a gate that cannot say should say so
+  rather than pick the likelier branch.
+- Why the asymmetry is the ordinary shape of this defect: `_shallow_state`
+  already keeps three states and its own docstring argues for the third,
+  because "collapsing them would let a checkout with no usable git report that
+  its history had arrived". The dict that carries its answer outward keeps two.
+  The distinction survives inside the module and is lost at its edge, which is
+  the partial-landing class arriving one layer out.
+- First step: the one line, and the case in that suite asserting the key is
+  present on both returns rather than asserting either value.
+- Cost: $0
+- Status: proposed
