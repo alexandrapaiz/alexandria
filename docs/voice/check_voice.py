@@ -2550,6 +2550,24 @@ DEADLINE_CASES = (
     ((), "| Are the skill files the paid product? | "
      "`skills-copy-2026-10-18.md`, surface 3 | 2026-10-18. Posted as ask "
      "`db6d191e`, deadline 2026-11-30T06:19Z under the silence rule |"),
+    # Two asks for one reservation, the live shape of 2026-11-02. Neither hour
+    # has passed, so the only finding is the duplication itself.
+    (("duplicated",), "| Are the skill files the paid product? | "
+     "`skills-copy-2026-10-18.md`, surface 3 | 2026-10-18. Posted as ask "
+     "`2cfc0df6`, deadline 2026-11-30T00:32Z, and re-posted as ask "
+     "`cbdb86a5`, deadline 2026-11-30T08:28Z |"),
+    # And the half that makes `duplicated` worth a code rather than a note:
+    # the EARLIER clock has run out and the later one has not, so a row read
+    # on its newest id looks live while the reservation is already resolved.
+    (("duplicated", "expired"), "| Are the skill files the paid product? | "
+     "`skills-copy-2026-10-18.md`, surface 3 | 2026-10-18. Posted as ask "
+     "`2cfc0df6`, deadline 2026-10-28T00:32Z, and re-posted as ask "
+     "`cbdb86a5`, deadline 2026-11-30T08:28Z |"),
+    # The same id twice is one ask written in two cells, not two postings.
+    ((), "| Are the skill files the paid product? | "
+     "`skills-copy-2026-10-18.md`, surface 3 | 2026-10-18. Posted as ask "
+     "`2cfc0df6`, deadline 2026-11-30T00:32Z, and ask `2cfc0df6` is the one "
+     "the row is read against |"),
 )
 
 #: The clock `DEADLINE_CASES` is read against. 2026-10-29, the day after the
@@ -2578,20 +2596,44 @@ def question_rows():
 def deadline_findings(row, now):
     """One row's clock problems, as codes, read against a given moment.
 
-    Three codes and they are not degrees of the same thing. `unasked` is a row
+    Four codes and they are not degrees of the same thing. `unasked` is a row
     with no clock because nobody started one. `unreadable` is a row with a clock
     nothing can read. `expired` is a clock that ran out with the row still in
     the table, which under the standard means the answer is already in force.
+
+    `duplicated` is a row naming more than one ask, and it was added on
+    2026-11-02 because the PM seat posted both of this register's open
+    questions to the owner twice in eight hours. The first pair went out at
+    00:32:58Z and 00:33:05Z carrying this seat's handoff, the second pair at
+    08:28Z carrying no reference to the first, and all four are live on the
+    bus with nothing withdrawn.
+
+    The reason it is a finding rather than bookkeeping is the arithmetic.
+    Section 22 starts its forty-eight hours when the reservation is posted, and
+    a second posting of the same reservation is not a second reservation. So
+    the governing clock is the EARLIEST, and `expired` is read against that one
+    rather than against any of them. Recording the newer id as the row's clock
+    would have moved both of these rows back eight hours, on rows that have
+    been open for fifteen days, and a reservation re-posted often enough would
+    never resolve at all.
     """
     found = DEADLINE.findall(row)
-    asked = ASKED.search(row) or SILENCE.search(row)
+    ids = []
+    for one in ASKED.findall(row):
+        if one.lower() not in ids:
+            ids.append(one.lower())
     out = []
-    if asked and not found:
+    if (ids or SILENCE.search(row)) and not found:
         out.append("unreadable")
     elif not found:
         out.append("unasked")
-    for stamp in found:
-        when = datetime.datetime.fromisoformat(stamp).replace(
+    if len(ids) > 1:
+        out.append("duplicated")
+    if found:
+        # The earliest, which is the one the standard's clock actually runs
+        # from. ISO-8601 to the minute sorts lexicographically, so `min` is
+        # the comparison and not an approximation of it.
+        when = datetime.datetime.fromisoformat(min(found)).replace(
             tzinfo=datetime.timezone.utc)
         if when <= now:
             out.append("expired")
@@ -2666,6 +2708,13 @@ def deadlines():
             if code == "unreadable":
                 print("            names an ask or a silence rule and no "
                       "`deadline YYYY-MM-DDTHH:MMZ`")
+            elif code == "duplicated":
+                print("            more than one ask for one reservation. "
+                      "Section 22's clock runs from the FIRST posting, so")
+                print("            the earliest deadline governs and the "
+                      "later id buys no further silence. Say which one")
+                print("            the row is read against, and tell the "
+                      "seat that posted the second that the first exists")
             elif code == "unasked":
                 print("            no ask and no deadline. Section 22 covers "
                       "every reservation a charter makes except money, "

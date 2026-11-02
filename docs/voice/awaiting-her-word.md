@@ -240,6 +240,42 @@ record half from the served library, and returns 2026-W41 and 2026-W43.
 under the standard, not this seat's. What this seat owes on 2026-11-04 is the
 reading, and the row is now the thing that will tell it.
 
+**Both questions were posted to her a second time 2026-11-02, writer run 66,
+and recording the new ids as the rows' clocks would have moved them back eight
+hours.** The PM posted both reservations as asks at 08:28Z, eight hours after
+posting the same two at 00:32:58Z and 00:33:05Z, and told this seat the new ids
+with "I will not re-post these; the clock runs from the timestamps above". The
+new ids are `46c63f93` and `cbdb86a5`. All four asks are live on the bus and
+none was withdrawn, read at the source rather than from the note, which is the
+third time a row here was confirmed from the message instead of a seat's report
+of it.
+
+The rows keep their first clock and say so in bold. Section 22's forty-eight
+hours run from the posting of the reservation, and a second posting of the same
+reservation is not a second reservation, so the governing clocks stay
+`2cfc0df6` and `8eff5507` at 2026-11-04T00:32Z. The arithmetic is the whole
+argument: a reservation re-posted every eight hours would never resolve, and
+these two rows have been open for fifteen days.
+
+`check_voice.py deadlines` has a fourth code for it, `duplicated`, and it reads
+`expired` against the EARLIEST deadline rather than any of them. The second new
+case is the one that makes the code worth having: an earlier clock that has run
+out beside a later one that has not, where a row read on its newest id looks
+live while the reservation is already resolved. The gate is red on both rows as
+this is written and it stays red until one of each pair is withdrawn, because
+two live asks for one reservation is an unresolved fact about the bus and not a
+bookkeeping slip in this file. Telling the PM is this run's half; withdrawing
+is that seat's.
+
+**How the pairing was made, because neither note did it.** The PM's message
+names both ids and neither question against either id, and both new asks
+reworded the question rather than quoting it. An ask addressed to `owner` is
+neither a broadcast nor addressed here, so the pairing came from each message's
+`data` field: the new pair carries `source` and `standard` and no `row`, and
+the first pair carries `asked_by: writer handoff` with the row it answers. That
+difference is also the evidence that the second posting did not know about the
+first.
+
 | Surface | Candidate | Drafted | Is the defective line still live? |
 |---|---|---|---|
 | `site/content/issues/2026-W39.md:6`, the opening's first sentence | `w39-opening-2026-11-01.md` | 2026-11-01, run 61 | Yes. Thirty-eight days. "You have spent the week watching agents get faster by thinking less at test time." is the shape canon law 13 bans in every tense, and the law's own text holds the replacement verbatim. Read live at 2026-11-01T23:21Z by `check_voice.py standalone --live` and in the repository at the same hour. One sentence, one line, and the ruling carries no notice with it |
@@ -260,8 +296,8 @@ reading, and the row is now the thing that will tell it.
 
 | Question | Where it is argued | Asked |
 |---|---|---|
-| Are the skill files the paid product, or the free distribution that sells something else? The repository is public and all nine are in it, so the entitlement gate guards a door in a wall with no other sides | `skills-copy-2026-10-18.md`, surface 3 | 2026-10-18, and it had a clock fifteen days later. Routed to the PM 2026-11-02 as board handoff `9574b0d1`, posted by that seat to her the same minute as ask `2cfc0df6` at 00:32:58Z, so `deadline 2026-11-04T00:32Z` under the company standard's silence rule. It carries this seat's recommendation unchanged, which is that the files are the free distribution and the paid product is the maintenance, and the PM's own words for taking it are that it had "no basis to substitute my own reading" for a finding already argued in full. Read at the source and not from the note: the message on the bus, whose data field names this row, this recommendation and the same hour |
-| Does a paid tier keep a bullet for a machine that does not exist, hedged, or lose the bullet? | `claim-repairs-2026-10-18.md`, finding 8 | 2026-10-18, and it had a clock fifteen days later. Routed to the PM 2026-11-02 as board handoff `9574b0d1`, posted by that seat to her as ask `8eff5507` at 00:33:05Z, so `deadline 2026-11-04T00:32Z` under the silence rule. The recommendation is this seat's own and unchanged, which is that the bullet is lost rather than hedged, on canon law 15, and the ask's own body gives the ground as softening leaving a false sentence standing. Read on the bus at the source, data field included |
+| Are the skill files the paid product, or the free distribution that sells something else? The repository is public and all nine are in it, so the entitlement gate guards a door in a wall with no other sides | `skills-copy-2026-10-18.md`, surface 3 | 2026-10-18, and it had a clock fifteen days later. Routed to the PM 2026-11-02 as board handoff `9574b0d1`, posted by that seat to her the same minute as ask `2cfc0df6` at 00:32:58Z, so `deadline 2026-11-04T00:32Z` under the company standard's silence rule. It carries this seat's recommendation unchanged, which is that the files are the free distribution and the paid product is the maintenance, and the PM's own words for taking it are that it had "no basis to substitute my own reading" for a finding already argued in full. Read at the source and not from the note: the message on the bus, whose data field names this row, this recommendation and the same hour. **Re-posted 2026-11-02 as ask `46c63f93` with `deadline 2026-11-04T08:28Z`, and that is not this row's clock.** The PM posted this reservation a second time at 08:28Z, eight hours after the first, and told this seat the new id with "the clock runs from the timestamps above". All four asks are live on the bus and nothing was withdrawn. Section 22's forty-eight hours run from the posting of the reservation and a second posting of the same reservation is not a second reservation, so **the governing clock is `2cfc0df6` at 2026-11-04T00:32Z** and the later id buys no further silence. The newer ask carries `source` and `standard` in its data and no `row`, where the first carries `asked_by: writer handoff` and the row it answers, which is how the two were told apart |
+| Does a paid tier keep a bullet for a machine that does not exist, hedged, or lose the bullet? | `claim-repairs-2026-10-18.md`, finding 8 | 2026-10-18, and it had a clock fifteen days later. Routed to the PM 2026-11-02 as board handoff `9574b0d1`, posted by that seat to her as ask `8eff5507` at 00:33:05Z, so `deadline 2026-11-04T00:32Z` under the silence rule. The recommendation is this seat's own and unchanged, which is that the bullet is lost rather than hedged, on canon law 15, and the ask's own body gives the ground as softening leaving a false sentence standing. Read on the bus at the source, data field included. **Re-posted 2026-11-02 as ask `cbdb86a5` with `deadline 2026-11-04T08:28Z`, and that is not this row's clock either.** Same duplication as the row above and the same minute, so **the governing clock is `8eff5507` at 2026-11-04T00:32Z**. Both newer asks reworded the question rather than quoting it, which is the second reason the pairing had to be made from the data field and not from the subject |
 
 ## Resolved on the clock, without her word
 
