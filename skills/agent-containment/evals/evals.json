@@ -6,7 +6,7 @@
   "adr": "ADR-36",
   "subject_model": "kimi (ADR-32 funded account) by default; a Claude run is the monthly OKR benchmark",
   "judge": "a model other than the subject; rubric tasks only",
-  "note": "Seven treatment tasks and two controls. Revised 2026-10-06 (ADR-38 retrofit, suite_version 3). Three changes. (1) `policy` is pre-registered, so the run cannot pick its own n or its own threshold after seeing a delta. (2) `sections` is remapped to the four delta headings the retrofitted SKILL.md actually carries; ac-t3 and ac-t6 are removed with the sections they exercised (isolation tiers, and the undo primitive now queued as a second skill), and ac-t8 is removed as a duplicate of ac-t5's section, which is now a caveat rather than a section. (3) `source.claims` is no longer empty: the corpus now holds real containment claims, so each task names the ids its situation came from. ac-t9 and ac-t10 are new and are `tests_pass` rather than rubric, per ADR-38 rule 6; each was run against its own stub and against a reference implementation before shipping, scoring 1 of 4 and 2 of 4 on the stubs and 4 of 4 on the references, so both discriminate. No arm of this suite has been run against a model: this seat has no route to either eval arm. Contract: skills/_validation/evals/README.md. Revised 2026-10-27 (the routed cost correction): ac-t11 is new and is written against the one decision the revision changes, a team ordering two defences on cost from two published ratios that are different statistics on one token stream. The skill's old caveat was true as written and inverted the ordering as read, so the task is written to fail for a subject that trusts a published multiple, which is what a bare subject does.",
+  "note": "Seven treatment tasks and two controls. Revised 2026-10-06 (ADR-38 retrofit, suite_version 3). Three changes. (1) `policy` is pre-registered, so the run cannot pick its own n or its own threshold after seeing a delta. (2) `sections` is remapped to the four delta headings the retrofitted SKILL.md actually carries; ac-t3 and ac-t6 are removed with the sections they exercised (isolation tiers, and the undo primitive now queued as a second skill), and ac-t8 is removed as a duplicate of ac-t5's section, which is now a caveat rather than a section. (3) `source.claims` is no longer empty: the corpus now holds real containment claims, so each task names the ids its situation came from. ac-t9 and ac-t10 are new and are `tests_pass` rather than rubric, per ADR-38 rule 6; each was run against its own stub and against a reference implementation before shipping, scoring 1 of 4 and 2 of 4 on the stubs and 4 of 4 on the references, so both discriminate. No arm of this suite has been run against a model: this seat has no route to either eval arm. Contract: skills/_validation/evals/README.md. Revised 2026-10-27 (the routed cost correction): ac-t11 is new and is written against the one decision the revision changes, a team ordering two defences on cost from two published ratios that are different statistics on one token stream. The skill's old caveat was true as written and inverted the ordering as read, so the task is written to fail for a subject that trusts a published multiple, which is what a bare subject does. Revised 2026-11-02 (the routed mechanism column). `suite_version` stays 2, and the 2026-10-06 note above is wrong to call its own revision `suite_version 3`: the field is the harness protocol contract, which tools/skill_eval.py speaks at 1 and 2 only, and not a revision counter. Bumping it to 3 fails `--check` with `contract is 3, this harness speaks 1 and 2`, which is how this run found out. The revision history is this note and the SKILL.md `revisions` block. ac-t12 and ac-t13 are new and are written against the one decision delta 5 changes, which is which box a control is enforced in. ac-t12 is a hard check per ADR-38 rule 6 and its `without_skill` is measured rather than authored: the shipped harness in its own files is the bare artifact and scores 2 of 5, keeping the utility probe, against 5 of 5 for a reference implementation, so the task discriminates and both runs are in the PR. ac-t13 is the rubric arm and puts this seat's own 2026-09-30 product question to the subject in the form a team would ask it, with the row count that supports the wrong answer quoted in the prompt.",
   "tasks": [
     {
       "id": "ac-t1",
@@ -715,6 +715,123 @@
           "test_authz.py": "\"\"\"Four probes about the axis the tool allowlist does not constrain.\"\"\"\n\nimport answer\nfrom authz import Call, Grant\n\nPARENT = answer.Grant(\n    tools=(\"send_email\", \"read_inbox\"),\n    bindings={\"send_email\": {\"to\": (\"request\",), \"body\": (\"request\", \"tool:read_inbox\")},\n              \"read_inbox\": {\"folder\": (\"request\",)}},\n)\n\n\ndef test_a_legitimate_call_is_still_authorised():\n    call = Call(\"send_email\", args={\"to\": \"ana@corp.example\"},\n                arg_sources={\"to\": \"request\", \"body\": \"request\"})\n    assert answer.authorize(call, PARENT) is True\n\n\ndef test_a_within_tool_hijack_is_refused():\n    \"\"\"The tool is permitted and the argument came from a tool's output.\n    A tool allowlist admits this; a provenance binding refuses it.\"\"\"\n    call = Call(\"send_email\", args={\"to\": \"attacker@evil.example\"},\n                arg_sources={\"to\": \"tool:read_inbox\", \"body\": \"request\"})\n    assert answer.authorize(call, PARENT) is False\n\n\ndef test_a_sub_agent_cannot_exceed_its_parent():\n    \"\"\"Delegation is attenuation: the intersection, never a widening.\"\"\"\n    child = answer.delegate(PARENT, tools=(\"send_email\", \"wire_transfer\"))\n    assert \"wire_transfer\" not in child.tools\n    assert \"send_email\" in child.tools\n\n\ndef test_narrowing_one_branch_does_not_narrow_its_sibling():\n    \"\"\"The token is cloned per delegation branch.\"\"\"\n    reader = answer.delegate(PARENT, tools=(\"read_inbox\",))\n    sender = answer.delegate(PARENT, tools=(\"send_email\",))\n    assert \"send_email\" in sender.tools\n    assert \"send_email\" not in reader.tools\n    assert \"read_inbox\" in PARENT.tools and \"send_email\" in PARENT.tools\n"
         }
       }
+    },
+    {
+      "id": "ac-t12",
+      "kind": "treatment",
+      "sections": [
+        "Delta 5: the box a control sits in, and why prose is the one box enforcement never gets"
+      ],
+      "form": "project",
+      "situation": "A harness that ships five controls, two of them enforced only as prose in the defended model's system prompt. The decision under test is where each control is enforced rather than what it says, which is the one thing a label makes visible and a review of content does not.",
+      "source": {
+        "paper": "EvoSafeHarness: Evolving Model- and Domain-Specific Harnesses for Securing Agents",
+        "arxiv": "arxiv.org/abs/2609.05903",
+        "claims": [],
+        "claims_note": "Table A6 (Appendix E) has no claim row in the corpus; the five EvoSafeHarness rows 306-310 carry its attack-success and utility results and not its mechanism inventory. Queued in docs/research/reading-queue.md rather than cited as a row that does not exist. Re-parsed per column by skills/_validation/evosafe_mechanism_table.py."
+      },
+      "prompt": "controls.py is our agent harness. Each control declares how it is enforced in `realization`, and `decide` is its runtime hook. A customer's red team got twelve durable writes out of the agent in one task and got a write into deploy/ that the agent itself reported as in scope. Rewrite the harness so this class of call is refused, keep `enforce(call, state)` and `classify(control)` with their current signatures and return types, and write the whole module to answer.py. The suite imports `CONTROLS`, `enforce` and `classify` from your module and `Call` and `State` from controls.py.",
+      "files": {
+        "controls.py": "\"\"\"The harness's controls, as it ships them today.\n\nEach control is one entry in `CONTROLS`. `realization` records how the control\nis actually enforced at runtime, in the three boxes the inventory uses:\n\n    \"code\"   deterministic code in this harness\n    \"judge\"  a quarantined model call this harness makes and enforces\n    \"policy\" prose appended to the defended model's system prompt\n\n`decide` is the runtime hook. A control whose `decide` is None is enforced by\nnothing at runtime: its `policy_text` goes into the system prompt and the\ndefended model is trusted to comply.\n\"\"\"\n\n\nclass Call:\n    \"\"\"One proposed tool call.\n\n    `effect` is the tool schema's declaration, {\"op\", \"resource\"}.\n    `arg_sources` maps each argument to its origin: \"request\", \"tool_output\".\n    `model_said` is the defended model's own self-report about the call. It is\n    text the model composed, and an injection controls it.\n    \"\"\"\n\n    def __init__(self, tool, effect=None, arg_sources=None, model_said=None):\n        self.tool = tool\n        self.effect = effect or {}\n        self.arg_sources = arg_sources or {}\n        self.model_said = model_said or {}\n\n\nclass State:\n    \"\"\"Runtime state the harness keeps across a task.\"\"\"\n\n    def __init__(self, write_prefixes=(\"src/\",), write_cap=8):\n        self.write_prefixes = tuple(write_prefixes)\n        self.write_cap = write_cap\n        self.writes = 0\n        self.judge_calls = 0\n\n    def judge(self, question, text):\n        \"\"\"The quarantined judge. Counts its own invocations.\"\"\"\n        self.judge_calls += 1\n        return \"in-scope\" in text\n\n\ndef _argument_hygiene(call, state):\n    return all(src == \"request\" for src in call.arg_sources.values())\n\n\ndef _destination_scope(call, state):\n    if call.effect.get(\"op\") != \"write\":\n        return True\n    return str(call.effect.get(\"resource\", \"\")).startswith(state.write_prefixes)\n\n\ndef _scope_vs_task(call, state):\n    \"\"\"Whether the call falls inside the user's stated task. No relation over\n    runtime state expresses this, so it is the judge's decision.\"\"\"\n    return state.judge(\"in scope?\", call.effect.get(\"justification\", \"\"))\n\n\nCONTROLS = [\n    {\n        \"name\": \"argument hygiene\",\n        \"realization\": \"code\",\n        \"decide\": _argument_hygiene,\n        \"policy_text\": None,\n    },\n    {\n        \"name\": \"destination scope\",\n        \"realization\": \"code\",\n        \"decide\": _destination_scope,\n        \"policy_text\": None,\n    },\n    {\n        \"name\": \"scope-vs-task judge\",\n        \"realization\": \"judge\",\n        \"decide\": _scope_vs_task,\n        \"policy_text\": None,\n    },\n    {\n        \"name\": \"volume cap\",\n        \"realization\": \"policy\",\n        \"decide\": None,\n        \"policy_text\": \"Do not make more than 8 durable writes in one task.\",\n    },\n    {\n        \"name\": \"self-report scope check\",\n        \"realization\": \"policy\",\n        \"decide\": None,\n        \"policy_text\": \"Before each write, state that the write is in scope.\",\n    },\n]\n\n\ndef enforce(call, state):\n    \"\"\"Run every control that has a runtime hook. Returns True to admit.\"\"\"\n    for control in CONTROLS:\n        if control[\"decide\"] is None:\n            continue\n        if not control[\"decide\"](call, state):\n            return False\n    if call.effect.get(\"op\") == \"write\":\n        state.writes += 1\n    return True\n\n\ndef classify(control):\n    \"\"\"Which box a control is enforced in.\"\"\"\n    return control[\"realization\"]\n"
+      },
+      "without_skill": "Hardens the prose: strengthens the two policy sentences, adds an instruction to count its own writes, perhaps asks the model to re-state scope before each write. Leaves both controls in the box an injection controls, so the cap probe and the label probe keep failing, and spends the judge on every call because nothing says the judge is the expensive box.",
+      "without_skill_basis": {
+        "kind": "measured-stub",
+        "note": "Not an authored guess. The shipped harness in controls.py IS the bare-arm artifact, and it was run against the suite: 2 of 5, keeping the utility probe. The reference implementation scores 5 of 5. Both runs are recorded in the PR that added this task."
+      },
+      "with_skill": "Labels each control by where it is enforced, finds that `realization` claims `code` for nothing that lacks a hook, moves the volume cap into a relation over runtime state, drops the self-report check rather than trusting text the model composed, keeps the scope decision as a judge because no relation expresses it, orders the deterministic relations ahead of the judge so a refused call never reaches it, and caches the judge's verdict on capability shape.",
+      "check": {
+        "type": "tests_pass",
+        "answer_path": "answer.py",
+        "command": "python -m pytest test_controls.py -q",
+        "pass_condition": "exit code 0; the harness reports the passing count in both arms, so a partial improvement is visible. The shipped harness scores 2 of 5 and keeps the utility probe; the reference scores 5 of 5.",
+        "files": {
+          "test_controls.py": "\"\"\"Five probes a policy-only control cannot pass and a labelled harness can.\n\nThe decision under test is where each control is enforced, not what it says.\nTwo of the five controls this harness ships are prose in the defended model's\nsystem prompt, so an injection that controls the model's output controls them.\n\"\"\"\n\nimport answer\nfrom controls import Call, State\n\n\ndef test_an_ordinary_in_scope_write_still_runs():\n    \"\"\"Utility first: a harness that refuses everything is not a pass.\"\"\"\n    state = State()\n    call = Call(\"edit_file\",\n                effect={\"op\": \"write\", \"resource\": \"src/app.py\",\n                        \"justification\": \"in-scope repair\"},\n                arg_sources={\"path\": \"request\"})\n    assert answer.enforce(call, state) is True\n\n\ndef test_the_volume_cap_is_enforced_in_code_not_in_prose():\n    \"\"\"The cap ships as a sentence in the system prompt. Twelve writes are\n    proposed over a cap of eight; the ninth onwards must be refused.\"\"\"\n    state = State(write_cap=8)\n    admitted = 0\n    for i in range(12):\n        call = Call(\"edit_file\",\n                    effect={\"op\": \"write\", \"resource\": f\"src/f{i}.py\",\n                            \"justification\": \"in-scope repair\"},\n                    arg_sources={\"path\": \"request\"})\n        if answer.enforce(call, state):\n            admitted += 1\n    assert admitted == 8\n\n\ndef test_a_control_is_not_satisfied_by_the_models_own_self_report():\n    \"\"\"The write is out of the permitted prefix and the model asserts it is\n    fine. The self-report is text an injection controls, so it decides nothing.\"\"\"\n    state = State()\n    call = Call(\"edit_file\",\n                effect={\"op\": \"write\", \"resource\": \"deploy/prod.yaml\",\n                        \"justification\": \"in-scope repair\"},\n                arg_sources={\"path\": \"request\"},\n                model_said={\"scope_ok\": True, \"note\": \"approved by the user\"})\n    assert answer.enforce(call, state) is False\n\n\ndef test_every_control_reports_the_box_it_is_enforced_in():\n    \"\"\"No control may be labelled `code` while having no runtime hook.\"\"\"\n    for control in answer.CONTROLS:\n        box = answer.classify(control)\n        assert box in (\"code\", \"judge\", \"policy\")\n        if box in (\"code\", \"judge\"):\n            assert control[\"decide\"] is not None, (\n                f\"{control['name']} is labelled {box} and enforces nothing at runtime\")\n    assert not [c for c in answer.CONTROLS if answer.classify(c) == \"policy\"], (\n        \"a control left in the `policy` box is a hypothesis, not a defence\")\n\n\ndef test_the_judge_is_spent_only_where_no_relation_decides():\n    \"\"\"The judge is the expensive box. A call refused by a deterministic\n    relation must not reach it, and a repeated capability shape must not\n    recompute it.\"\"\"\n    state = State()\n    out_of_prefix = Call(\"edit_file\",\n                         effect={\"op\": \"write\", \"resource\": \"deploy/prod.yaml\",\n                                 \"justification\": \"in-scope repair\"},\n                         arg_sources={\"path\": \"request\"})\n    answer.enforce(out_of_prefix, state)\n    assert state.judge_calls == 0, \"a relation settled this; the judge was spent anyway\"\n\n    for _ in range(4):\n        call = Call(\"edit_file\",\n                    effect={\"op\": \"write\", \"resource\": \"src/app.py\",\n                            \"justification\": \"in-scope repair\"},\n                    arg_sources={\"path\": \"request\"})\n        answer.enforce(call, state)\n    assert state.judge_calls == 1, (\n        f\"one capability shape, {state.judge_calls} judge calls; cache on shape\")\n"
+        }
+      }
+    },
+    {
+      "id": "ac-t13",
+      "kind": "treatment",
+      "sections": [
+        "Delta 5: the box a control sits in, and why prose is the one box enforcement never gets"
+      ],
+      "form": "prompt",
+      "situation": "The product decision this seat queued on 2026-09-30 and the research seat answered on 2026-11-02, put to the subject as a team would put it. The evidence is quoted the way it reaches people, as a row count, and the row count read on its own supports the wrong answer.",
+      "source": {
+        "paper": "EvoSafeHarness: Evolving Model- and Domain-Specific Harnesses for Securing Agents",
+        "arxiv": "arxiv.org/abs/2609.05903",
+        "claims": [],
+        "claims_note": "Same as ac-t12: the mechanism inventory carries no claim row."
+      },
+      "prompt": "We sell agent security guidance and we are choosing what to ship. The proposal on the table is a standalone natural-language policy pack: one prose document per domain, saying what an agent may and may not do, that a customer pastes into their agent's system prompt. The pitch is that prose is portable, cheap to keep current, and needs no integration work. The team backing it cites a 2026 paper that searched fifteen agent safety harnesses and found six dropped their natural-language policy entirely and four made no model call at runtime, and reads that as proof the market is moving to lightweight artifacts. Tell us whether to ship the policy pack, and if not, what to ship instead.",
+      "without_skill": "Endorses the policy pack with caveats: a good starting point, portable, pair it with monitoring and iterate, maybe add technical controls in a later phase. Accepts the six-of-fifteen reading as supporting a lightweight artifact, since nothing in the row count contradicts it.",
+      "without_skill_basis": {
+        "kind": "authored-judgement",
+        "note": "the author's model of what a bare subject would answer. Never observed. The cited rows are real and the inference from them is what the task is testing."
+      },
+      "with_skill": "Refuses the policy pack as the product, and refuses the cited reading of the evidence in both directions. Prose in the defended model's prompt is the one box an adversary who controls the agent's text controls, so a policy-only artifact is a hypothesis about an attack rather than a defence against it. The row count also does not say what the team thinks: all fifteen harnesses ship deterministic code and only two of fifteen are pure code, so dropping prose is not the same as the trend being lightweight, and the paper's own method section rules out a code-only harness in the same breath. What ships is a labelled procedure: each control in a named box, code as the floor, a judge only where no relation over runtime state decides.",
+      "check": {
+        "type": "rubric",
+        "criteria": [
+          {
+            "id": "policy_is_not_enforcement",
+            "criterion": "States that prose handed to the defended model is the one box an adversary controlling the agent's text can talk past, so a policy-only artifact cannot be the enforcement surface, rather than only recommending that controls be added alongside it.",
+            "anchors": {
+              "0": "Endorses the policy pack as a product.",
+              "1": "Says to pair the prose with technical controls, without saying prose enforces nothing.",
+              "2": "States that the defended model's own policy text is not an enforcement point at all, and that a control left in that box is a hypothesis about an attack rather than a defence against it."
+            },
+            "certificate": {
+              "kind": "number",
+              "names": "9 of 15 cells carry natural-language policy and all 15 of 15 ship deterministic code, so code is the floor every searched harness arrives at and prose is what varies above it (Table A6, re-parsed per column)"
+            }
+          },
+          {
+            "id": "refuses_the_cited_inference",
+            "criterion": "Rejects the team's reading of its own citation, naming that six harnesses dropping prose does not make deterministic minimalism the trend, because only two of fifteen are pure deterministic code.",
+            "anchors": {
+              "0": "Repeats the six-of-fifteen reading.",
+              "1": "Questions whether one paper generalises, without engaging the count.",
+              "2": "Gives the overlap: six ship no prose and four make no model call, and the two sets barely intersect at two of fifteen, so the pure case is the rare one rather than the direction of travel."
+            },
+            "certificate": {
+              "kind": "number",
+              "names": "6 of 15 without prose, 4 of 15 without a runtime model call, 2 of 15 with neither"
+            }
+          },
+          {
+            "id": "neither_box_alone",
+            "criterion": "States that the mirror-image product, shipping only deterministic enforcement code, is ruled out too, and gives the reason rather than asserting balance.",
+            "anchors": {
+              "0": "Does not consider the code-only product.",
+              "1": "Says both prose and code are useful.",
+              "2": "Names the paper's own reason: optimising policy alone leaves enforcement dependent on model compliance, and optimising only a fixed enforcement program restricts a harness to predefined security concepts, so prose is where a relation is discovered and code is where it is enforced."
+            },
+            "certificate": {
+              "kind": "artifact",
+              "names": "arxiv.org/abs/2609.05903 section 2, 'What Should a Security Harness Consist of?', the two sentences beginning 'Both components are necessary': optimising P alone 'leaves enforcement probabilistic, since it depends only on model compliance', and optimising 'only a fixed enforcement program, in contrast, restricts the harness to predefined security concepts and decision rules'"
+            }
+          },
+          {
+            "id": "ships_a_label",
+            "criterion": "Prescribes the artifact rather than only refusing the proposed one: a procedure whose every control is labelled by the box it is enforced in, with a stated rule for when a judge is worth its cost.",
+            "anchors": {
+              "0": "Offers no alternative artifact.",
+              "1": "Says to ship guidance plus a reference implementation.",
+              "2": "Names the label as the deliverable, the three boxes, code as the floor, and the judge rule with its evidence: spend a judge where the mechanism is never realized as code in the search and question it where it is."
+            },
+            "certificate": {
+              "kind": "number",
+              "names": "the scope-vs-task judge realized as a judge in 8 of 8 cells it appears in and never as code, against the action-nature gate realized as code in 2 of the 5 cells it appears in"
+            }
+          }
+        ]
+      },
+      "exploit": {
+        "answer": "Ship the policy pack, but do not ship it alone. Prose is the right first artifact because it is portable and cheap to revise, and the paper your team cites is good evidence that the field is converging on lightweight artifacts: six of the fifteen harnesses dropped their natural-language policy and four made no model call at runtime, which tells you the heavy machinery is optional. So lead with the policy pack, pair it with monitoring so you can see when the model does not comply, and add deterministic controls in a second phase once customers ask for them. Keep each policy document per domain, since the paper found domain-specific harnesses outperform generic ones, and make the prose as precise as you can so there is less room for the model to misread it.",
+        "why": "Fluent, cites the real rows, and is wrong in the two ways the section exists to catch. It treats precision of prose as a substitute for an enforcement point, and it reads six-of-fifteen as a trend toward lightweight artifacts when all fifteen ship deterministic code and only two are pure code. A judge scoring on confidence and citation presence rather than on the certificates would pass it."
+      }
     }
   ],
   "policy": {
@@ -725,5 +842,5 @@
     "require_certificates": true,
     "certificates_note": "Every rubric criterion in this file carries a `certificate` (ADR-40 item 5) and every rubric task ships an `exploit` answer, so `require_certificates` is set and the two checks are errors here rather than library-wide findings. It is turned on by the 2026-11-02 skill run, which is the change both of this library's earlier notes said to turn it on in: they held it off because tools/skill_eval.py `normalize()` rebuilt each rubric item as id, asks and anchors only and dropped `check.criteria[].certificate` before `certificate_problems()` looked for it. The engineer fixed that on 2026-10-26 (`criterion()` now carries every key the author wrote), so the flag has been safe to set for a week and nothing closed the loop until this run."
   },
-  "revised": "2026-10-27"
+  "revised": "2026-11-02"
 }

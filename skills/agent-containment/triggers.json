@@ -3,7 +3,7 @@
   "suite_version": 2,
   "written": "2026-09-30",
   "author": "skill agent (ADR-22)",
-  "note": "Four positives, two hard negatives and two confusion cases. Revised 2026-10-06 with the ADR-38 retrofit: ac-pos-3 tested the isolation-tier trigger and is retired with that section (see retired_cases) rather than rewritten, because the skill no longer answers a tier question and a pass would be the wrong outcome. Two positives replace it, one for each delta the retrofit sharpened: the within-tool axis (delta 2) and the unactioned alert (delta 4). ac-pos-2's anchor is requoted from the revised description. The hard negatives are unchanged and still chosen against this skill's worst false-positive risk, which is that isolation vocabulary (sandbox, container, node, rollback) is also ordinary infrastructure vocabulary.",
+  "note": "Four positives, two hard negatives and two confusion cases. Revised 2026-10-06 with the ADR-38 retrofit: ac-pos-3 tested the isolation-tier trigger and is retired with that section (see retired_cases) rather than rewritten, because the skill no longer answers a tier question and a pass would be the wrong outcome. Two positives replace it, one for each delta the retrofit sharpened: the within-tool axis (delta 2) and the unactioned alert (delta 4). ac-pos-2's anchor is requoted from the revised description. The hard negatives are unchanged and still chosen against this skill's worst false-positive risk, which is that isolation vocabulary (sandbox, container, node, rollback) is also ordinary infrastructure vocabulary. Revised 2026-11-02: ac-pos-5 is new, for delta 5, and the description gained the clause it anchors to, because the new delta's decision (whether a system-prompt policy is enforcement) was not reachable from any activation condition the description named. Five positives now.",
   "cases": [
     {
       "id": "ac-pos-1",
@@ -64,6 +64,14 @@
       "expect": "recursive-harness-self-improvement",
       "prompt": "Our five-agent support pipeline fails about a third of its tickets and we cannot tell which sub-agent is responsible. Where should we start?",
       "rationale": "Routes to recursive-harness-self-improvement, whose description names attributing a failure to one function inside a long execution log and whose section 3 owns failure localisation. This skill's description says sub-agents and permission policy, and the word sub-agent alone must not pull a debugging question into a containment skill: nothing is being contained here, the pipeline is simply underperforming. Re-pointed 2026-11-02: it expected harness-engineering. The 2026-09-30 ADR-38 rewrite of harness-engineering cut the localisation half of its debugging section, on a bare-arm screen that found the subject supplied it unprompted, and that file's own provenance names the cut. So expecting harness-engineering to win a sub-agent-attribution prompt has been a false claim about a skill behaving correctly since that day, and it was reported as this suite's failure for 32 days. The library's standing answer for this prompt shape is he-conf-2's, set 2026-10-13."
+    },
+    {
+      "id": "ac-pos-5",
+      "kind": "positive",
+      "expect": "agent-containment",
+      "prompt": "We wrote a page of security rules for our agent and put it at the top of the system prompt: do not touch production credentials, do not write outside the working directory, stop after eight file writes. Our lead says that is our security model. Is a system-prompt policy enough, and if not what do we replace it with?",
+      "anchor": "when an agent's security rules are written as instructions in its system prompt and you are deciding whether that counts as enforcement",
+      "rationale": "Delta 5's decision, in the words a team uses for it. The three rules named in the prompt are each in a different box: the credential and directory rules are relations over runtime state and the write cap is a counter, so all three are deterministic code and none of them needs prose or a judge. The skill answers that the system-prompt page is the one box an adversary controlling the agent's text controls, and that all fifteen searched harnesses ship deterministic code. Added 2026-11-02 with delta 5 and the description clause it anchors to."
     }
   ],
   "retired_cases": [
@@ -77,5 +85,5 @@
       "retired": "2026-10-06. This case tested the trigger 'when choosing between a container, a microVM and a full VM for agent execution', and the ADR-38 retrofit cut that section and that clause of the description. It is retired rather than rewritten because the skill no longer answers the question, so a pass would be the wrong outcome. It failed on its last run before retirement (it fired recursive-harness-self-improvement at 0.239 against this skill's 0.201), which is the engine agreeing that the material was never strongly this skill's."
     }
   ],
-  "revised": "2026-10-06"
+  "revised": "2026-11-02"
 }
