@@ -53,7 +53,7 @@ are whitespace. Verified against every assertion in HQ's own
 
 Exits 1 while the mean unused budget is over `--tolerate` (default 25
 characters), so the number can shrink and cannot quietly grow back. The file
-HQ would change is `runtime/board/board/api.py::wake_body` in
+HQ would change is `runtime/board/api.py::wake_body` in
 `alexandrapaiz/alexandra-systems`, which this company cannot write, so this
 module is the measuring half of an ask and not of a fix.
 

@@ -25012,7 +25012,7 @@ it, and backs the cut up to a whitespace boundary so that no reader is handed
 half a word. That is deliberate, its docstring says so, and it is right.
 
 What nothing had measured is how it chooses the boundary.
-`runtime/board/board/api.py::wake_body` in `alexandrapaiz/alexandra-systems`:
+`runtime/board/api.py::wake_body` in `alexandrapaiz/alexandra-systems`:
 
 ```python
 cut = body[:limit]
