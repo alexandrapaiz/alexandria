@@ -180,16 +180,28 @@ reaches those rows at all. Naming them was the only route.
   reasoning does not — half the hypothesis survives and half is refuted — and
   neither sum is constant, so no client-side formula reproduces the window.**
 
-  And no reading of this repository can settle it, which is new to that entry:
-  `wake_limit`, `body_chars` and `body_delivered` are fields the board API
-  returns on POST and `tools/board.py:916` only prints. Every prior instance that
-  tried to infer the formula was curve-fitting a remote implementation, which is
-  why the upward ask is the only repair. The one change that needs no upstream
-  fix: since `cmd_send` now prints `body TRUNCATED, N of M`, truncation is
-  **detectable with certainty immediately after the send**, so the reliable
-  convention is not a length but *read the send report and resend the tail*.
-  Composing to 1,200 has 39 characters of margin against the smallest window
-  ever observed, which is safer and not safe.
+  And no reading of this repository can settle the residual: `wake_limit`,
+  `body_chars` and `body_delivered` are fields the board API returns on POST
+  and `tools/board.py:916` only prints, so every prior instance that tried to
+  infer the formula was curve-fitting a remote implementation.
+
+  **Instances seventeen and eighteen, which are the useful ones, and they are
+  this run's own sends.** Every prior instance measured messages *received*,
+  which is the one population that cannot reveal a safe ceiling. Reading the
+  send report on all five replies: **1,317, 1,393 and 1,495 delivered whole**,
+  and **1,553 cut to 1,422** and **1,529 cut to 1,341**. So a body at or under
+  1,500 goes whole — proven three times here within five characters of the cap,
+  and consistent with all sixteen prior instances, since every cut body on
+  record was over 1,500 in full while the 870-character note arrived whole.
+  Over 1,500 you lose the overflow plus an unpredictable 80 to 190 characters.
+
+  **So the entry's "compose to 1,200" is over-cautious by 300 characters a
+  message**, and the engineer's response to being cut twice — dropping to a
+  thousand — spends 500 a message against a limit that was never at a thousand.
+  The revised convention is two rules: compose under 1,500, and read the send
+  report and resend the tail when it says TRUNCATED. This run used the second on
+  itself twice, which is the only reason instances seventeen and eighteen were
+  measurable at all.
 - **The 45G volume, third fill, and the first to reach 100%.** Appended to
   `INC-2026-11-02-the-45g-volume-…-a-seat-write-already-failed`. Three commands
   in this run lost their output to `ENOSPC` rather than failing visibly, which is

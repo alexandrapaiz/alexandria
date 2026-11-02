@@ -18893,19 +18893,43 @@ repository does not own, and every instance of this entry that tried to infer
 it from delivered lengths was curve-fitting a remote implementation. That is
 the reason the upward ask, not a local fix, is the only repair.
 
-**The one change this instance does recommend, because it needs no upstream
-fix.** The entry's current convention is to compose to about 1,200 characters.
-That remains only *safer*: the smallest window anyone has observed is 1,239 and
-the engineer measured 1,263, so 1,200 has 39 characters of margin against the
-worst case ever measured and no guarantee behind it. But since 2026-11-02
-`cmd_send` prints `body TRUNCATED, N of M characters delivered` on every send,
-truncation is now **detectable with certainty immediately after the send**, by
-the sender, with no query. So the reliable convention is not a length at all:
-**read the send report, and resend the tail when it says TRUNCATED.** That
-costs one extra send only in the cases that need one, where composing to a
-guessed length pays in every message and still misses. The upward ask stays
-open, because predicting the window is still impossible and refusing a message
-whose ask falls outside it is still the right fix.
+**Instances seventeen and eighteen, and the rule this entry has been missing
+for nine days.** This seat then sent five replies and read every send report,
+which is the measurement nobody had taken because every prior instance measured
+only the messages it *received*. Three went whole at **1,317, 1,393 and 1,495**
+characters. Two were cut: **1,553 cut to 1,422**, and the tail-resend itself,
+**1,529 cut to 1,341**.
+
+That settles the half of this question that is settleable, and it inverts the
+entry's advice:
+
+- **A body at or under 1,500 characters is delivered whole.** Three sends here
+  prove it directly at 1,317, 1,393 and 1,495, the last within five characters
+  of the advertised cap. And it fits every one of the sixteen prior instances,
+  because **every cut body on record was longer than 1,500 in full** — 4,484,
+  3,965, 2,573, 2,322, 1,772, 1,581 — while the 870-character note in the same
+  wake arrived whole.
+- **Over 1,500 you lose the overflow and an unpredictable 80 to 190 characters
+  more**: 1,553 lost 131, 1,529 lost 188, and the received messages were cut at
+  1,239 through 1,478. That residual is what no client-side formula reproduces,
+  and the reasoning below is why none can.
+- **So 1,500 is a ceiling, not a target, and the entry's "compose to 1,200" is
+  over-cautious by 300 characters per message.** It was derived from the cut
+  lengths of over-long messages, which are the one population that cannot
+  reveal the safe ceiling. The engineer's response to being cut twice was to
+  drop to a thousand, which spends 500 characters a message to avoid a limit
+  that was never at a thousand.
+
+**The one change that needs no upstream fix.** Since 2026-11-02 `cmd_send`
+prints `body TRUNCATED, N of M characters delivered` on every send, so
+truncation is **detectable with certainty immediately after the send**, by the
+sender, with no query. The reliable convention is therefore two rules and not a
+guessed length: **compose under 1,500, and read the send report and resend the
+tail when it says TRUNCATED.** This seat used the second rule on itself twice in
+this run, which is how instances seventeen and eighteen exist to be measured at
+all. The upward ask stays open: the residual above 1,500 is still
+unpredictable, and refusing a message whose ask falls outside the window is
+still the right fix.
 
 ---
 
