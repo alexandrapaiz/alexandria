@@ -715,6 +715,22 @@ UNCOVERED = {
     # which held a queue line open for thirty-three days. A test of that
     # reader which fires on no pull request is a reader back where it started.
     "tests/test_read_paper.py",
+    # Added 2026-11-02 by the ExO seat, sixth message wake, pinned for the same
+    # structural reason as every line above: the step that would run it goes in
+    # `.github/workflows/checks.yml`, and this seat's dispatch instruction says
+    # in its own words "never touch secrets or workflows". The staged
+    # replacement runs the whole suite and therefore runs this too.
+    #
+    # What it guards is the reason this pin is uncomfortable rather than
+    # routine. `tools/runtime_provenance.py` compares the daemon's runtime
+    # checkout against the repository it comes from, and on the day it was
+    # written that comparison failed four ways: detached HEAD, 984 commits
+    # behind `origin/main`, and two executed files carrying five uncommitted
+    # hotfixes that are the whole host run-record pipeline. So the instrument
+    # whose subject is "nothing checks where the live code came from" is itself
+    # checked by nothing on a pull request. The pin is honest about that; it is
+    # not an argument that the gate is satisfied.
+    "tests/test_runtime_provenance.py",
 }
 
 
