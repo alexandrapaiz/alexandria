@@ -1570,6 +1570,37 @@ gh run list --workflow=checks.yml --branch=main --limit 5 \
   --json conclusion,headSha,createdAt
 ```
 
+**And that command answers about the newest commit that happened to touch a
+filtered path, not about main** (added 2026-11-02, second message wake, same
+class as §3g step 6's write-site rule and found by this duty's own instrument).
+`checks.yml` is path-filtered on both triggers: `pull_request` and
+`push: branches: [main]` each carry a `paths:` list of 23 entries. So five
+`success` rows can all predate main's head and the head can have no verdict at
+all. On 2026-11-02 main was `729b0d58`, the merge of #657; `gh run list
+--workflow=checks.yml --branch=main` returned four successes, the newest on
+`671b1eea`, two merges earlier. No `checks` run exists for `729b0d58`, because
+that merge touched `mcp/server.py`, `site/lib/path.js`, `tests/path.test.mjs`,
+`tests/test_ci_coverage.py` and `tests/test_mcp_dsn_redaction.py`, and not one
+of the five is in the filter. `deploy-main` ran on it and passed, which is a
+deploy and not a test.
+
+So name the head and say whether a run exists for it, rather than reporting the
+newest conclusion:
+
+```bash
+git rev-parse origin/main
+gh run list --branch=main --limit 8 \
+  --json workflowName,conclusion,headSha,createdAt,status
+```
+
+**Green on an older commit is the answer this duty has been reporting**, and
+the reason it is the same class as step 6's rule is that a conclusion is a row
+written by a workflow run, so its absence is a claim about the trigger filter
+and never about the code. `python3 tools/ci_coverage.py` is the standing
+measurement of how wide that gap is and it exits 1 today: **14 of 78 test files
+run in any workflow**, and two of the five files in main's own head merge carry
+tests that are among the 64 that do not.
+
 A `failure` on main is a finding in its own right. Report it in your PR
 description whether or not fixing it is yours, because a red main is not
 one bug: every open pull request inherits it through its own merge check,
@@ -3640,6 +3671,70 @@ commit, which is the only reason this sentence is not a third instance.
    from different seats. On 2026-11-02 that one field showed the press had not
    executed since 2026-10-19 while its four siblings all ran on 2026-11-01,
    which no reading of `newest_week` could have shown.
+
+   **And that last sentence claimed more than the field can carry, which the
+   writer seat returned the same night** (amended 2026-11-02, second message
+   wake, `INC-2026-11-02-an-absent-run-record-was-read-as-a-missing-run-and-it-is-a-claim-about-one-line`).
+   The paragraph above said the run record "separates absent from broken from
+   unscheduled". **It does not separate anything.** `record_runtime` is called
+   at `pipeline/weekly.py:1885`, inside the `try` that opens at 1874, after
+   `check_availability()` at 1879 and after the `psycopg.connect` at 1881. A stale
+   `recorded_at` therefore proves exactly one proposition — **no run reached
+   line 1885** — and that proposition is true of a slot that never fired, of a
+   slot that fired and raised in the availability check, and of a slot that
+   fired and could not reach the database. The three take different fixes from
+   different seats, which is what the paragraph above says, and the field it
+   pointed at cannot tell you which one you are in.
+
+   **So the rule is about write sites, and it is general.** Before you read an
+   absence as evidence of an absent event, find the line that writes the row
+   and count what runs ahead of it. The only reading an empty row supports is
+   "nothing reached that line." Every stronger reading needs a second source,
+   and you have to be able to name it before you are entitled to the stronger
+   reading.
+
+   Three things this run learned by doing it, in the order they are cheap:
+
+   - **Read upward from the write site until you leave the handler.** Three
+     calls in `weekly` run *before* the `try` — `week_just_ended()` at 1846,
+     `week_window()` at 1862, and the two prompt reads at 1863 and 1864 — so
+     a failure there is not only unrecorded, it is **unalarmed**, because
+     `notify_owner` is inside the same `try` the write site is in. The write
+     site splits the run into three zones and not two: recorded, alarmed-but-
+     unrecorded, and silent. A reader who knows only about the first two will
+     read the third as the first.
+   - **Name the surface that holds the second source, even when you cannot
+     read it.** Here it is the owner's inbox: `ALARM_SUBJECT_CANNOT_PRINT`
+     goes out by SMTP from `pipeline/weekly.py:1367` and is written to no
+     table, so the one record that separates two of the three zones exists and
+     is unreadable by every seat. That is a finding and an ask, not a dead end:
+     a question to the one reader of that surface settles it in a sentence.
+     **An ask is cheaper than an instrument and it was available for seven
+     days.**
+   - **A firing test is one-sided, so say which side it can settle.** "Today's
+     firing settles it" is true only of the positive branch: a slot that
+     reaches 1885 proves the schedule is installed and makes the previous miss
+     a death. A slot that leaves `recorded_at` where it was proves nothing new,
+     because never-fired and died-early both read that way. Before you spend a
+     run waiting on an experiment, work out what its negative result would
+     license.
+
+   The precedent is in this repository and it is older than this rule.
+   `tools/cron_firing.py` opens with "Three states, because two is what gets
+   this wrong", and scores a seat's cron slot as `shipped`, `orphaned` or
+   never-due rather than as fired-or-not. That instrument exists for the
+   **seats'** clocks. The product's own clocks — the five `modal.App`s in
+   `pipeline/`, each deployed separately, so a sibling that ran is not
+   evidence about a peer that did not — have no such reader, and the receipt's
+   `deploy` block is the two-state instrument `cron_firing.py` was written to
+   replace.
+
+   **This is the second instance of the class inside this seat in twenty-four
+   hours**, which is why it is a rule and not a correction. The other was the
+   previous run's §2b sweep, where the board's run row carried `pr_url: null`
+   for a `security` run whose draft was sitting on branch `sec/2026-11-01`: a
+   null field read as "shipped nothing" when it meant "the writer of that
+   field did not see it." Same shape, different register, twelve hours apart.
 
 The two failures behind this, because the pattern is worth stating once.
 On 2026-09-18 the site said a skill is revised when the research moves.
