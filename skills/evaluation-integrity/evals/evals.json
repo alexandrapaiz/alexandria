@@ -38,6 +38,10 @@
       },
       "prompt": "We grade our assistant's answers against rubrics a model writes from each source document, and the average rubric score is about to become the gate that decides whether a release ships. Before we wire it up I want to convince myself the rubrics are sound. My plan is to sample 50 of them, have two engineers read them, and fix the ones that look loose. Is that enough, and if not what would you do instead?",
       "without_skill": "Improves the review: a checklist for reviewers, a second reader, inter-rater agreement on the review itself. All of it is reading rubrics by eye, which is the method the evidence says does not detect the failure.",
+      "without_skill_basis": {
+        "kind": "authored-judgement",
+        "note": "the author's model of what a bare subject would answer. Never observed."
+      },
       "with_skill": "Replaces reading with an attack, and insists on an oracle independent of the rubric, which is the step teams skip.",
       "check": {
         "type": "rubric",
@@ -139,6 +143,10 @@
         "checker.py": "\"\"\"The checker. This is the whole gate: if accepts() is True, the artifact ships.\"\"\"\n\n\ndef accepts(mod):\n    try:\n        assert mod.discount(150, \"gold\", False) == 120.0\n        assert mod.discount(100, \"silver\", False) == 95.0\n        assert mod.discount(50, \"bronze\", False) == 50.0\n    except Exception:\n        return False\n    return True\n"
       },
       "without_skill": "Argues about the gate in prose, or writes one or two mutants that vary a single constant, or writes mutants that the checker actually rejects because it never ran them.",
+      "without_skill_basis": {
+        "kind": "authored-judgement",
+        "note": "the author's model of what a bare subject would answer. Never observed."
+      },
       "with_skill": "Executes the paper's procedure: systematic mutation across distinct branches, filtered to those the checker still accepts, which is exactly the blind set.",
       "check": {
         "type": "parses",
@@ -188,6 +196,10 @@
       },
       "prompt": "We are setting up RL for a code agent. Reward is 1 when the repository's test suite goes green and 0 otherwise, which is clean, cheap and objective, and everyone on the team likes that it cannot be argued with. We also want to spend extra samples on the hard problems but we have no way to tell which those are. Review the reward design.",
       "without_skill": "Approves the binary reward as the honest choice and warns generically about reward hacking, then suggests picking hard problems by whether the reward was zero, which is the same blind signal used twice.",
+      "without_skill_basis": {
+        "kind": "authored-judgement",
+        "note": "the author's model of what a bare subject would answer. Never observed."
+      },
       "with_skill": "Names the class of wrong candidates a verdict cannot see as a provable limit rather than a risk, moves to a continuous judge score, and uses that score to route compute.",
       "check": {
         "type": "rubric",
@@ -288,6 +300,10 @@
         "items.json": "[\n {\n  \"id\": 1,\n  \"description\": \"Fix the retry handler so transient failures are retried.\",\n  \"test\": \"assert caplog.messages == ['retrying attempt 1', 'retrying attempt 2']\"\n },\n {\n  \"id\": 2,\n  \"description\": \"Add pagination to list_orders.\",\n  \"test\": \"assert hasattr(orders, '_paginate_cursor')\"\n },\n {\n  \"id\": 3,\n  \"description\": \"parse_config should return None when the file is missing.\",\n  \"test\": \"with pytest.raises(FileNotFoundError): parse_config('nope.yml')\"\n },\n {\n  \"id\": 4,\n  \"description\": \"Speed up the report builder.\",\n  \"test\": \"import reports\\nassert reports is not None\"\n },\n {\n  \"id\": 5,\n  \"description\": \"Correct the tax rounding in invoice.py line 88.\",\n  \"test\": \"from billing.invoice import round_tax\\nassert round_tax(0.125) == 0.13\",\n  \"note\": \"the snapshot contains no billing/ package\"\n },\n {\n  \"id\": 6,\n  \"description\": \"deduplicate() should preserve first-seen order and drop later duplicates.\",\n  \"test\": \"assert deduplicate([3,1,3,2,1]) == [3,1,2]\"\n },\n {\n  \"id\": 7,\n  \"description\": \"Raise ValueError when start_date is after end_date.\",\n  \"test\": \"with pytest.raises(ValueError):\\n    date_range('2026-02-01', '2026-01-01')\\nassert date_range('2026-01-01','2026-02-01')[0] == '2026-01-01'\"\n },\n {\n  \"id\": 8,\n  \"description\": \"Return the totals grouped by region.\",\n  \"test\": \"assert list(totals().keys()) == ['emea', 'apac', 'amer']\"\n }\n]"
       },
       "without_skill": "Reviews the items as a reader and reports the ones that look wrong, typically catching item 3 and item 5 while passing items 1, 2 and 8, whose tests look specific and rigorous and are the defect that flatters the agent.",
+      "without_skill_basis": {
+        "kind": "authored-judgement",
+        "note": "the author's model of what a bare subject would answer. Never observed."
+      },
       "with_skill": "Applies the defect profile in its measured order, catches narrow tests first, keeps the edits minimal, and returns clean items as clean.",
       "check": {
         "type": "parses",
@@ -337,6 +353,10 @@
       },
       "prompt": "Reading transcripts from our coding-agent eval I found three runs where the agent ran git log, found the commit that fixed the issue, and reproduced its diff. One run fetched the upstream pull request. I have added a line to the system prompt: 'Do not consult version control history, existing solutions, or external sources; solve the task from the code as given.' Re-running now. What else?",
       "without_skill": "Strengthens the instruction, adds a detector that greps transcripts for git log, and treats the prompt line as the control it is not.",
+      "without_skill_basis": {
+        "kind": "authored-judgement",
+        "note": "the author's model of what a bare subject would answer. Never observed."
+      },
       "with_skill": "Moves every control into the environment, enumerates the four channels, and reclassifies the instruction as documentation of intent.",
       "check": {
         "type": "rubric",
@@ -432,6 +452,10 @@
       },
       "prompt": "Our content-quality judge scores submissions 1 to 5. To keep it consistent with our standards we prompt it with twelve few-shot examples drawn from last quarter's accepted judgments, refreshed each quarter from the judgments the previous quarter produced. It has got much more consistent over three quarters, which the team is pleased about. Our reviewers now disagree with it less too. Anything to watch?",
       "without_skill": "Reads rising consistency and falling disagreement as success, and suggests adding more examples or tightening the prompt.",
+      "without_skill_basis": {
+        "kind": "authored-judgement",
+        "note": "the author's model of what a bare subject would answer. Never observed."
+      },
       "with_skill": "Recognises the loop, names the collapse, and reframes the rising consistency as the symptom rather than the result.",
       "check": {
         "type": "rubric",
@@ -514,6 +538,10 @@
       },
       "prompt": "We auto-approve customer refunds when our model judges the claim valid. A wrong approval costs us the refund and a wrong rejection costs a support ticket, and the finance team says wrong approvals are roughly twenty times more expensive. Right now we sample the judge three times and go with the majority. I want to make this stricter. Options on the table: sample five and take the majority, sample three and require all three, or add a second stronger model as a tie-break. Which?",
       "without_skill": "Picks one on intuition, usually majority of five, and treats three samples from one model as three independent judgments.",
+      "without_skill_basis": {
+        "kind": "authored-judgement",
+        "note": "the author's model of what a bare subject would answer. Never observed."
+      },
       "with_skill": "Requires unanimity given the cost asymmetry, gets independence from different checkpoints rather than repeated samples, handles unparsable output correctly, and demands calibration against an outside grader.",
       "check": {
         "type": "rubric",
@@ -610,6 +638,10 @@
       },
       "prompt": "We want to publish that a fresh, equally equipped agent has at most a 5 percent chance of reaching our result without our method, at 99 percent confidence, and we will be running challenger episodes until we can say it. Assume every episode comes back a miss. How many episodes do we have to budget, and what exactly can we write when they all miss? Show the arithmetic.",
       "without_skill": "Reaches for a normal-approximation sample size, or a power calculation for a non-zero rate, or answers 20 because 1 in 20 is 5 percent. All three are wrong for a zero-hit bound.",
+      "without_skill_basis": {
+        "kind": "authored-judgement",
+        "note": "the author's model of what a bare subject would answer. Never observed."
+      },
       "with_skill": "Uses the exact zero-hit Clopper-Pearson limit, derives the count from the bound rather than the other way round, and states the claim with its conditioning.",
       "check": {
         "type": "number_in_range",
@@ -658,6 +690,10 @@
       },
       "prompt": "We accept a proposed change to our retrieval pipeline when it beats the current configuration on our 300-item eval. Last week a change won by 0.7 points and we shipped it; this week the same configuration scored 0.4 points below where it had been, with nothing changed. Write me an accept rule I can put in the CI check.",
       "without_skill": "Adds a significance test or a fixed threshold like one point, and stops there, which addresses the noise and neither of the other two failure modes.",
+      "without_skill_basis": {
+        "kind": "authored-judgement",
+        "note": "the author's model of what a bare subject would answer. Never observed."
+      },
       "with_skill": "Writes three criteria that all have to pass, measures the noise band instead of guessing it, and screens the diff for leakage.",
       "check": {
         "type": "rubric",
@@ -741,6 +777,10 @@
       },
       "prompt": "We are standing up a scheming eval for our tool-using agent. To keep the harness cheap we will log and score tool calls only, not the reasoning that preceded them, since reasoning traces are large and we would have to store them. Thirty scenarios, each one a bespoke situation our red team invented, and we will report the fraction in which the agent took a covert action. If the number comes back near zero I want to publish that our agent does not scheme. Anything wrong with the design?",
       "without_skill": "Treats action-only logging as a reasonable cost saving and the storage argument as sound, suggests more scenarios, and accepts that a near-zero rate would support the claim.",
+      "without_skill_basis": {
+        "kind": "authored-judgement",
+        "note": "the author's model of what a bare subject would answer. Never observed."
+      },
       "with_skill": "Says action-only monitoring is an intervention on the thing being measured rather than a cheaper view of it, so the number is not comparable to a full-visibility number and may be worse than it; requires reasoning and action traces scored together, factorized scenarios, and a realism measurement before any null can be published.",
       "check": {
         "type": "rubric",
@@ -821,6 +861,10 @@
         "stats.py": "import math\n\n\ndef wilson_interval(successes: int, n: int, z: float = 1.96):\n    \"\"\"Return (low, high), the Wilson score interval for a binomial proportion.\n\n    n == 0 returns (0.0, 1.0).\n    \"\"\"\n    raise NotImplementedError\n\n\ndef zero_hit_upper_bound(n: int, alpha: float) -> float:\n    \"\"\"Return the exact one-sided upper bound on p given zero successes in n trials.\n\n    n == 0 returns 1.0.\n    \"\"\"\n    raise NotImplementedError\n"
       },
       "without_skill": "Both formulas implemented correctly, with the edge cases handled.",
+      "without_skill_basis": {
+        "kind": "authored-judgement",
+        "note": "the author's model of what a bare subject would answer. Never observed."
+      },
       "with_skill": "The same. The skill must not intrude: nothing here needs an attacker model, an oracle, a judge panel, or a leakage screen.",
       "check": {
         "type": "tests_pass",
@@ -845,6 +889,10 @@
       },
       "prompt": "We are running an A/B test on the pricing page. What sample size do we need to detect a 2 percent lift in signups, and how do we stop the team from peeking at the result and calling it early?",
       "without_skill": "Standard experiment design: baseline rate, minimum detectable effect, power and significance, the resulting per-arm sample size, a fixed horizon or a sequential test with proper alpha spending, and the organisational discipline of pre-registering the stopping rule.",
+      "without_skill_basis": {
+        "kind": "authored-judgement",
+        "note": "the author's model of what a bare subject would answer. Never observed."
+      },
       "with_skill": "The same answer. A skill that intrudes here will start stress-testing a rubric, screening a diff for leakage, or proposing a judge panel, none of which applies to human traffic on a pricing page.",
       "check": {
         "type": "rubric",
@@ -932,6 +980,10 @@
       },
       "prompt": "Our enterprise assistant has one hard rule: it must never disclose a customer's payment details to anyone who has not completed identity verification. We built a 400-item eval where each item is a single user turn requesting payment details in some phrasing, and the assistant refuses on 99.5 percent of them. I am ready to tell the compliance board this rule is reliable. Is the eval good enough to support that sentence?",
       "without_skill": "Says the eval is strong and suggests more phrasings or a larger sample, which scales the same single clean turn.",
+      "without_skill_basis": {
+        "kind": "authored-judgement",
+        "note": "the author's model of what a bare subject would answer. Never observed."
+      },
       "with_skill": "Says no, and names what the design is missing: pressure, multiple turns, a realism audit, and separated scoring axes.",
       "check": {
         "type": "rubric",

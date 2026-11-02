@@ -29,6 +29,10 @@
       },
       "prompt": "We run a support-operations agent on seven verifiable internal tasks: payroll auditing, budget approval, stock alerting, IoT anomaly detection, browser automation, website management, and code refactoring. Over the last month we ran an automated prompt-and-tool search against our own 9B model and the harness it produced is a big win, test success is up across all seven. Out of curiosity we pointed the same harness at a frontier model and it scores higher still, so there is clearly headroom left in the model rather than the scaffold. Plan for next sprint: collect about 8,000 frontier-model trajectories on these seven tasks, convert them to our model's tool-call format, and LoRA-SFT our 9B on them so it learns the expert's planning style inside the harness we already built. We have the GPUs. Write me the implementation plan, and tell me if you would do anything differently.",
       "without_skill": "Endorses the plan and returns a competent SFT recipe: data cleaning, format conversion, LoRA rank and schedule, a held-out split. This is the recorded behaviour of the unaided arm in the 2026-09-12 A/B trial already in this skill's provenance.",
+      "without_skill_basis": {
+        "kind": "observed-bare-run",
+        "run": "the 2026-09-12 A/B trial of the unaided arm, recorded in this skill's provenance"
+      },
       "with_skill": "Refuses the plan as written, names the measured regression, and prescribes on-policy expert correction instead: run the 9B in its own harness, find the single failing turn, have the expert rewrite only that turn, train on the corrected rollout.",
       "check": {
         "type": "rubric",
@@ -109,6 +113,10 @@
       },
       "prompt": "Our agent gets 41 percent on our internal task suite and we need it above 60 to ship. I have budget for exactly one of these next quarter: (a) a fine-tuning effort on our 8B model, roughly one engineer-quarter plus GPU time, or (b) an automated search over the system prompt, tool definitions, execution hooks and context management, roughly the same engineer time and much less compute. The team is split. Which do I buy, and what is the first week's work either way?",
       "without_skill": "Treats it as a balanced trade-off and asks for more diagnostic information, or splits the difference, without an evidence-backed default ordering.",
+      "without_skill_basis": {
+        "kind": "authored-judgement",
+        "note": "the author's model of what a bare subject would answer. Never observed."
+      },
       "with_skill": "Picks the harness search as the default and says why, then gives the harness checklist (action interface, feedback richness, feedback consistency) as the first week's work, keeping training as the later lever.",
       "check": {
         "type": "rubric",
@@ -190,6 +198,10 @@
       },
       "prompt": "We are training a Qwen3-8B agent with GRPO on a long-horizon household-simulation benchmark. Episodes run 30 to 60 steps and the reward is terminal and binary, so almost every rollout in a group scores zero and the advantage is degenerate. The obvious move is an SFT warm-up, but we have only about 300 human demonstrations and the exploration they induce is narrow. What should we change?",
       "without_skill": "Reaches for agent-side fixes: more SFT data, synthetic demonstrations, curriculum on episode length, reward shaping invented ad hoc, or a switch of RL algorithm.",
+      "without_skill_basis": {
+        "kind": "authored-judgement",
+        "note": "the author's model of what a bare subject would answer. Never observed."
+      },
       "with_skill": "Moves the intervention to the environment, enriches what the environment returns, and gets the ordering and the consistency constraint right.",
       "check": {
         "type": "rubric",
@@ -274,6 +286,10 @@
         "tools.py": "# The tool layer the agent calls. Do not change the three names or signatures.\n\nINVENTORY = {\"SKU-1\": 4, \"SKU-2\": 0}\nBUDGETS = {\"ops\": 500, \"eng\": 0}\n\n\ndef reserve_stock(sku: str, qty: int) -> dict:\n    if sku not in INVENTORY:\n        return {\"ok\": False, \"error\": \"failed\"}\n    if INVENTORY[sku] < qty:\n        return {\"ok\": False, \"error\": \"failed\"}\n    INVENTORY[sku] -= qty\n    return {\"ok\": True}\n\n\ndef charge_budget(team: str, amount: int) -> dict:\n    if team not in BUDGETS:\n        return {\"ok\": False, \"error\": \"failed\"}\n    if BUDGETS[team] < amount:\n        return {\"ok\": False, \"error\": \"failed\"}\n    BUDGETS[team] -= amount\n    return {\"ok\": True}\n\n\ndef submit_order(sku: str, team: str, qty: int) -> dict:\n    r = reserve_stock(sku, qty)\n    if not r[\"ok\"]:\n        return {\"ok\": False, \"error\": \"failed\"}\n    c = charge_budget(team, qty * 10)\n    if not c[\"ok\"]:\n        return {\"ok\": False, \"error\": \"failed\"}\n    return {\"ok\": True}\n"
       },
       "without_skill": "Improves the error strings to be human-readable ('insufficient stock') and stops there: still one flat string per failure, different shapes across the three functions, and no signal about how far a partial operation got.",
+      "without_skill_basis": {
+        "kind": "authored-judgement",
+        "note": "the author's model of what a bare subject would answer. Never observed."
+      },
       "with_skill": "Returns structured, uniformly shaped failures that name the cause and the observed state, keeps the shape identical across all failure classes and all three tools, and reports partial progress on the composite call.",
       "check": {
         "type": "tests_pass",
@@ -302,6 +318,10 @@
       },
       "prompt": "Our document-processing pipeline is four LLM agents in sequence: a planner, a retriever, a synthesiser and a formatter. It fails on about 30 percent of inputs, usually with a plausible-looking but wrong final answer. Each agent has its own system prompt. I want to spend two days on this and come out with better prompts. How should I actually spend those two days?",
       "without_skill": "Proposes reading the traces and rewriting all four prompts, or adding a critic agent, or running an off-the-shelf prompt optimiser on the whole system at once.",
+      "without_skill_basis": {
+        "kind": "authored-judgement",
+        "note": "the author's model of what a bare subject would answer. Never observed."
+      },
       "with_skill": "Localises by sequential single-agent intervention, pins reproducibility first, goes upstream-first, and uses the corrected output as the supervision signal for the prompt edit.",
       "check": {
         "type": "rubric",
@@ -388,6 +408,10 @@
         "corrections.json": "[\n {\"id\": 1, \"text\": \"When the user gives a date without a year, do not assume the current year.\"},\n {\"id\": 2, \"text\": \"Quantities written as '1.5k' must be expanded before arithmetic.\"},\n {\"id\": 3, \"text\": \"Do not answer before every retrieved passage has been read.\"},\n {\"id\": 4, \"text\": \"If two retrieved passages disagree, say so rather than picking one.\"},\n {\"id\": 5, \"text\": \"Percentages in the source are of the subtotal, not the total.\"},\n {\"id\": 6, \"text\": \"Never return a citation to a document that was not in the retrieved set.\"},\n {\"id\": 7, \"text\": \"Relative dates like 'next quarter' need the anchor date stated.\"},\n {\"id\": 8, \"text\": \"Stop and ask when the request names a field that does not exist in the schema.\"},\n {\"id\": 9, \"text\": \"Currency amounts must keep two decimal places through every intermediate step.\"},\n {\"id\": 10, \"text\": \"Do not invent a section heading that is absent from the source document.\"},\n {\"id\": 11, \"text\": \"When the retrieved set is empty, return no answer rather than a guess.\"},\n {\"id\": 12, \"text\": \"Fiscal quarters here start in February, not January.\"},\n {\"id\": 13, \"text\": \"Round only at the final step, never between steps.\"},\n {\"id\": 14, \"text\": \"A missing required argument is a question for the user, not a default.\"},\n {\"id\": 15, \"text\": \"Timestamps arrive in UTC and must be rendered in the user's timezone.\"},\n {\"id\": 16, \"text\": \"Do not fill an unknown numeric field with zero.\"},\n {\"id\": 17, \"text\": \"Sums across line items must reconcile to the stated total before reporting.\"},\n {\"id\": 18, \"text\": \"Quote the passage you relied on, not a paraphrase of it.\"}\n]\n"
       },
       "without_skill": "Appends or lightly rewrites all 18, or produces one flat summary paragraph, losing the distinction between the three failure modes present in the set.",
+      "without_skill_basis": {
+        "kind": "authored-judgement",
+        "note": "the author's model of what a bare subject would answer. Never observed."
+      },
       "with_skill": "Groups by semantic similarity so the three planted failure modes stay unmixed, abstracts each group into one instruction, and hands back the generalized corrections rather than the raw pile.",
       "check": {
         "type": "parses",
@@ -435,6 +459,10 @@
       },
       "prompt": "Our product builds a JSON configuration with the user over a long chat. When the user asks for a local change late in the conversation, we have to propagate it to every dependent field, and we get this wrong often enough that users notice. We can afford three model calls per revision instead of one. I was going to implement a reflect-and-revise loop: generate the patch, have the model critique its own patch, revise, repeat. Give me the design, as config.json, with keys \"strategy\", \"n_samples\", \"selector\", \"uses_conversation_history\", and \"rationale\".",
       "without_skill": "Implements the reflection loop the user proposed, because self-critique is the more familiar idiom and the user asked for it.",
+      "without_skill_basis": {
+        "kind": "authored-judgement",
+        "note": "the author's model of what a bare subject would answer. Never observed."
+      },
       "with_skill": "Replaces it with parallel sampling plus a cheap selection step, keeps the conversation history in context, and reserves reflection for the case where a verifier gives real signal between attempts.",
       "check": {
         "type": "parses",
@@ -482,6 +510,10 @@
       },
       "prompt": "We took your advice and moved from reflection to parallel sampling with medoid selection, and it worked. Now finance has cut the inference budget and we can afford exactly two samples per hard step, not three. Also, the embedding endpoint we were using for the medoid has been decommissioned and we are not allowed to add a new vendor this quarter. Keep the two samples. What is the selection step now?",
       "without_skill": "Keeps medoid on two samples, which is undefined, or falls back to first-sample-wins, or spends the second call on a reflection pass.",
+      "without_skill_basis": {
+        "kind": "authored-judgement",
+        "note": "the author's model of what a bare subject would answer. Never observed."
+      },
       "with_skill": "Switches the selector to an LLM judge, states that medoid needs at least three samples and an embedding model, and keeps the parallel structure.",
       "check": {
         "type": "rubric",
@@ -548,6 +580,10 @@
       },
       "prompt": "Our warehouse agent drives a pick-and-place arm through 41 tool calls: joint_move, gripper_open, gripper_close, wrist_rotate, cartesian_nudge, and so on down to per-axis jogs. A frontier VLM behind it plans badly, producing long fragile sequences that fail midway, so the proposal on the table is to collect demonstrations and fine-tune a small open-source VLM on this action space, which the team estimates at a few GPU-hours. What do you think?",
       "without_skill": "Accepts the framing and helps plan the fine-tune, treating the failure as a model-capacity problem, which is also the direction of a claim from this very paper that our graph has since deprecated.",
+      "without_skill_basis": {
+        "kind": "authored-judgement",
+        "note": "the author's model of what a bare subject would answer. Never observed."
+      },
       "with_skill": "Reframes the failure as an interface problem, redesigns toward fewer semantic actions, and tries the unmodified model against the better interface before spending on training.",
       "check": {
         "type": "rubric",
@@ -630,6 +666,10 @@
       },
       "prompt": "We are training a 9B coding agent with GRPO on a set of hard internal tool-use tasks, and on the hardest split the reward is flat at zero for the whole run. We sample 8 rollouts per task in parallel, same temperature, and we have confirmed the policy solves none of these tasks in 128 attempts, so every group of 8 comes back all-zero and the advantage is zero. Our verifier does give us the failing unit test and the stderr for each attempt, we just do not use it between rollouts. I have been told that sampling in parallel and selecting is strictly better than any sequential scheme, so I am planning to raise the group size from 8 to 32 and buy more GPUs. Answer as JSON with keys \"change_sampling\", \"order\", \"between_attempt_signal\", \"insight_length\", \"raise_group_size\", and \"rationale\".",
       "without_skill": "Takes the all-zero advantage as a compute problem and endorses the larger group, or reaches for reward shaping and curriculum, because parallel-sample-and-select is the familiar and usually correct default and nothing in the prompt flags that this is the case where it inverts.",
+      "without_skill_basis": {
+        "kind": "authored-judgement",
+        "note": "the author's model of what a bare subject would answer. Never observed."
+      },
       "with_skill": "Recognises a zero-scoring parallel arm as delta 2's named exception, switches the rollouts to sequential, and wires the verifier's failing test and stderr into a one-sentence insight that conditions the next attempt, instead of buying 4x the samples of the same no-signal distribution.",
       "check": {
         "type": "parses",
@@ -678,6 +718,10 @@
       },
       "prompt": "We fine-tuned our 8B agent model on trajectories from a frontier model, collected inside the scaffold we had already tuned around the 8B. Our instrumentation says it worked: the share of rollouts that invoke our custom domain-calculation tool went from 31 percent to 76 percent, and our error taxonomy shows fewer wrong-domain-value errors than before. Our end-to-end suite score went down on every task. What is going on, what exactly do I measure to confirm it, and what is the cheapest fix and what should I expect it to be worth?",
       "without_skill": "Reads the adoption rise as evidence the fine-tune partly worked and the regression as overfitting, catastrophic forgetting or a bad learning rate, and prescribes more or cleaner imitation data, a lower rank, or an evaluation audit. Does not predict that adoption rises in this failure, does not name the planning-failure share as the diagnostic, and either omits a price for the fix or prices it optimistically.",
+      "without_skill_basis": {
+        "kind": "authored-judgement",
+        "note": "the author's model of what a bare subject would answer. Never observed."
+      },
       "with_skill": "Says the adoption rise is what this failure looks like rather than evidence against it, names the planning-failure share of failed rollouts as the measurement that confirms it, prescribes on-policy single-turn correction with its data mix, and prices that fix as small and safe rather than large.",
       "check": {
         "type": "rubric",
@@ -758,6 +802,10 @@
         "http_client.py": "import time\n\n\nclass Response:\n    def __init__(self, status, body):\n        self.status = status\n        self.body = body\n\n\nclass Transport:\n    \"\"\"Injected for tests. call() returns a Response or raises.\"\"\"\n\n    def __init__(self, statuses):\n        self._statuses = list(statuses)\n        self.calls = 0\n        self.sleeps = []\n\n    def call(self, path):\n        self.calls += 1\n        status = self._statuses.pop(0) if self._statuses else 200\n        return Response(status, {\"path\": path})\n\n\ndef fetch(transport: Transport, path: str, sleep=time.sleep) -> Response:\n    \"\"\"Return the response. Currently gives up on the first failure.\"\"\"\n    return transport.call(path)\n"
       },
       "without_skill": "A correct backoff implementation: bounded retries on 429 and 503 only, exponential delays with jitter, a total-wait cap, no retry on 400 or 404.",
+      "without_skill_basis": {
+        "kind": "authored-judgement",
+        "note": "the author's model of what a bare subject would answer. Never observed."
+      },
       "with_skill": "The same. The skill must not intrude: no advice about agent loops, semantic action interfaces, richer structured feedback for a model to read, or parallel sampling.",
       "check": {
         "type": "tests_pass",
@@ -782,6 +830,10 @@
       },
       "prompt": "Our Python test suite takes 41 minutes on every pull request and about 3 percent of runs fail on tests that pass on a retry. Developers have started merging on a second attempt without reading the failure. Get the suite under 10 minutes and make a failure mean something again.",
       "without_skill": "Standard and correct: profile the slowest tests, parallelise with xdist, split unit from integration, cache dependencies and fixtures, find the shared mutable state behind the flakes, quarantine with a tracked deadline rather than a permanent skip.",
+      "without_skill_basis": {
+        "kind": "authored-judgement",
+        "note": "the author's model of what a bare subject would answer. Never observed."
+      },
       "with_skill": "The same answer. A skill that intrudes here will start talking about agent harnesses, richer feedback for a model to consume, or parallel sampling with a selector, none of which is what is being asked.",
       "check": {
         "type": "rubric",

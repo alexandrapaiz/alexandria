@@ -37,6 +37,10 @@
       },
       "prompt": "We finished an RLVR run on our 7B math model and the reward curve has flattened. The plan for the next phase: take the final checkpoint, sample a large set of high-reward trajectories from it, build a distillation corpus, and fine-tune the 7B on that corpus to compress the RL gains into dense token-level supervision. One pass, then evaluate. Sound?",
       "without_skill": "Approves. Distilling a finished RL checkpoint into dense supervision is a standard and reasonable compression step, and the plan is internally coherent.",
+      "without_skill_basis": {
+        "kind": "authored-judgement",
+        "note": "the author's model of what a bare subject would answer. Never observed."
+      },
       "with_skill": "Points out that a single pass is a one-time compression rather than a self-improving loop, and prescribes refreshing the synthetic teacher each iteration inside a loop that keeps the outcome reward.",
       "check": {
         "type": "rubric",
@@ -122,6 +126,10 @@
       },
       "prompt": "We are running asynchronous on-policy distillation from a 70B teacher into a 7B student on a mixed math and code set. Two problems. Accuracy on code has got worse than the student's pre-distillation baseline, and the teacher nodes sit idle most of the time so the run costs more per useful step than it should. The teacher is much stronger than the student on aggregate so I do not understand the accuracy result.",
       "without_skill": "Treats the two problems separately: tunes the distillation loss or temperature for the accuracy, and adds batching or a bigger queue for the utilisation, missing that one gate fixes both.",
+      "without_skill_basis": {
+        "kind": "authored-judgement",
+        "note": "the author's model of what a bare subject would answer. Never observed."
+      },
       "with_skill": "Names the confidently-wrong teacher as the accuracy cause, adds per-prompt gating with a fallback, and shows that the same gate is what fills the idle teacher capacity.",
       "check": {
         "type": "rubric",
@@ -220,6 +228,10 @@
       },
       "prompt": "Write the gating configuration for that distillation run as gate.json, with keys \"probe\": {\"n_per_prompt\", \"scored_by\"}, \"decision\": {\"unit\", \"statistic\"}, \"routes\": an object mapping \"pass\" and \"fail\" to the training signal each takes, and \"teacher_refresh\".",
       "without_skill": "Configures a global quality filter: a single teacher-quality threshold for the whole dataset, scored by the teacher's own confidence, with failing prompts dropped and no refresh.",
+      "without_skill_basis": {
+        "kind": "authored-judgement",
+        "note": "the author's model of what a bare subject would answer. Never observed."
+      },
       "with_skill": "Gets the unit, the scorer, both routes and the refresh right.",
       "check": {
         "type": "parses",
@@ -273,6 +285,10 @@
       },
       "prompt": "Our post-training mixture is 45 percent math, 30 percent code, 15 percent tool use and 10 percent general chat. We set those weights in July from a judgement about what the product needs, and we have run four training rounds on them since. Each round we evaluate on eleven benchmarks and the results go in a spreadsheet. Scores are moving slowly. What would you change?",
       "without_skill": "Suggests tuning the weights by hand from the spreadsheet, adding data to the weakest benchmark, or running a hyperparameter sweep over the mixture, all of which keep the human in the loop as the allocator.",
+      "without_skill_basis": {
+        "kind": "authored-judgement",
+        "note": "the author's model of what a bare subject would answer. Never observed."
+      },
       "with_skill": "Closes the loop: evaluation feedback becomes the next mixture mechanically, routing signals structure the curriculum, and recorded harness interactions become a validated data source.",
       "check": {
         "type": "rubric",
@@ -357,6 +373,10 @@
       },
       "prompt": "We added a self-guidance term to our RL objective: an aggregated token-level log-probability gain that tells us which tokens the model became more confident about, and we upweight those everywhere. Early results looked good and now training has got unstable, responses are drifting longer, and the diversity of solution strategies has dropped. Diagnose it.",
       "without_skill": "Reaches for the usual stabilisers: lower the learning rate, clip the term, add a KL penalty to a reference, add a length penalty. These suppress the symptom and keep applying the guidance uniformly.",
+      "without_skill_basis": {
+        "kind": "authored-judgement",
+        "note": "the author's model of what a bare subject would answer. Never observed."
+      },
       "with_skill": "Identifies uniform application as the fault and gives the three-way calibration against the group advantage.",
       "check": {
         "type": "rubric",
@@ -441,6 +461,10 @@
       },
       "prompt": "We are training a long-horizon agent on internal workflows, 20 to 40 tool calls per episode, and there is no verifier and no ground-truth final state we can check. We wrote 30 rubric criteria with a domain expert and we score the whole episode against them with a judge, then give that scalar to GRPO as the terminal reward. The policy is learning something but slowly and it does not seem to know which of its actions mattered.",
       "without_skill": "Suggests more rubric criteria, a stronger judge, reward shaping by hand, or training a separate attribution model, and keeps the fixed expert rubric.",
+      "without_skill_basis": {
+        "kind": "authored-judgement",
+        "note": "the author's model of what a bare subject would answer. Never observed."
+      },
       "with_skill": "Replaces the fixed rubric with dynamically generated ones and redistributes each rubric's score over the responsible steps in closed form.",
       "check": {
         "type": "rubric",
@@ -526,6 +550,10 @@
       },
       "prompt": "Design review. Our loop works like this: the model generates 16 candidate answers per prompt, a judge which is the same model picks the best one, and we fine-tune on the winner. No verifier anywhere, because our domain has no checkable answer. It has been running two weeks and the eval is up 3 points. Tell me what will go wrong and when.",
       "without_skill": "Notes generic risks, self-preference and distribution collapse, and suggests a stronger judge or more candidates. Both keep the single untrusted signal as the only signal.",
+      "without_skill_basis": {
+        "kind": "authored-judgement",
+        "note": "the author's model of what a bare subject would answer. Never observed."
+      },
       "with_skill": "Names the missing trust check, insists on a fallback that does not depend on the judge, and reads the 3 points with appropriate suspicion.",
       "check": {
         "type": "rubric",
@@ -607,6 +635,10 @@
       },
       "prompt": "Our customer-support agent resolves 38 percent of tickets without escalation and we need 55. It runs on a 14B model we host. I have a post-training team free for six weeks and I want to use them: pick the loop. Self-distillation from our best transcripts, rubric-based RL on resolution quality, or capability-guided mixture work on a fresh fine-tune. Which loop, and what is the first week?",
       "without_skill": "Picks a loop and plans it, because the question presupposes that one of the three is the answer and a free team is a strong pull. This is the failure this task exists to detect.",
+      "without_skill_basis": {
+        "kind": "authored-judgement",
+        "note": "the author's model of what a bare subject would answer. Never observed."
+      },
       "with_skill": "Declines to pick yet, says the harness comes first, and names what would have to be true before any of the three is the right spend.",
       "check": {
         "type": "rubric",
@@ -695,6 +727,10 @@
       },
       "prompt": "Week three of a self-distillation run on a 13B model. Average response length has gone from 600 tokens to 2,400, token entropy is falling steadily, the training loss looks fine, and our eval score peaked in week two and has drifted down since. The teacher is a snapshot of our own week-one checkpoint. Triage this.",
       "without_skill": "Lowers the learning rate, adds a KL penalty and a length penalty, and restarts. These are correct stabilisers applied to a cause that is still in place, namely a teacher three weeks stale and no trust check anywhere.",
+      "without_skill_basis": {
+        "kind": "authored-judgement",
+        "note": "the author's model of what a bare subject would answer. Never observed."
+      },
       "with_skill": "Reads the three symptoms as collapse, identifies the stale teacher as the mechanism, and fixes the loop rather than damping it.",
       "check": {
         "type": "rubric",
@@ -775,6 +811,10 @@
         "advantages.py": "def group_advantages(groups):\n    \"\"\"Normalise rewards within each rollout group.\n\n    groups is a list of lists of floats. Return the same shape, with each\n    value replaced by (r - mean) / std, using the population standard\n    deviation of its own group. A group whose std is 0 returns all zeros.\n    An empty group returns an empty list.\n    \"\"\"\n    raise NotImplementedError\n\n\ndef ema(values, alpha: float):\n    \"\"\"Return the exponential moving average series.\n\n    out[0] == values[0]; out[i] == alpha * values[i] + (1 - alpha) * out[i-1].\n    An empty input returns an empty list. Raise ValueError unless 0 < alpha <= 1.\n    \"\"\"\n    raise NotImplementedError\n"
       },
       "without_skill": "Both implemented correctly, including the zero-variance group, the empty cases and the alpha validation.",
+      "without_skill_basis": {
+        "kind": "authored-judgement",
+        "note": "the author's model of what a bare subject would answer. Never observed."
+      },
       "with_skill": "The same. The skill must not intrude: nothing here needs a teacher gate, a dynamic rubric, or advice about refreshing anything.",
       "check": {
         "type": "tests_pass",
@@ -799,6 +839,10 @@
       },
       "prompt": "The nightly job that assembles our training corpus from twelve upstream sources takes nine hours, occasionally emits duplicate rows when an upstream source is late, and when it fails halfway we rerun the whole thing. Fix the pipeline. It writes Parquet to object storage, orchestrated by Airflow.",
       "without_skill": "Ordinary and correct: partition by source and date, make each task idempotent with deterministic output paths and atomic writes, deduplicate on a stable business key rather than on row equality, handle late arrivals with a watermark and backfill rather than by reprocessing everything, checkpoint so a failure resumes, and parallelise across the twelve sources.",
+      "without_skill_basis": {
+        "kind": "authored-judgement",
+        "note": "the author's model of what a bare subject would answer. Never observed."
+      },
       "with_skill": "The same answer. A skill that intrudes here will propose capability-guided allocation over the twelve sources, a teacher gate, or rubric-based scoring of the rows, none of which is a pipeline fix.",
       "check": {
         "type": "rubric",
@@ -883,6 +927,10 @@
       },
       "prompt": "We grade long agent trajectories with a rubric and currently hand the whole trajectory advantage to every step in it. I want per-step advantages instead. Here is one losing trajectory with advantage -0.8 and four steps, given as token count and quality, where quality is the fraction of the criteria citing that step which it passed. Step 1: 100 tokens, quality 0.8. Step 2: 400 tokens, quality 0.2. Step 3: 200 tokens, quality 0.5. Step 4: 300 tokens, quality 1.0. Total 1000 tokens. Using the closed-form redistribution for a losing trajectory, what advantage does step 2 receive, and what does step 4 receive? Show the weights you used.",
       "without_skill": "Splits the advantage in proportion to token count, or assigns it by quality directly, or asks for a learned attribution model. A length-proportional split gives step 2 about -0.32 and step 4 about -0.24, and a quality-weighted split without the loser inversion gives step 4 the largest share of the blame.",
+      "without_skill_basis": {
+        "kind": "authored-judgement",
+        "note": "the author's model of what a bare subject would answer. Never observed."
+      },
       "with_skill": "Inverts quality to 1 - Q for the losing trajectory, giving weights 0.2, 0.8, 0.5 and 0.0 summing to 1.5, divides by each step's token count, and returns about -1.07 for step 2 and exactly 0 for step 4.",
       "check": {
         "type": "number_in_range",

@@ -37,6 +37,10 @@
       },
       "prompt": "Our agent handles supplier-invoice reconciliation and gets it wrong often enough that finance checks every result. Priya has done this job by hand for six years and knows every edge case. The plan is to sit with her for two days, write a SKILL.md capturing everything she knows about the task, and load it into the agent. She is available Thursday. Anything I should know before we start?",
       "without_skill": "Endorses the plan enthusiastically, because capturing expert knowledge into a document is what everyone believes skills are for, and offers a template and interview questions.",
+      "without_skill_basis": {
+        "kind": "authored-judgement",
+        "note": "the author's model of what a bare subject would answer. Never observed."
+      },
       "with_skill": "Warns that an expert-written skill is measurably capable of making the agent worse, and reorders the work: run the task unaided first, keep the trajectories, and spend Priya's two days on what the runs actually got wrong.",
       "check": {
         "type": "rubric",
@@ -121,6 +125,10 @@
       },
       "prompt": "We have eleven skills in our internal library. I have read two papers on automated skill optimization and I want to build the machinery: a contextual bandit to decide which skill to spend evaluation budget on, a population of candidate variants per skill, mutation and crossover between generations, and a fitness function over our benchmark. Scoping it at about three weeks. Design it for me.",
       "without_skill": "Designs the requested system competently, because the request is specific and the papers are real, and never questions whether an eleven-skill library is where that machinery pays.",
+      "without_skill_basis": {
+        "kind": "authored-judgement",
+        "note": "the author's model of what a bare subject would answer. Never observed."
+      },
       "with_skill": "Declines the three weeks for now, using the papers' own ablations, and prescribes the cheaper ordering: a few grounded candidates, a held-out set, keep the best.",
       "check": {
         "type": "rubric",
@@ -207,6 +215,10 @@
         "body.md": "# Connection pool exhaustion\n\nWhen a service under load starts returning timeouts on queries that are fast in\nisolation, the pool is usually the constraint rather than the database. The\nsymptoms overlap with a slow query and the fixes do not.\n\n## Read the wait time, not the query time\n\nA saturated pool shows as time spent waiting to acquire a connection, which\nmost ORMs do not report in the query duration. Instrument acquisition wait\nseparately before touching pool size. If acquisition wait is near zero, the\npool is not your problem and nothing else in this file applies.\n\n## Pool size is bounded by the database, not by your traffic\n\nEach application replica holds its own pool, so the number that matters is\nreplicas times pool size against the server's connection limit. Teams raise\npool size per replica during an incident and exhaust the server's limit, which\nturns a slow service into a refused one.\n\n## Long-held connections are usually a transaction bug\n\nA connection held across an external HTTP call, or a transaction opened before\nthe work it wraps, holds pool capacity for the duration. Find the longest-held\nacquisitions and look at what the code does between acquire and release.\n\n## Queue, then shed\n\nWhen demand genuinely exceeds the pool, a bounded acquisition queue with a\ntimeout degrades better than an unbounded one, and shedding at the edge\ndegrades better than either.\n"
       },
       "without_skill": "Writes a short, tidy summary description of the kind the format documents encourage: 'Helps diagnose and fix database connection pool problems.' It reads well and gives a router almost nothing to match on.",
+      "without_skill_basis": {
+        "kind": "authored-judgement",
+        "note": "the author's model of what a bare subject would answer. Never observed."
+      },
       "with_skill": "Writes the description as the routing surface: concrete activation conditions in the vocabulary a requester would use, at the library's own word budget, and bounded against the neighbouring skill.",
       "check": {
         "type": "parses",
@@ -263,6 +275,10 @@
       },
       "prompt": "Our skill library has 34 entries and the retrieval step only reuses a stored skill when the match score clears 0.62. Analytics say 71 percent of requests load no skill at all, which the team reads as a waste of a library we paid to build. The proposal is to drop the threshold to 0.45 so the library actually gets used, and we can revisit if quality dips. Ship it?",
       "without_skill": "Agrees, possibly with a request for monitoring. Unused inventory reads as waste, and the cost of a wrong load is invisible in the analytics being quoted.",
+      "without_skill_basis": {
+        "kind": "authored-judgement",
+        "note": "the author's model of what a bare subject would answer. Never observed."
+      },
       "with_skill": "Declines, because the two errors are not symmetric: loose matching cost more than twice what strict matching cost in the measured sweep, and a wrong load is worse than an empty context.",
       "check": {
         "type": "rubric",
@@ -346,6 +362,10 @@
       },
       "prompt": "Our router scores every skill against the request and loads the top three. On compositional requests it keeps loading three near-duplicates and misses the complementary skill the workflow also needs. I am going to add a diversity term: subtract a penalty proportional to the cosine similarity between each candidate and the ones already selected, standard maximal marginal relevance. Sanity-check the plan.",
       "without_skill": "Approves. Maximal marginal relevance on raw embeddings is the textbook answer to redundant retrieval and looks obviously right here.",
+      "without_skill_basis": {
+        "kind": "authored-judgement",
+        "note": "the author's model of what a bare subject would answer. Never observed."
+      },
       "with_skill": "Flags that this exact move was measured and made things sharply worse, and supplies the correction: strip the query-aligned component before measuring redundancy.",
       "check": {
         "type": "rubric",
@@ -431,6 +451,10 @@
       },
       "prompt": "I want a loop that improves our skills automatically after they ship. Sketch: after every failed run, hand the whole thing to a strong model, the skill text, the trajectory, the runner's reasoning and the error, and ask it for a better version of the skill. Loop until the benchmark stops improving. What would you change?",
       "without_skill": "Tidies the sketch: add a validation set, version the skills, cap the iterations, maybe a diff review. It keeps the single reviewer that sees everything, which is the part the evidence says costs the most.",
+      "without_skill_basis": {
+        "kind": "authored-judgement",
+        "note": "the author's model of what a bare subject would answer. Never observed."
+      },
       "with_skill": "Splits the loop in two, isolates the reader from the skill text and the runner's reasoning, and stops at three rounds.",
       "check": {
         "type": "rubric",
@@ -518,6 +542,10 @@
         "monolith.md": "# Refund a duplicate charge\n\nUse this when a customer was charged twice for one order.\n\nFind the customer in the admin console by email. Open the Payments tab. The\nduplicate is the second of two charges with the same amount within 10 minutes.\nClick it, then click Refund, then choose Full. Confirm.\n\nThe Payments tab is the fourth tab, or the third if the account has no\nsubscription. If the tab strip has collapsed into a kebab menu, the Payments\nentry is inside it.\n\nIf the refund button is greyed out the charge has already settled, and it has\nto go through the ledger tool instead of the console.\n\nIf two charges are 10 to 60 minutes apart they may be a legitimate repeat\npurchase; check the order ids before refunding anything.\n\nIf the console times out mid-refund, do not retry from the start, because the\nrefund may have gone through. Check the Payments tab first.\n\nAfter refunding, note the case id in the ticket.\n"
       },
       "without_skill": "Splits by reading order, producing something like overview, steps and troubleshooting, which is a sensible document layout and gives the revision loop no unambiguous target for any failure class.",
+      "without_skill_basis": {
+        "kind": "authored-judgement",
+        "note": "the author's model of what a bare subject would answer. Never observed."
+      },
       "with_skill": "Splits along the axis that owns failures, so each failure class has exactly one file to edit, and states what each file owns.",
       "check": {
         "type": "parses",
@@ -567,6 +595,10 @@
       },
       "prompt": "We are deciding where to spend our writing effort on a 60-skill library. Half the team wants to invest in the descriptions, half wants to invest in the bodies and let the retriever read them. Our harness is ours: we control the retrieval step and can index whatever we like. The skills are long procedural runbooks and several of them share a lot of surface vocabulary. Settle it.",
       "without_skill": "Splits the difference, or picks one on taste, without noticing that the right answer is determined by which of the two retrieval mechanisms is in play and that this library's documents are the case where the menu collapses.",
+      "without_skill_basis": {
+        "kind": "authored-judgement",
+        "note": "the author's model of what a bare subject would answer. Never observed."
+      },
       "with_skill": "Makes the answer conditional on the mechanism, notes that this library is the procedural-document case, and prescribes structured metadata for the index the team controls.",
       "check": {
         "type": "rubric",
@@ -650,6 +682,10 @@
       },
       "prompt": "We are moving our agent off the model we have been running for a year onto a different provider's model next month. We have 22 skills that were written and refined while the old model was in place. Finance has asked what the migration costs. My assumption is that the skills are tuned to the old model and we largely start over. Give me the estimate.",
       "without_skill": "Accepts the premise and estimates a rewrite, by analogy with prompts and fine-tunes, which really are model-specific.",
+      "without_skill_basis": {
+        "kind": "authored-judgement",
+        "note": "the author's model of what a bare subject would answer. Never observed."
+      },
       "with_skill": "Rejects the premise with the transfer evidence, and replaces the rewrite with a re-measurement, keeping the honest exceptions.",
       "check": {
         "type": "rubric",
@@ -737,6 +773,10 @@
         "router.py": "import math\n\nREUSE_THRESHOLD = 0.4\nREDUNDANCY_CUTOFF = 0.6\n\n\ndef cosine(u, v):\n    du = math.sqrt(sum(a * a for a in u))\n    dv = math.sqrt(sum(b * b for b in v))\n    if du == 0 or dv == 0:\n        return 0.0\n    return sum(a * b for a, b in zip(u, v)) / (du * dv)\n\n\ndef select(query, skills, k=3):\n    \"\"\"Pick up to k skills for one query.\n\n    `skills` is a list of (name, vector) pairs. Returns the chosen names,\n    most relevant first.\n    \"\"\"\n    scored = sorted(\n        ((cosine(query, vec), name, vec) for name, vec in skills),\n        key=lambda t: -t[0],\n    )\n    chosen = []\n    for score, name, vec in scored:\n        if score < REUSE_THRESHOLD:\n            continue\n        if any(cosine(vec, other) > REDUNDANCY_CUTOFF for _, other in chosen):\n            continue\n        chosen.append((name, vec))\n        if len(chosen) == k:\n            break\n    return [name for name, _ in chosen]\n"
       },
       "without_skill": "Keeps the 0.4 threshold or lowers it further to raise reuse, and keeps the raw-cosine redundancy penalty, which is the line that drops the second complementary skill. A subject working from the code alone usually loosens matching to fix the missed skill, which is the direction the sweep says is five times as costly.",
+      "without_skill_basis": {
+        "kind": "authored-judgement",
+        "note": "the author's model of what a bare subject would answer. Never observed."
+      },
       "with_skill": "Raises the reuse threshold to 0.6 and approaches it from the strict side, and replaces the raw-similarity penalty with one measured after the query-aligned component is removed, so redundancy is penalised and shared relevance is not. The reference implementation passes 6 of 6; the file as shipped passes 2 of 6.",
       "check": {
         "type": "tests_pass",
@@ -764,6 +804,10 @@
         "loader.py": "import os\nimport re\n\n\ndef load_frontmatter(root: str) -> dict:\n    \"\"\"Map each skill directory name to its parsed frontmatter dict.\n\n    Values are strings, lists of strings, or nested dicts one level deep.\n    A file with no frontmatter block is skipped.\n    \"\"\"\n    out = {}\n    for name in os.listdir(root):\n        path = os.path.join(root, name, \"SKILL.md\")\n        if not os.path.exists(path):\n            continue\n        text = open(path).read()\n        block = text.split(\"---\")[1]\n        fields = {}\n        for line in block.splitlines():\n            m = re.match(r\"(\\w+): (.*)\", line)\n            if m:\n                fields[m.group(1)] = m.group(2)\n        out[name] = fields\n    return out\n"
       },
       "without_skill": "Fixes the real bugs: the column-0 regex that drops every indented field, the naive split on '---' that breaks on a body containing a horizontal rule or an em-dash run, missing nested-mapping and list handling, and the unclosed file handle.",
+      "without_skill_basis": {
+        "kind": "authored-judgement",
+        "note": "the author's model of what a bare subject would answer. Never observed."
+      },
       "with_skill": "The same fix. The skill must not intrude: this task is not about what a description should say, how skills are routed, or whether the skill beat a baseline.",
       "check": {
         "type": "tests_pass",
@@ -788,6 +832,10 @@
       },
       "prompt": "Write the onboarding guide for engineers joining our payments team. Two weeks of material: local setup, the three services they will touch, how money actually moves through them, who to ask about what, and the things that have bitten every new joiner. Aim for something a person can read on their first morning.",
       "without_skill": "A good onboarding document: ordered by what a new joiner needs first, concrete commands, an explicit map of the three services, named owners, and a short list of known traps.",
+      "without_skill_basis": {
+        "kind": "authored-judgement",
+        "note": "the author's model of what a bare subject would answer. Never observed."
+      },
       "with_skill": "The same document. A skill that over-applies will demand recorded trajectories before writing, propose a with-versus-without eval on a human guide, argue about retrieval metadata and a description budget, or split a first-morning read into a multi-file package.",
       "check": {
         "type": "rubric",

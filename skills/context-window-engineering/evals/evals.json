@@ -35,6 +35,10 @@
       },
       "prompt": "Our reasoning agent produces long traces and we have a hard KV cache budget per request. I have two candidate eviction policies from the literature and a third we wrote, all of them scoring tokens by accumulated attention with different decay terms. The plan is to benchmark all three at a 50 percent cache budget and pick a winner, roughly a week of work. Before I start, is there anything about this comparison I should set up differently?",
       "without_skill": "Helps design the bake-off: held-out tasks, matched budgets, latency alongside accuracy. It is a competent comparison of three things the evidence says differ little, at a ratio the evidence says may put accuracy on the floor, and it omits the null arm entirely.",
+      "without_skill_basis": {
+        "kind": "authored-judgement",
+        "note": "the author's model of what a bare subject would answer. Never observed."
+      },
       "with_skill": "Reorders the week: both boundaries protected outside the score at ten percent of capacity each, the eviction ratio treated as the decision rather than the policy, a protected-random null arm, and the expectation that the three scorers land within single digits of that null.",
       "check": {
         "type": "rubric",
@@ -133,6 +137,10 @@
         "compact.py": "\"\"\"The compaction step. Called whenever the window is over budget.\"\"\"\n\nSYSTEM = \"system\"\nTASK = \"task\"\nQUESTION = \"question\"\nDURABLE = \"durable\"\nTRACE = \"trace\"\n\n\nclass Item:\n    def __init__(self, kind, text, score=0.0):\n        self.kind = kind\n        self.text = text\n        self.score = score\n\n    def __repr__(self):\n        return f\"Item({self.kind!r}, {self.text!r})\"\n\n    @property\n    def tokens(self):\n        return max(1, len(self.text.split()))\n\n\ndef compact(items, budget):\n    \"\"\"Return the items to keep, within budget, highest score first.\n\n    Current behaviour: rank everything by score and take until full.\n    \"\"\"\n    kept, used = [], 0\n    for item in sorted(items, key=lambda i: -i.score):\n        if used + item.tokens <= budget:\n            kept.append(item)\n            used += item.tokens\n    return kept\n"
       },
       "without_skill": "Tunes the scoring: adds a recency term, boosts the question's score, maybe weights by kind. Raising a score makes retention likely rather than certain, so the failure returns at tight budgets, and a recency term expressed as a score still loses the newest items to a high-scoring old one, which is what the two tests added on 2026-10-26 probe.",
+      "without_skill_basis": {
+        "kind": "this-repository-history",
+        "note": "the reason given is a change made to this suite on 2026-10-26, not anything about a subject model"
+      },
       "with_skill": "Partitions instead of ranking: an unconditionally protected set that is never subject to the score, a protected region for durable facts, the score applied only to the trace, and a loud failure when the budget cannot hold the protected set.",
       "check": {
         "type": "tests_pass",
@@ -163,6 +171,10 @@
       },
       "prompt": "We switched our long-session agent to random trace eviction with the prompt pinned, on the strength of the evidence that clever scoring buys almost nothing, and average quality held up exactly as promised. But we now have a specific recurring bug: early in a session the user says something like 'use the staging cluster, not production', the agent acknowledges it once, and forty tool calls later it uses production. What is going on and what do we change?",
       "without_skill": "Treats it as a prompt-adherence or memory-quality problem: restate the constraint every turn, add a system-prompt reminder, or revert to a scored evictor across the board.",
+      "without_skill_basis": {
+        "kind": "authored-judgement",
+        "note": "the author's model of what a bare subject would answer. Never observed."
+      },
       "with_skill": "Names the regime, says the null policy is expected to lose exactly here, and gives read-once state its own protected region rather than asking the policy to keep it by luck.",
       "check": {
         "type": "rubric",
@@ -247,6 +259,10 @@
       },
       "prompt": "Our system answers questions over 200-page contracts. It reads the document in 8K chunks, folding each chunk into a running summary, then answers from the final summary. Accuracy is 74 percent on questions whose answer is in the first twenty pages and 41 percent when it is in the last third, and multi-hop questions are worse than that. We are considering a model with a million-token window so the whole contract fits. Talk me through it.",
       "without_skill": "Endorses the bigger window, or proposes a better summarisation prompt, or adds retrieval over chunks. None of these addresses that document order has become dependency depth.",
+      "without_skill_basis": {
+        "kind": "authored-judgement",
+        "note": "the author's model of what a bare subject would answer. Never observed."
+      },
       "with_skill": "Names the architectural cause, offers the diagnostic that confirms it, and proposes parallel reading with a lead that never sees the document.",
       "check": {
         "type": "rubric",
@@ -331,6 +347,10 @@
       },
       "prompt": "We are building the parallel-reading design you described for question answering over long contracts. Give me the configuration as config.json, with keys \"chunk_tokens\", \"subagent\": {\"size\", \"trained\"}, \"lead\": {\"size\", \"trained\", \"sees_document\"}, \"rounds\", \"subagent_return\" (a list of the fields each subagent returns), and \"known_failure\".",
       "without_skill": "Configures it by the usual instincts: large chunks to reduce the number of calls, a strong model everywhere including the subagents, training the whole system end to end, and subagents returning a bare answer string.",
+      "without_skill_basis": {
+        "kind": "authored-judgement",
+        "note": "the author's model of what a bare subject would answer. Never observed."
+      },
       "with_skill": "Gets the four details right, and returns a span with every finding so the aggregation step has something to check.",
       "check": {
         "type": "parses",
@@ -385,6 +405,10 @@
       },
       "prompt": "Circulating this to the team: 'The selection signal used by cache compression methods contributes almost nothing to performance. Random eviction matches the best scored evictors. Action: rip the scoring out of our KV compression and halve the cache while we are in there, since the trace restates itself and is nearly free to cut, and take the scoring out of our RAG reranker and our long-context retrieval step too and save the compute.' Sign off or push back, and be specific.",
       "without_skill": "Signs off, because the summary is a fair reading of the headline and the extension to reranking and retrieval sounds like the same idea applied consistently. Or pushes back on instinct with no scope and no floor to offer, and in particular accepts 'nearly free to cut', which this skill itself asserted until 2026-10-26.",
+      "without_skill_basis": {
+        "kind": "this-repository-history",
+        "note": "the reason given is that this skill itself asserted the wrong thing until 2026-10-26"
+      },
       "with_skill": "Pushes back on five separate grounds: the strength of the claim, its measured scope, the named exception, the independent check that makes protected-random a floor, and the ratio, which is the one line in the memo that can take the task to zero. Agrees with the part that holds.",
       "check": {
         "type": "rubric",
@@ -504,6 +528,10 @@
         "cache.py": "class LRUCache:\n    \"\"\"A fixed-capacity LRU cache where entries can be pinned.\n\n    capacity counts entries, not bytes. A pinned entry is never evicted.\n    get() and put() both count as a use. If every entry is pinned and a new\n    key is put, raise ValueError.\n    \"\"\"\n\n    def __init__(self, capacity: int):\n        raise NotImplementedError\n\n    def get(self, key):\n        \"\"\"Return the value, or None if absent.\"\"\"\n        raise NotImplementedError\n\n    def put(self, key, value) -> None:\n        raise NotImplementedError\n\n    def pin(self, key) -> None:\n        \"\"\"Pin an existing key. KeyError if absent.\"\"\"\n        raise NotImplementedError\n\n    def __len__(self) -> int:\n        raise NotImplementedError\n"
       },
       "without_skill": "A correct LRU with pinning: recency tracking on both get and put, eviction of the least recently used unpinned entry, KeyError on pinning an absent key, ValueError when everything is pinned.",
+      "without_skill_basis": {
+        "kind": "authored-judgement",
+        "note": "the author's model of what a bare subject would answer. Never observed."
+      },
       "with_skill": "The same. The skill must not intrude: no protected prompt regions, no planner and executor split, no advice about what an agent should retain.",
       "check": {
         "type": "tests_pass",
@@ -528,6 +556,10 @@
       },
       "prompt": "Our vector database bill is 31,000 dollars a month for 42 million 1024-dimension float32 embeddings, served for a search feature doing about 90 queries a second at p95 under 200 milliseconds. Recall at 10 is currently 0.94 and we can live with 0.90. Cut the bill substantially and tell me what it costs us.",
       "without_skill": "Ordinary and correct: quantise to int8 or binary with a rescoring pass, drop dimensions with Matryoshka-style truncation or PCA, tune the index parameters, move cold vectors to disk-backed storage, and state the expected recall and latency cost of each.",
+      "without_skill_basis": {
+        "kind": "authored-judgement",
+        "note": "the author's model of what a bare subject would answer. Never observed."
+      },
       "with_skill": "The same answer. A skill that intrudes here will talk about protecting a prompt, splitting planning from acting, or sampling a reasoning trace, none of which is about a search index.",
       "check": {
         "type": "rubric",
@@ -609,6 +641,10 @@
       },
       "prompt": "We are halving the KV cache budget on our reasoning agent to fit twice the concurrency on the same GPUs. Finance has the saving at 50 percent of serving cost. I want to validate the accuracy side before we ship: which benchmarks should we run, and what is an acceptable accuracy drop to accept for the saving?",
       "without_skill": "Designs a competent accuracy check: pick representative benchmarks, run at both budgets, set a tolerance, watch the tail. It accepts the premise that the saving is 50 percent of serving cost and measures only accuracy against it.",
+      "without_skill_basis": {
+        "kind": "authored-judgement",
+        "note": "the author's model of what a bare subject would answer. Never observed."
+      },
       "with_skill": "Attacks the premise: at that ratio accuracy may not be a tolerance question at all, and the saving is not 50 percent because a tighter cache lengthens the traces being served. Adds output length and non-termination to the instrument and offers the offloading alternative.",
       "check": {
         "type": "rubric",
@@ -703,6 +739,10 @@
       },
       "prompt": "We are adopting the compaction scheme the big coding assistants use: keep the system prompt and tool definitions, keep the last few thousand tokens, drop everything in between, no scoring. Our agent is a code agent that reads files and greps a large repository, and the published results on reasoning benchmarks look excellent. Any reason this will not transfer?",
       "without_skill": "Endorses it with generic caution about losing context, suggests tuning the window size and keeping a summary, because the scheme is well known and the reasoning results are real.",
+      "without_skill_basis": {
+        "kind": "authored-judgement",
+        "note": "the author's model of what a bare subject would answer. Never observed."
+      },
       "with_skill": "Transfers the result only to the regime it was measured in, names the file-reading case as the measured failure rather than a worry, and gives the window-sizing rule for back-references.",
       "check": {
         "type": "rubric",
@@ -798,6 +838,10 @@
       },
       "prompt": "We are standing up chunked parallel reading over 120K-token technical manuals and need to pick the chunk size. Write plan.json: an object with \"candidates\" (a list of chunk sizes in tokens, smallest first), \"samples_per_candidate\" (an integer), \"selection\" (a string naming the rule that picks the winner), \"measure\" (a list of what is recorded per run) and \"assumption\" (a string, the one thing the plan refuses to assume). Output JSON only.",
       "without_skill": "Writes a plausible plan with small candidates, 1K to 4K, a large per-candidate sample for statistical comfort or a full grid over the whole development set, and accuracy as the only measure. Small chunks are the default belief and this suite's own skill asserted it until 2026-10-26.",
+      "without_skill_basis": {
+        "kind": "this-repository-history",
+        "note": "the reason given is that this suite's own skill asserted the wrong thing until 2026-10-26"
+      },
       "with_skill": "Candidates that span the measured optimum rather than clustering at the small end, five samples per candidate because that is where the estimate matched an exhaustive sweep, a stated selection rule, the aggregator recorded as its own noise source, and the refusal to assume small chunks.",
       "check": {
         "type": "parses",
@@ -873,6 +917,10 @@
       },
       "prompt": "Our coding agent works through multi-hour migrations. Every tool call gets the full conversation so far, which by hour three is 180K tokens, the prompt cache misses constantly because the prefix keeps changing, and per-call latency has roughly quadrupled since the start of the run. The team wants to summarise aggressively every ten turns. What should we actually do?",
       "without_skill": "Designs a better summariser: hierarchical summaries, compression ratios, a schedule. This reduces the size of what the acting step reads and keeps the structure that caused the problem.",
+      "without_skill_basis": {
+        "kind": "authored-judgement",
+        "note": "the author's model of what a bare subject would answer. Never observed."
+      },
       "with_skill": "Splits planning from acting, gives the long record only to the planner, and hands the executor a short explicit instruction against a bounded cacheable context.",
       "check": {
         "type": "rubric",
@@ -936,6 +984,10 @@
       },
       "prompt": "We are building an agent that watches our production log stream and answers questions from engineers, maybe thirty questions a day against about four million lines. The design so far runs every line through our main model on arrival to extract structured events into a store, and answers questions by retrieving from that store. Ingestion is now 80 percent of our inference bill. Where is the design wrong?",
       "without_skill": "Optimises the existing shape: batch the calls, sample the lines, cache aggressively, negotiate pricing. All of it keeps the full model on the ingestion path.",
+      "without_skill_basis": {
+        "kind": "authored-judgement",
+        "note": "the author's model of what a bare subject would answer. Never observed."
+      },
       "with_skill": "Names the asymmetry as the design error, makes the ingestion path deliberately cheap, and adds a tiered fixed budget with consolidation on arrival.",
       "check": {
         "type": "rubric",

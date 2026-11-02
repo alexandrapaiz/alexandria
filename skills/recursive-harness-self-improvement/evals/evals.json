@@ -39,6 +39,10 @@
       },
       "prompt": "Starting a nightly loop next week. Each night it reads the day's failed runs, and a strong model proposes changes to whichever of these it judges most promising: the agent's system prompt, the tool implementations, the retrieval config, the evaluation rubric it scores itself against, or the diagnosing prompt itself. It keeps whatever scores better the next morning. Give me the first week's implementation order.",
       "without_skill": "Implements it roughly as described, adding version control and a score log. The loop can change its own rubric and its own diagnostician on the same night as the harness, so nothing it reports is attributable.",
+      "without_skill_basis": {
+        "kind": "authored-judgement",
+        "note": "the author's model of what a bare subject would answer. Never observed."
+      },
       "with_skill": "Insists on a freeze list before the first cycle, catches that the rubric and the diagnostician must not move while the harness does, and makes a change to the list a new experiment.",
       "check": {
         "type": "rubric",
@@ -124,6 +128,10 @@
       },
       "prompt": "Before we switch on the self-improvement loop I want to spend two weeks hand-building the best seed scaffold we can, because the loop will only ever refine what we give it and a weak starting point will cap the whole thing. Two of us on it. The gates and rollback machinery can come after, in week three, once there is something worth gating. Agree?",
       "without_skill": "Agrees, because garbage in, garbage out is a sound instinct and a strong seed sounds like leverage. It accepts the deferral of the gates, which is the part that actually decides whether the loop converges.",
+      "without_skill_basis": {
+        "kind": "authored-judgement",
+        "note": "the author's model of what a bare subject would answer. Never observed."
+      },
       "with_skill": "Inverts the order, on the evidence that the seed matters less than the loop and that a flawed prior was repaired rather than inherited.",
       "check": {
         "type": "rubric",
@@ -210,6 +218,10 @@
         "rollouts.json": "{\n \"1\": {\n  \"rewards\": [\n   1,\n   1,\n   1,\n   1,\n   1\n  ],\n  \"memory_has_past_success\": true\n },\n \"2\": {\n  \"rewards\": [\n   0,\n   1,\n   0,\n   1,\n   0\n  ],\n  \"memory_has_past_success\": true\n },\n \"3\": {\n  \"rewards\": [\n   0,\n   0,\n   0,\n   0,\n   0\n  ],\n  \"memory_has_past_success\": true\n },\n \"4\": {\n  \"rewards\": [\n   0,\n   0,\n   0,\n   0,\n   0\n  ],\n  \"memory_has_past_success\": false\n },\n \"5\": {\n  \"rewards\": [\n   1,\n   0,\n   0,\n   0,\n   0\n  ],\n  \"memory_has_past_success\": false\n },\n \"6\": {\n  \"rewards\": [\n   1,\n   1,\n   1,\n   1,\n   1\n  ],\n  \"memory_has_past_success\": false\n },\n \"7\": {\n  \"rewards\": [\n   0,\n   0,\n   0,\n   1,\n   0\n  ],\n  \"memory_has_past_success\": true\n },\n \"8\": {\n  \"rewards\": [\n   0,\n   0,\n   0,\n   0,\n   0\n  ],\n  \"memory_has_past_success\": false\n }\n}"
       },
       "without_skill": "Keeps reading all forty trajectories, or groups them by pass rate and summarises each group, producing a paragraph rather than function-level evidence and treating the two kinds of all-failure task the same way.",
+      "without_skill_basis": {
+        "kind": "authored-judgement",
+        "note": "the author's model of what a bare subject would answer. Never observed."
+      },
       "with_skill": "Sorts into the three groups, contrasts within mixed tasks, reaches to memory only for all-failure tasks that have a stored success, and falls back to single-sided diagnosis exactly where nothing can be paired.",
       "check": {
         "type": "parses",
@@ -258,6 +270,10 @@
       },
       "prompt": "Our loop has to name which function caused a failure, reading an execution log that runs from about 400 lines on a short task to 30,000 on a long one. Right now a mid-tier model reads the log once and names a function, and it is right maybe a third of the time. The budget increase I can get will buy either our frontier model doing the same single pass, or the mid-tier model doing several passes. Which, and how many passes?",
       "without_skill": "Buys the stronger model, because a harder judgment calls for a better judge, and sets a fixed number of passes if it uses passes at all.",
+      "without_skill_basis": {
+        "kind": "authored-judgement",
+        "note": "the author's model of what a bare subject would answer. Never observed."
+      },
       "with_skill": "Buys search turns over model tier, and gates the turn count on log length rather than fixing it.",
       "check": {
         "type": "rubric",
@@ -342,6 +358,10 @@
       },
       "prompt": "Our loop's proposed diffs are getting large. Last night's winner changed the agent loop's retry logic, added a tool, and rewrote the observation truncation, all in one commit, and it scored 1.8 points better so we kept it. What is the rule going forward?",
       "without_skill": "Sets a line-count cap on the diff, or requires a human to review anything large. Both are about diff size rather than about attributability, and neither says what the gate can do with a mixed diff.",
+      "without_skill_basis": {
+        "kind": "authored-judgement",
+        "note": "the author's model of what a bare subject would answer. Never observed."
+      },
       "with_skill": "Bounds by module or by edit count, enforces it before evaluation, and names what a spanning diff does to the gate.",
       "check": {
         "type": "rubric",
@@ -427,6 +447,10 @@
       },
       "prompt": "Write the gate specification our loop must pass before an edit is kept. Output gates.json with keys \"gates\" (an ordered list, each an object with \"name\", \"rejects\" and \"blocking\"), \"on_failure\", \"acceptance_metric\", and \"rejected_edits\".",
       "without_skill": "Writes one or two gates, usually a test run and a score comparison, accepts on the score that motivated the edit, treats a failed gate as a warning, and discards rejected candidates.",
+      "without_skill_basis": {
+        "kind": "authored-judgement",
+        "note": "the author's model of what a bare subject would answer. Never observed."
+      },
       "with_skill": "Writes the three gates in series with rollback as the default, accepts on held-out performance rather than the diagnosis, and keeps rejected edits as negative signal.",
       "check": {
         "type": "parses",
@@ -481,6 +505,10 @@
       },
       "prompt": "Six weeks in, our loop's score on the evolution set has gone from 34 to 71 percent and the curve is still climbing. I am writing this up for the board as evidence the approach works. The evolution set is 900 tasks we sampled from the same internal corpus our quarterly evaluation suite is drawn from, which we did deliberately so the tasks would be representative. Draft the slide.",
       "without_skill": "Drafts the slide with the curve, because a climbing curve on representative tasks is exactly what the request asks for and the contamination is presented as a design virtue.",
+      "without_skill_basis": {
+        "kind": "authored-judgement",
+        "note": "the author's model of what a bare subject would answer. Never observed."
+      },
       "with_skill": "Refuses to present the curve as evidence of generalisation, names the contamination, and says what measurement would support the claim.",
       "check": {
         "type": "rubric",
@@ -565,6 +593,10 @@
       },
       "prompt": "We compact our agent's context whenever it passes 60 percent of the window, which someone picked a while ago. I want the rule to be arithmetic instead. Here are today's numbers. The context is 120,000 tokens and compaction would rewrite it to 30,000. Cached input reads cost 0.10 dollars per million tokens and a cache write costs 1.25 dollars per million. Every future provider request in this run re-reads the whole context once. Compaction itself costs one cache write of the compacted context. How many further requests does this run need before compacting pays, and what is the rule I should ship?",
       "without_skill": "Keeps a percentage-full threshold, or reasons qualitatively that compaction is obviously worth it at 120,000 tokens, without computing the crossover.",
+      "without_skill_basis": {
+        "kind": "authored-judgement",
+        "note": "the author's model of what a bare subject would answer. Never observed."
+      },
       "with_skill": "Computes the breakeven from the two prices and the size delta, and ships a rule that compares estimated saving against rewrite cost at each subtask boundary.",
       "check": {
         "type": "number_in_range",
@@ -611,6 +643,10 @@
       },
       "prompt": "Our nightly self-improving loop has been editing its own scaffold for three weeks and reports a 9 point gain on our internal suite. Before I take this to the board I want an audit standard we can hold ourselves to, and I would rather adopt a published one than invent one. Give me the gates, in the order we should build them, and tell me what to expect from each so I can budget the engineering.",
       "without_skill": "Proposes a sensible home-made audit, usually a held-out set, a significance test, and a human review, and treats a reported gain plus statistical significance as the standard to meet.",
+      "without_skill_basis": {
+        "kind": "authored-judgement",
+        "note": "the author's model of what a bare subject would answer. Never observed."
+      },
       "with_skill": "Names the protocol, puts the matched-challenger gate second and first in value, warns that the feedback gate is optional and that Inconclusive is the expected result at thirty pairs rather than a sign the loop failed, and requires pre-registration of the analysis before the run.",
       "check": {
         "type": "rubric",
@@ -691,6 +727,10 @@
         "bisect.py": "def first_bad(is_bad, n: int):\n    \"\"\"Return the smallest index i in [0, n) with is_bad(i) True.\n\n    is_bad is monotonic: once True it stays True. Return None if no index is\n    bad. n == 0 returns None. Call is_bad at most ceil(log2(n)) + 1 times.\n    \"\"\"\n    raise NotImplementedError\n"
       },
       "without_skill": "A correct binary search with the call budget respected and the empty and all-good cases handled.",
+      "without_skill_basis": {
+        "kind": "authored-judgement",
+        "note": "the author's model of what a bare subject would answer. Never observed."
+      },
       "with_skill": "The same. The skill must not intrude: no freeze lists, no gate chains, no contrast pairs, no continual-search turn budget.",
       "check": {
         "type": "tests_pass",
@@ -715,6 +755,10 @@
       },
       "prompt": "Write the postmortem template our on-call engineers fill in after an incident. We want it to actually get filled in, so keep it short, and we want it to surface the systemic cause rather than stopping at whoever pushed the change.",
       "without_skill": "A good short template: timeline, customer impact with numbers, detection and how long it took, contributing conditions rather than a single cause, what made it worse, what made it better, action items with owners and dates, and an explicit blameless framing.",
+      "without_skill_basis": {
+        "kind": "authored-judgement",
+        "note": "the author's model of what a bare subject would answer. Never observed."
+      },
       "with_skill": "The same template. A skill that intrudes here will propose contrast pairs across rollouts, a freeze list, a three-gate acceptance chain, or a continual-search budget for the diagnosis, none of which belongs on a form a tired engineer fills in at 3 a.m.",
       "check": {
         "type": "rubric",
@@ -801,6 +845,10 @@
       },
       "prompt": "We are scaling from one self-editing agent to twelve, all committing to one repository, each scored on our shared benchmark and rewarded for improving it. No central planner, that is the point. What do we build into it on day one that we would not need with a single agent?",
       "without_skill": "Answers with ordinary concurrency engineering: locks, branch conventions, merge queues, conflict resolution. All necessary and none of it specific to a population of agents optimising one metric.",
+      "without_skill_basis": {
+        "kind": "authored-judgement",
+        "note": "the author's model of what a bare subject would answer. Never observed."
+      },
       "with_skill": "Adds the credit rule, version retention and a diversity signal, and is honest that the one recorded fix for convergence was a human.",
       "check": {
         "type": "rubric",
