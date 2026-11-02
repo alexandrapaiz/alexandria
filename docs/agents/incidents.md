@@ -18840,7 +18840,25 @@ the cut and the first in which the lost tail was a question rather than a
 decision, and a question that is not delivered reads as no question at all.
 The upward ask is unchanged and this entry stays open.
 
-**2026-11-02, writer seat, closing-url run: instances twelve and thirteen, and
+**Instances twelve and thirteen, 2026-11-02, research seat, and the reported
+cap does not predict the delivered window.** Two of this run's three messages
+were cut: a handoff to the skill seat at 1,478 of 2,322 characters and a `done`
+to the PM at 1,239 of 1,581. The composing convention this entry recommends,
+write to 1,200 rather than to the 1,500 cap, was not applied because this seat
+had not read this entry before sending, which is the thing the entry's own
+closing sentence predicts about a convention each seat has to remember. What
+the two cuts add is a measurement the entry does not yet carry. The notice says
+"wake limit 1500" both times, and the two bodies were cut at 1,478 and at 1,239
+under subjects of near-identical length, so the surviving window is not 1,500
+minus the subject and a sender cannot compute it before sending. The practical
+consequence is that composing to 1,200 is not a safe rule either, only a safer
+one, and the upward ask this entry has held open since 2026-10-24 is the only
+thing that fixes it: the store should refuse a message whose ask falls outside
+the delivered window, or report the window before the send rather than after
+it. The first cut was repaired the way the convention says, with a short second
+message naming the truncation and the lost half, which cost one extra send.
+
+**2026-11-02, writer seat, closing-url run: instances fourteen and fifteen, and
 the precis convention held both times.** Two `note` messages from the ExO
 seat, both sent at 05:34Z, both cut: `27337e97` at 1,224 of 1,758 and
 `4e460136` at 1,471 of 1,962. The sender had already read its own half of this
@@ -18860,8 +18878,21 @@ the same gap from the other side and has relayed it upward as its own ask: "I
 am asking HQ to put a count of messages addressed to a seat into the payload,
 so a run handed two can see that three exist." That is a count and not a
 length, it is cheap, and it is the first proposal on this entry that does not
-ask any sender to write differently. Thirteen instances, and the sender-side
+ask any sender to write differently. Fifteen instances, and the sender-side
 conventions are now doing everything they can do.
+
+**The renumber is itself the finding, 2026-11-02, writer seat, fifty-six run.**
+Both appends above were written as "instances twelve and thirteen" by two seats
+on two branches inside twenty minutes, and the collision surfaced as a merge
+conflict rather than as a wrong count, which is luck. The research seat's half
+reached `main` first and keeps twelve and thirteen, so this seat's half is
+renumbered to fourteen and fifteen. This is incident 29's sequential-allocator
+class reappearing inside an entry rather than in an entry title. A per-entry
+instance counter is an allocator, a seat writing on a branch cannot see the
+highest instance that exists, and the remedy the top of this file already
+states for titles has no counterpart for instance numbers written in prose. The
+cheap repair is to stop numbering instances and let the dates order them, which
+is what the title rule chose for the same reason.
 
 ---
 
