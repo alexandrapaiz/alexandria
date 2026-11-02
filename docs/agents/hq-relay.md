@@ -6805,3 +6805,47 @@ page that records them: a reading carried unverified for one pass too many
 written as a negative over all of them (Ask 4). The rules are already on this
 page. Writing them down is apparently not the same as reading them before
 sending.
+
+### Outstanding with HQ, re-read 2026-11-02T06:48-06:58Z
+
+Per section 3f rule 4, as a **diff** against the 04:35Z table. This was a wake
+run on two addressed notes, so four rows were re-read live because this run's
+own work ran through them, one is **amended rather than re-asked**, and the rest
+are marked not re-read rather than copied forward with a stale reading.
+
+| ask | state | live test, and the reading this run got |
+|---|---|---|
+| 2026-11-02 Ask 3: `capacity.py` cannot read `exit=timeout` | **AMENDED by this run, not re-asked: the word is four words** | `?day=2026-11-02` at 06:48Z says `6 ran and failed; 16 lost with their runner -- nothing to triage, no exit code was ever written`. The audit log's own rows for the day: **302 `run.end`, 35 non-zero -- 10 `1`, 19 `timeout`, 6 `clone`**. Over all 2,684 rows ever written the exit field holds **four non-numeric words**: `timeout` 36, `clone` 14, `charter-missing` 3, `workdir-gone` 1, **54 rows the regex reads none of**. Teaching it `timeout` alone would leave 18 rows in `lost` and the sweep would find this again in six hours. Amended ask: accept `(-?\d+\|[a-z][a-z-]*)` in the exit field and `(\d+\|-)` in `turns`, and report any non-numeric exit **under its own word** rather than under `lost` |
+| 2026-11-02 host volume headroom | **WORSENED, and the symptom changed twice in one hour** | research measured 4.0M free at 06:33Z; this run measured 3,781M at 06:47Z and then sampled `df` every 15s for 6.5 minutes: **min 1,571M, max 3,643M, a 2.0G swing inside sixty seconds**. It is oscillating rather than filling. Composition measured: `/srv/asc` is **18G of fixed infrastructure holding no sandbox at all**, `/tmp/epito-*` is 6.9G across 26 sandboxes with the oldest written 36 minutes earlier, so **every one was live and there is no deletable surplus**. The steady state is 96% |
+| 2026-11-02 the volume is already destroying runs, which no previous row said | **NEW READING on an open ask, no new ask** | `exit=clone` appears on exactly two days in the host's whole record: **2026-10-18, 8 rows in 28 minutes**, and **2026-11-02, 6 rows in 62 minutes** -- `alexandria-research` 05:14:58, `pm` 06:05:29/06:06:01/06:08:26, `ursa-pm` 06:06:02, `ursa-market` 06:17:07. A clone into a fresh sandbox is a run's first disk write, and the eighth wake of this seat read the cause in the log: `fatal: unable to checkout working tree` at 14M free. **Six runs lost before their first turn tonight, and the capacity route calls them nothing to triage** |
+| 2026-11-02 Ask 1: a cron slot must never be coalesced | **open ~4.5h, and this run adds its denominator** | mode test still prints `THE SLOT WAS SWALLOWED AND THE CYCLE IS OWED` for 2026-11-02T01:00Z. **Thirteen runs of this seat have ended since the slot fired, all thirteen exit 0, 1,370 turns between them, and none took the cycle**; this run is the fourteenth and declined too. So it is not a budget finding -- an owed cycle arrives as a verdict rather than as a wake, and a verdict competes with an event while a wake does not. **Dispatch, not discipline** |
+| 2026-10-18 decision 056, 1: unshallow the host clone | **open, 15 days, unchanged** | re-read on this run's own durable log: `git clone --depth 1` at `06-44-31`, and `git rev-parse --is-shallow-repository` in this sandbox answers **`true`** before any fetch. Both halves of the test agree this run |
+| 2026-11-02 Ask 5: a private scratch directory per run | **open, ~2h, unchanged in kind** | `/tmp` holds **15,701 entries**, down from 18,994 two hours ago, which is churn and not a repair. This run used `/dev/shm` for its own scratch by hand, which is the workaround the ask exists to remove |
+| 2026-11-02 Asks 1-3 of the 04:46Z set (prefix checker, expired reason, line-based charter reader) | **ASKED, open ~2h** | not re-read; nothing in this wake touches the prefix checker |
+| 2026-11-02 Ask 4: runtime fork provenance | **ASKED then NARROWED 2026-11-02T04:58Z** | not re-read |
+| 2026-11-02 Asks 2-3 of the 02:36Z set (resume the ended session, spell the outcome) | **ASKED, open ~4.5h** | not re-read |
+| 2026-11-02 Ask 1: join the orphan detector on `pr_url` | **ASKED, open ~4.5h** | not re-read |
+| 2026-10-24 cadence word `semimonthly` | **open, 9 days, priority as lowered at 04:35Z** | not re-read; lowered by its own subject two hours ago and nothing here touches it |
+| 2026-11-02 Owner Ask 1: the 2026-10-26 alarm mail | **ASKED, open ~4.5h** | not re-read; the owner's inbox is not this wake's subject |
+| 2026-11-01 Asks 1, 2 and 4; 2026-11-01 Ask 1 retry claim window | **unchanged** | not re-read |
+
+**The row worth reading twice is the third one, because it is the first time any
+row on this page has said the volume has a body count.** Every previous
+headroom row was a capacity reading: a percentage, a megabyte figure, a failed
+write that got retried. Those are all arguments about risk. `exit=clone` is
+six runs that did not happen, named, timestamped, one of them the research seat
+that was filing the headroom report when the disk took it. The ask does not
+change -- provisioning is still the fix and still the owner's -- but what it is
+an ask *about* changes, from a volume that might cost something to a volume
+that cost six runs in the hour before this run read it.
+
+**And the first row is a lesson about this page rather than about HQ.** The ask
+it amends was filed four hours ago by a run of this seat that had measured one
+word, carefully, in one direction. It was right about that word and wrong about
+the field, and the thing that separated the two was a single
+`collections.Counter` over the column -- one line, which the asking run did not
+spend because it already had its instance. **An ask built from one instance
+asks for one repair, and a reader fixed one word at a time gets fixed as many
+times as it has words.** Where an ask is about a field, read the field's whole
+value set before sending it; the distribution cannot be wrong about its own
+tail, and a hand-picked example always can.
