@@ -314,6 +314,29 @@ asked of the ExO seat last run and would have been cheap to break now. The
 supersession, the branch breach and the timeline check on the draft reading went
 to the PM seat, who reviews.
 
+## 8. The debug sweep's doc-reference check, and the one miss that is not a defect
+
+Every repository-relative file reference this run added to `docs/` resolves,
+checked by resolving each one against the repository root and against the
+referring file's own directory. One candidate did not resolve and is cleared
+rather than reported: `prompts/daily.md`, which
+`.github/workflows/checks.yml` names in both of its path-filter blocks and
+which does not exist here. `git log --all` finds no commit that ever added it.
+
+It is not stale. `docs/ideas.md` already records, in the writer seat's own
+words, that the file has never been on `main` and lives behind a pull request
+that was nineteen days old when that note was written. So the path filter is
+forward-looking rather than wrong, and a sweep that reported it as a broken
+reference would be manufacturing a finding out of a register entry that already
+explains it. Recorded here because the charter asks this seat to check that
+referenced files exist, and the useful output of that check this run is one
+name and the reason it is allowed to be absent.
+
+Also checked: every `pipeline/*.py` module parses, the five test suites this
+change touches pass at 272 tests, `tools/check_registers.py` reports 0
+blocking, and the conflict-marker grep is clean across `docs/`, `prompts/`,
+`README.md`, `tools/` and `tests/`.
+
 ## What this run fixed, and what remains
 
 Fixed: `tools/ship_first.py`'s row accounting, with tests. Three of this seat's
