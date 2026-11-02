@@ -1304,6 +1304,53 @@ def check_frontmatter(skills_dir: str) -> int | SkippedGate:
     return len(bad)
 
 
+# Is every description inside the editorial word budget?
+# (--budget, folded into --receipts)
+#
+# DESCRIPTION_WORD_MAX has been carried by run() since incident 31 and carried
+# there as a WARNING, which means it is read by whoever reads the bundle's
+# `warnings` array. On 2026-11-02 this seat shipped a 171-word description to
+# carry two new activation conditions, the warning was printed, and the cost
+# landed somewhere nobody would look for it: `evaluation-integrity`'s first
+# negative case went from silence to firing `agent-security-measurement` at a
+# null margin of 0.005. The seat that caused it is not the seat whose case goes
+# red, and the suite's exit code does not distinguish the two, so the warning
+# was still true and still unenforced.
+#
+# So it moves next to the frontmatter check, which is the sibling defect with
+# the sibling remedy: both are properties of one description that a seat can
+# only have broken in the edit it is about to commit, and `--receipts` is the
+# mode that edit is told to run. No engine, no cases, no model call.
+def check_budget(skills_dir: str) -> int:
+    """Count the descriptions past DESCRIPTION_WORD_MAX. Returns the number
+    over budget, which is the number of skills that outrank their neighbours
+    on breadth of vocabulary rather than on topic."""
+    skills = load_skills(skills_dir)
+    over = []
+    print(f"\nbudget: {len(skills)} descriptions against the "
+          f"{DESCRIPTION_WORD_MAX}-word editorial budget")
+    for name in sorted(skills):
+        words = word_count(skills[name]["description"])
+        if words > DESCRIPTION_WORD_MAX:
+            over.append(name)
+            print(f"  OVER     {name}: {words} words, "
+                  f"{words - DESCRIPTION_WORD_MAX} past the budget")
+            continue
+        print(f"  ok       {name}: {words} words")
+    if over:
+        print(f"\n{len(over)} of {len(skills)} descriptions are past the "
+              f"{DESCRIPTION_WORD_MAX}-word budget: {', '.join(over)}.")
+        print("A longer description outranks a terser one on any prompt both "
+              "cover, and the case that goes red is usually another skill's. "
+              "Cut the description, then re-run the trigger test, because the "
+              "bundle you are about to commit measures a composition that "
+              "includes this one.")
+    elif skills:
+        print(f"\nall {len(skills)} descriptions are inside the "
+              f"{DESCRIPTION_WORD_MAX}-word budget.")
+    return len(over)
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(
         description="Trigger test for the alexandria skill library.")
@@ -1323,7 +1370,9 @@ def main() -> int:
                     help="offline check: does every skill's newest recorded "
                          "receipt describe its SKILL.md as it stands now? Run "
                          "this before committing a SKILL.md edit. No engine, "
-                         "no cases, exits non-zero on a stale receipt.")
+                         "no cases, exits non-zero on a stale receipt, on frontmatter "
+                         "no YAML parser can load, or on a description "
+                         "past the 150-word budget.")
     ap.add_argument("--invariance", action="store_true",
                     help="the pre-registered ENGINE gate: prove the scoring "
                          "function's invariance properties from the code. "
@@ -1361,13 +1410,16 @@ def main() -> int:
         if isinstance(unloadable, SkippedGate):
             print(f"\nreceipts: FAIL, {unloadable}")
             return 1
+        over_budget = check_budget(args.skills_dir)
         return verdict(
-            "receipts and frontmatter", checked=n_skills, unit="skills",
-            failures=stale + unloadable,
+            "receipts, frontmatter and budget", checked=n_skills, unit="skills",
+            failures=stale + unloadable + over_budget,
             pass_line=f"receipts: all {n_skills} skills carry a receipt for "
-                      "today's text and load under a YAML parser.",
-            fail_line=f"receipts: {stale} stale and {unloadable} unloadable of "
-                      f"{n_skills} skills.")
+                      "today's text, load under a YAML parser and keep their "
+                      f"descriptions inside {DESCRIPTION_WORD_MAX} words.",
+            fail_line=f"receipts: {stale} stale, {unloadable} unloadable and "
+                      f"{over_budget} over the word budget, of {n_skills} "
+                      "skills.")
 
     res = run(args.skills_dir, args.decoys, args.engine)
     report(res, args.verbose)

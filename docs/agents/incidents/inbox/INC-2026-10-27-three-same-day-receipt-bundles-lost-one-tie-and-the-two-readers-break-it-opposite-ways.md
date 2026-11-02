@@ -111,3 +111,22 @@ sentence. A timestamp in `generated` fixes the ordering, and it does not fix the
 fact that two readers implement two different rules. The tie-break has to be one
 function the gate, the panel and the page all call. It is registered to the
 engineer and it is in the ledger.
+
+**Sixth consecutive day, 2026-11-02, skill seat, and the configuration is the
+one this entry predicted.** Four lexical bundles carried the date 2026-11-02 by
+the time this run wrote its own: `approval-paths`, `containment-horizon`,
+`mechanism-column` and then `parallax-asm`. `trigger_test.py` sorts a sorted
+glob with a stable sort, so the first of the four won and `--receipts` reported
+`agent-security-measurement` STALE against `approval-paths` while holding this
+run's correct, newer bundle in the same directory. That is the gate a seat is
+told to run before committing a SKILL.md edit telling the seat its current
+measurement is the stale one, which is the sentence at the end of the entry
+above arriving from its third side. The mitigation was the documented holding
+pattern again: the three earlier bundles moved to `results/superseded/`, which
+leaves one same-day bundle and no tie. This run did not observe the
+`panel_validator.py` half, because the files were moved before that reader was
+run, so the opposite-direction claim is reasoned from `reverse=True` here rather
+than measured, and `parallax-asm` sorting last of the four is what would have
+made the two readers disagree. The repair is unchanged and still owed to the
+engineer: one tie-break function that the gate, the panel and the page all call,
+on a timestamp rather than a date.
