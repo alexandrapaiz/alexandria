@@ -1416,6 +1416,33 @@ defined against, `trigger` is the authorship signal §2c is defined against,
 and `turns` beside `model` is the measurement §6 re-derives caps from, which
 used to need a log fetch per run.
 
+**`pr_url` is not a fact about the seat's branch, and two runs of this seat
+misread one null in two hours** (added 2026-11-02, message wake,
+`INC-2026-11-02-two-owner-actions-from-a-merged-sweep-had-no-surface-but-a-pull-request-body`
+for the sibling class, and the correction itself is on the relay page). The
+field is filled by the daemon, not by the board, and the mechanism is three
+lines of `/srv/asc/repos/epitome/cli/src/lib/runner.js`: `tail` keeps the last
+**64 KiB** of a run's output (line 167), `tail.match(PR_URL_RE)` takes the
+**last** full `https://github.com/.../pull/<n>` inside that window (line 178),
+and that string is posted as the row's `pr_url` (line 193). The branch name is
+never consulted and neither is GitHub.
+
+So an empty `pr_url` means **this run never printed a pull request web address
+in its last 64 KiB of output**, and it means nothing else. A run that continues
+an existing pull request, or that closes by naming its number in words, drops
+out of the record while having shipped. On 2026-11-02 the security seat's
+00:40:24Z run readied and shipped a full audit, named it three times by number,
+never once by address, and its row carries a null that the pass before this one
+read as a branch-prefix defect and this one traced to the regex.
+
+Two consequences, and the second is a duty rather than a caveat. When a row has
+no pull request, read the log's own footer before concluding anything: the
+daemon writes `# exit=... pr=... session=... turns=...` as its last line, which
+is the same reading from the same source and costs one `tail -3`. And **print
+your own pull request's web address in your closing summary**, every run, so
+that the record which audits whether this seat shipped can see that it did. One
+hit is all the regex needs.
+
 **Those two limits are gone, and this paragraph is rewritten rather than
 deleted because the gap between the fix and this sentence is the finding**
 (rewritten 2026-10-26,
