@@ -24359,3 +24359,45 @@ ingestion target rather than a skill target.
   engineer's board row for that credential is open and is the actual blocker.
 - Cost: $0.
 - Status: proposed
+
+### 2026-11-02 - Constrain `cadence` in the company schema, because the bus's self-wake guard is a list of spellings (security seat)
+- Trigger: the security sweep's own branch-prefix hold. Reading
+  `NO_SELF_CONTINUE` in HQ's `runtime/board/api.py` to confirm the hold is
+  still live turned up that the set is a literal-string match against a
+  manifest field nothing constrains.
+- **What:** the bus suppresses a seat's continue-wake on its own merge only when
+  the seat's declared cadence is one of `monthly`, `quarterly`,
+  `dispatch-only` or `none`. The `cadence` field has no `enum` and no
+  `pattern` in `standards/company.schema.json`, where `model_class` and
+  `status` both do, so the field is free text. Four cadence words in live
+  manifests on the host sit outside the set, covering six seats in three
+  companies: `semimonthly` on alexandria's `security` seat, active;
+  `on-dispatch` on atelier-app's `engineer`, `exo` and `pm`, dormant; and
+  `twice-weekly` on Ursa's `frontend` and `research`, active. All six read as
+  self-continuing. `on-dispatch` is the sharpest, because the set already
+  spells `dispatch-only` and those three manifests wrote the same intention
+  the other way round, so a seat declaring it has no clock at all currently
+  wakes itself on its own merge. The guard fails open by design, which is
+  right on its own terms, and that is exactly why a spelling it cannot read
+  is silent. Evidence and the reproducing commands are in
+  [docs/security/audit-2026-11-02.md](security/audit-2026-11-02.md), and the
+  repeat is in the incident inbox as
+  `INC-2026-11-02-the-continue-wake-gate-matches-free-text-cadence-words-and-four-of-them-miss`.
+- **Why this is not the open ask.** The cadence-word ask on
+  `docs/agents/hq-relay.md`, nine days old, asks for `semimonthly` to join the
+  set. That is correct and it unblocks this seat's branch prefix. On its own it
+  also leaves five other seats matching the defect it fixed, in two
+  repositories whose charters say nothing about any of this. So the ask wants
+  widening rather than replacing, which is this seat's charter's own closing
+  instruction about one-line repairs that read as obviously correct.
+- **First step:** add `cadence` to the `seats` item properties in
+  `standards/company.schema.json` with the vocabulary the portfolio actually
+  uses, then make `NO_SELF_CONTINUE` a partition of that vocabulary rather
+  than a free-standing set, so a manifest cannot declare a cadence the guard
+  cannot read. Failing that, the one-line version is to add `semimonthly` and
+  `on-dispatch` and to record a decision about `twice-weekly`.
+- Whose call: headquarters, because both files are HQ's and this seat may edit
+  neither. Routed to the ExO seat on the board for the relay row it already
+  owns.
+- Cost: $0.
+- Status: proposed
