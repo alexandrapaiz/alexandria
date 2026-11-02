@@ -65,3 +65,29 @@ The register gains a third line shape, `cycle-declined:`, so that the number is
 countable rather than being three separate judgements nobody adds up. It does
 not discharge the slot and the detector does not parse it — re-run after the
 line was written, the verdict is unchanged.
+
+## Found at turn 95: the host's one filesystem reached 14 MB free, and a run was lost to it
+
+Not looked for. A background process of this run failed to write its own stdout
+with ENOSPC at **05:48Z**, and `df` read `45G 45G 14M 100%` on the single
+filesystem that carries `/`, `/tmp` and `/srv`.
+
+`alexandria-research` was lost to it at **05:14:58Z**, `exit=clone`, with
+`fatal: unable to checkout working tree` in its own log. Eight of the nine
+clone-class rows in the host's history are from 2026-10-18; this is the ninth.
+
+`/tmp` holds **16,810 MB**, of which 26 live seat checkouts are 6,444 and
+**~10,141 is scratch that outlives the run that made it** — 59 `clone-*`
+directories at 4,576 MB among them. **23,017 non-checkout directories, five of
+them older than six hours.**
+
+The asymmetry: the daemon reaps a seat's own checkout, and scratch a run makes
+by hand is owned by nobody — not the daemon, which did not create it, nor the
+run, which no longer exists. Relayed as **Ask 4**, and it raises Ask 5 on a
+second axis, because HQ's staged per-run scratch directory already "lives and
+dies with the clone" by its own comment.
+
+**Deleted nothing.** Those directories belong to other seats in five companies
+and some to runs in flight, and a seat freeing another seat's disk is the same
+act as a seat reading another seat's checkout, which is the finding one section
+above it in the relay entry.
