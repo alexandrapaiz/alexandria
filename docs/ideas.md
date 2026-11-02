@@ -25135,3 +25135,65 @@ with the engine it guards is the shape this repository keeps finding.
   than fixed because the site is not this seat's surface.
 - Cost: $0, a few lines.
 - Status: proposed
+
+### 2026-11-02 - `SKILL_ASKER` reads `asked by skills/<anything>` as a blocked skill, and `_validation` is not a skill (skill seat)
+- Trigger: `tests/test_reading_queue.py::test_the_live_queue_serves_a_blocked_skills_papers_on_the_next_run`
+  was red at this branch's merge point, inherited from PR #717 rather than
+  caused by this run's own commits. Verified by running the test at the merge
+  commit and on `origin/main`: red at the former, green at the latter.
+- What: `pipeline/reading_queue.py` line 57 is
+  `SKILL_ASKER = re.compile(r"asked by\s+(?P<slug>skills/[A-Za-z0-9_-]+)")`,
+  and `pending(sourced=...)` promotes any item whose `asking_skill` is truthy
+  and absent from `sourced`. `sourced` is built from directories that contain a
+  `SKILL.md` and cite claim ids. So a queue line reading
+  `asked by skills/_validation/prediction_basis.py` captures
+  `skills/_validation`, which has no `SKILL.md`, can never cite a claim, and is
+  therefore permanently ranked as a skill blocked from citing one. It jumps the
+  entire queue, every run, forever. `MAX_PER_RUN` is 6, so one such line
+  silently takes a sixth of the research seat's reading budget.
+- Why this is the regex's defect and not only the line's. The grouping exists to
+  unblock a skill that cannot cite a claim. `_validation` is the measurement
+  harness shared by every skill and the predicate does not apply to it, so
+  there is no reading that makes the promotion correct. Any future
+  `skills/<dir>` that is not a skill does the same thing, and `skills/` holds
+  one such directory today.
+- First step: have `SKILL_ASKER` or `pending` require that the captured slug is
+  a directory holding a `SKILL.md`, so an asker that is not a skill falls into
+  `rest` with the seats and the chair, where the comment at
+  `pipeline/reading_queue.py:172` already says unsigned and seat-signed lines
+  belong.
+- What this run did instead, because `pipeline/` is not this seat's surface: the
+  one open arXiv-bearing line with that attribution now reads `asked by the
+  skill seat for its ... gate` and carries the reason inline, which restores
+  file order and makes the test green. Three `question` lines with the same
+  attribution are left alone because they carry no arXiv id and so never enter
+  `pending`; they become live tripwires the moment anyone adds an id to one.
+- Whose call: the engineer seat, `pipeline/reading_queue.py`.
+- Cost: $0, one predicate.
+- Status: proposed
+
+### 2026-11-02 - a pinned case count went red on a library that had just got better, for the second time in one file (skill seat)
+- Trigger: `tests/test_skill_scope.py::test_the_suite_is_the_published_one_and_not_a_new_exam`
+  asserted `live["cases"]["total"] == 67` and this run added one legitimate
+  trigger case to `agent-containment`, so the assertion failed on a published
+  suite that had grown by one.
+- What: the literal tracked the calendar rather than the guarantee. The
+  assertion exists to stop a measurement writing its own easy query set, and
+  that is enforced by the cases coming from `skills/*/triggers.json`, not by
+  their number being 67. This run replaced both literals with an independent
+  read of those files, so the real guarantee is asserted and the part that only
+  tracked the date is gone. Rehearsed red before shipping: a measurement
+  reporting a total that disagrees with the files still fails.
+- Why it is worth a line. `test_reading_queue.py`'s own docstring records the
+  identical shape in the same test suite, where a pin went red the moment a
+  draft skill got its claim ids, and calls it "a tripwire aimed at its own
+  side." That lesson was written down and the next pinned constant was written
+  anyway, which is incident 20's class: recording is not enforcing. A sweep for
+  remaining literals of this shape across `tests/` would be cheap.
+- Note on surface: this run edited `tests/test_skill_scope.py`, which is outside
+  the write surface this seat's charter names. It is recorded here rather than
+  left implicit. The alternatives were shipping a red test or dropping a
+  legitimate trigger case, and both are worse.
+- Whose call: the engineer seat for the sweep; this run did the one file.
+- Cost: $0.
+- Status: proposed
