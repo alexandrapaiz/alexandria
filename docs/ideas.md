@@ -24531,15 +24531,43 @@ ingestion target rather than a skill target.
   the 102 tasks now carries `without_skill_basis`, and
   `skills/_validation/prediction_basis.py --check` fails on a missing label and
   on an `observed-bare-run` claim that names no run. The counts it prints are
-  1 observed-bare-run, 3 this-repository-history, 98 authored-judgement. That
+  1 observed-bare-run, 4 this-repository-history, 97 authored-judgement, after
+  `he-t9` was relabelled on 2026-11-02 at the research seat's request. That
   labels the defect on the artifact where every run reads it. It does not remove
   it, and nothing in this repository can remove it without a second model family.
 - What is needed: a route to one non-Anthropic, non-subject model for 102 short
   calls. `pipeline/budget.py` knows moonshot and groq, and this seat has no key
   for either. Same blocker as ADR-38 rule 7 and ADR-40 item 6, so it is one
   credential decision rather than three.
-- Cost: cents, in one batch of 102 short calls, plus the owner's decision on a
-  key. The expensive version is remedy two below.
+- Cost: **measured 2026-11-02, and it is eleven cents or free** (research seat,
+  note `c773745f`, PR #699). The reviewable payload is the four fields a
+  masked-skill check may see and never `check` or `exploit`: 110,254 characters
+  across the nine suites, 91,826 input tokens with a 600-token instruction
+  prefix per call, 6,120 output. That is **$0.1117** on `kimi-k2.6` and
+  **$0.00** on the two groq free-tier models `pipeline/budget.py` already
+  records, paced at 12.2 minutes by tokens per minute and inside both daily
+  ceilings. So the ask going up is **one signup rather than a budget line**, and
+  this entry should stop being described as a spending decision.
+- And buy the defensible version rather than the free one. `arxiv:2606.19544`
+  section 5.3's Minimum Viable Validation Protocol has a replicate step, and
+  three runs at temperature 0 with caching off turn 102 calls into 306 and
+  97,946 tokens into 293,838. That fits groq's 1,000 requests a day and
+  **exceeds** its 200,000 tokens a day, so the unvalidated sweep is free and
+  fits one run while the sweep that can defend its own number is 1.47 free-tier
+  days, or **34 cents** to stop being a two-day job.
+- **The blocker is narrower than this entry claimed, and that is the finding
+  worth more than the price.** Skill-Use's own exclusivity instrument is not an
+  observed bare run either: its masked-skill check hides the document and asks
+  whether a strong model given only the prompt would produce the same
+  behaviour, which is a model's counterfactual judgement in exactly the shape
+  of the 97 `authored-judgement` rows here. What makes their version admissible
+  is three separable safeguards, and **only the first needs the credential**:
+  cross-family review, a red-team refutation pass on five named axes, and a ten
+  percent human spot-check. So these prediction fields are blocked on the
+  cross-family third of independence rather than on independence, and the other
+  two safeguards can run today with no key at all. The instrument grew a fourth
+  label this run, `refuted-and-survived`, for a judgement that survived the
+  refutation pass rather than one merely labelled, and nothing carries it yet.
 - Status: proposed
 
 ### 2026-11-02 — one shelf written against a benchmark this org does not author (skill seat)
@@ -24557,8 +24585,71 @@ ingestion target rather than a skill target.
   sandbox and a subject, not a corpus.
 - Whose call: the owner's, because it is the first item on this list that spends
   real money on compute rather than cents on an API.
-- Cost: unknown, and the honest first step is one costed estimate rather than a
-  run.
+- Cost: **costed 2026-11-02 by the research seat, and this line's own ask is
+  answered** (note `c773745f`, PR #699,
+  `docs/research/notes/2026-11-02-independence-costed-estimate.md`). Low four
+  figures per model-harness arm with caching and five without, $87 to $2,968 on
+  their range, and the whole width is one quantity the paper does not report,
+  which is tokens per turn. Caching is a four to sevenfold lever across every
+  row, larger than any model substitution available, and a silently
+  invalidating cache costs the uncached column with no error raised. The judge
+  arm is $1 to $5 on the Batch API with each trace cached once, and the sandbox
+  ceiling is 73.8 container-hours, so neither is the driver. **The purchase to
+  make is a five-task pilot at about $16**, which replaces a sixtyfold spread
+  with a number, and that is the ask rather than the full run.
+- Ordering, which this entry had backwards and the source settles: remedy one
+  above is **a precondition for this entry rather than a cheaper substitute**.
+  Skill-Use's own table 3 runs the cheap masked-skill screen in phase 4 and
+  admits only survivors to the sandboxed stage, because "cost per candidate
+  rises with each phase, so cheap filters run first". A run of this entry on a
+  task set that has not passed the cheap screen is the one ordering the source
+  argues against.
+- Status: proposed
+
+### 2026-11-02 — USE_WHEN_BOOST is a 1.25x nobody measured, and the one paper that measures it runs the other way (skill seat)
+- Trigger: the research seat drained this seat's own queue line, which asked
+  whether anybody has published a measurement of marking activation conditions
+  explicitly inside a skill description (note `ea8d990e`, PR #702). The answer
+  arrived and it is not the one the coefficient would want.
+- `arxiv:2602.05366` ablates a when-to-use field add-one and one-out on a dense
+  and a sparse retriever over thirty-five unified datasets and keeps the field,
+  so **having the clause is supported.** The field its authors drop is
+  example-usage, not this one.
+- `arxiv:2510.22670` is the only source either seat can find that measures a
+  *weight* on that field rather than its presence. It learns per-field weights
+  and publishes them: the usage-scenario field runs **0.269x to 1.363x** of the
+  description field's weight across six dataset and retriever cells, **median
+  0.695x**, and it sits below the description in five of the six. Ours is a
+  fixed **1.25x above** it.
+- So the literature supports the clause, rules out a constant in either
+  direction, and runs the opposite way on central tendency. `USE_WHEN_BOOST`
+  moves three of 67 trigger cases, the same count the choice of scoring
+  function moves, and nothing in this repository's corpus ever justified the
+  number.
+- The sharper warning lands on `activation_clause()` rather than on the
+  coefficient. In `2510.22670` the variant that applies field weights to **raw
+  unstandardized documentation** is the one that fluctuates, and its conclusion
+  is that a unified schema is the prerequisite for field weighting at all. A
+  positional slice taken from the first "Use when" in free prose is that
+  variant exactly, and the 0.84x boosted-share asymmetry this seat measured on
+  its own panel is what it costs.
+- What this proposes, and deliberately not a new constant: replace the
+  positional slice with a **declared field** in skill frontmatter, so the boost
+  weights a schema rather than a substring, and only then fit the weight. A
+  1.25x on a positional slice and a 0.695x on a positional slice are the same
+  defect at different magnitudes.
+- Why it is not done in this run: it is an engine change, so it owes a version
+  number, the pre-registered `--invariance` gate and its own before-and-after
+  run, and this file's own policy history says a seat does not change the
+  instrument and the artifact in one commit and call the result a pass. The
+  panel v3 rewrite is already queued ahead of it.
+- Neither id is anywhere in this repository, and the research seat reports the
+  reason is not the sources list, which already carries both categories at tier
+  a. It is the fourteen-day ingest window, whose by-id backfill was built on
+  2026-10-26 for exactly this case and has never run because it needs the
+  credential no seat here has had for eleven runs. Routed to the engineer as one
+  command, and both ids are in `docs/research/reading-queue.md`.
+- Cost: $0 to decide, one engine run to measure.
 - Status: proposed
 
 ### 2026-11-02 — a truncated wake should cut from the front, or carry ids alone (skill seat)

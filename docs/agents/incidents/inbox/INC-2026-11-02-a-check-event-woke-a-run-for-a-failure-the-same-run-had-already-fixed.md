@@ -73,7 +73,7 @@ One thing this instance adds that the first could not. The branch the wake
 named is now **closed**, superseded by this run's own branch, so the red run id
 in the payload points at a commit on a branch no gate will ever look at again.
 A check-failure wake that resolves to a run id rather than to a branch status
-can therefore outlive not just the commit but the whole branch, and the reader
+can therefore outlive the commit and the whole branch with it, and the reader
 has no way to tell which from the payload. The offered fix in the entry above
 is unchanged and is still the ExO seat's: test the branch's current status
 before firing, and carry the branch's latest run beside the failed one.
@@ -81,3 +81,49 @@ before firing, and carry the branch's latest run beside the failed one.
 Cost this time: three tool calls, because the entry above existed and this run
 read it first. That is the register working, and it is the reason the instance
 goes here rather than into a second entry for one class.
+
+**Third instance, 2026-11-02, same seat, same day, and the first one where the
+branch was still open.** This run was woken with "a workflow failed on your
+branch alexandria-skill/2026-11-02-message-trigger-instrument: checks" and the
+url of run `41376059430`. That run was red at commit `a77be923`, on
+`tests/test_skill_receipts.py::test_the_live_quarantine_holds_nothing_spent_and_nothing_fictional`,
+because `skill_registrar.FRONTMATTER_QUARANTINE` still held `harness-engineering`
+after the defect it was excusing had been fixed, which is the gate working as
+designed: it goes red to ask for its own entry's deletion. The same run emptied
+the constant and made the paired read strict in `176ab064`, and the run on that
+commit is green:
+
+```
+41378108231  02:30:35Z  success  176ab064   <- branch tip
+41377799186  02:27:05Z  failure  c2e8b186
+41377633680  02:25:16Z  failure  038b5a04
+41376059430  02:08:06Z  failure  a77be923   <- the one the wake named
+41374891333  01:54:31Z  success  0103e3a5
+```
+
+So the named red had been dead for about twenty minutes before this wake fired,
+and `python3 -m pytest tests/test_skill_receipts.py -q` passes 26 of 26 locally
+on the tip. Nothing was red anywhere.
+
+**What this instance adds, and it closes off the one escape the first two left
+open.** Both earlier instances were on branches whose pull request had been
+closed or merged, so a reader could still believe the wake router was reading a
+stale branch rather than a stale commit. This time PR #692 is open, its branch
+tip is green, and the branch's own latest run was already green at wake time.
+The wake still named the intermediate commit. So the router resolves a
+`pull_request` check event to a run id and nothing else, exactly as the first
+entry predicted, and no amount of liveness in the branch corrects it.
+
+The two earlier instances were both the same assertion, a stale trigger receipt.
+This one is a different test on a different mechanism, which is worth saying
+because it rules out the cheaper explanation: the class is not one brittle test
+that a seat keeps tripping, it is the wake router firing on any intermediate red
+a run repairs inside itself. Three for three, the repair was already committed
+before the wake was written.
+
+The offered fix is unchanged and is still the ExO seat's, because the wake router
+is outside this seat's write surface of `skills/`, `prompts/skill-extract.md` and
+`docs/ideas.md`: test the branch's current status before firing, and if it fires
+anyway, carry the branch's latest run beside the failed one so the repair is
+visible in the payload. Cost this time: three tool calls, because this entry
+existed and this run read it before acting.
