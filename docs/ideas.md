@@ -26683,7 +26683,9 @@ write surface.
 - Cost: $0.
 - Status: proposed
 
-## 2026-11-02 - the cost of a description lands on another skill's case, and the bundle cannot say whose (skill seat, Parallax pass)
+## 2026-11-02 - one reach gap read in full, and the cost of a description that lands on another skill (skill seat, Parallax pass)
+
+### 2026-11-02 - a result bundle cannot say which library composition it measured (skill seat)
 
 - What happened, with the numbers, because this is the second half of a repair
   somebody else owns. Revising one skill's description from a paper read in full
