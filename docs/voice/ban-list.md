@@ -2537,11 +2537,18 @@ gap that the same collision had left empty (incident 25).
     blocks earlier reviews quoted and puts the laws the quoting verdict was not
     about to each one. The opening was quoted on 2026-10-12 for its cadence
     word and the quotation carries this defect in its third sentence.
-    Added 2026-10-14. Enforced the same day at the first-use pass, which now
-    builds its list by frequency before judging anything and runs the existing
+    Added 2026-10-14. Enforced the same day at the first-use pass, which
+    builds its list mechanically before judging anything and runs the existing
     clause requirement down it entry by entry.
+    The anchor moved on 2026-11-02 and the rule it enforces grew rather than
+    changed. The floor of three was the whole list step and is now one of its
+    two passes, because `firstuse --live` measured 30 of 2026-W42's 34 bare
+    terms appearing fewer than three times, so the step that produces the list
+    could reach four of them. The frequency half still exists, still carries
+    this entry, and is quoted below; the visible-terms half is what the floor
+    was hiding.
     ```
-    LANDED prompts/digest.md: "Take every word and short phrase in the finished issue that appears three times or more and is not ordinary English doing an ordinary job."
+    LANDED prompts/digest.md: "Ordinary English doing a technical job is caught by frequency: every word or short phrase appearing three times or more."
     ```
 
 115. The reading list recommends the papers the issue just finished
