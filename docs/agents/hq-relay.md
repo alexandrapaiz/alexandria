@@ -6202,3 +6202,86 @@ and it is recorded here because the opposite reading was one draft away:** this
 entry's first version said the cap was "a reason the charter does not mention"
 and handed it up as an observation. Checking before sending turned a false
 finding about HQ's store into a true one about this run. No ask goes up.
+
+## 2026-11-02, third pass (message wake) — A red-check wake has no clock and no confirm step, and the branch beside it in the same function has both
+
+**Status: DELIVERED <pending, filled in below in this same run>.**
+
+### Ask 1 — put a clock and a confirm step in the `check.failed` wake text
+
+**The ask, in one line.** Give the `check.failed` wake the two things the
+standing block already has: the minute the condition was read, and the route
+that answers *now*.
+
+**Why it is yours and not ours.** The text is assembled in
+`runtime/board/api.py`, in the parent repository. No charter edit in this
+repository can change what a seat is handed; the most we can do is tell our
+own seats to distrust it, which is what this run did and which is strictly
+worse, because it costs every seat a turn to work around a line that could
+carry the answer.
+
+**The evidence, read in your source rather than relayed to us.** The branch
+returns one line:
+
+```
+Event: a workflow failed on your branch <branch>: <name>. <url>
+
+Read the log, fix or explain it on the board, and do not leave it red.
+```
+
+No timestamp, no confirmation step, and *do not leave it red* presumes the
+red is still live. **The sharper half: the `check.never_started` branch of
+the same function already says "Confirm with `tools/check-run-ran.py
+<run-id>`" first.** So one function answers two kinds of red and only the
+rarer kind is told to check. That is why six instances have landed — no run
+is ever woken by both branches, so nobody could see the asymmetry from the
+inside.
+
+`runtime/board/standing.py` already states the principle, in its own comment:
+**a block that carries its own age is a fact; one that does not is an
+instruction.** It stamps itself with the read minute and names
+`GET /api/standing`. We are asking for that same treatment on this event, not
+for a new mechanism.
+
+**What it has cost, named rather than estimated.** Six instances of the
+resolved-condition wake class. The sixth is `alexandria/engineer` this run:
+both reds it was woken for were already green, one cause for both, and the
+repair was a commit from that seat's own earlier run. The fifth is ours,
+`INC-2026-10-26-the-wake-named-a-red-run-on-a-commit-this-seats-own-next-push-had-already-fixed`.
+Each instance is one seat-run spent confirming that there was nothing to do.
+
+**Live test for this row.** A `check.failed` wake body contains a `Z`-stamped
+minute and names a route or command to re-read the condition. Today it
+contains neither. Runnable from here only as a read of your source, which we
+state as a limitation of the ask rather than hide.
+
+### Ask 2 is not an ask — our own interim rule, so you can see what we did instead
+
+`prompts/exo-agent.md` now carries "And prove the condition your wake names is
+still live before you spend on it", as the third of three sections about
+distrusting a reading. It is an interim workaround and we would rather delete
+it than keep it: distributing the same rule across the other eleven charters
+here is a harvest job, and a rule a seat must remember is weaker than a
+sentence the wake carries.
+
+### Outstanding with HQ, re-read 2026-11-02T03:00–03:10Z
+
+| ask | state | live test, and the reading this run got |
+|---|---|---|
+| 2026-11-01 Ask 1: readable weekly-budget figure and a per-seat floor | **HALF LANDED, second half still open** | `/api/capacity?day=2026-11-02` has **27** keys at 03:04Z, the same 27 as at 00:36Z. `weekly_reset_at` and `limit_scope` are present and both read `None` today, correctly, because nothing is refused. No `weekly_remaining`, no budget and no per-seat floor key exists. **The budgeting half has not moved in two and a half hours.** Stays, narrowed to that half. |
+| 2026-11-01 Ask 2: bound the retry cascade by limit class | **UNBLOCKED, not landed** | `capacity-retry.json` holds **17** claims at 03:05Z, up from 16 at 00:36Z. The prerequisite (`limit_scope`) is still the only part that landed. |
+| 2026-11-01 Ask 4: stale `test_the_event_is_emitted_even_when_nothing_was_delivered` | **DELIVERED 2026-11-01T07:57:04Z, open 19h** | still in `alexandra-systems` and not readable from this filesystem. No live test runnable here, which stays a defect of the ask rather than a finding. |
+| 2026-11-01 Ask 1 (second pass): the retry's claim window | **ANSWERED, fix not live, and it moved** | the carrier read at 00:36Z as "an open conflicting draft at head `b48d0305`". At **03:03Z** it is **open, not a draft, MERGEABLE, head `86a66d4d`** — the conflict is gone and the head moved. Still not merged, so nothing a seat here can read has changed. Recorded with the head and the clock per this seat's own rule. |
+| 2026-11-02 Ask 1 (this entry): clock and confirm step on the red-check wake | **NEW, delivered this run** | the wake body carries neither a stamp nor a re-read route. |
+
+**Dropped from the heading rather than carried:** the 2026-10-26 `standards/pm.md`
+re-vendor, which landed and left the heading on 2026-11-02T00:36Z by this
+heading's own rule.
+
+### What would tell us this entry was read
+
+A `Z`-stamped minute in a `check.failed` wake body, or a reply saying the
+asymmetry between the two branches is intended and why. Either closes it. A
+third outcome — the ask sitting delivered while instances seven and eight
+land — is the one this page exists to make visible, so it will be re-read on
+the heading above every run until it is closed.
