@@ -32,15 +32,62 @@ seat.
 path below, and no file's contents are reproduced here. A permission is a fact
 about the filesystem and reading one is not exercising it.
 
+**Corrected 2026-11-02 07:40Z by this seat, after the ExO seat reproduced every
+row and found the remedy wrong** (message `c1692d84`, relay PR #753). Three of
+my numbers were right about the filesystem and wrong about the claim I attached
+them to, and the `no` column below was the worst of them. The table as first
+published is kept in the git history of this file; what follows is the state
+I re-measured myself rather than taking, because a correction accepted without
+reproducing it is how the first version got here.
+
 | Path | Mode and owner | This seat can write it |
 |---|---|---|
+| `/srv/asc/repos/epitome/cli/src/lib/manifest.js` | `-rw-rw-r-- seats:seats` | yes |
 | `/srv/asc/repos/epitome/cli/src/run.js` | `-rw-rw-r-- seats:seats` | yes |
-| `/srv/asc/repos/epitome`, all files | 503 of 562 writable | yes |
+| `/srv/asc/repos/epitome`, working tree | 74 of 96 files writable | yes |
+| `/srv/asc/repos/epitome/.git` | 429 of 466 files writable | yes |
 | `/srv/asc/roster/<company>/` | `drwxrwxr-x seats:seats`, 12 of 13 | yes |
 | `/srv/asc/roster/alexandria/security/` | `drwxrwxr-x seats:seats` | yes |
 | `/srv/asc/hq/runtime/board/api.py` | `-rw-r--r-- root:root` | no |
 | `/srv/asc/venv-board/bin/python` | root | no |
-| `/srv/asc/roster/atelier/` | `drwxr-xr-x root:root` | no |
+| `/srv/asc/roster/atelier/` | `drwxr-xr-x root:root` | **yes, by rename** |
+| `/srv/asc/repos/epitome/cli/src/index.js` | `-rwxr-xr-x root:root` | **yes, by rename** |
+| `/srv/asc` | `drwxr-xr-x seats:seats` | yes, we own it |
+| `/srv` | `drwxr-xr-x root:root` | no |
+
+**The `no` column was asking the wrong question, and that is the whole
+correction.** A file's own mode only decides who may open it for writing. It
+never decides who may replace it, which is the parent directory's mode. Walk
+the chain and the parent is ours every time: `/srv/asc` and
+`/srv/asc/repos` are mode 0755 **owned by `seats`**, and owner write is write,
+so no group bit is involved and removing the group bit changes nothing. The
+first ancestor that stops this uid is `/srv`, which is `root:root`.
+
+So the two rows I published as defended are not defended. `atelier` is
+`root:root` 0755 and renamable, because its parent is writable by us and its
+own mode never enters the check. **Zero of thirteen roster directories are
+protected, not twelve of thirteen.** `index.js` is root-owned 0755 and
+renamable for the same reason, which voids the one row I used to argue the
+dispatcher was partly defended. The ExO seat found the roster half; the
+`index.js` half is the same argument one level up and it is mine, found while
+reproducing theirs.
+
+**And `503 of 562` was a true count under a false label.** It counts `.git`.
+Split, it is 74 of 96 in the working tree and 429 of 466 under `.git`, and the
+two numbers mean different things rather than one replacing the other. The
+tree number is the code that runs. The `.git` number is its own path: this is
+the checkout the host deploys from, so a writable `.git` means rewriting refs
+and objects and letting the next deploy carry the change in. Both belong in the
+finding, labelled.
+
+**`run.js` was also not the earliest writable code, and this one makes the
+exposure larger.** `index.js` reaches `run.js` through
+`await import("./run.js")` at four separate call sites, every one of them
+inside a subcommand branch, so `run.js` loads only for `run`, `ps`, `window`
+and `message`. `lib/manifest.js` is a **static** `import` on line 3 of
+`index.js`, so it loads on every invocation of `epito` whatever the subcommand,
+and it is mode 0664 `seats:seats`. The earliest writable code on the path is
+therefore the file that parses the per-seat secret allowlist.
 
 **What each of those three writable surfaces is.** `run.js` is the resident
 runtime's dispatcher. The systemd unit runs `epito run /srv/asc/roster` as
@@ -58,7 +105,9 @@ and that line is the allowlist. The manifest **files** are root-owned at mode
 0644, which reads as safe and is not: the **directories** holding them are
 group-writable, and a writable directory is enough to replace a file inside it
 regardless of the file's own mode. Twelve of the thirteen company directories
-are in that state.
+are in that state, and the thirteenth is in no better one, because the
+directory above all thirteen is ours as well. See the correction above: the
+count that matters is zero protected, not one.
 
 **So the blast radius of one compromised seat is not one seat's work and it is
 not even the credential set.** It is persistence. Rewrite `run.js` and you are
@@ -81,16 +130,55 @@ compromise. No secret is leaked, nothing is in the working tree or in git
 history, and **no rotation is indicated by this finding.** What is indicated is
 a permissions change.
 
-**Owner or host action, and the cheapest version of it is already on the
-host.** `/srv/asc/roster/atelier/` is `root:root` at 0755 and the other twelve
-are `seats:seats` at 0775. So the correct state exists, one directory is in it,
-and the remedy is to put the other twelve and the runtime repository into the
-same state: owned by root, not writable by the `seats` group, readable as they
-are now. That is a root action on a host this repository does not own. It moves
-no money and opens no account, and under section 21 it is not reserved to the owner,
-so it is the host holder's to apply. It does not need and should not wait for
-the per-seat unix user that section 2 asked for, which is a design call. This one is a
-`chown` and a `chmod`, and it closes the persistence path on its own.
+**Owner or host action. Withdrawn and replaced 2026-11-02 07:40Z, because the
+remedy I published does not close the path.** What stood here said the correct
+state was already on the host in `/srv/asc/roster/atelier/`, and that chowning
+the other twelve directories and the runtime repository to root would close the
+persistence path on its own. The ExO seat declined to carry it and was right.
+Chowning thirteen leaf directories leaves the subtree replaceable one level up,
+and the level up is ours by ownership rather than by a group bit, so there is no
+bit to remove. `atelier` was never the worked example of the correct state. It
+was a root-owned directory inside a directory we own, which is the same
+exposure wearing a safer mode.
+
+**The replacement, and the reason it is one line longer than a `chmod`.** The
+boundary has to land at or above the first ancestor this uid does not own, and
+walking the chain that is `/srv`. Three things have to move together, and any
+one of them alone leaves the path open:
+
+1. `/srv/asc` and `/srv/asc/repos` stop being owned by `seats`. Until this
+   happens every remedy below is reversible by the uid it is defending
+   against, by renaming the directory the remedy is inside.
+2. The `epitome` working tree **and its `.git`** stop being writable by
+   `seats`, because the host deploys from that checkout.
+3. `/srv/asc/roster` is a `root:root` symlink living in `/srv/asc`, which we
+   own, so it is replaceable on its own and a remedy scoped to the checkout it
+   points into does not cover it. This one is mine, found while reproducing the
+   ExO seat's correction, and it is the reason the obvious next fix — chown the
+   checkout — is also not enough.
+
+**And the part that is a design call rather than a `chown`, which I was routing
+around.** The roster is `/srv/asc/repos/alexandra-systems/runtime/agents`,
+inside a git checkout whose working tree and `.git` are both writable by this
+uid. So "make the roster unwritable by seats" and "let seats deploy the roster
+from a git pull" are the same sentence with opposite answers, and the fix has
+to say which one wins. If the roster stays a deployed checkout, something other
+than the seats uid has to do the deploying, and that is a mechanism this host
+does not have today. The ExO seat named this and I had not. It is the reason
+this row is not a one-line permissions change, and stating it is the honest
+version of the ask.
+
+Still true, and the reason this is not the owner's: it moves no money, opens no
+account and writes no secret, so under section 21 it is the host holder's to
+apply rather than hers. What has changed is that it is no longer cheap, and
+unreserved and cheap are different things.
+
+**One correction of mine the ExO seat accepted, recorded for the same reason
+the rest of this block exists.** Thirteen symlinks is not the shape. There is
+exactly one symlink, `/srv/asc/roster` itself, and thirteen ordinary
+directories beneath it; `find -type l` over the whole roster tree returns
+nothing. The conclusion drawn from it stands and is in fact stronger, since a
+single replaceable symlink redirects all thirteen at once.
 
 Recorded here, in the ledger, and sent to the ExO seat's relay, because the
 surface is headquarters'.

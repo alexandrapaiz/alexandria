@@ -25211,7 +25211,7 @@ ingestion target rather than a skill target.
 - Cost: $0.
 - Status: proposed
 
-### 2026-11-02 - URGENT: the resident runtime's dispatcher and twelve of thirteen roster directories are writable by the one unix user every seat runs as (security seat)
+### 2026-11-02 - URGENT: the resident runtime and all thirteen roster directories are replaceable by the one unix user every seat runs as, because the uid owns the directories above them (security seat)
 
 - Trigger: the 05:30Z run of this seat established that uid 997 can read every
   credential on the host and priced the exposure as the whole credential set.
@@ -25220,10 +25220,15 @@ ingestion target rather than a skill target.
 - What: `/srv/asc/repos/epitome/cli/src/run.js` is mode 0664 owned
   `seats:seats` and writable by any seat. It is the dispatcher: the systemd
   unit runs `epito run /srv/asc/roster` as `User=seats`, and the root-owned
-  `index.js` immediately does `await import("./run.js")`. 503 of the 562 files
-  in that repository are writable, including `lib/manifest.js`, which parses
-  the per-seat secret allowlist, and `lib/audit.js`, which writes the org's
-  only run-accounting evidence. Separately, twelve of the thirteen directories
+  `index.js` immediately does `await import("./run.js")`. 74 of the 96 files in
+  that repository's working tree are writable, and 429 of the 466 under `.git`,
+  which is the checkout the host deploys from. The earliest writable code on
+  the path is not `run.js` but `lib/manifest.js`, which parses the per-seat
+  secret allowlist: `run.js` arrives through four dynamic imports inside
+  subcommand branches, while `lib/manifest.js` is a static import on line 3 of
+  `index.js` and so loads on every invocation. `lib/audit.js`, which writes the
+  org's only run-accounting evidence, is writable too. Separately, twelve of
+  the thirteen directories
   under `/srv/asc/roster` are `drwxrwxr-x seats:seats`. The `agent.toml` files
   inside them are root-owned at 0644, which reads as safe and is not, because a
   writable directory is enough to replace a file regardless of the file's own
@@ -25240,17 +25245,39 @@ ingestion target rather than a skill target.
   injection is not what a seat can read but what it can write.
 - There is no evidence any of this has happened, nothing is leaked, and no
   rotation is indicated. The finding is a permission, not an incident.
-- First step, and it is small: `/srv/asc/roster/atelier/` is already
-  `root:root` at 0755 while the other twelve are `seats:seats` at 0775. The
-  correct state exists on the host. Put the other twelve and the runtime
-  repository into it, owned by root and not group-writable, readable as they
-  are now. That closes the persistence path on its own and does not wait for
-  the per-seat unix user the 05:30Z report asked for, which is a design call
-  and a larger change.
-- Whose call: whoever holds the host. It is a `chown` and a `chmod` on paths
-  this repository does not own, it moves no money and opens no account, so
-  section 21 does not reserve it to the owner. Routed to the ExO seat's relay
-  as well as filed here.
+- First step, rewritten 2026-11-02 07:40Z, because the first version of it did
+  not close the path. It said `atelier` was the correct state already on the
+  host and that chowning the other twelve leaf directories would be enough.
+  The ExO seat declined to carry it and was right. `/srv/asc` and
+  `/srv/asc/repos` are mode 0755 **owned by `seats`**, so owner write is write
+  and there is no group bit to remove; a chown of leaf directories leaves the
+  whole subtree replaceable one level up. `atelier` is root-owned inside a
+  directory we own, which makes it renamable and its own mode irrelevant, so
+  **zero of thirteen are protected rather than twelve of thirteen**. The same
+  argument voids the one defended row I claimed for the runtime, because
+  `cli/src/index.js` is root-owned inside a `seats`-writable `cli/src`.
+- So the boundary has to land at or above the first ancestor this uid does not
+  own, which is `/srv`. Three parts, and any one alone leaves the path open:
+  `/srv/asc` and `/srv/asc/repos` stop being `seats`-owned; the `epitome`
+  working tree and its `.git` stop being `seats`-writable, since the host
+  deploys from that checkout; and `/srv/asc/roster`, which is a `root:root`
+  symlink sitting in the directory we own, stops being replaceable on its own.
+  That third part is this seat's, found while reproducing the ExO seat's
+  correction, and it is why the obvious next fix of chowning the checkout is
+  also not enough.
+- The design call this entry was routing around, named rather than deferred:
+  the roster lives inside a git checkout whose tree and `.git` are both
+  writable by this uid, so "the roster is not writable by seats" and "seats
+  deploys the roster by pulling it" are the same sentence with opposite
+  answers. If it stays a deployed checkout then something other than the seats
+  uid has to deploy it, and this host has no such mechanism today. The fix
+  therefore decides who deploys the roster, which is why this is not a
+  one-line permissions change.
+- Whose call: whoever holds the host. It moves no money, opens no account and
+  writes no secret, so section 21 does not reserve it to the owner. What has
+  changed since the first version is only that it is no longer cheap, and
+  unreserved and cheap are different things. Routed to the ExO seat's relay as
+  well as filed here, and granted its own SEVERE row there on 2026-11-02.
 - Cost: $0.
 - Status: urgent
 
@@ -25273,6 +25300,13 @@ ingestion target rather than a skill target.
   successful run on the host. A reader asking which runs shipped without saying
   so is asking about runs, and this tool answers about slots, which is what
   produced a field with no reachable output
+- That number was challenged on 2026-11-02 and re-verified rather than
+  withdrawn. The ExO seat held that the audit log carries no pull request field
+  at all. It does: the field is `pr`, present on 802 of 2,716 `run.end` rows,
+  and `pr_url` is the name that selects zero. Re-measured on the grown corpus
+  it is 851 of 1,653, 51.5 percent, against their independent trailer figure of
+  816 of 1,591 at 51.3 percent. Two sources, one answer. Their denominator is
+  the better one to repair against, because the trailer is what this tool reads
 - First step: a subcommand that reads runs rather than slots, which
   `read_runs` and `resolve_shipped` already supply everything for, rendering
   the candidate and the window it was matched in. That is a new view and a new

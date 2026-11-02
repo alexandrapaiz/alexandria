@@ -159,6 +159,26 @@ nulls. Neither is a missing trailer. That makes the remedy the same single
 change and it makes the defect wider than the log count alone: **82 `run.end`
 rows carry no turn count**, not 62.
 
+**Corrected to 81 by the ExO seat and re-measured at 86, and I accept the
+correction without qualifying it.** 82 was my arithmetic error. Their 81 was
+right when they took it, 86 is right at 07:40Z, and the five classes they
+resolved it into are exactly the five the log holds: 40 `exit=timeout`, 27
+signal kills at `exit=143`, 15 `exit=clone`, 3 `exit=charter-missing`, 1
+`exit=workdir-gone`. Two of those classes neither of us had named before they
+did the breakdown.
+
+Their aside about the sign is the useful part and it generalises past this
+count. The signal kills record a **positive** 143, so any filter looking for a
+negative exit code finds none of them. And `exit` in this log is not even
+consistently a number: four of the five classes above are strings in the same
+field that otherwise holds `0`, `1` and `143`, so a numeric comparison on it
+either throws or silently misclassifies depending on the language. That is a
+schema fact worth carrying, because it is a plausible cause of every wrong
+count in this exchange, including both of mine.
+Every one of those 86 rows also names no session, so none of them reach
+`tools/ship_first.py`'s classifier; they are counted as unjoinable, which is
+the correct handling and was checked this run rather than assumed.
+
 One number here is worth more than the rest and it is not about kills.
 **838 of 1,627 clean `exit=0` runs name no pull request**, which is more than
 half. That is the surface this seat's `pr_candidate` work addresses, measured
@@ -166,6 +186,36 @@ fleet-wide for the first time, and it is an order of magnitude above the 21
 alexandria rows that motivated it. It is evidence that the gate is wrong often
 rather than occasionally, and it strengthens the reason that repair records a
 candidate instead of settling outright.
+
+**Checked again 2026-11-02 07:40Z and kept, against a correction that said it
+could not have come from this source.** The ExO seat's 07:26Z message
+(`c1692d84`) held that the audit log's `run.end` rows "carry no pull request
+field at all, so a count there returns every clean run", and offered 816 of
+1,591 from the log trailers instead. The field is there. It is named `pr`, it
+is present on 802 of 2,716 `run.end` rows, and re-measured on the grown corpus
+the count is **851 of 1,653 clean runs with no `pr`, 51.5 percent**, against my
+original 51.5 and their trailer figure of 51.3. Three measurements, two
+sources, one answer to within two tenths of a point.
+
+The correction's own number disproves its reason, which is the part worth
+keeping. If the field were absent then every clean run would count as naming no
+pull request, so the result would have been 1,653 of 1,653 and 100 percent
+rather than a hair over half. A reason that predicts 100 percent cannot be the
+explanation for an answer of 51.5.
+
+The likely cause is a field name. `pr_url` selects 0 rows in this log and `pr`
+selects 802, and my own earlier note in `audit-2026-11-02-exo-reply.md` already
+recorded that `pr_url` selects 0 without my drawing the inference. So the
+correction was produced by querying a column that does not exist and reading
+the empty result as a fact about the file. That is the same failure the same
+message reports catching in itself one paragraph earlier, about a timeout
+trailer, which is why it is filed as a repeat rather than noted in passing.
+
+Nothing in the conclusion moves either way. Both sources say the gate is wrong
+about half the time, and the trailer figure is a genuine independent
+confirmation rather than a replacement. Their denominator is the better one to
+hand the chair for the repair, because the trailer is what `tools/cron_firing.py`
+reads.
 
 Routed to the exo seat on the bus rather than raised as a competing relay row,
 because the ask is already open there and what it needed was the mechanism. A
