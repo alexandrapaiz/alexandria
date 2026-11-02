@@ -17,6 +17,7 @@ it, which is the shape of a message a seat actually sends, and
 `test_the_regular_fixture_hides_it` pins the reason the defect was invisible
 rather than leaving it in prose.
 """
+import json
 import subprocess
 import sys
 import unittest
@@ -151,3 +152,29 @@ class TheReportHoldsTogether(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TheReportIsAStreamSomethingCanParse(unittest.TestCase):
+    """`--json` printed the report and the verdict prose on one stream for one
+    run of this tool, and a parse of the result died with "Extra data" at the
+    byte where the object ended. The verdict is on stderr now.
+
+    This is `alexandra-systems/exo-centralizer`'s finding of 2026-11-02 in
+    another costume: a helper returning either a path or a sentence about the
+    path, with no way for the caller to tell which. A channel carrying both a
+    value and prose about the value has to mark which, and the cheapest mark is
+    a different channel.
+    """
+
+    def test_json_output_parses_on_its_own(self):
+        messages = [{"from_company": "a", "from_seat": "pm", "kind": "done", "subject": "s",
+                     "body": long_paragraph(130) + "\n\n" + long_paragraph(400)}]
+        report = wake_budget.measure(messages, LIMIT)
+        self.assertGreater(report["unused_mean"], 25, "this fixture must trip the failing branch")
+        self.assertEqual(json.loads(json.dumps(report))["over_limit"], 1)
+
+    def test_the_verdict_does_not_go_to_stdout(self):
+        source = (ROOT / "tools" / "wake_budget.py").read_text()
+        verdict = source[source.index("def verdict("):source.index('if __name__')]
+        self.assertIn("file=sys.stderr", verdict)
+        self.assertNotIn('print("\\nFAIL', verdict)

@@ -217,16 +217,27 @@ def main() -> int:
                   f"  of {row['body_chars']:>5}  {row['from']:<28} {row['kind'] or '':<8}"
                   f" {row['subject']}")
 
+    # The verdict goes to stderr, so that `--json` is a stream a consumer can
+    # parse. It did not, for one run: the report and this prose shared stdout,
+    # and `json.load` on the result died with "Extra data" at the byte where
+    # the object ended. That is the shape `alexandra-systems/exo-centralizer`
+    # handed this seat an hour earlier -- a helper returning either a path or a
+    # sentence about the path, with no way for the caller to tell which -- so
+    # the rule is the same one: a channel that carries both must mark which,
+    # and the cheapest mark is a different channel.
+    def verdict(line: str) -> None:
+        print(line, file=sys.stderr)
+
     if report["mid_word_under_repair"]:
-        print("\nFAIL: the repair would cut mid-word, which voids the whole argument for it.")
+        verdict("FAIL: the repair would cut mid-word, which voids the whole argument for it.")
         return 1
     if report["unused_mean"] > args.tolerate:
-        print(f"\nFAIL: {report['unused_mean']:.0f} characters of the budget are going unused on average,"
-              f" over a tolerance of {args.tolerate}.")
-        print("The fix is one expression in wake_body, in alexandra-systems, and the ask is on"
-              " docs/agents/hq-relay.md.")
+        verdict(f"FAIL: {report['unused_mean']:.0f} characters of the budget are going unused on"
+                f" average, over a tolerance of {args.tolerate}.")
+        verdict("The fix is one expression in wake_body, in alexandra-systems, and the ask is on"
+                " docs/agents/hq-relay.md.")
         return 1
-    print("\nOK")
+    verdict("OK")
     return 0
 
 
