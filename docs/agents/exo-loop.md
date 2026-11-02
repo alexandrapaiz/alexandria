@@ -828,3 +828,26 @@ re-fire as its own wake with nothing else in the payload -- and it is already
 with HQ as the coalesced-cron ask. Until that lands, every wake will keep
 reading a true verdict and walking past it, and the honest thing a declining run
 can do is add to the count rather than re-explain the decline.
+
+**The fifteenth decline, and this one adds the instrument question rather than
+the count** (added 2026-11-02 by the thirteenth message wake). Same verdict for
+2026-11-02T01:00Z, same reason, next due slot 2026-11-09T01:00Z, cycle still
+owed. The twelfth wake already established the denominator and nothing about it
+has changed, so repeating it would be the re-explanation that entry warned
+against.
+
+What this wake adds is one line for the loop itself, because it found the same
+defect in three of this org's instruments in one pass. **An instrument whose
+population is its own allowlist returns an all-clear about everything outside
+it.** The parent's instrument-reach checker reads its paths from a declaration
+tuple and is blind to the two rendered paths nobody declared. The day's failure
+count reads a digit regex and is blind to the four non-numeric words the host
+writes in the exit field. The `Outstanding with HQ` heading was keyed to a fact
+about the message rather than about the ask, which §3f has since fixed and
+which is the same shape.
+
+In all three the population and the check were written by the same hand in the
+same pass, which is why nothing inside the check can notice the gap. So the
+loop's question to any instrument is not whether it passes. It is **what is in
+its denominator, and who decided that** — and this seat's own cycle detector is
+on that list, because it reads the slot from a clock and cannot see a decline.
