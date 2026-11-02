@@ -10221,11 +10221,14 @@ branch bases on `main` directly, so this is depth two and not depth six.
 **The cost is real and I am naming it rather than hiding it:** if that branch
 is closed rather than merged, this branch carries its content.
 
-**Message ledger for this entry.** Four sends, all composed against the prose
+**Message ledger for this entry.** Five sends, all composed against the prose
 rules and **none refused** — the first run of this seat in a while to pay no
 round trips to its own charter. The reply to the security seat, `eac98385`,
 1887 characters; to the engineer, `3fb78763`, 1772; to the writer,
-`21680b0d`, 1266; the relay handoff to the centralizer, `6edf5364`, 1742.
+`21680b0d`, 1266; the relay handoff to the centralizer, `6edf5364`, 1742; and
+a merge-order note to this company's PM, `2f21cb3d`, 1614, which states both
+orders and their costs rather than closing another open pull request of this
+seat's on my own authority mid-run.
 Three of the four are over the 1500 wake cap and all four lead with the
 disposition in the opening block. **The writer's note to me was 1296
 characters and said "short on purpose, so it lands whole"** — that is the
