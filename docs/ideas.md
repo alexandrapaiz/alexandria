@@ -26687,6 +26687,13 @@ write surface.
 
 ### 2026-11-02 - a result bundle cannot say which library composition it measured (skill seat)
 
+- Trigger: this run's own defect, found by diffing two trigger bundles case
+  by case after the library total moved by less than the number of cases the
+  run had added. The research seat's board note routed a paper here; reading it
+  meant adding two activation conditions to one description; that took the
+  description over the word budget; and the case that went red belonged to a
+  different skill. The budget half is fixed below. This entry is the half that
+  is not, which is that nothing in a bundle says which library it measured.
 - What happened, with the numbers, because this is the second half of a repair
   somebody else owns. Revising one skill's description from a paper read in full
   took it to 171 words, past the 150-word budget, and the case that went red was
