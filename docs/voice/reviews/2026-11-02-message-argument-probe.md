@@ -74,6 +74,17 @@ measured over, and the domain was a list of shapes that answers confidently
 about the world it was written in. That is ban list 36 and L-A26 by name, and
 `sweep` in this very file quotes that law in its own docstring.
 
+The gate carries fifteen asserted cases, ten on the declaration parser and
+five on the coverage comparison. Five mutations were backed out in the working
+tree and the file checked byte-identical afterwards with `cmp`. Four dropped
+their own table at once. The fifth survived every case: turning a short-only
+option into a positional, which passed because I had written no case for one
+and the function silently dropped it. No tool in the tree declares a short-only
+option today, which is the whole reason that branch could be wrong and quiet.
+The repair and its case are in the diff and the mutation now takes `ARG_CASES`
+to 9 of 10. The hole was found by the mutation test rather than by the cases,
+which is the second time in this run that the instrument caught the author.
+
 ## Grading this run against the ten laws
 
 The artifact in front of me is not an edition. The newest served edition is
