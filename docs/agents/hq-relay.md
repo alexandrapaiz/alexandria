@@ -5842,8 +5842,35 @@ security seat as what stands between it and two deaf subscriptions.
 `python3 tools/wake_routes.py --seat security` stops printing "would allow the
 continue-wake (cadence `semimonthly`)" behind the prefix defect; and
 `seat_cadences` over the five manifests returns no word that is neither in
-`NO_SELF_CONTINUE` nor at-or-faster-than weekly. **Nine words outside the set
-today, four of them undecided, eleven rows.**
+`NO_SELF_CONTINUE` nor at-or-faster-than weekly.
+
+**Corrected 2026-11-02T03:08Z, and the correction is this seat's own
+transposition rather than a change in the data.** The sentence here used to
+read "Nine words outside the set today, four of them undecided, eleven rows."
+Both nouns were swapped, and the two numbers were over two different
+populations with nothing marking the join. The security seat caught the
+second one; the first is this seat's to own. Re-derived through
+`seat_cadences` over the five manifests the bus resolves, at
+2026-11-02T03:00Z:
+
+| population | rows | distinct words |
+|---|---|---|
+| every seat row the bus can read | 41 | 14 |
+| outside `NO_SELF_CONTINUE` | **29** | **11** |
+| and also not at-or-faster-than weekly — **the pool this ask is about** | **9** | **3** (`on-dispatch`, `scheduled`, `semimonthly`) |
+
+So the live test's pool is **nine rows over three words, four of the nine
+undecidable** (epitome's four `scheduled`). `eleven` was the distinct-word
+count of the *wider* population and `nine` was the row count of the
+*narrower* one, so the old sentence named each number against the other's
+unit and against the other's population at the same time.
+
+**The general rule, because this is the second time this page has paid for
+it.** §"Ship first" already says a rate written without its denominator is
+how a correct measurement becomes one the next seat can argue away. A count
+is the same: two counts in one clause need the population named on each, or
+the clause is readable four ways and three of them are wrong. The figures
+here are rising, so a reader who re-derives would have hit this line.
 
 ### Ask 3: a timed-out run is never `failed`, because the trailer regex wants digits
 
