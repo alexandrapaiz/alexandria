@@ -114,9 +114,24 @@ ORDER = ['lost', 'empty', 'late', 'shipped', 'refused', 'unreadable', 'unseen']
 
 
 def audit_rows(path=AUDIT):
-    """Every `run.end` row that names a session, keyed by session id. A row
-    with no session cannot be joined to a transcript and is counted, not used."""
-    rows, sessionless = {}, 0
+    """Every `run.end` row that names a session, keyed by session id. A row that
+    cannot be joined to a transcript is counted, not used, and the returned
+    `unjoined` dict is the whole account of those.
+
+    Two ways a row goes unjoined, and only the first was ever counted. A row
+    with no session has nothing to key on: the host writes one when it kills a
+    run before a session exists, so `exit=timeout`, `exit=clone` and the
+    signal kills all land here with no `turns` either.
+
+    The second is a session id that two rows share, which `rows[...] = d` used
+    to resolve by keeping whichever came last. `classify` has always known this
+    case exists and calls it `unreadable`, but it only ever saw the survivor,
+    so the rows underneath it were neither used nor counted and the report's
+    arithmetic did not close against the log. On 2026-11-02 that was 13 rows
+    across 9 session ids, every one of them a resumed `pm` run, and the
+    overwrite kept the 2-turn continuation over the 16-turn run beneath it.
+    Counting them does not make them joinable, it makes them visible."""
+    rows, unjoined = {}, {'sessionless': 0, 'superseded': 0}
     with open(path) as fh:
         for line in fh:
             try:
@@ -126,10 +141,12 @@ def audit_rows(path=AUDIT):
             if d.get('action') != 'run.end':
                 continue
             if d.get('session'):
+                if d['session'] in rows:
+                    unjoined['superseded'] += 1
                 rows[d['session']] = d
             else:
-                sessionless += 1
-    return rows, sessionless
+                unjoined['sessionless'] += 1
+    return rows, unjoined
 
 
 def read_transcript(path):
@@ -195,7 +212,7 @@ def classify(row, turns_seen, push, deadline):
 def collect(deadline=DEADLINE, projects=PROJECTS, audit=AUDIT):
     """One record per run the two surfaces agree exists, plus the ones only one
     of them knows about."""
-    rows, sessionless = audit_rows(audit)
+    rows, unjoined = audit_rows(audit)
     seen, out = set(), []
     for path in sorted(glob.glob(os.path.join(projects, '*', '*.jsonl'))):
         session = os.path.basename(path)[:-len('.jsonl')]
@@ -232,7 +249,7 @@ def collect(deadline=DEADLINE, projects=PROJECTS, audit=AUDIT):
                         exit=row.get('exit'), turns=row.get('turns'), push=None, pr=None,
                         state='unseen', why='an audit row whose transcript is not on this'
                         ' filesystem, so no turn can be read for it'))
-    return out, sessionless
+    return out, unjoined
 
 
 def _agent_of_dir(path):
@@ -282,7 +299,7 @@ def main(argv=None):
     ap.add_argument('--json', action='store_true')
     args = ap.parse_args(argv)
 
-    records, sessionless = collect(args.deadline, args.projects, args.audit)
+    records, unjoined = collect(args.deadline, args.projects, args.audit)
 
     if args.session:
         records = [r for r in records if r['session'] == args.session]
@@ -294,11 +311,12 @@ def main(argv=None):
                    if (r['agent'] or '').startswith(args.company + '-')]
 
     if args.json:
-        json.dump(dict(deadline=args.deadline, sessionless=sessionless,
+        json.dump(dict(deadline=args.deadline, sessionless=unjoined['sessionless'],
+                       superseded=unjoined['superseded'],
                        records=records), sys.stdout, indent=2, sort_keys=True)
         print()
     else:
-        report(records, args.deadline, sessionless)
+        report(records, args.deadline, unjoined)
         if args.self_check:
             print()
             self_check(records)
@@ -306,7 +324,7 @@ def main(argv=None):
     return 1 if any(r['state'] == 'lost' for r in records) else 0
 
 
-def report(records, deadline, sessionless):
+def report(records, deadline, unjoined):
     if not records:
         print('No run matched. Nothing is claimed about runs this command did not select.')
         return
@@ -318,9 +336,12 @@ def report(records, deadline, sessionless):
         if counts[state]:
             print('  %-11s %4d  %5.1f%%' % (state, counts[state],
                                             100.0 * counts[state] / len(records)))
-    if sessionless:
+    if unjoined['sessionless']:
         print('\n  %d `run.end` rows name no session and cannot be joined to a transcript.'
-              % sessionless)
+              % unjoined['sessionless'])
+    if unjoined['superseded']:
+        print('  %d more share a session id with a later row, which is the only one'
+              ' above.' % unjoined['superseded'])
 
     pushed = sorted(r['push'] for r in records if r.get('push'))
     if pushed:
