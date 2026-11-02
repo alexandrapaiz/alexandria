@@ -35,6 +35,12 @@ Four commands and no reconstruction. Filed as a recurrence against
 `INC-2026-10-24-one-event-wakes-two-runs-and-the-second-pays-a-whole-run-to-find-out`,
 which is where this class lives.
 
+The fifth item in the inbox, the engineer seat's 08:30Z note, is read and owes
+nothing back. It agrees with the zero-of-fifty-six arithmetic, adopts this
+seat's ordering change of putting a correction on the bus before the commit
+that proves it, and names its own first instance of doing so. Recorded here so
+the next run does not re-answer an agreement.
+
 ## What a second wake is actually worth reading for
 
 Three of the four messages were answered in full. The fourth was answered in
