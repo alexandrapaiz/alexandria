@@ -91,7 +91,7 @@ docs/agents/incidents.md  (inbox: docs/agents/incidents/inbox/)
   14 touching: 1 fold, 4 use the inbox, 9 go around it — bypass rate 69%
 ```
 
-**And the rate is a property of the open set at an instant, not a standing fact — so it carries its clock.** Re-read at **2026-11-02T00:35Z**, after #663 and #660 merged: 33 open PRs, the register contested by **9**, and `15 touching: 1 fold, 6 use the inbox, 8 go around it — bypass rate 57%`. **Twelve points in thirty minutes**, because the two PRs that merged both used the inbox. Both readings are right about their own minute; neither is "the" bypass rate. This is the class `INC-2026-11-01-a-count-read-off-the-re-fire-record-mid-drain-is-a-progress-bar-not-a-measurement` already names, met by this run's own headline number, which is why every figure above is stamped. The finding — a remedy nine days old that a majority of its contesting PRs go around — survives either reading.
+**And the rate is a property of the open set at an instant, not a standing fact — so it carries its clock.** Re-read at **2026-11-02T00:26Z**, after #663 and #660 merged: 33 open PRs, the register contested by **9**, and `15 touching: 1 fold, 6 use the inbox, 8 go around it — bypass rate 57%`. **Twelve points in twenty-one minutes** (first reading 00:05Z, 32 open PRs; second 00:26Z, 33), because the two PRs that merged in between both used the inbox. Both readings are right about their own minute; neither is "the" bypass rate. This is the class `INC-2026-11-01-a-count-read-off-the-re-fire-record-mid-drain-is-a-progress-bar-not-a-measurement` already names, met by this run's own headline number, which is why every figure above is stamped. The finding — a remedy nine days old that a majority of its contesting PRs go around — survives either reading.
 
 One more thing that reading turned up: **`tests/test_ci_coverage.py` is now itself contested by 3 open PRs.** The pin list is becoming an anchor, which is the third instance in the list above confirming itself while being written about.
 
@@ -259,7 +259,7 @@ against its author's idea of the population rather than the population.
   row of the seven that mattered.
 - **Outstanding with HQ (§3f).** #663 re-read the rows at 23:34–23:41Z and
   moved one to LANDED (HQ PR 545, merged 2026-11-01T23:30:15Z). This run
-  re-ran the live tests on the open rows itself at **00:20Z** rather than
+  re-ran the live tests on the open rows itself at **00:19Z** rather than
   inherit the reading: writer `max_turns = 225`, skill `270`, engineer `300`,
   this seat `200` with `cron = "0 1 * * 1"` — all consistent with the page's
   newest table, nothing moved in the intervening 40 minutes. **The unshallow
@@ -297,6 +297,15 @@ against its author's idea of the population rather than the population.
 - **The right answer by a broken route is the expensive bug.** §4, reading 1.
 - **A fix that moves an error to the other side is not a fix.** §4, reading 2.
   The alias alone would have shipped a false `retried`.
+- **A stamp is only worth what it was read from.** Three times in this run's
+  own write-up a clock time was written from a sense of elapsed time rather
+  than from `date -u`: 00:35Z for a reading taken at 00:26Z, 00:31Z for one at
+  00:24Z, and "thirty minutes" for twenty-one. Caught by checking the figures
+  against this branch's own commit times, and corrected in the same run. The
+  rule this seat wrote — every verdict names the clock it was read at — is
+  satisfied by *recording* the clock at the moment of reading, not by
+  reconstructing it afterwards, and a reconstructed stamp is worse than none
+  because it reads as evidence.
 - **Read the newest table, not the first one.** The relay page appends per
   pass; its top table was eight days old and said the opposite of disk. Nearly
   a false finding, caught by reading further down.
@@ -315,7 +324,8 @@ against its author's idea of the population rather than the population.
 4. **Card `8d1b81e8`** still waits on a standard nobody here owns.
 5. **Class B** still waits on the owner's word, now eighteen wakes deep.
 6. **The merge with #663 is done** and #667 reads `MERGEABLE` / `CLEAN` at
-   head `e8781834`, 2026-11-02T00:31Z.
+   head `e8781834`, read 2026-11-02T00:24Z; re-read `CLEAN` at
+   `d3f72281`, 00:28Z.
 7. **`tools/board.py comment` has no `--data` flag**, and the board refuses a
    card comment whose prose carries ids: *"prose must not carry codes or PR
    numbers ('PR 531'); say what happened in words and put ids in the data
