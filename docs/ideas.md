@@ -25780,3 +25780,84 @@ ingestion target rather than a skill target.
   rewording being wrong.
 - Cost: $0
 - Status: proposed
+
+### 2026-11-02 - Derive a gate's domain or declare it, because a hand-written domain is the only part of a ratchet nothing checks
+- Trigger: two seats shipped a ratchet for the confident-zero class within one
+  hour on 2026-11-02, and both gave their ratchet a hand-written domain. The
+  engineer seat's probe was a list of three tools and the incident behind it
+  said in its own last paragraph that such a list cannot tell a tool that
+  refuses from a tool nobody looked at. The skill seat's `GATES` was a list of
+  five and it reported the same sentence about its own file independently. A
+  shape two seats reach separately in one hour is a shape, not a coincidence.
+- What: every gate in this repository that iterates over a set should either
+  derive that set from the tree or declare it with a reason per member, and
+  nothing in between. `tools/target_census.py` is one instance of the pattern
+  and `pipeline/` is the obvious next directory, since the census is scoped to
+  `tools/` and the press has its own flags. The generalisation worth having is
+  a single shared helper, so a gate that wants to say it passed has to name
+  both its denominator and where the denominator came from. There are 45 tools
+  under `tools/` and a smaller number of gates under `pipeline/`, so the work
+  is one directory at a time rather than one sweep.
+- First step: run the same `ast` derivation over `pipeline/` and report how
+  many flags there need a judgment, before writing any declaration for them.
+  The number decides whether this is one run or three.
+- Cost: $0
+- Status: proposed
+
+### 2026-11-02 - An ordering a merge can change is a defect class, not one bug, and nothing in this repository looks for it
+- Trigger: the research seat measured `pipeline/reading_queue.py` serving a
+  different reading order for identical content depending on which line a merge
+  had put on top, and that repair shipped today. The mechanism generalises past
+  the file: it was deduplicate-then-classify, and any pass that collapses a
+  collection and then decides something about the survivor has the same
+  property. The reading queue was found because a seat with a stake in the
+  order went looking. Nothing else is looked at.
+- What: a check that finds the shape rather than the instance. The signature is
+  a loop that adds to a `seen` set and then branches on the surviving element,
+  which `ast` can find: a `set.add` or a membership guard in the same loop body
+  as a branch whose outcome is appended to one of two lists. The candidates it
+  returns are then read by hand, since not every instance is a defect. What
+  makes this worth building rather than greppable is that the defect is silent
+  by construction, because both orders are correct-looking output and the file
+  that decides the order has more than one writer.
+- First step: write the `ast` matcher, run it over `pipeline/` and `tools/`,
+  and report the candidate count with each site's file and line. Fix nothing in
+  the same run, because the hand reading is the expensive half and a count is
+  what decides whether it is worth a day.
+- Cost: $0
+- Status: proposed
+
+### 2026-11-02 - Craft scan: Dependabot's ecosystem list is declared in one file and its absence is a failure, which is the same answer this run reached from the other end
+- Trigger: today's build spent its second half turning a hand list of three into
+  a derived census of 248, so the honest comparison is a product that already
+  made the same choice about the same kind of list.
+- What: a scan of Dependabot's configuration model against the census this run
+  shipped, with one thing worth stealing and one thing alexandria does better.
+- The product: GitHub's Dependabot, specifically the `dependabot.yml`
+  contract rather than the alerts around it. Every ecosystem it scans is a
+  declared block, and a repository with a manifest in a directory no block
+  covers produces a surfaced gap rather than a silent pass. The scan does not
+  guess which directories matter, and it does not go quiet when it finds none.
+- One thing worth stealing, and this run stole half of it. The half taken is the
+  declaration: a member of the scanned set is either declared or the run fails,
+  which is what `DECLARED` and `--check` do here. The half not taken is where
+  the declaration lives. Dependabot's is in the repository root where a reader
+  looking for "what gets scanned" finds it, and alexandria's is inside the tool
+  that reads it. A reviewer who wants to know which flags in this tree name a
+  target has to open `tools/target_census.py` and scroll past the docstring.
+  Moving it to a data file beside `sources.yaml` is the step this scan suggests
+  and this run did not take, because the judgment and the code that enforces it
+  going stale together is worth more on day one than discoverability is.
+- Where alexandria is better. Dependabot's gap report tells a reader that a
+  directory is uncovered and nothing about why it might be reasonable. Each
+  entry here carries the reason, and ten of the twenty-two roster flags carry
+  the reason they cannot be probed offline rather than being quietly absent
+  from the probe. That is the difference between a domain with holes in it and
+  a domain whose holes are themselves reviewable, and it is what let this run
+  report "0 unprobed, 10 declared unprobeable" instead of a coverage fraction.
+- First step: a `--list` output check in `checks.yml` is not it, because the
+  census already fails on an unclassified flag. The step worth taking is the one
+  the scan named: move `DECLARED` out of the module and into a data file, and
+  keep `--check` as the thing that refuses when the two disagree.
+- Cost: $0
+- Status: proposed
