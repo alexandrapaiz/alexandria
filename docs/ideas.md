@@ -25664,3 +25664,101 @@ ingestion target rather than a skill target.
   the moment somebody else merges.
 - Cost: $0
 - Status: proposed
+
+### 2026-11-02 - The law 8 decision should also be read back off the published issue, because the pipeline now knows the answer and the gate still asks arXiv again (engineer seat, message run, inbox-eight wake)
+- Trigger: building the law 8 resolver this run. `pipeline/arxiv_html.py` and
+  `docs/voice/check_voice.py:491` now hold the same HEAD request against
+  `arxiv.org/html/<id>`, and both were verified against the same nine
+  identifiers the writer seat graded on 2026-W42. Two implementations of one
+  decision is the shape that drifts, and the drift is silent because each one
+  is correct on its own.
+- What: the payload now carries `url_law8` beside every url, holding one of
+  five reasons. The gate could read that field instead of asking arXiv a
+  second time, which would make the grade a comparison between what the
+  pipeline decided and what the issue published rather than an independent
+  re-measurement. That is a stronger grade: it catches a generator that
+  ignored a correct url, which re-measuring cannot distinguish from a
+  pipeline that got it wrong. It also drops nine HEAD requests per grade.
+- Why it is not in today's patch: `docs/voice/` is the writer seat's surface
+  and the payload is not persisted anywhere the gate can read it after the
+  send. The second half is the real work and it belongs to whoever owns the
+  payload's durability, not to the gate.
+- First step: write the resolved payload's `*_law8` reasons into the row the
+  press already records for the issue, then hand the writer seat a field to
+  read. One column, no new table.
+- Cost: $0
+- Status: proposed
+
+### 2026-11-02 - Every hand list of files inside a Modal image should be checked by a test that reads the imports, because the list is a silent-open failure once a week (engineer seat, message run, inbox-eight wake)
+- Trigger: adding `pipeline/arxiv_html.py` this run. `pipeline/weekly.py`
+  builds its image from eleven `add_local_file` calls, and a module the file
+  imports but the image omits is an ImportError on the next Monday cron and
+  nothing earlier. I wrote
+  `test_law8_url.py::test_the_modal_image_carries_this_module` to catch my own
+  instance, which is a hand check guarding a hand list.
+- What: one test that parses each pipeline module's runtime imports of its own
+  siblings and asserts every one appears in that app's `add_local_file` list.
+  The imports are already distinctive, because Modal flattens the modules to
+  `/root` and every one of them is reached through a small loader function
+  (`budget`, `arxiv_html`) rather than a module-level import. So the set of
+  names to check is the set of those loaders, which is greppable.
+- Why this is the same defect as the gate domains: a check scoped by a hand
+  list puts a new file out of scope by default and says nothing, which is
+  already in this ledger twice this week from the gate side. The image is the
+  same shape with a once-a-week blast radius.
+- First step: `tests/test_image_manifest.py`, over `weekly`, `distill`,
+  `ingest` and `triage`, asserting the loader-function set is a subset of the
+  image's file list. Fails today only if one is already missing, which is the
+  first thing worth knowing.
+- Cost: $0
+- Status: proposed
+
+### 2026-11-03 - A gate that reports a collision should name the line it read, because the first non-self collision this repository caught was a false positive (engineer seat, message run, inbox-eight wake)
+- Trigger: the writer seat's note of 2026-11-02 08:08 reported that my ledger
+  entry on the pdf route "asks `read_paper.py` for exit 3" and that 3 is now
+  `ABSTRACT_ONLY`, with 1, 2, 5 through 11 free. I checked the entry. Its one
+  use of "exit 3" is `a sandbox with no pypdf must still exit 3 rather than
+  crash`, which is an assertion that the EXISTING `ABSTRACT_ONLY` code still
+  comes out when the soft route is unavailable. It asks for no new code. The
+  gate matched the string and read an assertion about a live exit code as a
+  request to allocate one.
+- What: when the exit-code gate reports a collision it should print the
+  matched line verbatim and the surrounding sentence, not only the number and
+  the file. A reader who sees `must still exit 3 rather than crash` disposes
+  of it in one second; a reader who sees `entry asks for exit 3, taken by
+  ABSTRACT_ONLY` has to go and find the entry. The cost of the false positive
+  is paid by whoever is woken for it, and it was paid twice here, once by the
+  writer writing the note and once by me checking it.
+- Why it is worth an entry rather than a reply: this was that gate's first
+  catch of a collision belonging to another seat, which is the only reason it
+  exists, and the catch was wrong. A gate whose first cross-seat finding is a
+  false positive teaches its next reader to skim it.
+- Cost: $0
+- Status: proposed
+
+### 2026-11-02 - Craft scan: Zotero's translators decide a link's canonical form in the ingest layer, where alexandria asked a model to decide it at write time, and what alexandria does better is record why
+- The product: Zotero, and specifically its translator architecture rather than
+  the reference manager around it. A translator is per-site code that turns a
+  page into a structured item, and the url normalisation lives there: given an
+  arXiv page, the translator emits the identifier, the abstract url and the pdf
+  url as separate fields, decided once by code at the moment of capture. Every
+  consumer downstream reads a field rather than rewriting a string.
+- One thing worth stealing, and this run stole it. The decision about which url
+  form is canonical belongs to the layer that holds the identifier, not to the
+  layer that writes the prose. alexandria had it in the prose layer, and
+  `prompts/digest.md` was reworded six times with one revert trying to make a
+  model reliable at it. Measured on 2026-W42 the model went seven for nine.
+  A function went nine for nine against the same identifiers in under a second.
+  The general form is that a rule with a factual question inside it does not
+  belong in a prompt at all, however well the prompt is worded, and six
+  wordings is the signal rather than the sixth wording being the problem.
+- Where alexandria is better, and it is the part Zotero has no room for. A
+  Zotero translator returns the url and not the reason. `resolve_payload` writes
+  `url_law8` beside every link, holding one of five reasons, and the two that
+  matter are distinguishable: `no html version, which is law 8's own fallback`
+  is the rule working, and `could not ask arxiv, so abs stands and was not
+  graded clean` is nobody knowing. Zotero would emit the same abs url for both,
+  and a reader could not tell an earned fallback from an unanswered question.
+  That distinction is why the writer seat's gate can grade the issue at all,
+  and it is the reason this seat's version of the idea is worth more than the
+  one it was taken from.
