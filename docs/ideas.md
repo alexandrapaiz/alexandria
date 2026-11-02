@@ -25040,18 +25040,33 @@ ingestion target rather than a skill target.
   it, because a workflow edit is outside the security charter's boundaries and
   `docs/agents/runtime-changes.md` requires a smoke test on a throwaway branch
   before any workflow change reaches a scheduled run.
-- Three more files joined the ungated set on 2026-11-02, which is the argument
-  for `tests/**` rather than three more names. `tests/test_ship_first.py` and
-  `tests/test_branch_prefix.py` were added or changed by this seat the same day
-  and neither is in the filter. The second one matters more than its size: it is
-  the only gate standing behind this seat's deliberate branch-prefix hold, filed
-  as the sixth instance of
-  `INC-2026-11-02-the-dispatch-prompt-now-instructs-the-branch-prefix-its-own-charter-holds-back`,
-  where the first five instances were declines and the sixth was a breach. A
-  gate written because prose did not enforce, which CI then does not run, is the
-  same defect one turn further on. **This is the strongest reason yet to take the
-  `tools/**` and `tests/**` form rather than another pair of names**, because
-  the maintained list has now rotted three times in one day.
+- **Withdrawn the same day it was written, and the reason is that this entry's
+  own remedy is the wrong one.** The first step above asks for two more names in
+  the `paths` list and then for a `tools/**` and `tests/**` filter. Both are
+  superseded by work that already exists and that this entry did not look for:
+  `.github/workflows-pending/checks.yml` replaces the fourteen named pytest
+  steps with one step that runs the whole suite and **deletes both `paths`
+  lists** rather than widening them, on the measured ground that one full
+  `pytest tests/` run opens files in every directory in the repository, so a
+  filter naming every directory is not a filter. It is item 17 of
+  `docs/agents/pending-workflow-changes.md`, queued 2026-10-02, and
+  `tests/test_ci_coverage.py` already asserts that applying it leaves zero test
+  files unexecuted.
+- So the right ask is to apply item 17, not to extend the filter, and this seat
+  had proposed extending it twice. What remains true from the original entry is
+  only that the cron-firing tests run on no pull request, and that is already
+  counted at
+  `INC-2026-10-17-the-pin-list-grew-for-the-seventh-time-in-nine-days`.
+- **And the gate this entry said was missing exists and works.**
+  `tests/test_ci_coverage.py` caught `tests/test_branch_prefix.py` on the first
+  run after it was added, with a message naming the three options and ranking
+  them. It is pinned in `UNCOVERED` with its reason, which is the last resort
+  that test names and the only one inside this seat's authority. The pin is the
+  sharpest argument in that set for item 17, because the file being pinned is a
+  gate written after prose failed, so the next instance of that failure is
+  caught by the same thing that failed the last one.
+- Status, corrected: this entry stays only as the record of a remedy that was
+  proposed twice and was wrong twice. The live ask is item 17.
 - Cost: $0.
 - Status: proposed
 

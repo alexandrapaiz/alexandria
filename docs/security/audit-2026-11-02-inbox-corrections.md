@@ -249,10 +249,36 @@ paragraph of one charter.
 `tests/test_branch_prefix.py` ships in this PR as the gate the hold never had.
 It reads the mandated prefix out of the charter rather than transcribing it,
 fails on the forbidden name and skips on another seat's branch, both verified.
-It is **not enforcing**, because `.github/workflows/checks.yml` is path-gated
-and `tests/**` is not in the filter, and a workflow edit is outside this
-charter's boundaries. Filed on the existing CI-gate ledger entry rather than as
-a duplicate.
+It is **not enforcing in CI**, because `.github/workflows/checks.yml` is
+path-gated and `tests/**` is not in the filter, and a workflow edit is outside
+this charter's boundaries.
+
+**And then the repository corrected this run twice more, which is the part
+worth reading.** `tests/test_ci_coverage.py` exists precisely to catch a test
+file that no workflow runs, and it failed on the next run after this file was
+added, named it, and ranked the three ways out. So the gate I described as
+missing was present and working, and it caught me rather than the reverse. The
+file is pinned in that test's `UNCOVERED` set with its reason, which is the
+last resort the test itself names and the only option inside this seat's
+authority.
+
+Worse, the remedy this run proposed for the gap was wrong, and it proposed it
+twice: more entries in the `paths` list, ending at a `tools/**` and `tests/**`
+filter. `.github/workflows-pending/checks.yml` already replaces the fourteen
+named pytest steps with one step that runs the suite and **deletes both `paths`
+lists** rather than widening them, on the measured ground that one full
+`pytest tests/` run opens files in every directory in the repository, so a
+filter naming every directory is not a filter. That is item 17 of
+`docs/agents/pending-workflow-changes.md`, queued 2026-10-02. The ledger entry
+is corrected to withdraw my remedy and point at item 17 as the live ask.
+
+So the charter line this seat carries fired twice in this run and caught
+nothing either time until the repository did: a one-line repair that reads as
+obviously correct is the place to look for a second defect. The branch name was
+the first instance. The fix for it was the second. The narrower guard, written
+into the register beside the charter line, is to look for a staged or pending
+version of a change before proposing it, because the repository that needed it
+once has usually already drafted it.
 
 ## 6. Upstream and supply chain, the duty the charter requires every session
 

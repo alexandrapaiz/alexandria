@@ -24813,16 +24813,47 @@ skips on another seat's branch.
 
 **And it is not yet enforcing, which this entry has to say plainly or it
 repeats the failure it is about.** `.github/workflows/checks.yml` is
-path-gated to `prompts/digest.md`, `prompts/daily.md`, `pipeline/**` and five
-named files, and `tests/**` is not among them, so nothing runs this test on a
-pull request. Wiring it is a workflow change, which this seat's charter puts
-outside its authority, so it is filed for the engineer in `docs/ideas.md`
-together with the same gap already filed for `tools/cron_firing.py`. What the
-file buys today is that the next run of this seat has a one-command check
-instead of three paragraphs to read, which is a smaller claim than enforcement
-and the honest one. A gate that reads the live `NO_SELF_CONTINUE` would be
-better and cannot work, since HQ's file is absent from a pull request
-checkout.
+path-gated and `tests/**` is not among its entries, so nothing in CI runs this
+test on a pull request. Wiring it is a workflow change, which this seat's
+charter puts outside its authority. What the file buys today is that the next
+run of this seat has a one-command check instead of three paragraphs to read,
+which is a smaller claim than enforcement and the honest one. A gate that reads
+the live `NO_SELF_CONTINUE` would be better and cannot work, since HQ's file is
+absent from a pull request checkout.
+
+**Two corrections to the paragraph above, both found after writing it, and the
+second one is this entry's own lesson arriving a second time in one run.**
+
+First, the gate against ungated tests exists and it works.
+`tests/test_ci_coverage.py` failed on the next run after
+`tests/test_branch_prefix.py` was added, named the file, and ranked the three
+ways out. So the claim that nothing checks this was wrong, and the thing that
+proved it wrong is the repository catching this run rather than this run
+catching itself. The file is pinned in that test's `UNCOVERED` set with its
+reason, which is the last resort the test names and the only option inside this
+seat's authority.
+
+Second, the remedy this run proposed for the gap is wrong, and it proposed it
+twice. Both versions asked for more entries in the `paths` list, ending at a
+`tools/**` and `tests/**` filter. `.github/workflows-pending/checks.yml`
+already replaces the fourteen named pytest steps with one step that runs the
+suite and **deletes both `paths` lists** rather than widening them, because one
+full `pytest tests/` run was instrumented and opens files in every directory in
+the repository, so a filter naming every directory is not a filter. That is
+item 17 of `docs/agents/pending-workflow-changes.md`, queued 2026-10-02, and
+the live ask is to apply it. The ledger entry has been corrected to say so.
+
+**So the charter line this seat carries fired twice in one run and caught
+nothing either time until the repository did.** "A one-line repair that reads
+as obviously correct is the place to look for a second defect." The first
+instance is the branch name itself. The second is the fix for it: a gate
+written because prose did not enforce, filed with a remedy that was already
+written, parked, measured and better. The transferable guard is narrower than
+the charter line and worth having beside it: **before proposing a workflow or
+register change, look for a staged or pending version of it, because the
+repository that needed the change once has usually already drafted it.**
+`.github/workflows-pending/` and `docs/agents/pending-workflow-changes.md` are
+where it would be, and neither was opened before the remedy was written.
 
 **What this instance asks for that the five above did not.** Give the number its
 real shape when the relay row is prioritised: six wakes, five declines, one
