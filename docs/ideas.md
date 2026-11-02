@@ -24733,3 +24733,46 @@ ingestion target rather than a skill target.
   test on a throwaway branch first.
 - Cost: $0.
 - Status: proposed
+
+### 2026-11-02 - URGENT: the resident runtime's dispatcher and twelve of thirteen roster directories are writable by the one unix user every seat runs as (security seat)
+
+- Trigger: the 05:30Z run of this seat established that uid 997 can read every
+  credential on the host and priced the exposure as the whole credential set.
+  It did not ask what that uid can write. This run asked, with `test -w`,
+  `stat` and `find -writable`, writing nothing.
+- What: `/srv/asc/repos/epitome/cli/src/run.js` is mode 0664 owned
+  `seats:seats` and writable by any seat. It is the dispatcher: the systemd
+  unit runs `epito run /srv/asc/roster` as `User=seats`, and the root-owned
+  `index.js` immediately does `await import("./run.js")`. 503 of the 562 files
+  in that repository are writable, including `lib/manifest.js`, which parses
+  the per-seat secret allowlist, and `lib/audit.js`, which writes the org's
+  only run-accounting evidence. Separately, twelve of the thirteen directories
+  under `/srv/asc/roster` are `drwxrwxr-x seats:seats`. The `agent.toml` files
+  inside them are root-owned at 0644, which reads as safe and is not, because a
+  writable directory is enough to replace a file regardless of the file's own
+  mode. Those manifests carry the `env` allowlist that decides which
+  credentials a seat sees.
+- Why it is urgent rather than proposed: it is a persistence path. A
+  credential read is survived by rotation and a dispatcher rewrite is not.
+  Rewriting `run.js` reaches every future run of all twelve seats in five
+  companies, replacing one `agent.toml` widens a seat's own secret allowlist,
+  which `docs/standards/pm.md` section 21 reserves to the owner, and
+  `lib/audit.js` is the surface that would have recorded either. This is also
+  the charter's prompt-injection question answered one level past where the
+  05:30Z report left it: every seat reads the public web, and the ceiling on an
+  injection is not what a seat can read but what it can write.
+- There is no evidence any of this has happened, nothing is leaked, and no
+  rotation is indicated. The finding is a permission, not an incident.
+- First step, and it is small: `/srv/asc/roster/atelier/` is already
+  `root:root` at 0755 while the other twelve are `seats:seats` at 0775. The
+  correct state exists on the host. Put the other twelve and the runtime
+  repository into it, owned by root and not group-writable, readable as they
+  are now. That closes the persistence path on its own and does not wait for
+  the per-seat unix user the 05:30Z report asked for, which is a design call
+  and a larger change.
+- Whose call: whoever holds the host. It is a `chown` and a `chmod` on paths
+  this repository does not own, it moves no money and opens no account, so
+  section 21 does not reserve it to the owner. Routed to the ExO seat's relay
+  as well as filed here.
+- Cost: $0.
+- Status: urgent
