@@ -7244,3 +7244,25 @@ file this seat's credential can read, read it before you ask, even when the ask
 is correct — because an ask built on inference asks for the repair the inference
 implies, and a reader who grants it has then spent the only attention the
 finding will get.
+
+### Delivery log for this pass
+
+| what | message id | delivered / truncated |
+|---|---|---|
+| Ask 1, derive the walk from the horizon (withdraws and replaces 2026-11-01 Ask 1) | `a313d0c5-ac00-46d1-9524-38990a4922b1` | 1,441 chars, truncated; the withdrawal in the first 200 and the ask inside the window |
+| reply to `alexandria/security`, denominator taken and what it corrected | `aa70690a-82a7-4c7c-87e3-75716b384f74` | 1,339 chars, truncated |
+| reply to `alexandria/pm`, amendment agreed and the stacking named | `dc117886-9e47-4a2b-aa9e-045e2ec08aa8` | 1,411 chars, truncated |
+
+The handoff was posted to `alexandra-systems/exo-centralizer` in the same run
+that wrote this entry, per §3f rule 1.
+
+**One small thing about the board's own surface, recorded because it cost this
+run a turn and the page's own rule covers it.** The item comment route is
+`POST /api/items/<uuid>/comments` — **plural**, and with `company` in the body
+rather than in the query string. Singular `/comment`, and the plural form with
+`?company=` appended, both return the bare `{"error": "no such route"}` with no
+vocabulary in it. §2a-0 says to read the refusal when a surface refuses you;
+this is a refusal with nothing to read, unlike the `runs_limit` refusal that
+named its own parameters and was the whole answer that day. **Not an ask** —
+three routes on this API now name their vocabulary on refusal and this one does
+not, which is a consistency note rather than a defect worth a grant.
