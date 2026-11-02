@@ -24580,3 +24580,129 @@ ingestion target rather than a skill target.
   second card.
 - Cost: $0
 - Status: proposed
+
+### 2026-11-02 - The invocation row has no column naming who invoked it, so one hand run erases the cron's evidence (engineer seat, message run, lane-next wake)
+- Trigger: two halves of one defect, met an hour apart. The writer seat's board
+  note of 02:21Z said it about the press: `deploy_runtime` is one upserted row
+  per app with no history and no column naming the caller, `record_runtime` is
+  on the path of every invocation, so a hand
+  `modal run pipeline/weekly.py::weekly` writes the row exactly as the cron
+  would and overwrites whatever the cron left. The minute is the only
+  discriminator left. Then this run met the same thing in the code it was
+  repairing: `ingest_ids`, the by-id backfill a seat runs to answer a
+  reading-queue line, runs the same module and writes the same `ingest` row. So
+  the confound is not specific to the press being tested by hand. It is a
+  missing column, and today's repair widened the set of runs that write the row
+  without widening what the row can say about them.
+- What: one `invoked_by` column on `deploy_runtime`, written by
+  `record_runtime` from an argument its callers already know, with three
+  values that are all a caller can honestly claim: `cron` from the scheduled
+  entry point, `manual` from a `local_entrypoint` or a hand `modal run`, and
+  `task` from a by-id or by-week function somebody asked for. Then a run that
+  moved the minute says so, and `tools/delivery_health.py` can stop treating
+  an off-slot minute as evidence about the schedule. It pairs with the
+  `finished_at` entry of this morning and wants the same migration, so the
+  two should land together rather than as two schema changes a week apart.
+- First step: the column and the argument, on `ingest` alone, because `ingest`
+  is the one app whose two writers are both already in the repository and
+  neither of them calls a model, so the whole change is testable without a
+  rehearsal. `weekly` follows, and `weekly` is the one the writer seat asked
+  about.
+- Cost: $0
+- Status: proposed
+
+### 2026-11-02 - The prelude measurement cannot follow a record into a helper, so the strongest repair produces the least measurable number (engineer seat, message run, lane-next wake)
+- Trigger: this run's own repair, caught in rehearsal rather than in review.
+  `unguarded_prelude` in `tests/test_deploy_drift.py` counts statements of the
+  scheduled entry point before the first durable write. Moving ingest's record
+  into a `record_invocation()` helper called first takes that count from 9 to
+  0, which is correct and is also the point at which the pin stops measuring
+  anything: a helper that later learns to fetch a feed would leave the pin
+  reading 0 while restoring the whole defect. The second break rehearsed in
+  this run proves it, because the pin passed on it and only the bespoke gate
+  went red. The same asymmetry makes `weekly`'s 7 and `ingest`'s 0 two
+  different units, since weekly's inline `psycopg.connect` is counted and the
+  identical connect inside ingest's helper is not.
+- What: teach `unguarded_prelude` to descend. It already computes
+  `_recording_functions`, the set of functions whose bodies reach
+  `record_runtime`, and `holds_record` already recognises a call to one, so the
+  walk has everything it needs to step into the called function and keep
+  counting there instead of stopping at the call. Then one number means one
+  thing for all five apps, the per-app gate this run had to hand-write for
+  ingest is unnecessary, and the three remaining repairs can each lower a pin
+  rather than each add a test. The pins would be re-measured once in the same
+  change, with the old and new numbers printed side by side.
+- First step: the descent and the re-measurement, with this run's second
+  rehearsed break as the test case it has to catch. Half a day, no production
+  code touched.
+- Cost: $0
+- Status: proposed
+
+### 2026-11-02 - Miniflux stops polling a dead feed after three errors, where a dead feed here waits on a human ruling that is seventeen days old (engineer seat, message run, lane-next wake)
+- Trigger: today's `python3 tools/feed_health.py` run, which is ingest's deploy
+  ladder and was run as this change's availability check. It reads 49 of 53
+  sources delivering, 0 dark and unrecorded, and 4 dark and pinned by hand in
+  `tools/feed_health.py`. The ledger entry that asked for a ruling on those is
+  `2026-10-16 - Five sources are dead and retiring one is the owner's call`,
+  and it is still `proposed` seventeen days later, with `mit-csail` silent
+  since 2019 and `stanford-sail` since 2022. The craft scan below found the
+  product that does not need the ruling.
+- What: steal the counted stop. Miniflux keeps a parsing-error count per feed
+  and `POLLING_PARSING_ERROR_LIMIT`, documented default 3, stops polling that
+  feed once it is reached; a human refreshing it by hand is what clears the
+  count. Here the equivalent is already half built, because `fetch_feeds`
+  reports a status row per source to its caller. The missing half is that
+  nothing remembers yesterday's row, so a source's record is recomputed from
+  one fetch every time and "dark for a week" and "dark once" are the same
+  observation. One small table keyed by source name, a consecutive-zero
+  counter, and a limit, and then the pin in `tools/feed_health.py` is derived
+  from measurement instead of hand-written, a source that has been dark for N
+  days stops costing a fetch, and the owner's ruling becomes a confirmation
+  rather than a prerequisite. The limit is a number to argue about: 3 fetches
+  is right for Miniflux's hourly poll and wrong for a daily one, and the
+  census already measures days of silence, so days is the better unit here.
+- First step: the counter and the table, with `judge_sources` reading it, and
+  the limit set high enough that none of the 49 live sources can trip it on a
+  single quiet day. The four pins stay in place until the counter agrees with
+  them, which is the cheapest way to check a new gate against a known answer.
+- Cost: $0
+- Status: proposed
+
+### 2026-11-02 - Craft scan: Miniflux treats a feed's failure history as state and a dead feed as a decision the software makes, where alexandria recomputes both from one fetch (engineer seat, message run, lane-next wake)
+- Trigger: the daily craft scan, pointed at this run's own build. The work was
+  ingest, so the scan went to the most disciplined open-source feed reader
+  rather than to another research tool. Read live on 2026-11-02 from
+  `miniflux.app/docs/configuration.html`, with the values quoted rather than
+  remembered.
+- What is worth stealing, and it is one idea with two parts. **A feed's failure
+  history is state, and the schedule is per feed rather than per job.**
+  `POLLING_PARSING_ERROR_LIMIT`, default 3, is the counted stop in the entry
+  above. Beside it is `POLLING_SCHEDULER`, default `round_robin`, whose other
+  value is `entry_frequency`: the interval for a feed is derived from how often
+  that feed actually publishes, bounded by
+  `SCHEDULER_ENTRY_FREQUENCY_MIN_INTERVAL` at 5 minutes and
+  `SCHEDULER_ENTRY_FREQUENCY_MAX_INTERVAL` at 1440. A feed that posts twice a
+  year is not asked twice an hour. Here all 53 sources are fetched on one cron
+  at `0 11 * * *` and the census already knows each one's publishing rate, so
+  the input to that policy is measured and unused. `BATCH_SIZE` at 100 feeds
+  and `FORCE_REFRESH_INTERVAL` at 30 minutes are the two bounds that keep the
+  policy from becoming a thundering herd, and both are the kind of number this
+  repository would otherwise discover in production.
+- What alexandria does better, and it is the judgment Miniflux cannot make.
+  `judge_sources` separates "this source delivered nothing" from "every source
+  delivered nothing", and refuses the whole run only on the second, with the
+  arXiv categories as their own quorum because the firehose is what fills
+  `papers`. A per-feed error limit is blind to that distinction by
+  construction: fifty-three feeds failing at once reads as fifty-three
+  independent feed problems, when it is one network, one image or one
+  `sources.yaml`. The second thing is the pins themselves. Each of the four
+  dead sources carries a written reason, the date it was probed, and the
+  candidate replacement URLs that were tried and failed, so a ruling is a
+  five-minute read rather than a re-investigation. Miniflux's stopped feed
+  carries a count.
+- First step: the entry above is this scan's first step and is already written
+  as its own entry. The per-feed interval is the larger half and is not carded,
+  because a second schedule inside one cron is a real design change and
+  ADR-12's cap of five Modal crons is the constraint it has to respect.
+- Cost: $0
+- Status: proposed
