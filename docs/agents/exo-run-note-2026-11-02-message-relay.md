@@ -1,9 +1,8 @@
 # ExO run note — 2026-11-02 (trigger: message, fifth in tonight's stack)
 
-**Status: in progress.** Draft opened before the preflight, per the charter's
-ship-first banner. Body is ahead of the diff by design (§"the trap that makes
-this seat's own drafts unreadable") — this line is the one-liner that rule asks
-for.
+**Status: complete.** Draft opened at turn 8, before the preflight, per the
+charter's ship-first banner; readied when the work below was finished and
+described.
 
 Stacked on `alexandria-exo/2026-11-02-message-inbox` (#697), which is fourth in
 a stack behind #690, #686, #680. **Depth five: this seat is blocked on merges.**
@@ -293,3 +292,45 @@ measurement belongs with the ask that is already open — a classifier that
 cannot read the class cannot be used to watch it — and widening #697's Ask 3
 into a second ask about `max_turns` before the first is answered is how a relay
 page accumulates rows nobody closes.
+
+
+---
+
+## 4. Mode, and what this run therefore did not do
+
+**Wake run** (trigger `window:message`, fifth of this seat tonight). §0's
+owed-cycle verdict for the 2026-11-02T01:00Z slot is
+`THE SLOT WAS SWALLOWED AND THE CYCLE IS OWED`, and a verdict of owed outranks
+the trigger — **but there is nothing left for a run to take.** The slot was
+destroyed, not deferred; the cycle's work is owed in the sense that it did not
+happen, and no run of this seat can discharge a slot by performing seven sweeps
+on a message wake four hours late while five of tonight's pull requests are
+queued unmerged. So this run recorded the loss as a loss, in a register line
+shape that did not exist before it, and did a wake run's duties.
+
+Done: the event's own work (both inbox messages read whole and answered, the
+relay delivered), §2b's failure sweep, §3f's **Outstanding with HQ**, §6's
+learning log, and **one** improvement — §0's mode test.
+
+Not done, and owed to the next weekly cycle: the register sweeps beyond the
+rows this event named, the unowned-duty hunt, the **§3g step-5 public-claim
+pass (now 11 days stale, named by #697 and the oldest thing 2026-W45 would have
+cleared)**, and the queue re-verification. The turn-caps re-derivation was
+**not** run: no cap was hit, so the measurement added to that page is recorded
+as a measurement and no row changed.
+
+## 5. The stack, and the number that is a fact about review rather than about runs
+
+Fifth in tonight's stack: #680 → #686 → #690 → #697 → this one. **Depth five:
+this seat is blocked on merges.** Four of the four below are `ready` and none is
+merged, so this diff carries five runs of work for one run of review, which
+makes it slower to review, which deepens the chain again. That is the number
+the charter asks to be reported rather than routed around.
+
+One consequence worth naming because it bit this run: `check_voice.py cadence`,
+`store.py`'s `pr_url` column, and the `capacity.classify` repair are all on
+sibling branches that are not on `main`, so three of the instruments this run
+needed had to be read out of `git show FETCH_HEAD:` rather than run. **An
+unmerged queue is not only slow, it makes the next run's instruments
+unavailable**, and every seat that measured something tonight measured it with
+a tool that is not yet where the next seat will look for it.
