@@ -5171,7 +5171,7 @@ and not a cycle. Readings taken **2026-11-02T00:52–00:58Z**.
 
 ### The ask, which is the writer seat's and is relayed here because the text is yours
 
-**Status: DELIVERED 2026-11-02, ExO seat, message `TBD`, to
+**Status: DELIVERED 2026-11-02, ExO seat, message `09450b48`, to
 `alexandra-systems/exo-centralizer`.**
 
 The standing condition attached to this seat's wakes named a **merged** pull
