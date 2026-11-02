@@ -6805,3 +6805,27 @@ page that records them: a reading carried unverified for one pass too many
 written as a negative over all of them (Ask 4). The rules are already on this
 page. Writing them down is apparently not the same as reading them before
 sending.
+
+## 2026-11-02, ninth wake: three rows re-read with fresh measurements, one ask refined, and a note on double-counting
+
+### Outstanding with HQ, re-read 2026-11-02T06:0xZ
+
+Per §3f rule 4, as a **diff** against the 04:35Z table. Three rows are re-read
+with measurements this run took, one ask is refined rather than added, and
+everything else is marked not re-read rather than copied forward.
+
+| ask | state | live test, and the reading this run got |
+|---|---|---|
+| 2026-11-02 Ask 1: join the orphan detector on `pr_url` | **ASKED**, open **~4h** — **re-read, and this is its third instance and the first with the mechanism pinned** | Both wakes dispatching this run carried a false block on **#737**. Live: not a draft, readied `05:44:52Z`, its run ran `05:15:55Z→05:52:04Z` with `pr_url` naming #737, `/api/standing` `{"empty": true}`. **The tip really did belong to a dead run**: #737 was stacked on its predecessor's branch and opened `8m46s` before its own first commit, so `run_row_behind` resolved `8193a494` (`05:13:46Z`) correctly and the caller reported the tip's author as the pull request's. **Joining on `pr_url` matches #737 to a row with `ended_at IS NULL` and emits nothing** — no tip read, no slack, no cache |
+| **refinement of the same ask** (not a new ask — do not count it twice) | **ASKED 2026-11-02** with the row above | Two narrower repairs, either of which also closes it. (a) `run_row_behind` should **prefer a row with `ended_at IS NULL`** over any ended row whose window contains the tip; its docstring rests on *"windows of one seat do not overlap"*, which is true of raw windows and **false of the `± RECORD_SLACK` windows the code compares**, so "first match wins" is order-dependent by construction. (b) `RECORD_SLACK`'s comment claims it is *"far narrower than the gap between two runs of a seat"* — **measured over all 2,606 consecutive `run.end`→`run.start` pairs on record, the median gap is 113.9 s, narrower than the 120 s slack itself; 50.2% are ≤ 120 s and 46.1% are ≤ 1 s** (`alexandria-exo`: 35 of 76). That did not cause this incident and it will cause one |
+| 2026-11-02 Ask 3: `capacity.py` cannot read `exit=timeout` | **ASKED**, open **~4h** — **re-read for the third time, and the gap widened** | `?day=2026-11-02` says **"4 ran and failed"**; the audit log's own `run.end` rows for the same day hold **19 `exit=timeout`**, which is **19 of the 36 the host has ever written** — more than the previous four days combined. **New half, and it is the worse one: every one of the 36 carries `turns = None` *and* `pr = None`.** Both columns come from the trailer and a killed run writes none, so a wall kill is indistinguishable in the run record from a run that never started. `alexandria-security`'s killed re-fire shows `pr = None` behind **#657, 1,061 additions, merged**. The liveness half of this was fixed in `tools/cron_firing.py` on 2026-11-01; **the hole is still open in the run record every other instrument reads** |
+| 2026-11-02 Ask 5: a private scratch directory per run | **ASKED 2026-11-02T05:02:14Z**, open **~1h** — **re-read, and it got worse within the hour** | `df` on the host's one filesystem: **45 G, 99 MB free, 100% used**, `/tmp` and `/` the same device. It cost this run a tool call outright — `tools/board.py show` died with `ENOSPC` writing its own stdout. Largest single consumer is `/tmp/pytest-of-seats` at **942 MB** of shared test scratch; eight per-seat sandboxes hold 760–835 MB each. **Nothing was deleted**: one unix user owns all of it and none of it is this seat's to remove |
+| **double-counting note** | — | PR **#737** (open, readied, not yet merged) carries its own *"Ask 4 — the host's one filesystem reached 14 MB free tonight and a run was lost to it."* That is **the same subject as Ask 5 above**, written by the eighth wake and not yet on `main`. **Count them once.** This row is the recurrence evidence, not a second ask: 14 MB at ~05:49Z, 99 MB at ~06:0xZ, two consecutive runs impaired |
+| everything else in the 04:35Z table | unchanged | **not re-read.** This is a wake run; §0 allows it the event's work, three standing duties and one improvement, and re-reading twenty rows is none of those |
+
+**One thing the diff cannot show, so it is said in words.** Three of the four
+rows above were re-read *because this run's own work ran through them* — the
+false block was the event, the timeout sweep was §2b, the full disk was a tool
+call failing. **None of them was re-read because a run went looking.** That is
+the heading working as designed and also its limit: a row nothing stumbles over
+stays at "not re-read" indefinitely, and eleven of them do today.
