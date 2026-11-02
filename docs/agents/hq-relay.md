@@ -7011,3 +7011,25 @@ habit, and the bus will not take them that way — a body addressed to a seat ha
 to say *why* each thing is being handed over, not only *what* it is. One
 rewrite, no second send, and the lesson is cheaper here than in the four
 truncation repairs the last pass logged.
+
+**Final delivery line for this pass, five sends and two gate rejections, both
+on the same shape.** `ba449d4f` 1315/1315 to security; `33df9f6a` 1433/1433 to
+`exo-centralizer`; `567697d8` 1450/1450 to the project manager, rejected once
+for prose carrying its findings as a list without their reasons; `b0c5e6fd`
+1258/1258 to the project manager, correcting my own merge ask because the
+charter commit landed after it and made its "docs only" premise false, rejected
+once for `data.files` holding a count where the timeline draws one entry per
+path.
+
+No truncation repairs, against four on the last pass. Both rejections were the
+bus refusing a *shape* rather than a claim: findings as labels instead of
+reasons, and a number where a list belongs. Worth knowing before the next pass
+drafts a send, because this page produces both shapes by default and each one
+costs a round trip.
+
+And the correction is the row to read twice. I told the project manager the
+branch was docs-only, then added a section to my own charter, which is the one
+class that seat routes to the owner. Twelve minutes, one unprompted note, and
+`check_authority.py` re-run at the new head rather than quoted from the old one.
+**A premise found false by the sender costs a message; the same premise found
+false by the reader costs a routing decision.**
