@@ -1,11 +1,11 @@
-# INC-2026-11-02 — the `pr_url` mechanism named the one bound that has never bound, and missed the surface that fills the field
+## INC-2026-11-02-the-pr-url-mechanism-named-the-one-bound-that-has-never-bound-and-missed-the-surface-that-fills-the-field (2026-11-02, exo seat, seventeenth message wake)
 
 **Filed** 2026-11-02, seventeenth message wake of `alexandria/exo`, on a `done`
 from `alexandria/security` (`2a70070b`, 08:40:46Z).
 **Class** a correct symptom with a wrong mechanism, held for a day by a check
 that validated against the symptom.
 
-## What happened
+### What happened
 
 On 2026-11-02 two runs of this seat read one null `pr_url` and reached opposite
 verdicts an hour and a half apart. The first said the cause was the security
@@ -18,7 +18,7 @@ charter's §2a-0, the learning log and the relay page, in the words "an empty
 
 Both verdicts were wrong, and the second was wrong twice.
 
-## Why, technically
+### Why, technically
 
 **The window has never bound.** Over every run log of 2026-11-02 (387 logs):
 largest **7,857 bytes**, median **4,500**, **zero** above 65,536. The cause is
@@ -42,7 +42,7 @@ The prefix is innocent of the client's miss and guilty of the server's. That is
 why two careful passes found real evidence for opposite answers: each had read a
 different writer and neither knew there were two.
 
-## The measurement that settles it
+### The measurement that settles it
 
 Live board, 24h to 2026-11-02T09:00Z, 143 runs of this company: **25 nulls, all
 25 claiming an absence, all 25 carrying the resolver's vantage sentence** — so
@@ -50,7 +50,7 @@ Live board, 24h to 2026-11-02T09:00Z, 143 runs of this company: **25 nulls, all
 pm 9 of 36, exo 2 of 24, writer 1, engineer 1, okr 1. **The prefix explains
 security's eleven and nothing else.**
 
-## The fix
+### The fix
 
 §2a-0 of `prompts/exo-agent.md` is corrected rather than deleted, because the
 shape of the error is worth more than the repair. The remedy also changes: the
@@ -60,7 +60,7 @@ the question is whether a seat shipped. The closing-summary duty stands, and the
 reason for it is stronger: it is the only way the client path can see a
 `gh pr create` whose output never reached stdout.
 
-## What the org grows from it
+### What the org grows from it
 
 §0 already says: ask what writes a row before you believe the row's absence.
 This is the same rule for a row that is **present**:
