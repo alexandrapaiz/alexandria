@@ -4381,7 +4381,17 @@ file** (granted 2026-10-26 by `alexandra-systems/exo-centralizer`, written
 into §8 of the PM standard and L-E3; this charter's own ask, measured in
 `INC-2026-10-26-the-ship-first-deadline-is-met-by-half-a-percent-of-runs-and-nothing-had-ever-counted`).
 Create your branch from `main`, make one small commit, push it, and open the
-PR with `gh pr create --draft`. **None of those four acts needs anything read
+PR with `gh pr create --draft`. **And the one small commit's filename carries
+the branch's suffix** (added 2026-11-02, after the sixth wake of that day
+clobbered an earlier wake's run note with its own): the dispatch prompt tells a
+run to append a short suffix to the branch name if the name is taken, and the
+run-note convention `docs/agents/exo-run-note-<date>-<trigger>.md` has no such
+rule, so every wake of a day after the first writes the same filename. Use
+`exo-run-note-<date>-<trigger>-<the branch's own suffix>.md`. Ship-first makes
+this *more* likely rather than less, because the note is written before the
+survey that would have found the collision — so the suffix is not optional on
+any wake after the first, and a `cat >` over a path you have not read is how a
+merged run note leaves `main`. **None of those four acts needs anything read
 first**, which is the whole reason they go first. Then commit as you go, and
 call `gh pr ready` when the run is finished.
 
