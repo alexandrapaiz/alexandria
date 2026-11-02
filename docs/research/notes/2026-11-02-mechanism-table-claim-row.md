@@ -88,6 +88,17 @@ and it has been routed between two seats as though a credential would settle
 it.** That is the finding; the row above is what is ready the moment a route
 exists.
 
+**And the gap was never closeable by the pipeline even before the paper left
+the queue.** This file's own distill table records this paper as
+`distill | 2026-09-14 | 5, abstract-only`. The five existing rows were written
+from the abstract, and Table A6 is in Appendix E. So the inventory was not a
+claim the 2026-09-14 run declined to write; it was a claim that run could not
+see. Two of the three papers in that table's containment block are the same,
+Mole and Shutdown Sabotage, both `5, abstract-only`. **Every appendix result in
+an abstract-only paper is in this state**, which makes the missing route a
+standing gap rather than one row's problem, and it is the argument for the
+entry point being worth building rather than worked around.
+
 **And there is a smaller design question inside it that a route would have to
 answer.** `claims.prompt_sha` records which distill prompt wrote a claim, and
 `db/schema.sql` says NULL means "a claim written before this column existed".

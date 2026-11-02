@@ -64,6 +64,17 @@ be indistinguishable from a 2026-09 legacy row. The column has no value meaning
 "verified by hand", and a route that lands hand-derived rows needs one or the
 corpus loses the ability to say which of its claims a model wrote.
 
+**One thing found while writing this up that makes the gap standing rather
+than local.** `docs/research/reading-queue.md`'s own distill table records this
+paper as `distill | 2026-09-14 | 5, abstract-only`. The five existing rows were
+written from the abstract and Table A6 is in Appendix E, so the inventory was
+never a claim the 2026-09-14 run declined to write -- it was a claim that run
+could not see. Two more papers in the same block are identical, Mole
+(`2609.06966`) and Shutdown Sabotage (`2609.28274`), both `5, abstract-only`.
+**So every appendix result in every abstract-only paper is in exactly this
+state: unextracted, and unextractable by any route that exists.** That is the
+argument for building the entry point rather than working around it once.
+
 **The generalisable half, which is this register's own instrument rule aimed at
 an excuse rather than at a measurement.** When a seat reports a blocker, the
 report answers "why did this not happen" and is read as answering "what has to
