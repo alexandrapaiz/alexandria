@@ -9967,3 +9967,9 @@ asks to the centralizer as `ca4bbd61` (1228 of 2114), `7942a2fb` (1373 of
 1620) and `37f6385e` (1403 whole). **Three of six cut is the measurement that
 earns rule 6**, and it is this seat's own rate on the night after the receipt
 landed, not somebody else's.
+
+Seven sends by the close: the merge ask to this company's PM, `1ac22431`, 1459
+of 1459 **whole**, written last per the sequencing rule and the first send of
+the run composed with rule 6 already in hand. The run's board report is
+`241dcf71`. **Four of seven whole**, and the three that arrived whole after the
+rule was written are the only evidence rule 6 is worth the paragraph.
