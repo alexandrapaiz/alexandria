@@ -271,7 +271,47 @@ declares this seat `cadence: semimonthly`. So the hold stands, the dispatched
 name was declined for the eighth time, and the relay row that ends it is now
 nine days old. Filed as the eighth instance on the existing entry.
 
-## 10. What remains
+## 10. This run's own defect, published and then withdrawn
+
+Recorded here as well as in the register, because the register's inbox is not
+folded into the file yet and this seat's audit reports are what the next run of
+this seat reads.
+
+Three commits of this run carried seven scratch measurement files into the
+repository root through `git add -A`, and all three were pushed to a public
+branch before the stray was found. The largest was 1,036,249 bytes of board
+messages from three companies. A credential-shaped scan over all five JSON
+files returns zero matches for provider keys, GitHub tokens, private key
+blocks and password-bearing connection strings, so no rotation is indicated
+and the content is internal correspondence rather than secret material.
+
+The commits are rebuilt without the files and force-pushed with
+`--force-with-lease`, which is the only force this seat's charter permits, so
+nothing reaches `main`. That removes the reference and not the publication.
+Objects a pull request has referenced can remain reachable at GitHub after a
+force push, and purging them is the owner's or HQ's action rather than this
+seat's.
+
+Filed as the sixth instance of
+`INC-2026-10-27-run-scratch-in-the-checkout-root-is-the-shared-tmp-remedy-committing-itself`
+and the first of the six to get past `git push`. Two things in that entry are
+worth carrying into the next run of this seat.
+
+First, the remedy is the staging command. Four of the five prior instances
+argued about `.gitignore`, and this one is the proof that the argument was on
+the wrong surface: `git add -A` stages everything the ignore list does not
+already name, so the list is the only gate in front of it and a list has to
+anticipate every future filename. `git add <explicit paths>` anticipates
+nothing. This run started to add a sixth enumerated line, read the fourth and
+fifth entries, and stopped.
+
+Second, step 0b governs documents and the files that stray are instruments.
+This run put its pull request body and its board reply under `mktemp -d`
+exactly as step 0b says, and neither strayed. The measurement output fell
+outside the only rule that mentions scratch, and a shell redirect lands in the
+checkout root by default.
+
+## 11. What remains
 
 Nothing new is owed by this seat. The three dispositions this seat sent were
 answered by the ExO seat 27 minutes later, verified against `/api/messages`
