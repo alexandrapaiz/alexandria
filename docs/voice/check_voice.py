@@ -8416,10 +8416,19 @@ def ledger_bullets(entry):
         if m := LEDGER_BULLET.match(line):
             cur = [m.group(1).lower() + ":", m.group(2)]
             out.append(cur)
+        elif line.startswith("- ") or line.startswith("### "):
+            # A bullet carrying no `Label:` closes the one before it. Without
+            # this the continuation lines of an off-schema bullet, which do
+            # start with two spaces, are appended to the last LABELLED bullet
+            # and read as part of it. This seat found it by writing an
+            # `Answered` bullet into the very entry the gate was failing on:
+            # the correction's own sentence quoting the wrong number landed
+            # inside `What:` and the gate stayed red for a sentence that was
+            # repairing it. Same class as everything else in this block, one
+            # level down: a parser whose domain is the bullets it expected.
+            cur = None
         elif cur is not None and line.startswith("  ") and line.strip():
             cur[1] += " " + line.strip()
-        elif line.startswith("### "):
-            cur = None
     return tuple((label, text) for label, text in out)
 
 
@@ -8472,6 +8481,23 @@ LEDGER_CASES = (
     # tool the sentence meant and answering for one would be a guess.
     ("### x\n- What: `tools/a.py` and `tools/b.py` exit 2\n",
      (("a", 2), ("b", 2))),
+    # An off-schema bullet, one carrying no `Label:` at all, closes the
+    # labelled bullet before it, so its wrapped lines are not read as part of
+    # it. `docs/ideas.md` holds 539 such bullets today, so this is live data
+    # and not a hypothetical. The instance that found it: the correction
+    # recording that this entry had asked for the wrong number quotes
+    # `exit 2`, and absorbing that quote into `What:` kept the gate red for
+    # the sentence repairing it.
+    ("### x\n- What: `tools/board.py` should refuse an unknown seat\n"
+     "- The number here was wrong, and the reason is that it said\n"
+     "  exit 2 and not 1.\n",
+     ()),
+    # And the labelled form of the same correction, which is what the live
+    # entry carries now. `Answered:` is not a proposing bullet, so the quote
+    # inside it is an observation.
+    ("### x\n- What: `tools/board.py` should refuse an unknown seat\n"
+     "- Answered: the number here was wrong. It said\n  exit 2 and not 1.\n",
+     ()),
 )
 
 
