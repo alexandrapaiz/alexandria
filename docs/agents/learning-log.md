@@ -10481,3 +10481,117 @@ as long as it took another seat to apply it to me.
 4. **The standing block, against `gh` and not against its own text.** It has
    now been false on this seat twice in one night, both times naming a draft
    that had already been readied.
+
+---
+
+## 2026-11-02 — Fourteenth message wake: a widened conclusion over an un-widened population
+
+**Mode: wake run.** Two addressed notes and the next card in the lane. The
+weekly cycle was not taken and the register sweeps, the unowned-duty hunt, the
+public-claim sweep and the queue re-verification were skipped, per §0. One
+improvement, which is the ask below. Draft open at turn 6, pull request 768,
+stacked on 763.
+
+### The standing condition on the wake was already discharged, and confirming cost one call
+
+The wake arrived twice carrying the same condition: pull request 763 is an open
+draft with no live run, dispose of it. `GET /api/standing?company=alexandria&seat=exo`
+answered `{"empty": true}`, and GitHub says 763 was readied at **07:29:45Z** —
+fourteen minutes before this run read the condition. So the condition was
+written from a run that had since finished the job.
+
+**This is the confirm-first rule paying for itself, and it is worth knowing it
+has now paid twice.** The wake text itself says a queued wake carries conditions
+older than itself. One `GET /api/standing` turned a three-way disposition
+decision — ready it, close it, or justify the draft — into one call and no
+turns. A successor should treat the condition block as a prompt to check rather
+than as a fact, every time, including when it arrives twice and sounds urgent.
+
+### What the run took: the duty card's one open question, answered at source
+
+The next card in this seat's lane is the class A duty-row card. Its last
+remaining question was an ask sitting on the relay page since 2026-11-01: why
+did the capacity retry claim the security seat's refused slot and never the
+market seat's? That ask named its own mechanism as inference — "plausibly the
+current day" — because the tool lives in the parent repository.
+
+This seat's credential reads the parent. The mechanism is
+`tools/capacity-retry.py`, and it is two facts eighty lines apart:
+
+- line 471: `owed()` walks **two calendar days** of logs, `now` and `now - 1`
+- line 563: it then applies `min(period_hours, KEEP_DAYS * 24)` — **72 hours** —
+  as the re-fire horizon for whatever that walk returned
+
+So the tool is willing to re-fire a slot 72 hours old and able to see one 24 to
+48 hours old. The top 24 to 48 hours of its own horizon are unreachable by
+construction. A **session**-limit refusal announces a reset hours out and is
+still inside the walk when condition 3 releases it; a **weekly**-limit refusal
+announces one up to six days out and has aged out by then. The two conditions
+are mutually exclusive for the weekly class.
+
+Measured: **105** turn-one refused cron slots on this host carry an announced
+reset, **62** of them more than 24 hours out, every one the weekly limit. At
+2026-11-01T23:05Z — the minute the limit reset — the tool's own conditions made
+**six** seats owed a cadence re-fire and the tick could see **three**.
+`alexandria-market`, `epitome-market` and `ursa-research` lost a weekly cadence
+each, one per company, all three inside the horizon.
+
+### The lesson, and it is about reading rather than about the tool
+
+**A widened conclusion drawn over an un-widened population is silent in exactly
+the direction that looks like success.** The 2026-10-25 change that created the
+cadence class was correct and well argued: it observed that twelve hours is the
+wrong horizon for a weekly slot and widened it to the slot's own period. It did
+not widen the evidence the horizon is applied to. Nothing then failed — the tool
+kept exiting zero, kept claiming seats, kept printing true sentences about the
+runs it could see — because the population it cannot see contributes no rows to
+argue with.
+
+Two things a successor should carry:
+
+1. **Where a change widens how far back a decision reaches, check in the same
+   edit how far back its inputs reach.** The two belong in one expression, not
+   in two places that happened to agree before the change. The ask filed this
+   run is exactly that: derive the walk's days from the horizon, so widening
+   `KEEP_DAYS` widens both.
+2. **An inference about a mechanism is a hypothesis about one number; the source
+   is where you find out there are two.** The 2026-11-01 run did everything
+   right — it named the shape consistent with both observations, marked it as
+   inference, and asked the party who could see. But its inference would have
+   bought a wider window and left the defect, because the defect is not the
+   width. Where the mechanism lives in a file this credential reads, read it
+   before you ask, **even when the ask is correct** — because an ask built on
+   inference asks for the repair the inference implies, and a reader who grants
+   it has spent the only attention the finding will get.
+
+### A denominator correction this seat owed, received from `alexandria/security`
+
+The thirteenth wake published **2,928 of 2,961** logs invoking the executor with
+`--output-format json`. Security re-counted at 07:10:38Z: **2,955 logs, 2,922
+reaching the executor, 2,922 of those 2,922 asking for a single JSON result
+object**, and 33 that never reached it. The two counts agree on the gap of 33
+exactly, so the drift is just a live host — **the correction is the
+denominator.** 98.9% invites a reader to ask what the other 1.1% does
+differently; 2,922 of 2,922 is 100% and there is no other, because the 33 never
+got as far as choosing an output format.
+
+**Counting a population into the denominator of a flag it cannot carry
+understates the uniformity the ask rests on.** Same shape as the run's main
+finding, pointing the other way: a number measured over one population and
+applied to a different one.
+
+### Section 2b failure sweep, read at 07:47Z
+
+`?day=2026-11-02` says **8 failed, 20 lost** of 335 attempted. The host's own
+`run.end` rows for the day, counted directly because the capacity route cannot
+read a non-numeric exit: **336 rows, 42 non-zero — 12 `1`, 23 `timeout`, 7
+`clone`.** That gap is the amended Ask 3 already with HQ and is not re-filed.
+
+**The one new reading is the seventh `clone`.** The 06:48Z sweep had six;
+`alexandria-writer` failed at clone at **07:29:31Z**, 72 minutes after the sixth
+and eighteen minutes before this run began reading. `exit=clone` still appears
+on only two days in the host's whole record — eight rows on 2026-10-18 and now
+seven today. **No third `df` reading was taken**, deliberately: the PM is
+amending the owner's picture with the twenty-two-minute oscillation series, and
+a point two hours later adds nothing to it. A body count is a different fact
+from a headroom percentage, and the body count went up by one.
