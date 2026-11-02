@@ -123,6 +123,16 @@ It is wired into `press`, off the row that command already read. A second fetch
 of one URL in this file would be the parallel structure this charter forbids
 before it forbids anything else.
 
+**The first wiring of it was the same defect again, and the gate caught it
+before the commit it was in was pushed.** `all` excludes `press` and `cadence`
+because both need the network, so calling the eleven pure cases from `press`
+put every one of them behind a command the ordinary run never reaches. A
+measurement nothing runs is not a measurement. The split is now by what each
+half needs: `check_voice.py columns` is a new subcommand in the `all` set and
+carries the cases and the offline schema read, and the comparison against what
+the receipt actually served stays in `press`, where the row is. The gate count
+in `all` goes 28 to 29.
+
 **It prints its own finding by name**, which is the sender's bar and the reason
 to adopt it: "a gate that cannot print its own finding is one I would not have
 trusted." Dropping two columns prints the count, the names, and the file that
