@@ -158,6 +158,36 @@ repaired `standalone --live`, which raised `ValueError` instead of printing the
 hit, so a run that pointed it at the product got a traceback rather than the
 sentence.
 
+**Re-confirmed 2026-11-02 by command, writer run 62, and the gate that
+re-confirms it was looking at the wrong half of the table.** `reading` reports
+the same 4 failures on the same 4 lines as on 2026-10-27 and `claims` reports
+the same 24 unhedged claims live right now, so no surface row below was
+repaired and the oldest is thirty-seven days. `slotheads`, new this run, reports
+four framework headings live on the product, three of them on `2026-W40`.
+
+**And the question table had an answer in it for four days and eighteen hours.**
+The value-statement question was posted as an ask on 2026-10-26T06:19:51Z, it
+expired on 2026-10-28T06:19Z, and under the company standard's silence rule it
+has been resolved since. It is in the lower table now with the question kept
+verbatim. Nothing in this register knew, and neither did this seat's own
+instrument: `check_voice.py deadlines` printed "every clock here is readable and
+none of them has run out" over that row on every run since 2026-10-26, because
+the row carries no `deadline` token and the gate only failed rows that had one.
+That is the same failure the W42 notice row produced on 2026-11-01, one week
+apart, and the gate repaired on that day is the gate that could not see this.
+
+**The two rows left have never had a clock at all, which is the finding under
+the finding.** The gate's own note said a question with no clock is "the
+ordinary shape of this table" because "nine of its ten rows wait on her with no
+standard attached". That premise was false when it was written. Section 22 has
+been law since 2026-10-16 and covers "every other reservation a charter makes,
+in every company", with money, accounts, secrets and a seat's own authority as
+the only exceptions. No row here is one of the four. So every row in the lower
+table is owed an ask with an hour on it, and two of the three never got one in
+fifteen days. Both are routed to the PM this run as board handoff
+`9574b0d1-b0d8-4230-877f-a33845886017`, with this seat's recommendation on each,
+because section 22 puts the posting in that seat's hands and not in this one's.
+
 | Surface | Candidate | Drafted | Is the defective line still live? |
 |---|---|---|---|
 | `site/content/issues/2026-W39.md:6`, the opening's first sentence | `w39-opening-2026-11-01.md` | 2026-11-01, run 61 | Yes. Thirty-eight days. "You have spent the week watching agents get faster by thinking less at test time." is the shape canon law 13 bans in every tense, and the law's own text holds the replacement verbatim. Read live at 2026-11-01T23:21Z by `check_voice.py standalone --live` and in the repository at the same hour. One sentence, one line, and the ruling carries no notice with it |
@@ -178,9 +208,8 @@ sentence.
 
 | Question | Where it is argued | Asked |
 |---|---|---|
-| Are the skill files the paid product, or the free distribution that sells something else? The repository is public and all nine are in it, so the entitlement gate guards a door in a wall with no other sides | `skills-copy-2026-10-18.md`, surface 3 | 2026-10-18 |
-| Does a paid tier keep a bullet for a machine that does not exist, hedged, or lose the bullet? | `claim-repairs-2026-10-18.md`, finding 8 | 2026-10-18 |
-| Is `docs/voice/value.md` the target still owed an approval, or stale against the five pages she approved on 2026-09-29? | `value.md`, the note of 2026-09-30 | 2026-09-30 |
+| Are the skill files the paid product, or the free distribution that sells something else? The repository is public and all nine are in it, so the entitlement gate guards a door in a wall with no other sides | `skills-copy-2026-10-18.md`, surface 3 | 2026-10-18. Never posted as an ask, so no clock has ever run on it. Routed to the PM 2026-11-02 as board handoff `9574b0d1`, with this seat's recommendation that the files are the free distribution and the paid product is the maintenance. `deadlines` reads this cell as `unasked` until the id and a fixed `deadline YYYY-MM-DDTHH:MMZ` land in it |
+| Does a paid tier keep a bullet for a machine that does not exist, hedged, or lose the bullet? | `claim-repairs-2026-10-18.md`, finding 8 | 2026-10-18. Never posted as an ask. Routed to the PM 2026-11-02 as board handoff `9574b0d1`, recommending the bullet is lost rather than hedged, on canon law 15. `unasked` until the clock is in the cell |
 
 ## Resolved on the clock, without her word
 
@@ -191,6 +220,7 @@ the record shows what was asked rather than only what came of it.
 | Question | Resolution | Read at |
 |---|---|---|
 | Does the corrected `2026-W42` page carry a notice saying a section was removed and why, on that page only? Recommended yes, quoted in full in the candidate, and canon law 7 is the ground it stands on rather than an exception to her ban: that law's first clause asks for a limitation that materially affects the day's content in one plain sentence, and its second bans narrating the method | **Yes, as recommended.** `docs/standards/pm.md` §22 proceeds as the PM recommended after forty-eight hours of her silence, and the clock in the row was `deadline 2026-10-28T20:44Z`. No reply arrived on the card or on the bus. So the notice is settled text and not a proposal: the sentence is the one quoted verbatim in `w42-correction-2026-10-26.md`, the anchor is a new plain-prose paragraph directly under the masthead, and that candidate's sequencing section already decided the form so nobody decides it twice. It moves no authority and no money, which is what §22 reserves to her regardless of the clock | 2026-11-01T23:18Z, writer run 61, by `check_voice.py deadlines`. The hour had passed four days earlier and this register still called it a question, which is the one failure that gate exists to produce |
+| Is `docs/voice/value.md` the target still owed an approval, or stale against the five pages she approved on 2026-09-29? | **Stale against the five pages, and the gate is open.** The PM posted this to her as ask `db6d191e` at 2026-10-26T06:19:51Z with its own recommendation in the body, which was to treat the five pages she approved on 2026-09-29 as having cleared it and open the gate, and with the forty-eight-hour line named. The clock was therefore `deadline 2026-10-28T06:19Z`. No reply arrived on the card or on the bus, so under `docs/standards/pm.md` section 22 it proceeds as recommended. Approving a value statement spends no money, opens no account, writes no secret and widens no seat's authority, so it is none of the four section 22 reserves to her regardless of the clock. What this does NOT decide is what the page should now say, which is one run of this seat's ordinary work and is not done here: the status line records that the precondition is cleared and the 2026-09-30 note stays verbatim, because that note is the record of what was asked | 2026-11-02T00:18Z, writer run 62, by `check_voice.py deadlines` once the gate was widened to report a row with no clock. The ask itself was read at two sources on `main` rather than taken from one: `docs/sprints/pending/2026-10-26-0619-message.md`, the PM pass that posted it and quoted its own recommendation, and `docs/sprints/pending/2026-10-26-0906-hook.md`, a later PM pass that verified the message exists on the bus with that id, that recipient and that second. This seat could not read `db6d191e` directly, because an ask addressed to `owner` is neither a broadcast nor addressed here, and 500 messages of this seat's own window held nothing matching |
 
 ## Closed
 

@@ -46,9 +46,9 @@
     {
       "id": "cwe-conf-1",
       "kind": "confusion",
-      "expect": "harness-engineering",
+      "expect": "recursive-harness-self-improvement",
       "prompt": "Our five-agent research pipeline gets about a third of its tasks wrong and we cannot localise which agent is responsible. How should we go about finding the culprit?",
-      "rationale": "Belongs to harness-engineering's sequential-intervention section. It is a multi-agent debugging question, and although this skill also describes a lead-agent-plus-subagents design, nothing about the prompt concerns a token budget."
+      "rationale": "Belongs to recursive-harness-self-improvement's failure-localisation section, which owns attributing a failure inside a long execution log. It is a multi-agent debugging question, and although this skill also describes a lead-agent-plus-subagents design, nothing about the prompt concerns a token budget. Re-pointed 2026-11-02: it expected harness-engineering's sequential-intervention section. The 2026-09-30 ADR-38 rewrite of harness-engineering cut the localisation half of its debugging section, on a bare-arm screen that found the subject supplied it unprompted, and that file's own provenance names the cut. So expecting harness-engineering to win a sub-agent-attribution prompt has been a false claim about a skill behaving correctly since that day, and it was reported as this suite's failure for 32 days. The library's standing answer for this prompt shape is he-conf-2's, set 2026-10-13."
     },
     {
       "id": "cwe-conf-2",
