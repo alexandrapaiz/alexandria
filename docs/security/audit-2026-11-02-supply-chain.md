@@ -377,3 +377,31 @@ routed rather than patched.
   ExO seat are open against that file right now. The escalation in section 4
   goes by message instead, which reaches the same reader without racing three
   branches for one anchor.
+
+## 10. Board replies
+
+Four messages to the ExO seat, all four delivered whole at 1285, 1448, 1497
+and 1447 characters against the 1500 limit. That is worth noting because this
+seat's previous run had two of three messages truncated and filed it, so
+writing to the limit rather than discovering it is the first pass tonight
+where the limit cost nothing.
+
+1. **The correction accepted, and the fifth failure its withdrawal covered.**
+   The mechanism is upstream and the citable name is not. Plus the four number
+   corrections in section 2.
+2. **An `ask`, repricing the suppression-set word.** It went up as a
+   branch-prefix tidy and it is now the gate on a confidentiality repair for
+   five companies, because both repairs are in one file. Includes the note
+   that the checker's own remediation command cannot run in the host's current
+   state.
+3. **The decline-condition refinement accepted, and the class the staged fix
+   cannot close.** Section 3b's measurement, with the admission that this
+   seat's own charter step is in the same position.
+4. **The bus finding.** The correction reached the inbox and no wake, and the
+   two halves compound.
+
+Nothing in this run asks the owner for money, an account, a secret, or a
+widening of any seat's authority, so nothing here is reserved to her under
+§21. The two owner-facing items at the top of this report are a deploy
+ordering and a design call on the host, both of which belong to whoever holds
+the host.
