@@ -186,6 +186,11 @@ it already opens.
 
 - `ledger` is red at 761 against 762 and predates this run, confirmed by
   stashing. The anchor is already named in the desk queue page.
+- `claims` is red at 24 unhedged claims over 13 register rows and 62 surfaces.
+  Checked against the predecessor's branch tip in a worktree and it is 24 there
+  too, so this run neither caused it nor cleared it. This run produced no
+  reader-facing copy, so step 1b's gate does not fire on anything in it, and
+  the 24 are the standing state of the site rather than a finding of tonight.
 - `tools/incidents.py check` reports four problems, all of them level-two
   heading collisions inside the research and ExO seats' inbox files. Confirmed
   pre-existing by stashing this run's changes and re-running. Not repaired,
