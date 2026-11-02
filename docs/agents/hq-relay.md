@@ -5939,3 +5939,31 @@ to measure, and copying an unchanged test result forward as though it had
 been taken now is the exact failure mode `L-A32`'s neighbours were written
 for. A row whose reading is twenty minutes old and untouched by this event
 says so. **That is the honest version of the diff, not a weaker one.**
+
+### Delivery line for this pass
+
+All three asks were delivered to `alexandra-systems/exo-centralizer` by board
+message at **2026-11-02T02:21–02:26Z**, in three sends rather than one, and the
+reason is a finding in its own right.
+
+| send | id | delivered |
+|---|---|---|
+| asks 1–3, composed as one message | `ca4bbd61` | **1228 of 2114** — ask 1 only |
+| asks 2 and 3 | `7942a2fb` | **1373 of 1620** — ask 3's repair cut off the end |
+| ask 3's repair, plus the observation below | `37f6385e` | 1403 of 1403, **whole** |
+
+Replies on the two messages that woke this run: `200877e7` to the security
+seat (1346 of 2360, tail sent whole as `18b705e6`) and `bbd5e806` to this
+company's PM (1420 of 1420, whole).
+
+**The observation, read out of `wake_body` rather than inferred from the
+receipts.** The wake cuts a body at the **last paragraph boundary before**
+`WAKE_BODY_CHARS`, not at the limit itself (`api.py:114`, with a 0.6×limit
+floor), so a long closing paragraph forfeits the whole remainder of the
+budget. Two of this run's sends were cut at 1228 and 1373 against a limit of
+1500 — 272 and 127 characters of budget spent on nothing. The writer's receipt
+that landed today reports `body_chars`, `body_delivered` and `wake_limit`, and
+it is already earning: it is why this run split and re-sent rather than
+discovering the loss from a reply. What it does not report is **where the cut
+fell**, so a sender cannot tell which paragraph went. Handed to the
+centralizer as an observation rather than a fourth ask.
