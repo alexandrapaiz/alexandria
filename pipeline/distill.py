@@ -1081,15 +1081,43 @@ def drain() -> str:
         deep = conn.execute(
             "select count(*) from distill_queue where triage_decision = 'deep_read'"
         ).fetchone()[0]
+        # The two counts above overlap, so neither of them is the one that
+        # matters. This is the one that matters: triage asked for a full read
+        # and the title matches no standing thread, so the intake ordering puts
+        # this paper behind every thread match, every run.
+        deep_unreached = conn.execute(
+            """
+            select count(*) from distill_queue
+            where triage_decision = 'deep_read'
+              and not (title ilike any(%s))
+            """,
+            (priority().PRIORITY_PATTERNS,),
+        ).fetchone()[0]
         read_in_full = conn.execute(
             "select count(*) from papers where fulltext_chars is not null"
         ).fetchone()[0]
+        distilled, abstract_only = conn.execute(
+            """
+            select count(*),
+                   count(*) filter (where fulltext_chars is null)
+            from papers where distilled_at is not null
+            """
+        ).fetchone()
 
     queue = reading_queue()
     text = queue.read_file("/root/reading-queue.md") or queue.read_file(queue.QUEUE_PATH)
     waiting = len(queue.pending(text, limit=None)) if text else 0
 
-    per_run = MAX_PAPERS_PER_RUN
+    # `MAX_PAPERS_PER_RUN` is the cap, not the rate, and this gauge read it as
+    # the rate for its whole life. The research seat's correction of 2026-11-02:
+    # the run limits intake at 20, then `reading_queue.merge` fronts the queue
+    # and trims the intake to `20 - len(first)`, so the number of queued papers
+    # a run actually reads is 20 minus the queue take, and the queue take
+    # varies. `MAX_PER_RUN` bounds it, so the honest answer here names the
+    # worst case alongside the best, and the measured number is in the
+    # composition line every run prints.
+    taken = min(waiting, queue.MAX_PER_RUN)
+    per_run = max(MAX_PAPERS_PER_RUN - taken, 0)
     runs = -(-depth // per_run) if per_run else 0
     expected = guard.cost_usd(expected_prompt_tokens(),
                               EXPECTED_COMPLETION_TOKENS, MODELS[0])
@@ -1097,11 +1125,24 @@ def drain() -> str:
         f"distill queue: {depth} papers, of which {threads} are the standing "
         f"threads and {deep} are deep_read; {waiting} more in the reading queue",
         f"read in full to date: {read_in_full} papers",
+        # Asked because the research seat asked for it on 2026-11-02 and no
+        # surface could answer it. A paper distilled from its abstract has its
+        # appendix results unextracted, and until `--ids` there was no
+        # route that could reach one. This number is what decides whether that
+        # route is worth more than a gauge, and a sentence is not a number.
+        f"distilled from an abstract alone: {abstract_only} of {distilled} "
+        "papers already read, each one an appendix nothing has extracted; "
+        "`--ids` is the route that re-reads them",
     ]
     lines += cost_report(guard, MODELS[0])
+    best = -(-depth // MAX_PAPERS_PER_RUN) if MAX_PAPERS_PER_RUN else 0
     lines += [
         f"the queue clears in {runs} daily run{'s' if runs != 1 else ''} for "
         f"about ${depth * expected:.2f} in total",
+        f"  that is the rate with today's reading queue in front of it: "
+        f"{MAX_PAPERS_PER_RUN} a run less the {taken} the queue takes. With an "
+        f"empty reading queue it is {best} run{'s' if best != 1 else ''}, and "
+        f"{runs} is the number to plan with while {waiting} lines wait",
     ]
     if runs > 7:
         lines.append(
@@ -1116,6 +1157,10 @@ def drain() -> str:
         lines.append(
             f"inside the week the directive asks for: {runs} runs at "
             f"{per_run} papers.")
+    # The third number, after the depth and the rate. Both of those can read
+    # healthy while a named part of the queue is not moving, and this is the
+    # only line here that can say so.
+    lines += unreachable(depth, threads, deep_unreached, per_run)
     print("\n".join(lines))
     return lines[-1]
 
@@ -1181,6 +1226,186 @@ def bake_off(n_papers: int = 8, models: list[str] | None = None) -> list[dict]:
     return results
 
 
+#: The columns the walk below reads off an intake row, in the order it reads
+#: them. Both intake routes hand back this shape, because the walk is written
+#: once and must not learn which route a row arrived by.
+INTAKE_COLUMNS = ("id", "title", "abstract", "triage_decision", "source")
+
+
+def explicit_intake(conn, paper_ids, shas=None, force=False):
+    """The papers a caller named, whether or not the queue can still see them.
+
+    `distill_queue` is `where p.distilled_at is null` (db/schema.sql), so a
+    paper leaves it the moment this job marks it and never comes back. That is
+    right for a blackboard and it also means the only `insert into claims`
+    outside `tests/` can never be aimed at a paper twice.
+
+    The research seat measured what that costs on 2026-11-02. Three papers in
+    one reading-queue block were distilled from their abstracts alone, five
+    claims each, and every result in their appendices is unextracted today and
+    unextractable by any route that existed. The gap is the class and not the
+    row: every appendix result in every abstract-only paper. No credential
+    opened it either, because `mcp/server.py` allows one SELECT and sets the
+    transaction read-only, so two seats routed a claim request as though an
+    absent `NEON_RO_URL` were the blocker when there was no write route at all.
+
+    This is the route. It reads `papers` rather than the view, and what makes it
+    safe to aim at a paper twice is that the claims it writes carry a real
+    `prompt_sha`, so a second reading is distinguishable from the first by the
+    column that exists for exactly that question.
+
+    That is also the answer to the design question the handoff attached, and it
+    is worth saying because the question was asked about a different route. A
+    hand-derived claim has no prompt and would be indistinguishable from a
+    legacy NULL, so a hand-write route needs a sentinel that does not exist.
+    This route is not that route: every row it writes was written by a prompt
+    whose sha is on it. The sentinel stays owed and is carded rather than
+    improvised here, because a sentinel that overloads NULL repeats the defect
+    it was meant to fix.
+
+    Returns `(rows, lines)`. `rows` are in the order the caller named them, in
+    `INTAKE_COLUMNS` shape. `lines` is what the run says about what it is doing,
+    returned rather than printed so a test can read it.
+    """
+    wanted = []
+    for raw in paper_ids or []:
+        pid = (raw or "").strip()
+        if pid and pid not in wanted:
+            wanted.append(pid)
+    if not wanted:
+        return [], ["an explicit list was given and it parsed to no ids"]
+
+    # `papers`, not `distill_queue`. The left join is what lets a paper with no
+    # triage row be named at all: the view's filter is `decision in ('distill',
+    # 'deep_read')`, and a caller naming an id has made that decision already.
+    found = {}
+    for row in conn.execute(
+        """
+        select p.id, p.title, p.abstract,
+               coalesce(t.decision, 'distill'), p.source, p.distilled_at
+        from papers p
+        left join latest_triage t on t.paper_id = p.id
+        where p.id = any(%s)
+        """,
+        (wanted,),
+    ).fetchall():
+        found[row[0]] = row
+
+    # Asked rather than assumed, the way every other optional column in this
+    # file is asked about. `prompt_sha` ships with the code that writes it and
+    # the schema is applied by hand, so a deploy that lands first would make
+    # this statement raise, and a raised statement aborts the whole transaction
+    # rather than skipping one guard. On a database without the column there is
+    # no evidence about what has been read, which is the same answer a NULL
+    # gives and takes the same branch: read it again.
+    # `prompt_sha` is asked about rather than assumed, the way every other
+    # optional column in this file is. It ships with the code that writes it
+    # and the schema is applied by hand, so on a database the schema run has
+    # not reached yet this statement would raise, and a raised statement aborts
+    # the whole transaction rather than skipping one guard. Where the column is
+    # absent there is no evidence about what has been read, which is the same
+    # answer a NULL gives and takes the same branch: read it again.
+    stamped = {}
+    rows, lines = [], []
+    stamping = has_column(conn, "claims", "prompt_sha")
+    if stamping:
+        for pid, sha in conn.execute(
+            "select paper_id, prompt_sha from claims where paper_id = any(%s)",
+            (wanted,),
+        ).fetchall():
+            stamped.setdefault(pid, []).append(sha)
+    else:
+        lines.append("claims.prompt_sha is missing, so nothing here can tell a "
+                     "second reading from a first and every named paper is "
+                     "read again; run db/schema.sql")
+
+    today = {sha for sha in (shas or {}).values() if sha}
+    missing = [pid for pid in wanted if pid not in found]
+    if missing:
+        lines.append(
+            "no row in `papers` for " + ", ".join(missing)
+            + "; ingest them first with `modal run pipeline/ingest.py "
+              "--ids <ids>`, because this route reads the corpus and does "
+              "not fetch")
+    for pid in wanted:
+        row = found.get(pid)
+        if row is None:
+            continue
+        existing = stamped.get(pid, [])
+        # A NULL `prompt_sha` means "written before the column existed", so it
+        # is not evidence that today's prompt has read this paper. Any NULL in
+        # the set sends the paper through, which is the conservative direction:
+        # re-reading a legacy paper costs one request, and skipping it leaves
+        # the gap this route exists to close.
+        known = [s for s in existing if s]
+        read_already = (
+            bool(known) and len(known) == len(existing) and bool(today)
+            and all(s in today for s in known)
+        )
+        when = row[5]
+        stamp = when.date() if hasattr(when, "date") else when
+        if read_already and not force:
+            lines.append(
+                f"{pid}: {len(existing)} claims already carry a prompt_sha this "
+                "run would write, so this would be the same reading twice; "
+                "skipped. `--force` reads it again and the new claims append "
+                "beside the old ones rather than replacing them")
+            continue
+        rows.append(tuple(row[:5]))
+        if when is not None:
+            lines.append(
+                f"{pid}: distilled {stamp} with {len(existing)} claims already, "
+                "named explicitly, so it is read again; `distill_queue` cannot "
+                "see it and never will")
+        else:
+            lines.append(f"{pid}: never distilled, read now")
+    return rows, lines
+
+
+def unreachable(depth: int, threads: int, deep_unreached: int,
+                per_run: int) -> list[str]:
+    """The third number, which is neither the depth nor the rate.
+
+    The research seat's reading of 2026-11-02, checked against the code it
+    names. Two numbers describe this queue today, a depth and a rate, and both
+    can read healthy while a named part of the queue is not moving at all. The
+    intake query orders a title matching `priority.PRIORITY_PATTERNS` ahead of
+    everything, `deep_read` second and `published_at desc` third. So a paper
+    matching no pattern sits behind every paper that does, every run, and when
+    the standing threads alone are deeper than one run's budget that paper is
+    not draining slowly. It is not draining.
+
+    `drain_forecast` says "N more runs" from `depth / per_run`, and that
+    sentence is true of the queue and false of that paper. These are the lines
+    that say so. Nothing is said when the threads fit inside a run, because
+    then the ordering does reach the rest and the forecast is the whole story.
+    """
+    rest = max(depth - threads, 0)
+    if per_run <= 0:
+        return [f"per-run budget is {per_run}, so nothing drains at all"]
+    if threads < per_run:
+        return [
+            f"reachable: the {threads} standing-thread papers fit inside a "
+            f"{per_run}-paper run, so the {rest} behind them are reached this "
+            "run and the forecast above is the whole story"
+        ]
+    return [
+        f"UNREACHABLE: {threads} of the {depth} queued papers match a standing "
+        f"thread and a run reads {per_run}, so the {rest} that match none sit "
+        "behind a set that refills faster than the ordering empties it. They "
+        "are not draining slowly, they are not draining, and the forecast "
+        "above is a sentence about the queue rather than about them.",
+        f"  {deep_unreached} of those {rest} are deep_read, and they are the "
+        "alarm: triage asked for a full read, and the intake ordering puts a "
+        "thread title ahead of `deep_read` unconditionally. That is deliberate "
+        "(the owner's order of 2026-09-29) and it is why raising the per-run "
+        "cap does not reach them.",
+        "  the route that does reach them is naming them: `modal run "
+        "pipeline/distill.py --ids <id>,<id>`, which is the same route a "
+        "re-read of an abstract-only paper takes.",
+    ]
+
+
 @app.function(
     # 15:00 UTC as of 2026-09-30, moved from 11:30, and the slot is load-bearing
     # rather than incidental now. Moonshot's organization concurrency is 1, so a
@@ -1209,13 +1434,19 @@ def bake_off(n_papers: int = 8, models: list[str] | None = None) -> list[dict]:
     timeout=5400,
 )
 def distill(max_papers: int = MAX_PAPERS_PER_RUN, queue_text: str | None = None,
-            cap_usd: float = CAP_USD):
+            cap_usd: float = CAP_USD, paper_ids: list[str] | None = None,
+            force: bool = False):
     """The day's drain: the reading queue, then the standing threads, then intake.
 
     `queue_text` is docs/research/reading-queue.md's content. The scheduled run
     leaves it None and reads the copy baked into the image; `modal run` passes
     the working copy, so a line appended this morning is read this morning
     rather than after the next deploy.
+
+    `paper_ids` replaces all three sources with the ids a caller names, read out
+    of `papers` rather than out of `distill_queue`. It is the only route to a
+    paper the queue has already lost, and `explicit_intake` is where the reason
+    that matters is written down. The scheduled run never passes it.
     """
     import os
 
@@ -1269,59 +1500,95 @@ def distill(max_papers: int = MAX_PAPERS_PER_RUN, queue_text: str | None = None,
         # firehose happened to deliver, because a queue line is a person
         # asking and the intake is a subscription.
         queue = reading_queue()
-        text = queue_text
-        if text is None:
-            text = queue.read_file("/root/reading-queue.md") or queue.read_file(queue.QUEUE_PATH)
-        if text:
-            # A blocked skill's request goes before a sourced skill's. The
-            # reason is in reading_queue.pending's docstring: FIFO is right for
-            # a queue of equals and these are not equals, because one line
-            # unblocks a draft that cannot cite a claim and the next one
-            # footnotes a skill that already cites twenty.
-            sourced = queue.skills_with_claims(conn)
-            waiting = queue.pending(text, limit=None, sourced=sourced)
-            requested = waiting[:queue.MAX_PER_RUN]
-            blocked_first = [i.asked_by for i in requested
-                             if i.asked_by and i.asked_by.rstrip("/") not in sourced]
-            print(f"reading queue: {len(waiting)} pending, {len(requested)} taken this run")
-            print(f"reading-queue: {len(sourced)} skills cite claims; "
-                  f"{len(set(blocked_first))} skill(s) in this batch cite none "
-                  f"and were served first: {sorted(set(blocked_first))}")
+        named = [pid for pid in (paper_ids or []) if (pid or "").strip()]
+        if named:
+            # ADR-35's order arbitrates between a queue and a firehose. An
+            # explicit list is neither: it is a caller who has already decided,
+            # so there is nothing to arbitrate and both other sources are
+            # skipped rather than ranked. Said on the first line rather than
+            # the last, because a run that reads 3 papers instead of 20 should
+            # say why before it spends anything.
+            print(f"explicit list: {len(named)} paper id(s) named, so the "
+                  "reading queue and the day's intake are both skipped")
+            first = []
+            papers, notes = explicit_intake(
+                conn, named,
+                shas={kind: load_prompt(kind)[1] for kind in PROMPTS},
+                force=force,
+            )
+            for note in notes:
+                print(f"  {note}")
+            if len(papers) > max_papers:
+                # Never truncated. A caller naming 30 ids and getting 20 with
+                # no line about it is the silent half-answer this route exists
+                # to stop being, so `cap_usd` is the stop and it says so.
+                print(f"  {len(papers)} papers named against max_papers="
+                      f"{max_papers}; the named list wins, and the "
+                      f"${cap_usd:.2f} cap is what stops this run")
+            print(f"{len(papers)} papers to distill, every one of them named")
         else:
-            requested = []
-            print("reading queue: unreadable from here, so the day's intake only. "
-                  "The file is baked into the image; check the deploy.")
-        first = queue.resolve(conn, requested,
-                              fetch_metadata=read_paper().fetch_metadata) if requested else []
-        # Committed before a single claim is written: a paper ingested because
-        # someone asked for it should stay in the corpus even if the provider
-        # rate-limits this run to a stop two papers later.
-        conn.commit()
+            text = queue_text
+            if text is None:
+                text = queue.read_file("/root/reading-queue.md") or queue.read_file(queue.QUEUE_PATH)
+            if text:
+                # A blocked skill's request goes before a sourced skill's. The
+                # reason is in reading_queue.pending's docstring: FIFO is right for
+                # a queue of equals and these are not equals, because one line
+                # unblocks a draft that cannot cite a claim and the next one
+                # footnotes a skill that already cites twenty.
+                sourced = queue.skills_with_claims(conn)
+                waiting = queue.pending(text, limit=None, sourced=sourced)
+                requested = waiting[:queue.MAX_PER_RUN]
+                # `asking_skill`, not `asked_by`. This sentence counts "skill(s) in
+                # this batch that cite none", and `asked_by` is the display field, so
+                # it counted the chair and the research seat among the skills: both
+                # sign lines in prose, neither is in any `sourced` set, and the real
+                # starved skill was one entry in a list of three. It read `the` for
+                # all of them until the display field was widened on 2026-11-02,
+                # which would have made this log print the chair's whole signature
+                # under a sentence that says skill. The ordering above has always
+                # used `asking_skill`; this is the log catching up to it.
+                blocked_first = [i.asking_skill for i in requested
+                                 if i.asking_skill and i.asking_skill not in sourced]
+                print(f"reading queue: {len(waiting)} pending, {len(requested)} taken this run")
+                print(f"reading-queue: {len(sourced)} skills cite claims; "
+                      f"{len(set(blocked_first))} skill(s) in this batch cite none "
+                      f"and were served first: {sorted(set(blocked_first))}")
+            else:
+                requested = []
+                print("reading queue: unreadable from here, so the day's intake only. "
+                      "The file is baked into the image; check the deploy.")
+            first = queue.resolve(conn, requested,
+                                  fetch_metadata=read_paper().fetch_metadata) if requested else []
+            # Committed before a single claim is written: a paper ingested because
+            # someone asked for it should stay in the corpus even if the provider
+            # rate-limits this run to a stop two papers later.
+            conn.commit()
 
-        # The owner's order of 2026-09-29, in as many words: the reading queue
-        # first (that is `first`, above), then the four standing threads, then
-        # the rest. The threads outrank `deep_read` here and that is deliberate:
-        # `deep_read` is triage's opinion about one paper and a thread is the
-        # owner's standing instruction about a subject, so the standing
-        # instruction wins and triage's ranking breaks the tie inside it.
-        #
-        # `pipeline/priority.py` owns the term list, shared with triage, because
-        # the threads triage promotes and the threads this job reads first have
-        # to be the same threads.
-        intake = conn.execute(
-            """
-            select id, title, abstract, triage_decision, source
-            from distill_queue
-            order by case when title ilike any(%s) then 0 else 1 end,
-                     case triage_decision when 'deep_read' then 0 else 1 end,
-                     published_at desc nulls last
-            limit %s
-            """,
-            (priority().PRIORITY_PATTERNS, max_papers),
-        ).fetchall()
-        papers = queue.merge(first, intake, max_papers)
-        print(f"{len(papers)} papers to distill: {len(first)} from the reading "
-              f"queue, {len(papers) - len(first)} from the day's intake")
+            # The owner's order of 2026-09-29, in as many words: the reading queue
+            # first (that is `first`, above), then the four standing threads, then
+            # the rest. The threads outrank `deep_read` here and that is deliberate:
+            # `deep_read` is triage's opinion about one paper and a thread is the
+            # owner's standing instruction about a subject, so the standing
+            # instruction wins and triage's ranking breaks the tie inside it.
+            #
+            # `pipeline/priority.py` owns the term list, shared with triage, because
+            # the threads triage promotes and the threads this job reads first have
+            # to be the same threads.
+            intake = conn.execute(
+                """
+                select id, title, abstract, triage_decision, source
+                from distill_queue
+                order by case when title ilike any(%s) then 0 else 1 end,
+                         case triage_decision when 'deep_read' then 0 else 1 end,
+                         published_at desc nulls last
+                limit %s
+                """,
+                (priority().PRIORITY_PATTERNS, max_papers),
+            ).fetchall()
+            papers = queue.merge(first, intake, max_papers)
+            print(f"{len(papers)} papers to distill: {len(first)} from the reading "
+                  f"queue, {len(papers) - len(first)} from the day's intake")
         if not papers:
             return 0
 
@@ -1714,18 +1981,37 @@ def distill(max_papers: int = MAX_PAPERS_PER_RUN, queue_text: str | None = None,
 @app.local_entrypoint()
 def main(max_papers: int = MAX_PAPERS_PER_RUN,
          queue: str = "docs/research/reading-queue.md",
-         cap_usd: float = CAP_USD):
+         cap_usd: float = CAP_USD,
+         ids: str = "",
+         force: bool = False):
     """A manual run sends the working copy of the reading queue, not the baked one.
 
         modal run pipeline/distill.py --max-papers 8
         modal run pipeline/distill.py --queue /dev/null     # the intake alone
         modal run pipeline/distill.py --max-papers 1 --cap-usd 0.15   # smoke run
+        modal run pipeline/distill.py --ids arxiv:2609.08371          # named
+        modal run pipeline/distill.py --ids a,b --force               # again
+
+    `--ids` is comma-separated, it is spelled the way `pipeline/ingest.py`
+    spells the same idea, and it is the only way to aim this job at a
+    paper `distill_queue` has already dropped, which is every paper it has ever
+    read. Without `--force` a paper whose claims already carry a prompt_sha this
+    run would write is skipped and says so, because reading the same paper with
+    the same prompt twice writes a second set of indistinguishable claims.
     """
-    text = pathlib.Path(queue).read_text() if pathlib.Path(queue).exists() else None
-    if text is None:
-        print(f"no reading queue at {queue}; the run will use the image's copy")
+    named = [pid.strip() for pid in ids.split(",") if pid.strip()]
+    text = None
+    if named:
+        # The reading queue is not read at all on this path, so it is not read
+        # off disk either. A run that prints "no reading queue at ..." while
+        # being told to ignore the reading queue is a line that only confuses.
+        print(f"{len(named)} paper id(s) named: {', '.join(named)}")
+    else:
+        text = pathlib.Path(queue).read_text() if pathlib.Path(queue).exists() else None
+        if text is None:
+            print(f"no reading queue at {queue}; the run will use the image's copy")
     print(f"claims embedded: "
-          f"{distill.remote(max_papers, queue_text=text, cap_usd=cap_usd)}")
+          f"{distill.remote(max_papers, queue_text=text, cap_usd=cap_usd, paper_ids=named, force=force)}")
 
 
 @app.local_entrypoint()
