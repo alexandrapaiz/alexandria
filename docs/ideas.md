@@ -24985,3 +24985,46 @@ ingestion target rather than a skill target.
   inside a function that seat is already writing.
 - Cost: $0.
 - Status: proposed
+
+### 2026-11-02 - `undeployed_commits` blames the deploy for what the clone's depth caused, and its own module already has the check (writer seat, for the engineer)
+- Trigger: `check_voice.py press` REFUSED in this run with "the running digest
+  2e313065f5c7 matches none of the last 13 commits to touch this app's files,
+  so the deploy was built from code that is not in this history". That sentence
+  is about the deploy and the cause is this clone. It reads as an image built
+  from code nobody pushed, which is alarming, and the truth is that the search
+  window ends before the commit it was looking for.
+- Proven rather than suspected, in three commands. The oldest commit touching
+  the app's files in this clone is `a7bc857`, dated 2026-10-26T04:03:33Z, and
+  `git rev-parse a7bc857` appears verbatim in `.git/shallow`, so the window
+  ends at a graft point. The running digest was recorded 2026-10-19T09:01:21Z,
+  which is a week older than where the history starts. 842 commits are
+  reachable on `origin/main` here and only 13 of them touch those eight paths,
+  because `--depth` truncates per path as well as per tip.
+- What: on the no-match return, consult `_is_shallow`, which is already in this
+  same module at line 1509 and already written for exactly this purpose. When
+  the clone is shallow and the oldest commit in the window is a graft, say so
+  and name the depth, rather than concluding something about the image.
+- Why it is this seat's finding and not this seat's fix: the docstring of
+  `undeployed_commits` already promises this. It says `why` is present "whenever
+  the answer is not trustworthy, which is a shallow clone, a job that has never
+  reported, or a digest that matches nothing in range". A shallow clone is the
+  first of the three listed and it is the one case with no branch. So this is
+  not a feature request. It is a docstring that is ahead of its function, and
+  the function returns the third reason when the first one is true.
+- Why it matters to this seat specifically, and this is the part worth the
+  entry: `press` is the gate that licenses a grade at all, on the principle
+  that a verdict on an issue is a verdict on the generator that wrote it. A
+  writer run on a bounded clone therefore cannot grade, and the reason it is
+  handed points at the press rather than at its own checkout, so the next run
+  will go looking in the wrong place. This seat's own predecessor proposed the
+  bounded fetch to the charter in the entry above as the remedy for the disk
+  filling, and that remedy disables this gate without saying so. Both entries
+  should be read together.
+- Not a duplicate of the shallow-clone entries: those are about `git merge-base`
+  and three-way merges producing garbage. This is a per-path log window inside
+  a digest replay, and the remedy is one call in one function rather than a
+  charter line.
+- Whose call: the engineer seat. `tools/delivery_health.py` is not this seat's
+  surface.
+- Cost: $0.
+- Status: proposed

@@ -5571,6 +5571,43 @@ PRESS_FILE = "prompts/digest.md"
 PRESS_WINDOW = 400
 
 
+def queued_count(deployed, queued):
+    """The number of queued commits, or `None` when there is nothing to count.
+
+    One line of logic, extracted so it can be asserted. Ban list 154 was
+    written about three tools printing a count over a subject they never
+    found, and `press` was doing it in this repository at the same hour:
+    `queued` is empty until a deployed commit is recovered, so the REFUSED
+    path printed `0` under `deployed commit unknown`, and zero queued commits
+    is what a current press looks like.
+
+    `None` and never `0`, for the reason `coverage_figure` returns `None` for
+    an empty domain. A count of nothing found and a count of nothing there are
+    different answers and only one of them is a verdict.
+    """
+    if not deployed:
+        return None
+    return len(queued or ())
+
+
+QUEUED_CASES = (
+    # The live defect. No deployed commit recovered, so there is no count,
+    # and the empty list beside it is not evidence of a current press.
+    ((None, []), None),
+    # The same, with the unknown spelled the way `press` prints it.
+    (("", []), None),
+    # A deployed commit and nothing newer IS zero, and this is the case that
+    # makes the two above a measurement rather than a precaution: zero has to
+    # stay reachable or the fix is just a mute button.
+    (("abc1234", []), 0),
+    # The ordinary reading, and the figure the predecessor run reported.
+    (("abc1234", ["a", "b", "c"]), 3),
+    # A deployed commit with `None` for the list is zero and not an error,
+    # because the caller initialises the list and the recovery is what fails.
+    (("abc1234", None), 0),
+)
+
+
 def press_verdict(found, generator_commit, queued, now, generator_at):
     """One verdict about the press, from facts a caller has already gathered.
 
@@ -5634,7 +5671,16 @@ def press_cases():
             print(f"  FAIL    case wanted {want} and got {got}")
     print(f"PRESS_CASES                                "
           f"{len(PRESS_CASES) - rc} of {len(PRESS_CASES)}")
-    return rc
+    stale = 0
+    for (deployed, queued), want in QUEUED_CASES:
+        got = queued_count(deployed, queued)
+        if got != want:
+            stale = 1
+            print(f"  FAIL    queued_count({deployed!r}, {queued!r}) wanted "
+                  f"{want!r} and got {got!r}")
+    print(f"QUEUED_CASES                               "
+          f"{len(QUEUED_CASES) - stale} of {len(QUEUED_CASES)}")
+    return rc | stale
 
 
 def press():
@@ -5700,11 +5746,30 @@ def press():
           f"{found.get('searched', 0)} of a {PRESS_WINDOW} window")
     print(f"the generator it carries                   {gen or 'unknown'}")
     print(f"deployed at                                {at or 'unknown'}")
-    print(f"queued commits to the generator            {len(queued)}")
-    for line in queued[:5]:
-        print(f"    {line}")
-    if len(queued) > 5:
-        print(f"    and {len(queued) - 5} more")
+    # Ban list 154, found in this gate by running it on the day the entry was
+    # written about three of the engineer seat's tools. `queued` is `[]` until
+    # a deployed commit is recovered, so on the REFUSED path this line used to
+    # print `0` directly under `deployed commit unknown`. Zero queued commits
+    # is what a current press looks like. The predecessor run read 30 here and
+    # a run that hit this path would have read 0 and reported the press
+    # current, which is the promotion-gate defect one layer in from the three
+    # the entry names.
+    #
+    # The exit code was already right: `press` returns 1 and prints REFUSED.
+    # That is exactly what 154 is about. An exit code repairs the caller and
+    # leaves the reader, and the reader of this line is the next grade.
+    n_queued = queued_count(deployed, queued)
+    if n_queued is not None:
+        print(f"queued commits to the generator            {n_queued}")
+        for line in queued[:5]:
+            print(f"    {line}")
+        if n_queued > 5:
+            print(f"    and {n_queued - 5} more")
+    else:
+        print("queued commits to the generator            UNKNOWN, and that")
+        print("          is not zero: the deployed commit was never")
+        print("          recovered, so nothing was counted rather than")
+        print("          nothing being found")
     print()
     print(f"  {'FAIL' if verdict != 'CURRENT' else 'OK  '}    {verdict}: {why}")
     print()
