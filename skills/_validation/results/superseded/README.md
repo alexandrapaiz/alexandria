@@ -147,6 +147,36 @@ invisible to both.
   does not write `site/`. Fixing it in one of the two files would make the
   page and the gate disagree, which is worse than the defect.
 
+- `2026-11-02-lexical-2.2-instrument-repairs.json` and its `.txt`. Written by
+  the run that repaired the trigger instrument (#692), superseded by the next
+  run of the same day, which revised `skill-library-engineering` delta 3
+  against a third paper (#706). **Fifth day in a row, and the first instance
+  that arrived from the opposite direction.** Every collision recorded above
+  was found by `trigger_test.py --receipts` going red. This one passed the
+  receipts gate and failed `tools/panel_validator.py`, which reported
+  `skill-library-engineering` "measured against an earlier text
+  (43f9a8f08daadd2e, and this one is 596ea1c9e2a73054)" while the receipts
+  check said all nine described today's text.
+
+  That is the opposite-directions finding above, observed from its other side
+  and therefore confirmed rather than merely argued. `delta3-third-paper`
+  sorts alphabetically before `instrument-repairs`, so the stable sort over a
+  sorted glob in `trigger_test.py` kept the correct new bundle and the
+  `reverse=True` sort in `panel_validator.py` kept the stale one. Had this
+  run's bundle been named anything sorting after `instrument-repairs`, the two
+  verdicts would have swapped, and the gate the seat is told to run would have
+  been the one that lied.
+
+  It is also a clean control, the third in this directory. The delta 3
+  revision changed the skill's body, its `version` and one `Validation:` tag
+  and left its `description` byte-identical, so the composition the engine
+  scores did not move: all nine suites score identically case for case across
+  the two bundles, 7/8, 6/7, 7/7, 6/7, 7/8, 7/8, 7/7, 5/6 and 9/9, totalling
+  61 of 67 at reliability 0.9104 in both, and the only `skill_sha256` that
+  differs is the revised skill's own. The record now reads: every pair where
+  no description changed moved nothing, and the one pair where a description
+  changed moved three cases in two other suites.
+
 The real repair is in the ledger and in
 `INC-2026-10-26-the-library-shows-the-older-of-two-receipts-dated-the-same-day`:
 tie-break on a timestamp, and record the library membership in the bundle so a

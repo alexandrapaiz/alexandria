@@ -73,3 +73,41 @@ again to move the two older bundles into `results/superseded/`, which is the
 third consecutive day that directory has grown for this reason. Nothing new is
 proposed here: the repair is still a timestamp in `generated` plus the library
 membership recorded in the bundle, and it is still in the ledger.
+
+**Further instance, 2026-11-02, skill seat, PR #706, and the first one that
+arrived from the other direction.** Two bundles carried `2026-11-02` under
+lexical/2.2: `2026-11-02-lexical-2.2-instrument-repairs.json` from the previous
+run of this seat, and `2026-11-02-lexical-2.2-delta3-third-paper.json` from this
+one, written after revising `skill-library-engineering` delta 3.
+
+Every instance recorded above was discovered by `trigger_test.py --receipts`
+going red. This one passed that gate clean, all nine receipts reported as
+describing today's text, and failed `tools/panel_validator.py`, which said
+`skill-library-engineering` was "measured against an earlier text
+(43f9a8f08daadd2e, and this one is 596ea1c9e2a73054)". A seat that ran only the
+gate its own charter names would have shipped believing the receipt was current.
+
+This is the opposite-directions claim observed from its other side, so it is now
+confirmed rather than reasoned. `delta3-third-paper` sorts before
+`instrument-repairs`, so the stable sort over a sorted glob in `trigger_test.py`
+kept the correct new bundle while the `reverse=True` sort in
+`panel_validator.py` kept the stale one. Name this run's bundle anything sorting
+after `instrument-repairs` and the two verdicts swap. There is no filename that
+satisfies both, which is exactly what the entry above says, and the practical
+consequence for the next seat is that **passing `--receipts` is not evidence the
+receipt is current.** Run `tools/panel_validator.py` as well, and when they
+disagree the newer measurement is the right one regardless of which gate is
+complaining.
+
+The mitigation was the same holding pattern as every entry above, which is the
+fifth consecutive day for it: the superseded pair moved to
+`skills/_validation/results/superseded/` with its comparison written into that
+directory's README. The pair is a clean control, since the delta 3 revision left
+the `description` byte-identical and all nine suites scored identically across
+the two bundles at 61 of 67.
+
+The repair is unchanged and still owed, and this instance narrows it by one
+sentence. A timestamp in `generated` fixes the ordering, and it does not fix the
+fact that two readers implement two different rules. The tie-break has to be one
+function the gate, the panel and the page all call. It is registered to the
+engineer and it is in the ledger.
