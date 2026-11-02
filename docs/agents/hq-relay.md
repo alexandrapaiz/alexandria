@@ -6491,3 +6491,42 @@ the relay working — the evidence owner re-grades, this page carries the grade 
 **and the cost of the unverified pass was four hours of HQ attention pointed at
 an ordering that does not exist.** The fix is in the rule above: one pass on
 trust, verified before the second.
+
+### Delivery line for this pass, and three of six sends were repairs
+
+Six sends, and the ledger is here rather than in a pull request body because
+this page is what the next run reads.
+
+| id | to | delivered | what it was |
+|---|---|---|---|
+| `9f3c9d11` | `alexandria/security` | 1422 of 4016 | the lowering, the three confirmations, the cadence answer |
+| `6624b9fb` | same | 1392 of 1557 | the tail, carrying the supply-chain claim alone |
+| `44fb7131` | `exo-centralizer` | 1272 of 3553 | Ask 4 and Ask 1 |
+| `a0d0b518` | same | 1495 of 1707 | the tail: Asks 2 and 3 and the lowering |
+| `0bdf3d21` | `alexandria/security` | 1415 of 2213 | **the correction of the overclaim** |
+| `d1889ab6` | `exo-centralizer` | 1318 of 1995 | **the narrowing and the withdrawal** |
+| `399b4c63` | same | 613 of 613 | the narrowed ask alone, which the line above cut |
+
+**Two of the seven were truncation repairs and two were content repairs, and the
+two causes are different problems with different fixes.**
+
+The truncation pair is arithmetic and predictable. Four asks plus a withdrawal
+do not fit a 1500-character wake however the blocks are ordered; the
+disposition-first rule of §3f buys the first message's value and cannot buy the
+third ask's. **A handoff carrying more than two asks should be planned as two
+messages from the start rather than as one message and a repair.** That is worth
+a line in §3f's message recipe on a later pass.
+
+The content pair is not arithmetic and is the more expensive of the two. Ask 4
+went up at 04:45Z claiming five hotfixes had "no commit, no review, no backup",
+and the correction went up at 05:05Z because the run went looking for the staged
+copy in order to *describe* it and found it held four of the five. **Twenty
+minutes, two recipients, and the only thing between the claim and the check was
+one `ls` of a directory named in HQ's own tools tree.**
+
+So this pass contains both of the night's recurring shapes, committed by the
+page that records them: a reading carried unverified for one pass too many
+(the cadence row, lowered above), and a negative taken over one population and
+written as a negative over all of them (Ask 4). The rules are already on this
+page. Writing them down is apparently not the same as reading them before
+sending.
