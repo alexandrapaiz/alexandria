@@ -1,0 +1,458 @@
+[
+ {
+  "vp": "phone",
+  "title": "short28",
+  "mode": "plain",
+  "lines": [
+   333,
+   67
+  ],
+  "measure": 342,
+  "fs": "34px",
+  "text": "Agents that read their logs"
+ },
+ {
+  "vp": "phone",
+  "title": "short28",
+  "mode": "balance",
+  "lines": [
+   178,
+   222
+  ],
+  "measure": 342,
+  "fs": "34px",
+  "text": "Agents that read their logs"
+ },
+ {
+  "vp": "phone",
+  "title": "short28",
+  "mode": "pretty",
+  "lines": [
+   255,
+   145
+  ],
+  "measure": 342,
+  "fs": "34px",
+  "text": "Agents that read their logs"
+ },
+ {
+  "vp": "phone",
+  "title": "live51",
+  "mode": "plain",
+  "lines": [
+   297,
+   305,
+   156
+  ],
+  "measure": 342,
+  "fs": "34px",
+  "text": "Harness distillation without the harness at runtime"
+ },
+ {
+  "vp": "phone",
+  "title": "live51",
+  "mode": "balance",
+  "lines": [
+   297,
+   172,
+   289
+  ],
+  "measure": 342,
+  "fs": "34px",
+  "text": "Harness distillation without the harness at runtime"
+ },
+ {
+  "vp": "phone",
+  "title": "live51",
+  "mode": "pretty",
+  "lines": [
+   297,
+   305,
+   156
+  ],
+  "measure": 342,
+  "fs": "34px",
+  "text": "Harness distillation without the harness at runtime"
+ },
+ {
+  "vp": "phone",
+  "title": "mid75",
+  "mode": "plain",
+  "lines": [
+   320,
+   281,
+   231,
+   149
+  ],
+  "measure": 342,
+  "fs": "34px",
+  "text": "Memory routing cuts query latency by a third on simple decisions"
+ },
+ {
+  "vp": "phone",
+  "title": "mid75",
+  "mode": "balance",
+  "lines": [
+   245,
+   283,
+   193,
+   260
+  ],
+  "measure": 342,
+  "fs": "34px",
+  "text": "Memory routing cuts query latency by a third on simple decisions"
+ },
+ {
+  "vp": "phone",
+  "title": "mid75",
+  "mode": "pretty",
+  "lines": [
+   320,
+   281,
+   231,
+   149
+  ],
+  "measure": 342,
+  "fs": "34px",
+  "text": "Memory routing cuts query latency by a third on simple decisions"
+ },
+ {
+  "vp": "phone",
+  "title": "long113",
+  "mode": "plain",
+  "lines": [
+   336,
+   270,
+   270,
+   284,
+   173,
+   298,
+   40
+  ],
+  "measure": 342,
+  "fs": "34px",
+  "text": "Regularized recursive self-improvement finds better agent harnesses without gaming the benchmark it trains on"
+ },
+ {
+  "vp": "phone",
+  "title": "long113",
+  "mode": "balance",
+  "lines": [
+   336,
+   270,
+   270,
+   284,
+   173,
+   298,
+   40
+  ],
+  "measure": 342,
+  "fs": "34px",
+  "text": "Regularized recursive self-improvement finds better agent harnesses without gaming the benchmark it trains on"
+ },
+ {
+  "vp": "phone",
+  "title": "long113",
+  "mode": "pretty",
+  "lines": [
+   336,
+   270,
+   270,
+   161,
+   239,
+   258,
+   136
+  ],
+  "measure": 342,
+  "fs": "34px",
+  "text": "Regularized recursive self-improvement finds better agent harnesses without gaming the benchmark it trains on"
+ },
+ {
+  "vp": "tablet",
+  "title": "short28",
+  "mode": "plain",
+  "lines": [
+   408
+  ],
+  "measure": 632,
+  "fs": "34px",
+  "text": "Agents that read their logs"
+ },
+ {
+  "vp": "tablet",
+  "title": "short28",
+  "mode": "balance",
+  "lines": [
+   408
+  ],
+  "measure": 632,
+  "fs": "34px",
+  "text": "Agents that read their logs"
+ },
+ {
+  "vp": "tablet",
+  "title": "short28",
+  "mode": "pretty",
+  "lines": [
+   408
+  ],
+  "measure": 632,
+  "fs": "34px",
+  "text": "Agents that read their logs"
+ },
+ {
+  "vp": "tablet",
+  "title": "live51",
+  "mode": "plain",
+  "lines": [
+   610,
+   156
+  ],
+  "measure": 632,
+  "fs": "34px",
+  "text": "Harness distillation without the harness at runtime"
+ },
+ {
+  "vp": "tablet",
+  "title": "live51",
+  "mode": "balance",
+  "lines": [
+   420,
+   346
+  ],
+  "measure": 632,
+  "fs": "34px",
+  "text": "Harness distillation without the harness at runtime"
+ },
+ {
+  "vp": "tablet",
+  "title": "live51",
+  "mode": "pretty",
+  "lines": [
+   610,
+   156
+  ],
+  "measure": 632,
+  "fs": "34px",
+  "text": "Harness distillation without the harness at runtime"
+ },
+ {
+  "vp": "tablet",
+  "title": "mid75",
+  "mode": "plain",
+  "lines": [
+   610,
+   389
+  ],
+  "measure": 632,
+  "fs": "34px",
+  "text": "Memory routing cuts query latency by a third on simple decisions"
+ },
+ {
+  "vp": "tablet",
+  "title": "mid75",
+  "mode": "balance",
+  "lines": [
+   537,
+   462
+  ],
+  "measure": 632,
+  "fs": "34px",
+  "text": "Memory routing cuts query latency by a third on simple decisions"
+ },
+ {
+  "vp": "tablet",
+  "title": "mid75",
+  "mode": "pretty",
+  "lines": [
+   610,
+   389
+  ],
+  "measure": 632,
+  "fs": "34px",
+  "text": "Memory routing cuts query latency by a third on simple decisions"
+ },
+ {
+  "vp": "tablet",
+  "title": "long113",
+  "mode": "plain",
+  "lines": [
+   614,
+   563,
+   527
+  ],
+  "measure": 632,
+  "fs": "34px",
+  "text": "Regularized recursive self-improvement finds better agent harnesses without gaming the benchmark it trains on"
+ },
+ {
+  "vp": "tablet",
+  "title": "long113",
+  "mode": "balance",
+  "lines": [
+   614,
+   563,
+   527
+  ],
+  "measure": 632,
+  "fs": "34px",
+  "text": "Regularized recursive self-improvement finds better agent harnesses without gaming the benchmark it trains on"
+ },
+ {
+  "vp": "tablet",
+  "title": "long113",
+  "mode": "pretty",
+  "lines": [
+   614,
+   563,
+   527
+  ],
+  "measure": 632,
+  "fs": "34px",
+  "text": "Regularized recursive self-improvement finds better agent harnesses without gaming the benchmark it trains on"
+ },
+ {
+  "vp": "desktop",
+  "title": "short28",
+  "mode": "plain",
+  "lines": [
+   408
+  ],
+  "measure": 632,
+  "fs": "34px",
+  "text": "Agents that read their logs"
+ },
+ {
+  "vp": "desktop",
+  "title": "short28",
+  "mode": "balance",
+  "lines": [
+   408
+  ],
+  "measure": 632,
+  "fs": "34px",
+  "text": "Agents that read their logs"
+ },
+ {
+  "vp": "desktop",
+  "title": "short28",
+  "mode": "pretty",
+  "lines": [
+   408
+  ],
+  "measure": 632,
+  "fs": "34px",
+  "text": "Agents that read their logs"
+ },
+ {
+  "vp": "desktop",
+  "title": "live51",
+  "mode": "plain",
+  "lines": [
+   610,
+   156
+  ],
+  "measure": 632,
+  "fs": "34px",
+  "text": "Harness distillation without the harness at runtime"
+ },
+ {
+  "vp": "desktop",
+  "title": "live51",
+  "mode": "balance",
+  "lines": [
+   420,
+   346
+  ],
+  "measure": 632,
+  "fs": "34px",
+  "text": "Harness distillation without the harness at runtime"
+ },
+ {
+  "vp": "desktop",
+  "title": "live51",
+  "mode": "pretty",
+  "lines": [
+   610,
+   156
+  ],
+  "measure": 632,
+  "fs": "34px",
+  "text": "Harness distillation without the harness at runtime"
+ },
+ {
+  "vp": "desktop",
+  "title": "mid75",
+  "mode": "plain",
+  "lines": [
+   610,
+   389
+  ],
+  "measure": 632,
+  "fs": "34px",
+  "text": "Memory routing cuts query latency by a third on simple decisions"
+ },
+ {
+  "vp": "desktop",
+  "title": "mid75",
+  "mode": "balance",
+  "lines": [
+   537,
+   462
+  ],
+  "measure": 632,
+  "fs": "34px",
+  "text": "Memory routing cuts query latency by a third on simple decisions"
+ },
+ {
+  "vp": "desktop",
+  "title": "mid75",
+  "mode": "pretty",
+  "lines": [
+   610,
+   389
+  ],
+  "measure": 632,
+  "fs": "34px",
+  "text": "Memory routing cuts query latency by a third on simple decisions"
+ },
+ {
+  "vp": "desktop",
+  "title": "long113",
+  "mode": "plain",
+  "lines": [
+   614,
+   563,
+   527
+  ],
+  "measure": 632,
+  "fs": "34px",
+  "text": "Regularized recursive self-improvement finds better agent harnesses without gaming the benchmark it trains on"
+ },
+ {
+  "vp": "desktop",
+  "title": "long113",
+  "mode": "balance",
+  "lines": [
+   614,
+   563,
+   527
+  ],
+  "measure": 632,
+  "fs": "34px",
+  "text": "Regularized recursive self-improvement finds better agent harnesses without gaming the benchmark it trains on"
+ },
+ {
+  "vp": "desktop",
+  "title": "long113",
+  "mode": "pretty",
+  "lines": [
+   614,
+   563,
+   527
+  ],
+  "measure": 632,
+  "fs": "34px",
+  "text": "Regularized recursive self-improvement finds better agent harnesses without gaming the benchmark it trains on"
+ }
+]
