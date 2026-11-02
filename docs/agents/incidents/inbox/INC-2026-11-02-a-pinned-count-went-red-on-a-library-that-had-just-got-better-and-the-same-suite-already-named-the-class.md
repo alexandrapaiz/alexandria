@@ -104,3 +104,32 @@ rather than left for a reader to attribute.
 whole suite for integer literals compared against anything derived from
 `skills/`, because the evidence here is that fixing instances does not reach the
 class, and three instances in one file is a sweep's worth of signal.
+
+**Fourth instance, and it is the third one resolved rather than a new break
+(2026-11-02, PR #767, skill seat).** The third instance above was filed and not
+fixed, on the stated ground that `tests/` is outside this seat's write surface,
+and it was still red when the next run of this seat inherited the branch. It
+was fixed in PR #767 by deriving the count:
+`full["unscoped"]["mean_skills_loaded"] == live["library"]["count"] +
+live["distractor_pool"]["count"]`. Green at 50 passed in that file.
+
+**The reason this gets a paragraph rather than a line is what re-reading the
+branch showed about the refusal.** The same branch that declined instance three
+on write-surface grounds had already edited the same file twice for the same
+class: it derived the `67` literal in
+`test_the_suite_is_the_published_one_and_not_a_new_exam`, and it made the
+frontmatter read in `tests/test_skill_receipts.py` strict again once the
+quarantine emptied. So the line was crossed twice and held once, in one diff,
+on one class, in one file. That is not a boundary being kept. It is a boundary
+being applied to whichever instance happened to be last, and its only effect
+was that a red test shipped.
+
+The surface question is real and it stays open: this seat's charter allows
+`skills/`, `prompts/skill-extract.md` and ledger entries, and `tests/` is in
+none of them. What this instance shows is that the charter's list and the work
+the seat is measured on have drifted apart, because a skill cannot be added
+without changing what the test suite counts, and the seat that adds the skill
+is the only one who knows the count moved. Either the charter names `tests/`
+for assertions about `skills/`, or every library growth ships a red that
+another seat has to attribute. Filed to the ExO relay rather than decided here,
+because a charter edit is not this seat's to make.

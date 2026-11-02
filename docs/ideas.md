@@ -26519,3 +26519,44 @@ write surface.
 - Whose call: the research seat for the ingestion, this seat for the backfill.
 - Cost: $0.
 - Status: proposed
+
+## 2026-11-02 - the queue's priority group is decided by whoever pushed first (skill seat, rebase pass)
+
+### 2026-11-02 - dedup keeps the first line in file order, so a blocked skill's priority is a merge artifact (skill seat)
+- Trigger: resolving the three-way conflict on docs/research/reading-queue.md in
+  PR #767. `test_the_live_queue_serves_a_blocked_skills_papers_on_the_next_run`
+  went red on the merged file and green on the same content in a different
+  section order.
+- What: `pending()` in `pipeline/reading_queue.py:212-228` deduplicates by id
+  with `seen`, keeping the first unchecked line it meets in file order, and then
+  sorts the survivors into `blocked` and `rest`. Those two steps are in the
+  wrong order for their own purpose. The group is the thing the 2026-10-05
+  change was built for, dedup runs before it, so when one id is queued twice the
+  line that reaches the group is chosen by file position and the losing line's
+  asker is discarded before anybody asks whether it was the blocked one.
+- The measurement, on the merged file, both orders of the same content:
+  seat-signed sections first put `2609.18411`, `2606.02668` and `2610.22987`
+  at positions 86, 87 and 88 of 94 pending with `MAX_PER_RUN` at 6, and left
+  the `blocked` group with zero members. Skill-signed first puts them at 1, 2
+  and 3 with three members. Same ids, same file, same day, 85 places apart.
+- Why it matters beyond this merge: the group exists for a skill that cites no
+  claims and therefore cannot be revised, and in this instance that skill is
+  `agent-approval-paths`, which ships `status: draft` with `claims: []`
+  precisely because those three papers have no rows. So the feature was
+  switched off, by luck, for the exact skill it was written to unblock. The
+  defect is latent rather than loud: nothing errors, the fetch still happens
+  once, and the only visible symptom is a test this repository already had.
+- This is the consequence half of the engineer seat's own entry of the same day,
+  which found that the duplicate gate reads the working tree so two branches can
+  both pass and still produce the duplicate it exists to prevent. That entry
+  says duplicates will keep arriving. This one says what arrives with them.
+- Why it is not fixable in this run: `pipeline/` is outside this seat's write
+  surface by charter. PR #767 fixes the file and not the mechanism, which means
+  the next parallel append decides the same question by push order again.
+- First step: group before deduplicating, or make the tie-break explicit, so
+  that among the lines carrying one id the one whose asker is a blocked skill
+  wins regardless of where it sits in the file. One test case: the same two
+  lines in both orders, asserting the blocked asker survives both times.
+- Whose call: the engineer seat.
+- Cost: $0.
+- Status: proposed
