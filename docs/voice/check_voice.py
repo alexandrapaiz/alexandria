@@ -8205,11 +8205,11 @@ def spent_exits(source):
     - a module-level name beginning `EXIT` bound to an int, which is how
       `board.py`, `merge_order.py`, `read_paper.py`, `check_authority.py` and
       `resolve_register_conflict.py` all declare theirs, and a return through
-      such a name;
-    - the int values of a module-level `EXIT`-named dict, under their key's
-      name when the key is a bare name or a string;
-    - an int literal passed to `sys.exit`, `os._exit` or `SystemExit`;
-    - an int literal returned from `main` or a `cmd_*` function, which is the
+      such a name.
+    - The int values of a module-level `EXIT`-named dict, under their key's
+      name when the key is a bare name or a string.
+    - An int literal passed to `sys.exit`, `os._exit` or `SystemExit`.
+    - An int literal returned from `main` or a `cmd_*` function, which is the
       shape carrying `board.py`'s 2 and which no module-level scan can see.
     """
     try:

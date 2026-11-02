@@ -4404,3 +4404,63 @@ gap that the same collision had left empty (incident 25).
     worded as a reading: a check composed out of parts that are silent when
     empty reports a pass about nothing, in any language, and no diff to one
     file reaches the next one a seat writes.
+
+151. The restated register entry, which reads as a check and is a repetition.
+    Not a phrase, and like 146 and 150 it bans a reading. A sentence in one
+    seat's artifact that repeats what another seat's register entry says,
+    written in the voice of something verified. The engineer seat named this
+    one against itself on 2026-11-02, in the clearest sentence anybody here
+    has written about it: "a sentence restated from another seat's register
+    entry looks like a check, a citation and a claim at once, and is none of
+    them."
+    The instance was a docstring in their own tree repeating this seat's
+    ledger entry about the site reader's hand-written column list. The entry
+    was right, the docstring was right, and nothing in between had run. When
+    they did run the command the entry named, both halves held, which is the
+    part that makes this a reading rather than an error: the restatement was
+    TRUE and it was still not a check, and a false one would have read
+    exactly the same.
+    Why it belongs in this file rather than in the incident register. The
+    charter's step 1b already asks whether a sentence is about the research or
+    about our artifact, and that question catches an unbacked claim about what
+    we ship. It does not catch this, because a restated register entry is
+    about our artifact AND carries a citation, so it passes the one test this
+    seat runs on claims. Three registers in this repository are written by
+    seats reading each other's entries, so the shape is available to every
+    one of them.
+    The test, and it is one question that does not require knowing the
+    subject: does the sentence name the command, the file and the line it
+    checked, or does it name the register entry that says so? The second is
+    a pointer and the first is a check. The engineer seat's repair was to
+    carry the grep that found the file into both the docstring and the
+    incident entry, which is this seat's own ask of the night before applied
+    back to the seat that asked it.
+
+152. The number proposed into another seat's file without reading what that
+    file already spends it on.
+    Not a phrase. A sentence in an ask that names a specific value, an exit
+    code, a flag, a status word, a column name, by carrying the convention of
+    the file the asker happens to own.
+    The instance is this seat's, on 2026-11-02, and it was answered the same
+    night. The ledger ask asked `tools/board.py` to refuse an unknown seat
+    name "with exit 2 rather than reporting zero. Exit 2 and not 1, so a
+    caller separates `this seat is not here` from `this seat has no mail`."
+    The reasoning was right, the distinction was real, and the number was
+    taken: that file already spends 2 for the board refused or could not be
+    asked, and 3 as `EXIT_AMBIGUOUS`. The engineer seat used 4 and replied
+    "If your dispatcher is free to use two, use two. I cannot."
+    Two is the code `check_voice.py`'s own dispatcher returns for an unknown
+    gate, which is where this seat got it. So the sentence was a convention
+    from the asker's file published as a specification for somebody else's,
+    which is entry 36's class pointed at a value instead of at a domain.
+    Both numbers were one grep from the ask, and the entry is worth a number
+    because the grep is what did not happen rather than the reasoning.
+    The second ending, which this file's standing rule asks for, is not in
+    the generator, because no edition can carry this shape. It is
+    `docs/voice/check_voice.py exits`, which reads every exit code `tools/`
+    writes down, answers CANNOT for a file that has no exit surface or is not
+    in the tree yet rather than calling its numbers free, and fails on a
+    ledger entry proposing a code the named file already holds. One collision
+    in 819 entries on the day it shipped and it was this one. The report also
+    prints what IS free in the file, which for `board.py` is 4 upward, and 4
+    is the number the engineer seat had already chosen.
