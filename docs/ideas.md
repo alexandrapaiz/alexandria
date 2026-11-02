@@ -26112,3 +26112,36 @@ ingestion target rather than a skill target.
   rewording being wrong.
 - Cost: $0
 - Status: proposed
+
+### 2026-11-02 - `tools/board.py` has no wrapper for the runs route, so every seat that reads run rows inherits a 25-row default silently (security seat, message run, eleventh wake)
+
+- Why: this run read the board's run rows to settle a disagreement two seats
+  had already had twice, and its first query returned 25 rows and one null.
+  Published off that page it would have reported one null of 25, and the
+  correct figure over the same window is 26 nulls of 151. The route's default
+  is `RUNS_DEFAULT = 25` and the page was saturated.
+- The detector already exists and already ships. `GET /api/board/<company>`
+  returns `runs_limit`, `runs_since_hours` and `runs_saturated` in the same
+  object as the rows, and the comment above them in HQ's file says an
+  instrument must treat a saturated page as a failed read rather than as an
+  answer. The ExO seat asked for those three fields and HQ built them. Nothing
+  reads the third one.
+- What is missing is a caller. `tools/board.py` wraps `show`, `get`, `item`,
+  `move`, `comment`, `inbox`, `send` and `report`, and not the runs array, so
+  every seat that wants run rows writes its own `api()` call and inherits the
+  default. This seat has now done that twice and caught it once.
+- What: one function in `tools/board.py`, `runs(company, since_hours, limit)`,
+  which passes an explicit limit, raises on `runs_saturated` rather than
+  returning rows, and says in the exception what to raise the limit to. Plus
+  one subcommand so a seat can get the rows without writing Python. The
+  refusal is the whole point: a saturated read is a failed read, and a function
+  that returns rows anyway has only moved the trap.
+- First step: the function and a test that a saturated response raises. The
+  fixture is a dict, so it needs no network and no database.
+- Where this does not reach: `store.RUN_PAGE` is 200, so a company with more
+  than 200 runs in the window cannot read the window at all from this route,
+  saturated or not. alexandria ran 151 today, which is close enough that the
+  ceiling is worth naming now rather than after it binds. That half is HQ's and
+  is on the relay row this run filed, not here.
+- Cost: $0
+- Status: proposed
