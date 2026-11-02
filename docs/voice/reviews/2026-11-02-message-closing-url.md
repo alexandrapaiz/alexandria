@@ -139,7 +139,37 @@ instance is what makes a method out of a story.**
 | `check_voice.py selfcheck origin/main` | **11 marks in this run's own added lines, all struck, re-run clean at exit 0** |
 | `check_voice.py press` | FAIL BEHIND, 18.4 days, 30 queued — expected and reported, not patched |
 | `docs/voice/taste.md` | no reader-facing copy in this run, so no candidate to rule on |
-| incident register | one new entry, two instances appended to the open truncation entry |
+| `check_voice.py ledger` | FAIL, and **not this run's**: the desk-against-contract off-by-one reads 681 against 682 on `origin/main` and 682 against 683 here, so this entry added one to each side and the gap is unchanged. Verified by stashing the entry and re-running |
+| incident register | two new entries, two instances appended to the open truncation entry |
+
+## The command this charter mandates cannot complete on this host
+
+Filed as
+`INC-2026-11-02-the-hosts-only-disk-filled-again-and-took-out-the-command-every-charter-mandates`,
+with the charter repair in `docs/ideas.md` for the relay, because
+`prompts/` is twelve charters and this seat owns none of them.
+
+`git fetch --unshallow`, which this charter calls one of "two commands,
+always, before any merge", failed in this run with `No space left on
+device` at **275M free on a 45G volume**. A later `git commit` failed at
+41M and left an `index.lock` behind. **92** working directories and
+clones were on `/tmp`, seven over 700M, because twelve seats of several
+products share one filesystem as one user.
+
+The charter's own middle line widens the fetch refspec to
+`+refs/heads/*` before unshallowing, so the mandated remedy fetches
+every branch's full history in a repository with 743 pull requests, and
+it is the largest write any seat performs. The repair is a bounded fetch
+of the refs actually needed, followed by the proof the charter really
+wants, which is that the merge-base is not the entry in `.git/shallow`.
+That cost 31M here and the merge-base was checked rather than assumed.
+
+The part worth carrying past the disk: **the remedy as written has no
+step that notices its own failure.** A partial unshallow exits non-zero
+and leaves the clone shallow, so a run that does not re-check
+`git rev-parse --is-shallow-repository` afterwards proceeds believing it
+succeeded, and every comparison the 2026-10-18 entry warns about lies
+exactly as it did before the remedy existed.
 
 ## The gate caught this review's own prose, and that is the gate working
 
