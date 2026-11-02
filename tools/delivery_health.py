@@ -2292,16 +2292,62 @@ def deploy_facts(conn) -> dict | str:
     lands in db/schema.sql in the same change as this check and `apply_schema`
     is a separate hand-run step, so "no such table" is a state this surface
     will really meet, and it is not a broken deploy.
+
+    **The columns are the table's, not a list written here, and that is the
+    repair of 2026-11-02.** It used to name five columns, so a migration that
+    adds one would have landed in the table, been written by every job, and
+    reached no consumer through here. That miss is half a line and silent,
+    which is the shape of the partial-landing class the ExO register has four
+    instances of in eight days.
+
+    **This function is not the only reader of `deploy_runtime` outside
+    `pipeline/`, and the sentence here that said so was wrong for half a day.**
+    It was shipped on the writer seat's ledger entry, they corrected it the
+    same night, and the correction matters more than the arithmetic:
+    `site/lib/delivery.js` is the second reader, it names all seven columns by
+    hand, and it is the one that builds the `deploy` array of `/api/delivery`.
+    This function needs a connection and no agent seat holds `DATABASE_URL`,
+    which `tools/drift_watch.py` opens by settling, so **the widening above
+    landed in the reader no seat can run.** `press` and `cadence` read
+    `doc["deploy"]` off that URL and neither has ever called this function. So
+    on the day `invoked_by` lands, this reader picks it up for free and the
+    receipt every seat actually reads does not.
+
+    The command, named because a finding that names a file and not the command
+    that found it is a claim rather than a check:
+
+        grep -rn deploy_runtime --include=*.py --include=*.js . | grep -v ^./pipeline/
+
+    That gap is now held open by a gate rather than by this paragraph.
+    `tests/test_delivery_receipt.py` asserts that the site's hand list carries
+    every column `db/schema.sql` gives the table, so the next column is red in
+    the suite instead of quiet in production. The hand list is complete today;
+    what was missing was anything that would notice when it stopped being.
+
+    It is not only a future column either, and that is the part that made this
+    worth doing today rather than when the migration lands. `entrypoint` and
+    `file_count` have been in `db/schema.sql` since the table was created, the
+    schema's own comment calls `entrypoint` the value "for the deploy command",
+    and neither has ever reached a reader through here.
+
+    So the select asks for everything and the keys come from the cursor. One
+    guard: `app` is the primary key and the dict is keyed by it, so a table
+    without that column is reported rather than producing entries keyed `None`.
     """
     try:
-        rows = conn.execute(
-            "select app, runtime_sha, recorded_at, first_seen_at, notified_at "
-            "from deploy_runtime").fetchall()
+        cur = conn.execute("select * from deploy_runtime")
+        names = [d[0] for d in cur.description]
+        rows = cur.fetchall()
     except Exception as exc:
         return f"deploy_runtime could not be read: {exc}"
-    return {app: {"runtime_sha": sha, "recorded_at": recorded_at,
-                  "first_seen_at": first_seen_at, "notified_at": notified_at}
-            for app, sha, recorded_at, first_seen_at, notified_at in rows}
+    if "app" not in names:
+        return (f"deploy_runtime has no `app` column, so its rows cannot be "
+                f"keyed: {', '.join(names)}")
+    facts = {}
+    for row in rows:
+        record = dict(zip(names, row))
+        facts[record.pop("app")] = record
+    return facts
 
 
 def judge_deploy(facts: dict | str, repo_root: Path | None = None,

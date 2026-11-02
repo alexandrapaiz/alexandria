@@ -24663,6 +24663,483 @@ ingestion target rather than a skill target.
 - Cost: $0.
 - Status: proposed
 
+## Engineer agent findings (2026-11-02, message run)
+
+### 2026-11-02 - The reader records which url served a paper and not which version of it, so "read in full" is not checkable later (engineer seat, message run, craft scan)
+- Trigger: today's craft scan, below, read against the patch this run shipped.
+  `tools/read_paper.py` now names the route that answered in its `# source:`
+  line, which was the whole point of the change. It still throws away the one
+  field that would let a later reader check the claim: `normalize_id` ends with
+  `re.sub(r"v\d+$", "", ...)`, deliberately, because arXiv's HTML lives at the
+  unversioned path. So `docs/research/reading-queue.md` now carries dozens of
+  lines of the form "read in full 2026-11-02, exit 0, 78,293 chars" with no
+  record of which revision of the paper that was, and arXiv papers are revised.
+- What: Unpaywall's answer for one DOI (measured live this run, see the scan) is
+  five OA locations, each carrying `host_type` and `version`, where `version` is
+  one of `publishedVersion`, `acceptedVersion` or `submittedVersion`, and one is
+  flagged `is_best`. The field exists because "which copy did you read" and
+  "where did you get it" are different questions, and the ar5iv fallback this
+  run added makes them different here for the first time: the mirror is a
+  LaTeXML rendering of the submitted source, not of a published paper, and
+  nothing in the output says so. The proposal is one more header line and one
+  more key, `# version: v3` and `"version"`, resolved from the `v\d+` suffix the
+  Atom entry carries, and the `# source:` line already proves the plumbing for
+  threading a field from the fetch to the cache to the CLI exists.
+- First step: `fetch_metadata` already parses the Atom entry, whose `id` element
+  carries the versioned url, so the version is one `re.search` away from data
+  already in hand. Add it to the dict `fetch_metadata` returns, carry it into
+  `_render` and `_parse_cached` the way `source` is carried today, and extend
+  `tests/test_read_paper.py` with a cached-reprint case, which is where the
+  `source` field's own bug would have been.
+- Cost: $0
+- Status: proposed
+
+### 2026-11-02 - The pdf route is the third route and it is a dependency question rather than a six-line patch (engineer seat, message run)
+- Trigger: the research seat's handoff said "the pdf path answers as well and
+  pypdf is installed in this sandbox", and both halves check out: `curl` on
+  `arxiv.org/pdf/2609.07103` returns 200 with 852,146 bytes, and `pypdf` imports
+  at 6.21.1 here. It was left out of today's patch on purpose and the reason
+  belongs in the ledger rather than only in a commit message.
+- What: `tools/read_paper.py`'s module docstring says "Standard library only, on
+  purpose: the seats run on `ubuntu-latest` with no `pip install` step, so a
+  reader with a dependency is a reader nobody runs." `pypdf` being importable in
+  one sandbox is not the same fact as it being importable wherever the reader
+  runs, and the reader is also shipped into the distill image as a local file
+  (`pipeline/distill.py` adds `tools/read_paper.py` at `/root/read_paper.py`),
+  so a hard import would move a dependency into a Modal image too. A third route
+  is worth having: it is the only route for a pre-2024 paper that ar5iv has not
+  rendered. The shape that costs nothing is a soft route, tried only when both
+  HTML routes fail and only when `import pypdf` succeeds, reported in
+  `# source:` like any other route and absent from `HTML_ROUTES` because it does
+  not return markup and the institutions reader cannot use it.
+- First step: a `fetch_pdf_text(paper_id)` beside `fetch_html_from` that returns
+  `None` on `ImportError` with one line on stderr, wired into `read()` between
+  the HTML routes and the abstract fallback, plus a declaration of `pypdf` in
+  `requirements-dev.txt` only, so the suite can test it and no runtime acquires
+  it. The test case is the one that matters: a sandbox with no `pypdf` must still
+  exit 3 rather than crash.
+- Cost: $0
+- Status: proposed
+
+### 2026-11-02 - MIN_HTML_BYTES no longer separates a stub from a paper, and its comment said it did (engineer seat, message run)
+- Trigger: measuring the arXiv 404 page while building today's fallback, because
+  the fall-through had to be sure the status check was doing the work.
+  `arxiv.org/html/2609.07103` serves 7,882 bytes. `MIN_HTML_BYTES` is 5,000 and
+  the comment above it said an arXiv stub page "is a few hundred bytes". So the
+  floor passes the stub, and what rejects it is the HTTP status, which is checked
+  first. Cleaned, that page is 602 characters, so `MIN_TEXT_CHARS` would have
+  caught it one layer down.
+- What: the comment is corrected in this run's diff, with the measurement in it,
+  because a stale premise beside a live constant is how a later reader concludes
+  the floor is load-bearing. The constant itself is left alone and that is the
+  open question: it is now a filter that rejects nothing any other check would
+  not reject, and it is the only one of the two floors that `fetch_html` applies.
+  A route that answered 200 with a thin page would pass it and reach
+  `pipeline/institutions.py` as markup. Either raise it against a real
+  measurement of the thinnest page worth parsing, or delete it and let the
+  character floor and the status code be the two checks, which is what they
+  already are in practice.
+- First step: measure it rather than argue it. `fetch_html_from` over the
+  reading queue's own ids, recording bytes and cleaned characters for every
+  200 response, which is a few hundred fetches of pages the cache mostly holds
+  already, then set or delete the constant from the distribution. The queue is
+  the right sample because it is the papers this company actually reads.
+- Cost: $0
+- Status: proposed
+
+### 2026-11-02 - Craft scan: Unpaywall answers "where is the full text" with five ranked locations and a version on each, where alexandria's reader answers with one url and an exit code (engineer seat, message run)
+- Trigger: the daily craft scan, pointed at this run's own build. The work was a
+  second fetch route for the paper reader, so the scan went to the product whose
+  entire job is that question. Measured live rather than read about:
+  `api.unpaywall.org/v2/10.1038/nature12373` returns `is_oa: true`,
+  `oa_status: "bronze"`, and `oa_locations` with five entries. Each carries
+  `host_type` (`publisher` or `repository`), `version`
+  (`publishedVersion`, `acceptedVersion`, `submittedVersion`), `license`,
+  `url_for_pdf` and `is_best`, and `best_oa_location` is the one with
+  `is_best: true`. One of the five locations for that DOI is an arXiv pdf.
+- What is worth stealing: the route list is data with fields on it, not a tuple
+  of url templates. Today `HTML_ROUTES` is two format strings and the reader
+  reports one `# source:` line, which is already better than the one route it
+  replaced and is still a weaker answer than Unpaywall's. Three fields are the
+  ones worth having and they are each a day or less: `version`, which is the
+  entry above; `host_type`, which is the difference between arXiv's own
+  rendering and a mirror of it and is the thing a reader should weigh when a
+  table disagrees; and a ranking that is computed rather than hard-coded in the
+  tuple's order, which is what lets a route be added without an argument about
+  where it goes.
+- What alexandria does better, and it is not a small thing: the exit code.
+  Unpaywall hands back `is_oa` and a list, and every caller writes its own
+  judgment about whether that constitutes having read the paper, which is
+  exactly the "every seat wrote its own version" failure `read_paper.py` was
+  built to end. Here, 0 means full text, 3 means the abstract only, 4 means
+  neither, and `|| echo "queue it"` is the whole integration. The reader also
+  refuses to cache an unavailable paper, so today's outage cannot become
+  tomorrow's recorded fact, and that is the discipline this run's own incident
+  is about.
+- First step: the `version` entry above is the first of the three and the only
+  one with its data already in hand.
+- Cost: $0
+- Status: proposed
+
+### 2026-11-02 - Four of the five scheduled jobs can still die without leaving a record, and ingest is the one that does it on purpose (engineer seat, message run, checks-red wake)
+- Trigger: measuring the press's prelude while repairing it. The ExO seat carded
+  `weekly`, which is repaired in this run's diff. The same measurement run over
+  the other four says `triage` executes 9 statements before its record,
+  `interpret` 10, `distill` 13 and `ingest` 9, and the numbers are now pinned in
+  `tests/test_deploy_drift.py` so they can shrink and cannot grow. `ingest` is
+  the one worth reading twice: `load_sources`, three fetches and
+  `judge_sources` all run first, and `judge_sources` raises `NothingToIngest`
+  by design on a bad feed day. So the single day ingest has a real failure to
+  report is the day it leaves no evidence that it ran at all.
+- What: the same repair, four times, in the shape this run proved out. The
+  record moves to the first durable write inside the job's own error handling,
+  in a connection of its own, so the only thing above it is the connect. Each
+  of the four is a handful of lines and the pin turns green as it lands. They
+  are not in this run's diff for one reason: a reorder inside a model-calling
+  job is a runtime change under `docs/agents/runtime-changes.md`, which wants a
+  rehearsal per app, and four rehearsals is not one day.
+- First step: `ingest`. It is the only one of the four that calls no model, so
+  `docs/agents/runtime-changes.md` gives it a bare deploy rather than the two
+  gates, and it is also the instance with the live failure mode. One day.
+- Cost: $0
+- Status: proposed
+
+### 2026-11-02 - A finish signal to go with the start signal, so "it started and never finished" is a query rather than an inference (engineer seat, message run, checks-red wake)
+- Trigger: the craft scan below, read against the repair this run shipped.
+  Moving `record_runtime` to the top of the press's `try` means
+  `deploy_runtime.recorded_at` is now a start signal: it says a run began. No
+  column says a run ended. So "the press started and died" is still derived by
+  joining two tables and knowing that `digests` should hold a row for the week,
+  which is a judgment every reader writes for itself, and that is the failure
+  `tools/read_paper.py` exists to have ended elsewhere.
+- What: one nullable `finished_at` on `deploy_runtime`, written on the way out
+  of the same handler that already mails the owner, plus the one line in
+  `tools/delivery_health.py` that reads the pair. Then three states are a
+  query instead of an argument: no row is "never ran since the code asked",
+  `recorded_at` with no `finished_at` is "started and died", and both is a
+  clean run. It also gives the alarm the row the ExO seat's card asked for as
+  its second option, and gives it without a second table, because the row the
+  alarm would write is the row the run already has.
+- First step: the column and the write, on `weekly` alone, since `weekly` is
+  the job whose handler already exists and whose failure the owner already
+  gets mail about. The other four follow the entry above.
+- Cost: $0
+- Status: proposed
+
+### 2026-11-02 - A checks event should carry its own live confirm, the way the standing block already does (engineer seat, message run, checks-red wake)
+- Trigger: this run's own wake, filed as
+  `INC-2026-11-02-one-wake-carried-three-conditions-and-all-three-were-already-resolved`,
+  the sixth instance of a class first recorded on 2026-10-26. Three conditions
+  arrived and all three were already answered. The standing block carries a
+  sentence telling the seat to confirm it with `GET /api/standing`, that call
+  took one turn, and it disagreed with the block attached to the same wake,
+  which was the answer. The two `checks` events carry no such sentence, so they
+  cost a failed log and two run lists to establish that both named branches
+  were green at their heads.
+- What: the receiver-side half of a remedy whose sender-side half is already
+  specified at the composer. One sentence in the charters' duplicate-wake
+  clause, naming the command for a `checks` event the way the standing block
+  names its own: `gh run list --branch <the branch> --limit 5 --json
+  conclusion,headSha,createdAt`, read before the log. A seat that runs it first
+  reads "the head is green" and writes a sentence instead of hunting a failure
+  that exists only at a commit nobody will merge.
+- First step: it is a charter edit, which is not this seat's to make, so the
+  first step is this entry and the board note that carries it. The owner's merge
+  or a chair's is the whole change.
+- Cost: $0
+- Status: proposed
+
+### 2026-11-02 - Craft scan: Healthchecks.io separates "the job started" from "the job finished" and alarms on the gap, where alexandria had one signal and wrote it late (engineer seat, message run, checks-red wake)
+- Trigger: the daily craft scan, pointed at this run's own build. The work was
+  giving the press an agent-readable record that it was invoked, so the scan
+  went to the product whose entire job is that question. Read live at
+  healthchecks.io/docs on 2026-11-02 rather than from memory.
+- What is worth stealing, and it is one idea: **two signals, not one.** A job
+  appends `/start` to its ping URL when it begins and pings the bare URL when
+  it succeeds, and the service stores both. That buys three things from one
+  extra write. Run time is the gap between adjacent start and success events,
+  so it is measured rather than estimated. The states are named rather than
+  inferred: `New` is a check that has never pinged, `Up`, `Late` is overdue
+  inside its grace, `Down` is overdue past it, and `Started` is its own state.
+  And the alerting rule that matters here is the one that needs both signals:
+  a start with no success inside the grace time is assumed failed and alarms.
+  That is exactly the state this run's repair creates and does not yet read,
+  which is why it is the ledger entry above rather than only a note.
+- What alexandria does better, and it is the same defect this register keeps
+  naming: Healthchecks asks you to type the schedule and the grace into its UI,
+  so the monitor holds a second copy of a fact the job already owns, and the two
+  disagree on the day somebody edits a crontab. Here the schedule is parsed out
+  of the job's own source by `runtime_sha.schedule_of`, the file manifest is
+  parsed out of the job's own `add_local_file` calls, and
+  `runtime_sha.schedule_of` refuses rather than guesses when a module carries
+  two crons. A hand-kept copy of a list is a list that disagrees with reality on
+  the day it matters, and that sentence is already in `pipeline/runtime_sha.py`.
+  The second thing: the ping is a liveness signal and says nothing about what
+  the container contains, where `deploy_runtime` carries a content digest of the
+  files the job is actually running from, which is what lets a seat ask whether
+  the merged fix is the running fix at all.
+- First step: the `finished_at` entry above is this scan's first step and it is
+  already written as its own entry, so this note adds the argument rather than a
+  second card.
+- Cost: $0
+- Status: proposed
+
+### 2026-11-02 - The invocation row has no column naming who invoked it, so one hand run erases the cron's evidence (engineer seat, message run, lane-next wake)
+- Trigger: two halves of one defect, met an hour apart. The writer seat's board
+  note of 02:21Z said it about the press: `deploy_runtime` is one upserted row
+  per app with no history and no column naming the caller, `record_runtime` is
+  on the path of every invocation, so a hand
+  `modal run pipeline/weekly.py::weekly` writes the row exactly as the cron
+  would and overwrites whatever the cron left. The minute is the only
+  discriminator left. Then this run met the same thing in the code it was
+  repairing: `ingest_ids`, the by-id backfill a seat runs to answer a
+  reading-queue line, runs the same module and writes the same `ingest` row. So
+  the confound is not specific to the press being tested by hand. It is a
+  missing column, and today's repair widened the set of runs that write the row
+  without widening what the row can say about them.
+- What: one `invoked_by` column on `deploy_runtime`, written by
+  `record_runtime` from an argument its callers already know, with three
+  values that are all a caller can honestly claim: `cron` from the scheduled
+  entry point, `manual` from a `local_entrypoint` or a hand `modal run`, and
+  `task` from a by-id or by-week function somebody asked for. Then a run that
+  moved the minute says so, and `tools/delivery_health.py` can stop treating
+  an off-slot minute as evidence about the schedule. It pairs with the
+  `finished_at` entry of this morning and wants the same migration, so the
+  two should land together rather than as two schema changes a week apart.
+- First step: the column and the argument, on `ingest` alone, because `ingest`
+  is the one app whose two writers are both already in the repository and
+  neither of them calls a model, so the whole change is testable without a
+  rehearsal. `weekly` follows, and `weekly` is the one the writer seat asked
+  about.
+- Cost: $0
+- Status: proposed
+
+### 2026-11-02 - The prelude measurement cannot follow a record into a helper, so the strongest repair produces the least measurable number (engineer seat, message run, lane-next wake)
+- Trigger: this run's own repair, caught in rehearsal rather than in review.
+  `unguarded_prelude` in `tests/test_deploy_drift.py` counts statements of the
+  scheduled entry point before the first durable write. Moving ingest's record
+  into a `record_invocation()` helper called first takes that count from 9 to
+  0, which is correct and is also the point at which the pin stops measuring
+  anything: a helper that later learns to fetch a feed would leave the pin
+  reading 0 while restoring the whole defect. The second break rehearsed in
+  this run proves it, because the pin passed on it and only the bespoke gate
+  went red. The same asymmetry makes `weekly`'s 7 and `ingest`'s 0 two
+  different units, since weekly's inline `psycopg.connect` is counted and the
+  identical connect inside ingest's helper is not.
+- What: teach `unguarded_prelude` to descend. It already computes
+  `_recording_functions`, the set of functions whose bodies reach
+  `record_runtime`, and `holds_record` already recognises a call to one, so the
+  walk has everything it needs to step into the called function and keep
+  counting there instead of stopping at the call. Then one number means one
+  thing for all five apps, the per-app gate this run had to hand-write for
+  ingest is unnecessary, and the three remaining repairs can each lower a pin
+  rather than each add a test. The pins would be re-measured once in the same
+  change, with the old and new numbers printed side by side.
+- First step: the descent and the re-measurement, with this run's second
+  rehearsed break as the test case it has to catch. Half a day, no production
+  code touched.
+- Cost: $0
+- Status: proposed
+
+### 2026-11-02 - Miniflux stops polling a dead feed after three errors, where a dead feed here waits on a human ruling that is seventeen days old (engineer seat, message run, lane-next wake)
+- Trigger: today's `python3 tools/feed_health.py` run, which is ingest's deploy
+  ladder and was run as this change's availability check. It reads 49 of 53
+  sources delivering, 0 dark and unrecorded, and 4 dark and pinned by hand in
+  `tools/feed_health.py`. The ledger entry that asked for a ruling on those is
+  `2026-10-16 - Five sources are dead and retiring one is the owner's call`,
+  and it is still `proposed` seventeen days later, with `mit-csail` silent
+  since 2019 and `stanford-sail` since 2022. The craft scan below found the
+  product that does not need the ruling.
+- What: steal the counted stop. Miniflux keeps a parsing-error count per feed
+  and `POLLING_PARSING_ERROR_LIMIT`, documented default 3, stops polling that
+  feed once it is reached; a human refreshing it by hand is what clears the
+  count. Here the equivalent is already half built, because `fetch_feeds`
+  reports a status row per source to its caller. The missing half is that
+  nothing remembers yesterday's row, so a source's record is recomputed from
+  one fetch every time and "dark for a week" and "dark once" are the same
+  observation. One small table keyed by source name, a consecutive-zero
+  counter, and a limit, and then the pin in `tools/feed_health.py` is derived
+  from measurement instead of hand-written, a source that has been dark for N
+  days stops costing a fetch, and the owner's ruling becomes a confirmation
+  rather than a prerequisite. The limit is a number to argue about: 3 fetches
+  is right for Miniflux's hourly poll and wrong for a daily one, and the
+  census already measures days of silence, so days is the better unit here.
+- First step: the counter and the table, with `judge_sources` reading it, and
+  the limit set high enough that none of the 49 live sources can trip it on a
+  single quiet day. The four pins stay in place until the counter agrees with
+  them, which is the cheapest way to check a new gate against a known answer.
+- Cost: $0
+- Status: proposed
+
+### 2026-11-02 - Craft scan: Miniflux treats a feed's failure history as state and a dead feed as a decision the software makes, where alexandria recomputes both from one fetch (engineer seat, message run, lane-next wake)
+- Trigger: the daily craft scan, pointed at this run's own build. The work was
+  ingest, so the scan went to the most disciplined open-source feed reader
+  rather than to another research tool. Read live on 2026-11-02 from
+  `miniflux.app/docs/configuration.html`, with the values quoted rather than
+  remembered.
+- What is worth stealing, one idea with two parts: **a feed's failure history
+  is state, and the schedule is per feed rather than per job.**
+  `POLLING_PARSING_ERROR_LIMIT`, default 3, is the counted stop in the entry
+  above. Beside it is `POLLING_SCHEDULER`, default `round_robin`, whose other
+  value is `entry_frequency`: the interval for a feed is derived from how often
+  that feed actually publishes, bounded by
+  `SCHEDULER_ENTRY_FREQUENCY_MIN_INTERVAL` at 5 minutes and
+  `SCHEDULER_ENTRY_FREQUENCY_MAX_INTERVAL` at 1440. A feed that posts twice a
+  year is not asked twice an hour. Here all 53 sources are fetched on one cron
+  at `0 11 * * *` and the census already knows each one's publishing rate, so
+  the input to that policy is measured and unused. `BATCH_SIZE` at 100 feeds
+  and `FORCE_REFRESH_INTERVAL` at 30 minutes are the two bounds that keep the
+  policy from becoming a thundering herd, and both are the kind of number this
+  repository would otherwise discover in production.
+- What alexandria does better, and it is the judgment Miniflux cannot make.
+  `judge_sources` separates "this source delivered nothing" from "every source
+  delivered nothing", and refuses the whole run only on the second, with the
+  arXiv categories as their own quorum because the firehose is what fills
+  `papers`. A per-feed error limit is blind to that distinction by
+  construction: fifty-three feeds failing at once reads as fifty-three
+  independent feed problems, when it is one network, one image or one
+  `sources.yaml`. The second thing is the pins themselves. Each of the four
+  dead sources carries a written reason, the date it was probed, and the
+  candidate replacement URLs that were tried and failed, so a ruling is a
+  five-minute read rather than a re-investigation. Miniflux's stopped feed
+  carries a count.
+- First step: the entry above is this scan's first step and is already written
+  as its own entry. The per-feed interval is the larger half and is not carded,
+  because a second schedule inside one cron is a real design change and
+  ADR-12's cap of five Modal crons is the constraint it has to respect.
+- Cost: $0
+- Status: proposed
+
+### 2026-11-02 -- The reading queue's depth is 83 and no credential-free surface says so
+
+- Trigger: this run appended two lines to `docs/research/reading-queue.md` and
+  the command printed `81 pending before, 83 after, 6 of them per distill run`.
+  That is fourteen runs of a job that has not fired since 2026-10-23. The
+  number exists in exactly two places: inside a distill run, which prints
+  `{waiting} more in the reading queue` from `pipeline/distill.py:1098`, and on
+  stderr of `python3 pipeline/reading_queue.py`, which a seat has to think to
+  run. Nine surfaces in `tools/delivery_health.py` and not one of them reads
+  the request queue, so "how long until the paper a seat asked for is in the
+  corpus" is a question no standup can answer.
+- What: one surface in the delivery report for the request queue, and it is the
+  rare health check that needs no credential at all, because the queue is a
+  file in the repository. Three numbers and an age: how many lines are pending,
+  how many distill runs that is at `MAX_PER_RUN`, and how old the oldest
+  pending line is by the date it carries. The judgment is the point rather than
+  the count: a queue of six is one run and green, a queue of 83 against a job
+  that last ran ten days ago is the same arithmetic the `Compute` card already
+  makes for the press, and the oldest line's date is the one number that
+  separates a backlog from an outage. It should read UNKNOWN rather than green
+  when the file cannot be parsed, by the rule that file already follows
+  everywhere else.
+- First step: `queue_depth()` in `tools/delivery_health.py`, reading the file
+  through `pipeline/reading_queue.py`'s own parser rather than a second one, and
+  one `Surface` built from it. The parser already returns `Item.raw`, so the
+  oldest line's date is a regex on text the module hands over. One day,
+  including the cases for an unparseable file and an empty queue.
+- Cost: $0
+- Status: proposed
+
+### 2026-11-02 -- A docstring that names another module's job is a claim nothing checks
+
+- Trigger: `pipeline/ingest.py`'s local entrypoint said `--ids` is "the entry
+  point the reading queue needs when a line names a paper the window cannot
+  reach". It is not. `pipeline/distill.py` serves that file and says so in its
+  own docstring at line 99. The research seat read the sentence that was
+  addressed to its exact problem, in the module it was already reading, and
+  asked this seat for the one route that needs a credential nobody here has
+  had for twelve runs. Filed as
+  `INC-2026-11-02-the-handoff-asked-for-the-blocked-route-because-the-docstring-of-the-blocked-one-claimed-the-other-ones-job`.
+- What: the general form is not testable and this is deliberately the narrow
+  form. Two modules in this repository can put a paper in `papers` from an
+  arXiv id, `ingest.py` and `distill.py`, and exactly one of them is the entry
+  point for `docs/research/reading-queue.md`. A test that reads both modules
+  and asserts that exactly one claims that file by name is three lines and
+  would have caught this one. What it cannot do is generalize: a gate written
+  for one pair of files is a gate that will be wrong about the third pair, so
+  the entry is honest that its value is one instance of a class rather than
+  the class.
+- First step: in `tests/test_reading_queue.py`, which already reads both
+  modules, assert that `QUEUE_PATH` and the phrase "reading queue" appear as a
+  claim of service in exactly one of `pipeline/ingest.py` and
+  `pipeline/distill.py`. Half a day, and the harder half is choosing a phrase
+  that is neither a grep for prose nor a second copy of the sentence.
+- Cost: $0
+- Status: proposed
+
+### 2026-11-02 -- OpenAlex answers by id without a key and carries the traction number arXiv does not
+
+- Trigger: today's craft scan, probed live against the two ids this run queued.
+  `fetch_arxiv_ids` asks arXiv's Atom feed and gets back title, authors,
+  abstract, url and a submission date. It gets no measure of how much a paper
+  has been built on, and `prompts/research-agent.md` makes it charter that
+  impact is revealed by traction rather than by release date. So the one field
+  the relevance law wants is the one field the fetcher cannot supply, and a
+  backfill candidate is ranked today on the research seat's reading alone.
+- What: one function that, given an arXiv id, returns OpenAlex's
+  `cited_by_count` and `publication_date` for it, so the by-id paths can carry
+  a traction number. OpenAlex is keyless, its filter takes an OR list of ids in
+  one request, and the probe below is the measured behaviour rather than its
+  documentation's claim. It is a read of one public endpoint and it would be
+  soft on every path, the way `record_invocation` is: a paper with no traction
+  number is still a paper.
+- First step: the probe already run, turned into a function with its cases.
+  `https://api.openalex.org/works?filter=doi:<a>|<b>&select=id,doi,title,publication_date,cited_by_count`,
+  one request, no key, no delay. The one case that has to be written first is
+  the half-answer named in the scan note below, because a batch route that
+  drops an id silently is the exact defect `fetch_arxiv_ids` already refuses to
+  have. One day.
+- Cost: $0
+- Status: proposed
+
+### 2026-11-02 -- Craft scan: OpenAlex and Semantic Scholar, on the one route this run needed
+
+- Trigger: both scanned live today and both chosen for the same reason. This
+  run's whole subject was getting a paper into the corpus by id, outside any
+  window, and these are the two products whose by-id route is the thing they
+  sell. The scan is the charter's craft scan rather than the market agent's
+  landscape watch, so it is read at the route rather than at the positioning.
+- What: Semantic Scholar first, because the result is the shorter half.
+  `POST /graph/v1/paper/batch` is the right shape, it takes namespaced ids
+  including `ARXIV:<id>`, and three requests from this host got `429 Too Many
+  Requests` with a pointer to the key form, on the batch route and on the
+  single-paper route alike. The unauthenticated tier was not slow here, it was
+  closed. An API key is an account, which this seat does not open, so the
+  comparison stops there and the shape is in the ledger rather than in code.
+- Worth stealing, from OpenAlex, which answered. One request, no key, no
+  politeness delay: `filter=doi:<a>|<b>` takes a pipe-separated OR list and
+  `select=` trims the response to the fields asked for. The response carried
+  `cited_by_count`, which is the traction number the relevance law wants and
+  which arXiv's feed does not have at all. Against that, `fetch_arxiv_ids`
+  makes its request against one id list with `ARXIV_DELAY = 3.0` between calls
+  and gets no citation count.
+- And the scan's sharpest finding is a failure in the thing worth stealing. The
+  probe asked for both of this run's ids by their arXiv DOIs and got back
+  `"count": 1`. The one it returned was `Multi-Field Tool Retrieval` under
+  `10.18653/2026.emnlp-main.2212`, which is its EMNLP identity rather than the
+  arXiv DOI the filter asked for, and the response said nothing about the id
+  that matched nothing. So a filter-OR batch route answers a two-id request
+  with one row, keyed on an identifier the caller did not ask for, and a caller
+  that counted rows would read that as success.
+- Where alexandria is better, and it is exactly that. `fetch_arxiv_ids`
+  computes `missing` as the asked set minus the found set and prints it, under
+  a comment that says a backfill asking for six papers and silently landing
+  four "is the shape of defect this entrypoint exists to repair". That comment
+  was written on 2026-10-26 about this repository's own behaviour, and the scan
+  found the same defect live in a product whose by-id route is its product. The
+  second thing is the key space: every row written by either path here is
+  `arxiv:<id>`, so a backfilled paper and a fetched one are one row, where
+  OpenAlex handed back a conference DOI for a paper asked for by its preprint.
+- First step: the entry above this one is this scan's first step and is already
+  written as its own entry, because the traction field is the half worth
+  taking. The pipe-OR batching is the other half and it is not carded, since
+  this repository asks arXiv for a whole id list in one request already and the
+  gain would be against OpenAlex rather than against arXiv.
+- Cost: $0, and that is the finding on the Semantic Scholar half rather than a
+  note about it. Its by-id route needs a key, a key is an account, and an
+  account is the owner's to open.
+- Status: proposed
+
 ### 2026-11-02 - Constrain `cadence` in the company schema, because the bus's self-wake guard is a list of spellings (security seat)
 - Trigger: the security sweep's own branch-prefix hold. Reading
   `NO_SELF_CONTINUE` in HQ's `runtime/board/api.py` to confirm the hold is
@@ -25148,4 +25625,528 @@ ingestion target rather than a skill target.
   belongs in the ingest path.
 - Cost: $0. One HEAD request per arXiv paper per ingest, cached, against a
   pipeline that already fetches each paper's full text.
+- Status: proposed
+
+## Engineer agent findings (2026-11-02, message run, inbox-seat-filter wake)
+
+### 2026-11-02 - The board server has no addressee namespace, so an unknown seat is answered `200` and every client has to invent the roster check itself (engineer seat, inbox-seat-filter run)
+- Trigger: probed live this run while repairing
+  `INC-2026-11-02-the-inbox-repaired-for-one-delimiter-answered-a-confident-zero-for-the-other`.
+  `GET /api/messages?to_seat=enginer&to_company=alexandria` and the same call
+  with `to_seat=engineer` both answer **HTTP 200**, with the same row count, and
+  nothing in either body distinguishes a seat that exists from a typo. The
+  server treats `to_seat` as a string to compare, never as a name to resolve.
+- What: the consequence is that every reader of this bus has to carry its own
+  roster check, and two tools in this repository now carry two different ones.
+  `tools/cron_firing.py` resolves against the host's log directories and raises
+  `SeatNotFound`. `tools/board.py` as of this run resolves against the seats the
+  bus and board actually carry and exits 4. Both were written because one
+  incident asked for the same thing twice, six days apart, and neither can be
+  shared because they resolve against different surfaces. A third reader will
+  write a third. The right place for the rule is the one place that knows the
+  namespace, which is the server: an unrecognized `to_seat` or `to_company`
+  should be `404` with a `seat_not_found` body, the way Slack's own API answers
+  an unknown channel (see the craft scan below), rather than a `200` that every
+  client has to second-guess.
+- First step: not a commit here. The board API is headquarters' surface, so this
+  is a correction to a parent system and goes to the chair through the ExO
+  seat's relay at `docs/agents/hq-relay.md`, carrying this run's two probe
+  transcripts as the evidence. The local half is already shipped and is what
+  makes the ask concrete rather than theoretical: the client-side check exists,
+  it costs two extra HTTP requests on every empty inbox read, and it is
+  duplicated per tool. All three of those costs are the server's to remove.
+- Cost: $0. No new service and no new dependency either way.
+- Status: proposed
+
+### 2026-11-02 - The `theirs` bucket cannot do the job its own docstring gives it, because the server never returns another seat's letter to be counted (engineer seat, inbox-seat-filter run)
+- Trigger: measured live this run, while deciding what the roster check should
+  trigger on. `GET /api/messages?to_seat=skill&to_company=alexandria` returned
+  **93 rows: 79 broadcasts, 13 naming the seat, 1 naming the company and no
+  seat, and 0 naming any other seat.** `read_messages`'s docstring said the
+  server answers with "everything addressed to that company", and `address_of`
+  documents `theirs` as existing "so a caller can count what it filtered",
+  citing the rule that "a filter that cannot say what it skipped is the defect".
+- What: through `inbox` that bucket can only ever count one thing, a message to
+  this seat's name in a different company. No other seat's letter is ever
+  returned, so a zero in `theirs` means "no other company wrote to a seat of
+  this name" and not "nothing was filtered". This run corrected both docstrings
+  and removed `theirs` from the roster check's trigger, because including it
+  made the check unable to fire on the exact reading it was written for: a wrong
+  seat name empties that bucket in production and the test double was filling
+  it. That is the behaviour-preserving half and it is done. What is left is the
+  design question: either the bucket is honestly re-scoped to the thing it can
+  see and renamed for it, or the server grows a wider read and the bucket starts
+  earning its docstring.
+- First step: pick one, and the cheap one is the rename, since the wide read is
+  the same server change as the entry above and belongs in the same relay. One
+  pass over `address_of`, `sort_inbox`, `render_inbox` and the four tests that
+  name the bucket, with the rendered line changing from "in the window addressed
+  to someone else" to what it actually counts.
+- Cost: $0.
+- Status: proposed
+
+### 2026-11-02 - Nothing reports how many `deep_read` papers sit outside the daily cap, so triage's strongest signal has no depth gauge (engineer seat, inbox-seat-filter run)
+- Trigger: handed to this seat by the research seat's `done` of 2026-11-02 03:50,
+  in its own words: "the deep-read triage decision confers an ordering and not a
+  guarantee: it sorts below the standing threads and inside the daily paper cap,
+  so a deep-read row outside that cap is still never read, and nothing anywhere
+  reports how many of them there are outside it." Verified rather than taken on
+  trust. `pipeline/distill.py:1315` orders the day's intake by standing threads
+  first, then `deep_read`, then `published_at desc`, limited to `max_papers`, so
+  both halves of their claim hold. And `grep deep_read` over `pipeline/` and
+  `tools/` confirms the third: `status` at `pipeline/distill.py:1082` counts
+  `deep_read` across the whole queue, `weekly.py` counts the week's triage
+  decisions, and nothing anywhere ranks the queue and asks how much of it the
+  cap cannot reach.
+- What: a run that reads six papers a day from a queue fed by triage can have a
+  `deep_read` row that is never first, and the number that says so does not
+  exist. The instrument is one query using the drain's own `order by` with a row
+  number, counting the `deep_read` rows beyond the intake budget, which is
+  `max_papers` minus the reading-queue papers that take slots ahead of it. Next
+  to the existing count it reads as two different and both useful numbers: how
+  many papers triage marked worth a deep read, and how many of those the cap
+  will never reach.
+- First step: not built today and the reason is stated rather than left to be
+  inferred. The day went to the break-fix the skill seat routed here, and this
+  change lives inside `status`, a Modal entry point that needs `DATABASE_URL`,
+  which this host has not held for twelve consecutive runs of this seat. So
+  there is no slice of it this session could verify, which is the charter's own
+  test for what to build. The first verifiable slice is the ranking as a pure
+  function over rows, gated with a fake cursor the way
+  `tests/test_deploy_drift.py` already does, with the two-line wiring into
+  `status` behind it.
+- Cost: $0.
+- Status: proposed
+
+### 2026-11-02 - Craft scan: Slack refuses an unknown addressee at the API boundary where alexandria's bus answers it, and the one thing alexandria does better is admit an address can be ambiguous (engineer seat, inbox-seat-filter run)
+- Trigger: the daily craft scan, pointed at this run's own subject. The work was
+  a reader that answered a seat name nobody carries with a confident zero, so
+  the scan went to the nearest mature product that solves exactly that: a
+  messaging platform's read API. Fetched live from
+  `docs.slack.dev/reference/methods/conversations.history` today.
+- What: **the thing worth stealing.** Slack's read method documents
+  `"channel_not_found"` with the description `"Value passed for channel was
+  invalid."` and the documented failure body is `{"ok": false, "error":
+  "channel_not_found"}`. There is no success shape for a channel that does not
+  exist, so "the room is empty" and "there is no such room" are different
+  answers at the protocol boundary and no client can conflate them. The server
+  owns the namespace, because it is the only party that knows it. Probed the
+  same question against our own bus this run and both answers are `200` with
+  identical row counts, which is the entry two above and is the whole reason
+  this repository now carries two hand-written roster checks in two tools.
+  **Where alexandria is better, and it is not a small thing.** Slack has one
+  workspace per token, so an address is either valid or not, and the product has
+  no vocabulary for an address that might belong to somebody else. This bus
+  carries six companies, several of which have a seat called `engineer`, so
+  `to_seat=engineer` with no `to_company` is a real and common third state.
+  `address_of` names it `ambiguous`, prints it **above** the certain mail on the
+  grounds that it is the bucket needing a decision, and gives it its own exit
+  code, and `send` refuses to create one before touching the network. A
+  two-valued API cannot express that, and the three directed messages in this
+  seat's inbox on the day the bucket was written included two that belonged to
+  another company. So the right steal is narrow: take the server-side refusal of
+  a name nobody carries, and keep the client-side judgment of a name more than
+  one company carries.
+- First step: the steal is the relay ask two entries above, already written. The
+  local half that did not need it shipped this run.
+- Cost: $0. Slack's documentation is public and no account was opened to read it.
+- Status: proposed
+
+### 2026-11-02 - Sweep for guards of the shape `parse(write(x)) == f(x)` where `f` repeats the parser's own narrowing (engineer seat, second-reader run)
+- Trigger: the research seat made the first outside use of
+  `pipeline/reading_queue.py --add` and read the parser before trusting the
+  writer. `compose` validates the asker it is about to write by comparing the
+  parsed value against `asked_by.split()[0]`, and the parser matched one
+  non-space token, so both sides were the first word of the same string. The
+  guard could not refuse any asker a caller could pass. It is repaired in this
+  pull request, and the shape is what is worth the entry.
+- What: the writer-checked-by-the-reader pattern is the strongest check this
+  repository has, and `compose`'s own docstring calls it "the only check worth
+  having here." It is only a check when the expected value is the caller's input
+  unmodified. Where the comparison applies the same narrowing the parser applies,
+  it asserts that a function equals itself and passes for every input. That is a
+  grep-able shape rather than a judgement: find every place a module parses what
+  it just composed, and ask whether the right-hand side of the comparison is the
+  argument or a transformation of it. The candidates are the modules that write a
+  documented text format and read it back, which is `pipeline/reading_queue.py`,
+  `tools/board.py`'s `message_payload`, `tools/incidents.py`, `tools/ledger.py`
+  and `tools/skill_registrar.py`. None of them has been looked at for this.
+  **A second seat found this class tonight in an unrelated domain, which is the
+  reason to sweep rather than to patch.** The security seat's supply-chain run
+  cleared a runtime by reporting that a path "remains unpinned and still matches
+  its checkout", where the path is a symlink to the checkout, so the comparison
+  was between one directory and itself. Their keeping rule is the general
+  statement and it is better than mine: a comparison between two artifacts says
+  nothing until you know whether the pair is allowed to differ, because an
+  identity test and a provenance test both print that they match. Two seats, two
+  domains, one night, neither aware of the other. That is a class rather than two
+  bugs.
+- First step: one sweep, one run, no new instrument. Grep `tools/` and
+  `pipeline/` for a call to a parse function whose argument is a local the same
+  function composed, list each with the expression it compares against, and
+  report how many of the right-hand sides are the bare argument. A count is the
+  deliverable, with a repair only where the answer is that the guard cannot fail.
+  The security seat's framing is the better screen for the general sweep: for
+  each comparison, ask whether the two sides are allowed to differ.
+- Cost: $0
+- Status: proposed
+
+### 2026-11-02 - Inventory which of the 237 flag-carried arguments in `tools/` resolve a target, because two sweeps for the confident-zero class covered four of them (engineer seat, second-reader run)
+- Trigger: the writer seat measured it while reproducing the inbox's confident
+  zero on their own seat. The `tools/` tree declares 241 arguments, four
+  positional and 237 carried by a flag. Their two sweeps for this class passed a
+  bad command name and then a bad positional, so between them they covered four
+  of 241 and called the fleet clean twice. They handed the remainder to this seat
+  because which argument names a target is per-tool knowledge they do not have.
+- What: an argument that resolves a target is one where a value nothing carries
+  can be accepted, queried and answered with an empty result: a seat, a company,
+  a file path, a skill slug, an arXiv id, a sprint, a column name. Those are the
+  arguments where a typo is a confident zero rather than an error, which is the
+  class now recorded four times across two tools in six days. The deliverable is
+  a table, one row per flag, with the target kind, whether the tool validates the
+  value against anything, and what it exits when the value resolves to nothing.
+  Not a patch: the point of the inventory is to find out how many of the 237 are
+  exposed before deciding how many deserve a roster check, since the two repairs
+  so far were each written for the one defect a seat had just hit.
+- First step: generate the table mechanically rather than by reading. Every tool
+  in `tools/` builds its flags with `argparse`, so importing each module and
+  walking its parser's `_actions` yields all 237 with their help text, which is
+  one script and no judgement. Then classify by hand in one pass and publish the
+  count, because the count is the thing nobody has.
+- Cost: $0
+- Status: proposed
+
+### 2026-11-02 - The reading queue's duplicate gate reads the working tree, so two branches can both pass and still produce the duplicate it exists to refuse (engineer seat, second-reader run)
+- Trigger: the research seat routed this rather than filing it, because it has
+  not happened yet and both halves of it are live right now. They used `--add`
+  out of this seat's open branch, which already had two ids appended to the same
+  file tail. Their line passed the duplicate gate and so had both of this seat's,
+  and all three passes were correct against the file each run could see.
+- What: `hits` greps the file in the working tree, which is per-branch, so the
+  gate answers a question about one branch and the file it protects is shared.
+  Two runs on two branches appending the same id both pass, and the merge
+  produces a duplicate no gate anywhere can see afterwards, because an append-only
+  file's second entry is ordinary text. That is the exact defect
+  `INC-2026-10-27-a-paper-struck-as-read-was-requeued-as-the-highest-value-unread-paper-the-next-day`
+  produced by hand, reintroduced by the tool that was built to end it, and it is
+  already recorded one step along as
+  `INC-2026-11-02-the-grep-remedy-for-duplicate-reads-cannot-see-a-strike-that-lives-on-a-branch`.
+  The merge conflict on the tail is the good case and is a nuisance; the bad case
+  is two non-adjacent appends that merge cleanly.
+- First step: widen what the gate reads rather than teach it about branches. The
+  cheap version is to grep `git log -p --all -- docs/research/reading-queue.md`
+  for the normalised id as well as the working tree, which catches an id that any
+  branch has ever added and needs no network. Verifiable in one run against the
+  three ids now sitting on two branches, and it fails closed, which for a
+  duplicate check is the right direction.
+- Cost: $0
+- Status: proposed
+
+### 2026-11-02 - Craft scan: Undermind publishes a discovery curve and a stopping rule, where alexandria's queue has a depth nobody can read and a cap that never says what it could not reach (engineer seat, second-reader run)
+- Trigger: today's second item was the research seat's measurement that the
+  reading queue stands at 84 pending lines against six taken a run, and that no
+  credential-free surface anywhere says so. Undermind is the landscape entry
+  whose whole product claim is about that question, so it is this run's craft
+  scan rather than another API.
+- What: Undermind (undermind.ai, fetched live this run, the rotation's "new find"
+  from 2026-09-18) sells search completeness, and the mechanics are worth
+  stealing in three parts. It shows a **discovery curve** while the search runs,
+  papers found against time, so the user watches the rate flatten rather than
+  being told a total. It **stops on its own**, documented as about 2.5 minutes on
+  average, and says so, so the stopping rule is a stated property of the product
+  and not an invisible cap. And its coverage number, 73 percent of relevant
+  papers on complex queries over ten minutes, is published as a benchmark. The
+  honest limit, read on the page rather than inferred: it gives **no per-search
+  completeness estimate at all.** A user gets the curve and the aggregate, never
+  "for your query I found 73 percent." So the steal is the curve and the stated
+  stopping rule, which are exactly the two things `MAX_PER_RUN = 6` has neither
+  of: a run takes six, says how many are pending, and never says that the rest
+  are unreachable this run or on what schedule they become reachable. A depth and
+  a rate is the shape, which is the design objection this seat already sent the
+  research seat about a one-number gauge.
+  **Where alexandria is better, and it is the difference between a rate and a
+  record.** Undermind's coverage is a statistical property of a search. The
+  reading queue is a named list of what has not been read, one line per paper,
+  each carrying the reason it was asked for and who asked, append-only, and
+  struck by hand with the answer written onto the line. So this product can say
+  which specific paper it has not read and why that matters, for 84 papers, where
+  a recall percentage cannot name a single one of the 27 percent it missed. That
+  is the per-item completeness record a benchmark number cannot be, and it is the
+  thing a reader can act on.
+- First step: the gauge is already carded two entries back in this ledger from
+  the inbox-seat-filter run. The steal that entry does not have is the stated
+  stopping rule: have the queue drain print, every run, how many lines the cap
+  could not reach and how many runs at the current rate that is. Fourteen, today.
+  One line in the log `pipeline/distill.py` already prints, and it needs no
+  credential to verify because the arithmetic is over the parsed file.
+- Cost: $0. Undermind's marketing pages are public and no account was opened.
+- Status: proposed
+
+### 2026-11-02 - A hand-verified claim needs a `prompt_sha` value of its own, and NULL has to stop meaning two things first (engineer seat, explicit-id-distill run)
+- Trigger: the research seat's handoff asked for a claim row derived by hand
+  from an appendix table, and attached the design question that blocks it.
+  `claims.prompt_sha` says which distill prompt wrote a row and NULL means
+  "written before the column existed". A hand-derived row has no prompt, so it
+  would be indistinguishable from a legacy row, and there is no value for
+  "verified by hand". This run built the explicit-id distill route instead,
+  which does not have the problem because every row it writes carries a real
+  sha, so the question is still open and is now the only thing between the
+  corpus and a hand-written claim.
+- What: two changes in one migration. Stamp every existing NULL `prompt_sha`
+  with a sentinel that says what it is, `legacy:pre-column`, so that NULL
+  stops carrying meaning and becomes an error. Then reserve a second sentinel
+  shape, `hand:<seat>`, for a row a seat derived and checked itself, and add
+  the `where prompt_sha not like 'hand:%'` clause to whichever reads must not
+  mix a hand-derived row into a model-derived population. The ordering
+  matters and it is the whole idea: adding `hand:` while NULL still means
+  "legacy" gives the column three meanings and two of them are silent, which
+  is the defect the sentinel was meant to fix. A count of the NULL rows comes
+  first, because if the number is zero the migration is one line.
+- First step: `select count(*) from claims where prompt_sha is null` and the
+  same count grouped by `created_at` month, which says whether the legacy
+  population is bounded. One query, next time a seat holds the credential.
+- Cost: $0.
+- Status: proposed
+
+### 2026-11-02 - `tools/ship_first.py --seat` hangs on a seat name nothing carries, which is worse than the confident zero it is a sibling of (engineer seat, explicit-id-distill run)
+- Trigger: probing eight of the 56 target-naming flags in `tools/` with a
+  value nothing carries. Seven answered in under a second: four refused and
+  three printed a confident zero. The eighth, `ship_first.py --seat
+  no-such-seat-xyz`, printed nothing and was still running when the 25-second
+  timeout killed it. A tool that answers zero is at least readable as nothing;
+  a tool that never answers gives a caller no exit code to branch on at all,
+  and a seat that runs it inside a wake limit pays the whole timeout.
+- What: find out which it is before fixing it, because the two causes need
+  opposite repairs. If the hang is the board request, the repair is a timeout
+  and a refusal that says the board could not be asked, which is exit 2 in
+  this tree's vocabulary. If the hang is the tool resolving a name against a
+  roster it fetches unboundedly, the repair is `resolve_target.check` against
+  the roster it already has, which is exit 4. The probe in
+  `tests/test_resolve_target.py` is where the regression test goes either way,
+  and it should assert a bound on the wall clock rather than only on the exit
+  code, because this instance would have passed an exit-code-only test by
+  never reaching one.
+- First step: run it with the board unreachable and with the board reachable,
+  and compare. Two invocations, no credential.
+- Cost: $0.
+- Status: proposed
+
+### 2026-11-02 - The 56 target-naming flags need to be a declared set, because a hand list of three cannot tell a resolved target from an unexamined one (engineer seat, explicit-id-distill run)
+- Trigger: this run answered the inventory question the second-reader run
+  carded (`Inventory which of the 237 flag-carried arguments in tools/ resolve
+  a target`) and the answer changed the shape of the work. The population is
+  not 237. Of 242 flag-carried arguments on `main`, 102 are boolean switches,
+  7 carry `choices=` and are refused by argparse already, 77 take a number or
+  free text, and 56 name something a tool could resolve. Three of the eight
+  probed were repaired this run. The other 48 are unprobed, and
+  `tests/test_resolve_target.py` holds a hand list of three, so the test
+  passes identically whether the remaining 48 resolve their targets or have
+  never been looked at. That is the same defect as the delivery receipt's
+  second reader being a hand list, found earlier the same day.
+- What: the enforcement half, built the way `tests/test_ci_coverage.py`
+  enforces its own pin. Parse `tools/` with `ast`, classify every
+  `add_argument` the way this run classified them, and require each of the 56
+  to appear in exactly one of two declared sets: resolved, meaning the tool
+  calls `resolve_target.check` or carries `choices=`, or exempt, with a
+  one-line reason in the set itself. A flag added to `tools/` that names a
+  target and declares neither turns the pull request that adds it red. The set
+  may shrink and may not grow, which is the ratchet shape this repository
+  already uses twice.
+- First step: the classifier, printing the 56 with their file and their
+  current verdict. It exists as a throwaway script in this run's transcript
+  and needs to become a file.
+- Cost: $0.
+- Status: proposed
+
+### 2026-11-02 - Craft scan: Elicit treats "one more column" as a backfill over papers it has already read, where alexandria's only claim writer could never be aimed at a paper twice (engineer seat, explicit-id-distill run)
+- Trigger: the research seat's handoff and the note behind it. Three papers in
+  one reading-queue block were distilled from their abstracts alone, five
+  claims each, and the appendix results in all three were unextracted and
+  unextractable, because `distill_queue` is `where distilled_at is null` and
+  the only `insert into claims` outside `tests/` only ran over that view. The
+  scan was chosen to answer one question: how does a product whose whole job
+  is extraction handle "this paper needs one more field".
+- What: the thing worth stealing is that Elicit's extraction is addressed by
+  column rather than by paper. A user adds a question to an existing table and
+  the product backfills that question across every paper already in it, so
+  "extract one more thing from a paper you have already read" is the normal
+  operation rather than a request the data model cannot express. alexandria
+  had the opposite default: a paper was a unit of work that completed once,
+  and completion was spelled as absence from a view, which made re-extraction
+  not merely unimplemented but unaddressable. The explicit-id route shipped
+  today is the one-paper version of this. The column version is the idea: a
+  distill run aimed at a question rather than at a paper, which would select
+  every paper whose claims carry no answer to it. And the thing alexandria
+  does better is the audit trail underneath. Every claim carries the sha of
+  the prompt that wrote it, so a corpus read under two prompt versions is
+  separable by query and a re-read is distinguishable from the first reading.
+  Elicit shows the current answer with no record of which extraction version
+  produced it, which is exactly the ambiguity that made today's re-read safe
+  to ship and would have made it a guess.
+- First step: `select count(*) from papers where distilled_at is not null and
+  fulltext_chars is null`, which `modal run pipeline/distill.py::drain` now
+  prints. If that number is large, the column-addressed version is worth more
+  than the per-paper one and the first step is a prompt that asks one question
+  rather than twelve.
+- Cost: $0. Elicit's product pages and free tier, no account opened.
+- Status: proposed
+
+### 2026-11-02 - URGENT: the shared 45G host disk is at 99% and nothing bounds what a seat may leave behind (engineer seat, explicit-id-distill run)
+- Trigger: three suite runs in this session were killed with exit 144 and no
+  pytest summary, and the fourth narrower run gave the real error:
+  `OSError: [Errno 28] No space left on device`. `df -h /` read 26M free on a
+  45G volume, and `git commit` then failed because the harness could not write
+  a child process's stdout. Measured after it recovered to 851M: fourteen agent
+  sandboxes under `/tmp/epito-*` hold 5.3G, five of them 745M to 816M each;
+  `/tmp/pytest-of-seats` holds 314M across 17 directories;
+  `/srv/asc/home/.cache` holds 2.0G, 1.3G of it one product's browser install.
+  Filed as
+  `INC-2026-11-02-the-shared-45g-host-disk-filled-again-and-a-seats-own-commit-could-not-write`,
+  which is the second instance of the class: the same volume filled on
+  2026-10-23 with 14G of container logs and took Langfuse down with it.
+- What: a disk budget per seat and a sweep of what runs leave behind, which is
+  the same remedy shape as the `mktemp -d` rule every charter now carries for
+  `/tmp/body.md`. That rule bounds collisions between seats and says nothing
+  about volume. Three pieces, in order of how much they buy: retire a
+  sandbox's clone when its run ends, since nine of the fourteen are 100M to
+  174M and five are eight times that, which suggests the large ones are
+  holding build output rather than a checkout; cap `/tmp/pytest-of-seats`,
+  which pytest keeps by default; and give the shared caches under
+  `/srv/asc/home/.cache` an owner, because 1.3G of `ms-playwright` and 538M of
+  `asc-console-shots` belong to products and not to the host.
+- First step: not this seat's. The disk, the sandbox lifecycle and the caches
+  are all host surfaces and none of them is in this repository, so the first
+  step is the board message this run sent, and the number in it. What a seat
+  can do today is one line: `df -h /` before trusting an exit code it does not
+  recognise.
+- Cost: $0 to measure. A larger volume is money and therefore the owner's.
+- Status: urgent
+
+### 2026-11-02 - A gate's file list should be derived from the register map, because a hand list puts a new register out of scope by default and says nothing (engineer seat, message run, 739-conflict wake)
+- Trigger: today's conflict was in `docs/research/reading-queue.md`, and
+  `tools/resolve_register_conflict.py` could not be pointed at it, because it
+  reads `REGISTERS` from `tools/check_registers.py` and that list did not name
+  the file. The file had sat in `docs/agents/registers.md`'s own table since
+  2026-09-26 with a writer (skill seat) and a reader (research seat) that are
+  different seats, which is the criterion the `REGISTERS` comment states in its
+  own words. So the criterion already selected it and the hand list had not
+  caught up. Filed as
+  `INC-2026-11-02-the-register-resolver-could-not-see-the-register-that-conflicted`.
+  Measured while writing the test: of the 44 rows in the map naming a `docs/`
+  path, 14 are guarded and 30 are not, and the drift runs the other way too,
+  because `docs/backlog.md` is guarded with no row in the map at all though
+  `company.yaml` declares it this product's `pending` surface.
+- What: invert the default. `REGISTERS` is a list of what is in scope, so a new
+  append-only file is out of scope until somebody remembers, and nothing ever
+  reports the omission. The map is already the place where a register's writer
+  and reader are written down, so it can be the source: parse its table, treat
+  every row whose writer and reader are different seats as guarded, and keep a
+  named `NOT_A_REGISTER` list for the specs and data files that appear in the
+  table without being registers. The exclusion then costs a line and a reason,
+  and the omission costs nothing, which is the opposite of today.
+- Why the map rather than a glob: a glob over `docs/**.md` would guard the
+  sprint files and the charters, which are not append-only and not multi-seat.
+  The property that matters is two different seats, and only the map records it.
+- First step: a reconciliation report rather than a gate, because 30 rows is a
+  triage and not a bug. One function printing each table row with its guarded
+  state and its writer and reader, so the next run has the 30 sorted into
+  "register" and "not a register" rather than counted. The ratcheted test in
+  #751 holds the line in the meantime.
+- Cost: $0
+- Status: proposed
+
+### 2026-11-02 - The pre-ship marker grep is silent on exactly the merge failure that keeps happening, and the arithmetic that catches it is already written (engineer seat, message run, 739-conflict wake)
+- Trigger: every charter's step zero is `grep -rn '^<<<<<<< ...'`, described as
+  step zero "because it is the only one whose failure is silent after the first
+  time." It printed nothing on my first resolution of today's conflict, which
+  had dropped 3,137 unconflicted lines. The marker scan cannot fail to pass a
+  hand resolution, because a hand resolution's defining property is that the
+  markers are gone. Three instances now:
+  `INC-2026-10-24-a-hand-resolved-register-append-deleted-another-seats-line-with-no-marker`,
+  `INC-2026-11-01-a-shared-status-line-was-factored-out-of-a-conflict-hunk-and-reordering-detached-it`,
+  and this run's. In all three the loss was caught by a number somebody kept
+  for another purpose, never by the prescribed check.
+- What: add one line to the pre-ship ladder, beside the marker grep rather than
+  instead of it, since the two catch disjoint failures. The marker grep catches
+  a resolution nobody finished; `resolve_register_conflict.py --check` catches a
+  resolution somebody finished wrong, by comparing every line's count against
+  `ours + theirs - base`. Run against this run's three trees it returns 2,723
+  findings for my first attempt and 0 for what shipped, so the instrument is
+  exact and it is already in the repository. What it lacks is a clause making
+  it fire.
+- Why this is a ledger proposal and not a commit: the charters are the owner's
+  to edit by merge, and this touches every seat's copy of the same section. It
+  is also a company standard shape rather than a local one, so it may belong in
+  `docs/standards/lessons.md` through the ExO relay rather than in ten charters.
+- First step: the owner's or the ExO's call on which surface carries it. The
+  code needs nothing: `--check` exists, exits non-zero on a finding, and now
+  covers the reading queue.
+- Cost: $0
+- Status: proposed
+
+### 2026-11-02 - Craft scan: pre-commit makes a check's domain a pattern with an explicit exclude, so a new file is guarded by default, where alexandria's gates carry hand lists that fail silently open (engineer seat, message run, 739-conflict wake)
+- Trigger: today's incident, where the tool that would have caught my mistake
+  was correct, present, and inapplicable to the one file that needed it. I went
+  looking for how other gate frameworks decide what they cover.
+- What is worth stealing: in `pre-commit`, a hook declares its domain as
+  `files:` and `types:` patterns with an optional `exclude:`, and the default
+  `files` matches everything the commit touches. The consequence is the one
+  alexandria wants: adding a Markdown file to the repository puts it inside
+  every Markdown hook immediately, and keeping it out is an explicit line in
+  the config that a reviewer reads in the diff. Omission is loud and exclusion
+  is deliberate. alexandria's `REGISTERS`, `ci_coverage`'s pin list and the
+  voice gates all invert that, carrying hand-maintained lists of what is in
+  scope, so the failure mode is a file nobody added and no output at all. The
+  steal is not the YAML, it is the default: a gate should state what it
+  excludes, not what it includes.
+- What alexandria does better: pre-commit has no analogue of
+  `resolve_register_conflict.py`'s conservation arithmetic, and neither do the
+  linters it wraps. Every one of them judges a file's final content against a
+  rule, which is a question about one tree. "Did this merge keep every line both
+  parents had" is a question about three trees, and a hook that only ever sees
+  the worktree cannot ask it. alexandria asks it, exactly, per line, and the
+  number is checkable afterwards by anyone with the three refs. That is the
+  better instrument and it is ours; what it was missing today was pre-commit's
+  idea of a domain.
+- First step: the reconciliation report in the entry above, which is the same
+  first step read from the other side.
+- Cost: $0
+- Status: proposed
+
+### 2026-11-02 - Every parser in this repository should be audited against ban-list entry 13, because one of them required the character the law bans (engineer seat, message run, 739-conflict wake)
+- Trigger: `main` was red in `tests/test_reading_queue.py` because
+  `pipeline/reading_queue.py`'s `ASKED_BY` terminated the `asked by` field on
+  an em dash, and `docs/voice/ban-list.md` entry 13 bans every non-ASCII
+  character in this repository. Both rules were correct, both were enforced,
+  and they were jointly unsatisfiable: a seat obeying the voice law wrote a
+  line the parser misread, and a seat obeying the format wrote a ban-list
+  violation. Three lines landed in that gap before anyone noticed, and a third
+  arrived mid-run while the pull request repairing the first two was open.
+  Filed as
+  `INC-2026-11-02-a-parser-required-the-one-character-a-standing-law-bans-and-both-were-working-as-written`.
+- What: the reading queue is one parsed register and it is not the only one.
+  Any pattern anywhere in `pipeline/` or `tools/` that matches on a non-ASCII
+  character is in the same trap, and the trap is silent, because the data that
+  would reveal it is only written when some seat runs an ASCII sweep over a
+  file somebody else parses. One pass: grep every `re.compile` in `pipeline/`
+  and `tools/` for a character outside ASCII, and for each hit ask whether the
+  file it reads is one that entry 13 governs. Where the answer is yes, widen
+  the reader to accept both forms the way `ASKED_BY` now does, rather than
+  repairing the data.
+- Why not repair the data: the repair has an expiry the moment it is made. The
+  reading queue still holds 857 non-ASCII characters, so a correct future sweep
+  undoes any em dash written back into it. The general rule, which is the part
+  worth keeping: when a data rule and a prose rule disagree, the fix belongs in
+  the reader, because data is written by many seats on many days and the reader
+  is written once.
+- Why this is not the widening the writer seat and this seat both argued
+  against today: that argument is that a spelling rule is only ever right about
+  the delimiters somebody has already typed. Here both forms have been typed
+  deliberately, one by a file's documented format and one by a standing law, so
+  accepting the second recognises a rule rather than guessing the next
+  convention. Widen for a delimiter a law mandates, never for one a writer
+  might choose.
+- First step: the grep and the triage, which is one run and produces a count
+  rather than a change. `ASKED_BY` is already done and is the worked example.
+- Cost: $0
 - Status: proposed

@@ -68,12 +68,28 @@ REGISTERS = [
     "docs/agents/hq-relay.md",
     "docs/backlog.md",
     "docs/standards/pm.md",
+    # Added 2026-11-02 by the engineer seat, after resolving a real conflict in
+    # this file by hand and getting it wrong on the first attempt
+    # (`INC-2026-11-02-the-register-resolver-could-not-see-the-register-that-conflicted`).
+    # It already sat in docs/agents/registers.md's own table at line 86 with a
+    # writer (skill seat) and a reader (research seat) that are different
+    # seats, which is the criterion the comment above states, and three seats
+    # append to it rather than two. Being absent here meant
+    # `tools/resolve_register_conflict.py`, which reads this list and exists
+    # precisely to resolve an append conflict and prove the resolution lost
+    # nothing, could not be pointed at the one file that needed it.
+    "docs/research/reading-queue.md",
 ]
 
 #: Git writes each marker as exactly seven characters at the start of a line.
 #: A markdown setext underline is a run of `=` too, which is why the length is
 #: pinned rather than matched loosely: `===` under a heading is not damage.
 CONFLICT = re.compile(r"^(<{7}|={7}|>{7})(\s|$)")
+
+#: A date anywhere in a field that should have ended before it. The queue's
+#: `asked by` runs to an em dash, so a date inside it means the separator was
+#: written as `--` and the field swallowed the rest of the line.
+DATE_IN_FIELD = re.compile(r"\d{4}-\d{2}-\d{2}")
 
 #: `INC-YYYY-MM-DD-slug`, the scheme incident 29 replaced the counter with.
 INCIDENT_SLUG = re.compile(r"^#{2,3}\s+(INC-\d{4}-\d{2}-\d{2}-[a-z0-9-]+)", re.M)
@@ -83,6 +99,58 @@ INCIDENT_SLUG = re.compile(r"^#{2,3}\s+(INC-\d{4}-\d{2}-\d{2}-[a-z0-9-]+)", re.M
 #: drift apart. Re-exported because `tests/test_check_registers.py` reads it
 #: from here and one source of truth with one name in two modules is the point.
 VALID_STATUSES = set(_ledger_module().VALID_STATUSES)
+
+
+def _reading_queue_module():
+    """`pipeline/reading_queue.py`, which owns the queue's line format.
+
+    Imported the way `_ledger_module` is, so the asker contract lives in the
+    parser that distill actually reads the file with and not in a second
+    pattern here.
+    """
+    spec = importlib.util.spec_from_file_location(
+        "reading_queue", ROOT / "pipeline" / "reading_queue.py")
+    module = importlib.util.module_from_spec(spec)
+    assert spec.loader is not None
+    spec.loader.exec_module(module)
+    return module
+
+
+def unparseable_queue_askers(path: Path, root: Path = ROOT) -> list[str]:
+    """Queue lines whose `asked by` field swallowed the date after it.
+
+    The field has to end somewhere, and `ASKED_BY` now accepts the em dash the
+    format documents as well as the ` - ` and ` -- ` that
+    `docs/voice/ban-list.md` entry 13 requires, so an ordinary ASCII line is
+    not a defect. What is still a defect is a line with no separator at all
+    before the date, which parses with the date, and sometimes a paragraph,
+    inside the asker. Distill then attributes the line to nobody a roster
+    knows.
+
+    This is here rather than only in `tests/test_reading_queue.py` because that
+    test asserts against the live file and `tools/ci_coverage.py` reports it as
+    one of 70 test files no workflow runs. Three such lines reached `main` on
+    2026-11-02 in the research seat's merges and the suite was red on `main`
+    until the engineer seat ran it by hand. Every seat runs this checker before
+    shipping, so this is the reachable place to ask the question.
+    """
+    queue = _reading_queue_module()
+    text = path.read_text()
+    out = []
+    for item in queue.parse(queue.read_file(path)):
+        asker = item.asked_by
+        if not asker:
+            continue
+        broken = (DATE_IN_FIELD.search(asker) or "\u2014" in asker or "~~" in asker)
+        if broken:
+            line = text[: text.index(item.raw)].count("\n") + 1 if item.raw in text else 0
+            out.append(
+                f"{path.relative_to(root)}:{line}: the `asked by` field runs past its "
+                f"separator, so this line is attributed to {asker.strip()[:60]!r}. "
+                "Separate the asker from the date with ' - ', ' -- ' or an em "
+                "dash, or use "
+                "`python3 pipeline/reading_queue.py --add`, which composes it")
+    return out
 
 
 def conflict_markers(path: Path, root: Path = ROOT) -> list[str]:
@@ -171,6 +239,9 @@ def check(root: Path = ROOT) -> tuple[list[str], list[str]]:
     incidents = root / "docs/agents/incidents.md"
     if incidents.exists():
         blocking += duplicate_incident_ids(incidents, root)
+    queue = root / "docs/research/reading-queue.md"
+    if queue.exists():
+        blocking += unparseable_queue_askers(queue, root)
     ledger = root / "docs/ideas.md"
     if ledger.exists():
         warnings += unknown_ledger_statuses(ledger, root)

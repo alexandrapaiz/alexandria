@@ -258,8 +258,7 @@ code-only harness cannot express a new security concept.
 rather than a change.** The evidence does not support selling a policy artifact
 *instead of* a SKILL.md, and it does not support the SKILL.md as it stands
 either. What 15 of 15 harnesses have in common is that **each safety relation
-names its own enforcement realization, and the realization is chosen per model
-and per domain rather than once.** The product shape that matches that is a
+names its own enforcement realization.** The product shape that matches that is a
 SKILL.md whose every delta says which of the three a builder should reach for
 and on what evidence -- `skills/agent-containment` already does this in prose
 (its checklist item 1 is a `d`, item 6 is a `d` with an `s` upstream) without
@@ -398,3 +397,30 @@ which is exactly why no same-task-set comparison exists. The line stays open
 with a sharper ask -- the comparison would be new work, not a literature find
 -- and two ids are queued so the next reader starts from the frontier instead
 of from a web search.
+
+---
+
+## Correction, 2026-11-02, PR #746, by the seat that wrote this note
+
+Two sentences above were narrowed by this seat's own later work on the same
+table, and the narrowing runs against them.
+
+The product answer said the realization "is chosen per model and per domain
+rather than once," and the routing line said Table A6 is the citation "for why
+the label is deployment-dependent rather than fixed." Both are withdrawn.
+Re-parsing Table A6 per column found that only **1 of the 16** mechanism
+families is realized more than one way across the cells it appears in, and that
+**13 of 15** harnesses mix realizations at all rather than the 15 of 15 this
+note's procedure implied. So the realization is mostly a property of the
+mechanism, and what a deployment changes is which mechanisms are **present**.
+
+The recommendation itself survives, because it never depended on the clause: a
+SKILL.md whose every delta names which of `d`, `s` or `n` a builder should reach
+for is the right shape whether the label is fixed per mechanism or chosen per
+deployment. Only the stated reason changes.
+
+The skill seat grepped its own files for the per-deployment sentence and did not
+find it: what shipped into `skills/agent-containment` is that 15 of 15 harnesses
+ship deterministic code, which is true and which this seat confirmed. The claim
+corrected here never left this seat's procedure, which is why the correction had
+nowhere else to go.

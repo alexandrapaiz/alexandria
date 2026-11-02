@@ -128,6 +128,9 @@ import sys
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+import resolve_target                                            # noqa: E402
+
 # This file's own directory, which is `tools/` in the repository and `/root`
 # inside the Modal image `pipeline/skill_revision.py` builds. One line covers
 # both, the same way the other two reviewers do it.
@@ -641,6 +644,17 @@ def main(argv=None) -> int:
 
     if args.files_only and args.record:
         ap.error("--record needs the database; drop --files-only")
+
+    # A slug no directory under `skills/` carries produced "0 skills reviewed,
+    # 0 failing, 0 not fully measurable" and exit 0, measured on 2026-11-02.
+    # That is the panel reporting a clean sheet about a subject it never found,
+    # on the reviewer whose verdicts gate promotion (ADR-13), which makes it
+    # the worst place in the tree for this class to be living.
+    refusal = resolve_target.check(
+        "skill", args.skill, resolve_target.skill_slugs(),
+        hint="Drop --skill to review every skill.")
+    if refusal is not None:
+        return refusal
 
     conn = None
     if args.record:

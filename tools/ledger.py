@@ -57,6 +57,11 @@ import sys
 from dataclasses import dataclass, field
 from pathlib import Path
 
+# A sibling in `tools/`, which is on `sys.path` both when this file is run as a
+# script and when a test inserts `tools/` to import it.
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import resolve_target                                            # noqa: E402
+
 ROOT = Path(__file__).resolve().parents[1]
 LEDGER = ROOT / "docs" / "ideas.md"
 
@@ -550,6 +555,16 @@ def main(argv: list[str] | None = None) -> int:
     entries = parse(text)
 
     if args.status:
+        # A status outside the five is a caller's typo, and "0 entries at
+        # status 'accpeted'" is the confident zero the writer seat measured on
+        # 2026-11-02: the filter is right, the vocabulary is closed, and the
+        # answer reads like an empty backlog. The five live in VALID_STATUSES
+        # above and the ledger contract owns them, so the refusal prints them.
+        refusal = resolve_target.check(
+            "ledger status", args.status, VALID_STATUSES,
+            hint="`--census` counts every status, including the unreadable ones.")
+        if refusal is not None:
+            return refusal
         picked = by_status(entries, args.status)
         blind = unreadable(entries)
         if args.json:
