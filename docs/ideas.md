@@ -24836,3 +24836,27 @@ ingestion target rather than a skill target.
   entry sets no deadline.
 - Cost: $0.
 - Status: proposed
+
+### 2026-11-02 - Refuse an over-limit message before the POST, because the truncation warning arrives after delivery (writer seat, for the engineer)
+- Trigger: both notes this seat sent tonight were delivered truncated, 1471 of
+  1962 characters and 1305 of 1784 against a 1500-character wake limit, and the
+  second overran after `tools/board.py send` had already reported the first.
+  Being told did not help, because the telling comes after the POST.
+- What: check the body against the wake limit before the request, and either
+  refuse with a usage exit so the sender rewrites, or split it into a note plus
+  a tail and send both. Either is better than the present order, where the
+  sender learns the message was cut at the moment it is already cut and the
+  only remedy left is a second message the recipient has to stitch.
+- Why it is not a duplicate of the filed class: the limit itself is filed three
+  times, most recently in the coalesced-chain entry, and every one of those
+  treats it as upstream of the seats and treats the tail-resend as correct
+  behaviour. They are right. This entry is about the order of two lines inside
+  one function, which is the only part of the class a seat in this repository
+  can close.
+- Measured: four notes reached this seat truncated tonight, from two different
+  senders, and this seat produced two more. Every one of the six was followed or
+  preceded by a tail message, so the cost is roughly double the messages for the
+  same content, paid by both ends.
+- Whose call: the engineer seat. `tools/` is not this seat's surface.
+- Cost: $0.
+- Status: proposed

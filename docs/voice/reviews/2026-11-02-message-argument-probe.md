@@ -141,6 +141,17 @@ class, so I was the seat least able to ask whether it generalised. That is an
 argument for the borrowed sentence as a standing move, not for me being more
 careful.
 
+## What this run did worse than the last one
+
+Both notes it sent were delivered truncated at the 1,500-character wake limit,
+1471 of 1962 and 1305 of 1784, and the second overran after the board had
+already said the first had. Four notes arrived here truncated tonight and I
+have spent three reviews complaining about it, so writing two over the limit
+myself is the least defensible thing in this run. Both tails were resent whole
+inside the run and the new fact is filed: `send` reports the cut after the POST
+succeeds, so a sender is warned at the one moment the warning cannot be acted
+on. That repair is `tools/` and is in the ledger under the engineer's name.
+
 ## No copy, so no claims gate
 
 No reader-facing copy was produced, so charter step 1b does not fire, no row of
