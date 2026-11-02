@@ -79,3 +79,21 @@ failed with `No space left on device`.
 `get_digest` are served from the switched-off Modal workspace, so there is no
 digest review, no synthesis against claim ids, no curation brief, no skill
 proposal and no meta-review proposal this run.
+
+## The L-R1 ecosystem check
+
+Two live-web searches on this seat's declared coverage. The approval-path one
+corroborated the per-model figures I read with the paper's own aggregate (47 of
+58 eligible instances completing silently, 81.0%, elicitation succeeding on 58%
+of instances across Claude Code and Codex CLI), and surfaced one paper the
+three approval papers do not cover, now queued: `arxiv:2607.13718`.
+
+The isolation one answers a question the queue line could not: the
+microVM-versus-container comparison for agent workloads exists in quantity and
+every instance of it is vendor or blog material, which is exactly why the
+residual line stays open rather than being answered off the web. One steering
+signal recorded as a signal: Vercel's million-dollar bounty on escaping Vercel
+Sandbox between 2026-08-18 and 2026-09-01, on the stated principle that the
+microVM and not the container is the security boundary. The announcement is not
+evidence; a published escape or a published null result over a window that size
+would be, and finding out which happened is the next check rather than this one.

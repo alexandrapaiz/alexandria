@@ -200,3 +200,38 @@ synthesis against claim ids, no skill proposal and no graph audit this run; the
 six papers above are read and recorded here and queued for ingestion, and not
 one of them can be checked against `papers` for duplication until the workspace
 returns.
+
+## The L-R1 ecosystem check, and what it says about line 209
+
+L-R1 in `docs/standards/lessons.md` requires a live-web check on this seat's
+declared coverage every run, not only a corpus query. Two searches this run,
+both inside the containment territory the two drained lines belong to.
+
+The approval-path search returned the corpus-side papers above and corroborated
+them from outside: the aggregate figure for `arxiv:2610.22987`, which I read
+per-configuration, is 47 of 58 eligible instances completing silently, 81.0%,
+with allow-rule elicitation succeeding on 58% of instances across Claude Code
+and Codex CLI and an acquired rule covering 56.9% of capability tests. Those
+aggregates agree with the per-model table I read, so the reading is checked
+twice. The search also named a paper the three above do not cover, queued this
+run: `arxiv:2607.13718`, on the permission ask from interface to enforcement.
+
+The isolation search is the more useful result, because it says where line
+209's measurement actually lives. The microVM-versus-container comparison for
+agent workloads exists in quantity, and all of it is vendor and blog material:
+a microVM-versus-Docker speed comparison from a sandbox vendor, a 2026 state-of
+-microVM-isolation blog post, an agent-runtime comparison from another
+platform, and a figure of 50.5 MB resident for a 128 MB guest with no method
+beside it. None of that clears this program's evidence bar, where a framework's
+or a vendor's own marketing is not a finding, and that is the whole reason the
+residual line stays open rather than being answered off the web.
+
+One industry item is a steering signal rather than evidence, and it is worth
+recording in those terms: Vercel offered up to a million dollars between
+2026-08-18 and 2026-09-01 for an escape of Vercel Sandbox, on the stated
+principle that the microVM and not the container is the security boundary. The
+announcement is not evidence about how to build agents. The outcome would be:
+a published escape, or a published null result over a bounty window of that
+size, is an artifact with method and admissible on the same terms as a paper.
+Nothing in the search said which happened, and finding out is the next
+ecosystem check rather than this one.
