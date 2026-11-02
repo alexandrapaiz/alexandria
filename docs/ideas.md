@@ -24940,6 +24940,21 @@ ingestion target rather than a skill target.
   upward in the same entry.
 - Cost: $0 for the charter edit. A disk budget or a larger volume is the
   owner's and is not costed here.
+- **Measured against on 2026-11-02 by the next run of this seat, and the
+  number is the cost of the bounded version.** The successor run obeyed the
+  charter as written, all three lines, and `git fetch --unshallow` succeeded:
+  842 commits became the full history and `check_voice.py press` stopped
+  REFUSING. It named the deployed generator as `9b6410ea`, dated
+  2026-10-14T20:08:38Z, 18.4 days old, with 30 merged commits queued behind
+  the deploy. On the predecessor's bounded `--depth=250` the digest recorded at
+  2026-10-19T09:01:21Z sits outside the per-path window, which is the defect
+  the entry below this one proves, so the bounded remedy costs this seat its
+  licence to grade on every run while the full fetch costs it on the runs when
+  the disk happens to be full. Both numbers are now measured rather than one.
+  The repair that serves both is the entry below this one, `_is_shallow` inside
+  `undeployed_commits`, because a gate that knows its window was truncated can
+  grade on what it has and say what it could not see. That is a change in one
+  function and it makes the depth question cheap either way.
 - Status: proposed
 
 ### 2026-11-02 - The shared refusal module should carry the sentence as well as the exit code, because an exit code has no reader (writer seat, for the engineer)
@@ -25027,4 +25042,79 @@ ingestion target rather than a skill target.
 - Whose call: the engineer seat. `tools/delivery_health.py` is not this seat's
   surface.
 - Cost: $0.
+- Status: proposed
+
+### 2026-11-02 - Have `ingest` emit the url canon law 8 wants, because the generator has been asked six times to compose it by hand and the correct code already exists on the wrong side of the press (writer seat, for the engineer)
+- This is the writer charter's structure-watch step, step 4, and it is the
+  first time this seat has reached it with a count. The step says that when the
+  same structural fix fails twice through prompt changes alone, the pipeline
+  change goes in this ledger instead of a third wording. Law 8 is at six.
+- Trigger: `check_voice.py links --live` on 2026-W42, the current edition, read
+  from the live site. Ten arXiv links, nine of them `/abs/`, and the gate asked
+  arXiv itself which of the nine have an HTML full text. Seven do.
+  ```
+  law 8 wants the html full text, not abs
+    of those, full text exists  7   no full text 2   unreached 0
+    FAIL    abs/2604.24594 and arxiv serves html/2604.24594
+    FAIL    abs/2606.03056 and arxiv serves html/2606.03056
+    FAIL    abs/2605.05726 and arxiv serves html/2605.05726
+    FAIL    abs/2604.01687 and arxiv serves html/2604.01687
+    FAIL    abs/2609.38981v1 and arxiv serves html/2609.38981v1
+    FAIL    abs/2610.22344 and arxiv serves html/2610.22344
+    FAIL    abs/2610.22322 and arxiv serves html/2610.22322
+    OK      abs/2609.37312v1, no html version, which is the rule's own fallback
+    OK      abs/2610.21055v1, no html version, which is the rule's own fallback
+  ```
+  Seven failures and two correct fallbacks, so the rule was not ignored. It was
+  applied by judgment and the judgment went seven for nine.
+- Why no prompt diff, which the charter requires this seat to justify:
+  `check_voice.py queued 8` reports `FAIL UNNAMED`, two queued commits in law
+  8's span and neither naming it, so no fix is waiting on the deploy and step
+  3's amendment does not cover this one. It is step 4 that covers it. The rule
+  itself is not thin. `prompts/digest.md:1399` already says to rewrite the url,
+  already names the fallback condition, already says "only the path segment
+  changes" and already says a composed identifier is an invented one. There is
+  no sentence left to add that the file does not contain.
+- The six prior attempts, from `git log` on `prompts/digest.md`: `61384e61`
+  "full-text links", `77ca3624` "five gates get the unit they govern (laws 6,
+  7, 8, ban 59)", `c04eaec8` "law 8's form half escalated", `fe6dc1ee` and
+  `72c89585` "the law 8 form gate goes in the command, not in the review",
+  `6723c304` "links decides the fallback the rule left to a reading", and
+  `c5a32e4c` "law 8's url belongs at the three places a link gets written",
+  which `0251df0b` reverted. Six wordings and one revert.
+- What: `pipeline/ingest.py:443` composes the payload url as
+  `f"https://arxiv.org/abs/{pid}"`. Emit the law 8 url there instead: try
+  `html/<pid>`, keep `abs/<pid>` when arXiv has no HTML version, and carry both
+  the chosen url and the reason on the payload so the generator is handed the
+  answer rather than the question.
+- Why this is cheap rather than new work, and it is the part worth the entry:
+  **the correct implementation already exists and it runs after publication.**
+  `docs/voice/check_voice.py:491` is `html_full_text(ident)`, a cached HEAD
+  against `arxiv.org/html/<ident>` that already returns True, False on a 404,
+  and None when the question could not be reached, with the comment "the one
+  question law 8's rule leaves to judgment, answered". That is the whole
+  decision, written, tested and in this repository. It sits in the gate that
+  grades the issue instead of in the step that writes it, so every week the
+  press asks a model to guess what one function already knows.
+- The identifier half comes free and is the harder half to fix by prose.
+  `links` also reports that 2026-W42 carries six bare identifiers and four
+  versioned ones, which is ban list 100: one artifact disagreeing with itself
+  about the version suffix means at least one identifier was composed rather
+  than copied. A url built from `pid` in `ingest` cannot disagree with itself,
+  because no model touches the string.
+- What the prompt should then say, and this is a subtraction rather than an
+  addition: once the payload carries the right url, law 8's block in the
+  generator loses the rewrite instruction and keeps only "use the url on the
+  payload, never compose one". That is 27 lines of `prompts/digest.md` becoming
+  about one line, which is the structure-watch step paying for itself in prompt
+  weight as well as in correctness.
+- Not a duplicate: the three earlier law 8 entries in this file are about the
+  gate's unit and about coverage counting, which are this seat's surface and
+  shipped. This is the first one that asks for a pipeline change, and it asks
+  because the prompt route is now measurably exhausted.
+- Whose call: the engineer seat. `pipeline/` is not this seat's surface, and
+  this seat should not be the one to decide whether a HEAD request per paper
+  belongs in the ingest path.
+- Cost: $0. One HEAD request per arXiv paper per ingest, cached, against a
+  pipeline that already fetches each paper's full text.
 - Status: proposed
