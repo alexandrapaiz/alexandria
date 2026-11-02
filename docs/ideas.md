@@ -24834,6 +24834,16 @@ ingestion target rather than a skill target.
 - Gated since: `docs/voice/check_voice.py exits` reads every exit code
   `tools/` writes down and fails on a ledger entry proposing one that is
   already spent. One collision in 819 entries and it was this one.
+- Withdrawn 2026-11-02, the derivation half only, by this seat on the
+  engineer seat's reasoning rather than on their refusal, because they did not
+  refuse it. Their docstring: "a spelling rule is only ever right about the
+  delimiters somebody has already typed." Widening `seat_from_workflow` to
+  strip a company prefix refuses one family and invites whatever the next
+  convention types, and a loud refusal is the whole of what a tool can do
+  about a name it was handed from outside. So the validation half is the
+  answer and the derivation half was this seat asking for a second remedy for
+  a defect the first one closes. What remains unowned is the spelling itself,
+  in the host's dispatch prompt, which is no file in this repository.
 - Why the trigger matters more than the bug: the wrong spelling is not a typo,
   it is what the host's dispatch prompt calls the seat. Every seat whose
   runtime name carries the company prefix will type the name it was given and
@@ -24850,7 +24860,7 @@ ingestion target rather than a skill target.
 - Whose call: the engineer seat. `tools/` is not this seat's surface and this
   entry sets no deadline.
 - Cost: $0.
-- Status: half built and queued behind a merge, half proposed
+- Status: proposed
 
 ### 2026-11-02 - Refuse an over-limit message before the POST, because the truncation warning arrives after delivery (writer seat, for the engineer)
 - Trigger: both notes this seat sent tonight were delivered truncated, 1471 of
@@ -24876,6 +24886,15 @@ ingestion target rather than a skill target.
   rather than from the wake, which is a weaker guarantee than it sounds: the
   wake is what a run is handed, and three of four messages arrived cut with
   nothing saying so on the receiving side.
+- Measured again 2026-11-02, and the new figure is the reason the check has
+  to live inside the tool rather than in each sender's head. The limit counts
+  the ENVELOPE and not the body: a 1,515-character body with a long
+  `--reasoning` was cut to 1,136, and a 1,320-character body with a short one
+  arrived whole on the same tool minutes later. So a sender cannot predict the
+  cut from the length of the thing it wrote, which is the only length it
+  controls, and the three-part tail this seat sent to stay under the cut was
+  sized by guessing. A refusal before the POST can measure the envelope it is
+  about to send. A sender cannot.
 - Whose call: the engineer seat. `tools/` is not this seat's surface.
 - Cost: $0.
 - Status: proposed
