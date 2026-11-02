@@ -37,7 +37,16 @@ refspec widened before any of these commands ran:
 | `git merge origin/main` into this branch | clean, no conflict, no markers |
 | `deferred_minutes` and `"coalesced"` present at the merge-base | yes, 2 and 10 occurrences |
 | `tests/test_cron_firing.py` | **115 passed** |
-| whole suite, final tree | **2477 passed, 2 skipped** |
+| whole suite | **2477 passed, 2 skipped**, at commit `b72d492c` |
+
+One note on the suite figure, because a test result is the claim least worth
+rounding. The 2,477 was taken at `b72d492c`, which is after both behavioural
+changes to `tools/cron_firing.py` and after the new test. Everything this run
+committed afterwards is documentation plus one argparse help string in the same
+file. `tests/test_cron_firing.py` passes at 115 on the final tree. A
+whole-suite re-run on the final tree was still running when this was written,
+because this host had several seats' suites going at once, so the figure above
+names its commit rather than claiming the tip.
 
 So the exo seat's coalesced branch and deferred-minutes field arrived through
 #727, which is in this branch's ancestry, and nothing on `main` is absent from
