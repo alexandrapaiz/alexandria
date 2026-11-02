@@ -3,7 +3,7 @@
   "suite_version": 1,
   "written": "2026-09-22",
   "author": "skill agent (ADR-22)",
-  "note": "The five-prompt trigger test prompts/skill-agent.md requires, plus one confusion case per neighbouring skill in the library. Run with skills/_validation/trigger_test.py.",
+  "note": "The five-prompt trigger test prompts/skill-agent.md requires, plus one confusion case per neighbouring skill in the library. Run with skills/_validation/trigger_test.py. Revised 2026-11-02 (ADR-38 length retrofit, 362 lines to 109): rhsi-pos-3 is retired with section 8 (see retired_cases) rather than rewritten, because the skill no longer answers the question and a pass would be the wrong outcome. Two positives replace it, one for each live delta that had no positive case of its own, delta 3 (attribution as search) and delta 5 (feedback cost), which is the gap retiring one case made visible rather than created. rhsi-conf-1 was rewritten earlier the same day for a different reason, recorded on the case.",
   "cases": [
     {
       "id": "rhsi-pos-1",
@@ -22,12 +22,20 @@
       "rationale": "Sections 4 and 5 are the whole answer, and the wrong default (accept if the diagnosis that motivated the edit looks sound) is what a builder reaches for unaided."
     },
     {
-      "id": "rhsi-pos-3",
+      "id": "rhsi-pos-4",
       "kind": "positive",
       "expect": "recursive-harness-self-improvement",
-      "prompt": "Thirteen coding agents are committing to one shared repository trying to push the same metric, and for five days every one of them has been building on the same idea. How do we get the exploration spread out again?",
-      "anchor": "when several agents rewrite one shared codebase and converge on the same idea",
-      "rationale": "The Agora monoculture finding is the only evidence in the library that speaks to a population of self-editing agents collapsing, and the diversity-signal answer is not obvious."
+      "prompt": "Our agent's run logs are hundreds of thousands of tokens long, and when a run fails we cannot tell which function in the scaffold caused it. Right now a judge model reads the log once and names a culprit. Should we pay for a stronger judge?",
+      "anchor": "when attributing a failure to one function inside a long execution log",
+      "rationale": "Written 2026-11-02 to replace rhsi-pos-3. Delta 3 is the best-evidenced delta in the file and had no positive case before this, and it is the delta three confusion cases in other skills' files now point at, so the suite was asserting coverage it never tested from the inside. The decision the prompt is about to get wrong is the one delta 3 answers with a number: buy search turns before a bigger diagnostician, because a lower-tier judge with four turns of continual search matched a higher-tier judge with one pass. Phrased in the vocabulary a requester would use rather than the library's, which is the he-pos-1 lesson from the same run."
+    },
+    {
+      "id": "rhsi-pos-5",
+      "kind": "positive",
+      "expect": "recursive-harness-self-improvement",
+      "prompt": "Our self-editing loop only gets through two candidate edits a night, because every candidate has to be run against the live environment before we know whether to keep it, so it never does enough cycles to converge. Is there a way to score a candidate before it touches a real run?",
+      "anchor": "when the loop's own feedback costs more than its edits gain",
+      "rationale": "Written 2026-11-02 to replace rhsi-pos-3. Delta 5 had no positive case. The prompt names the delta's own decision, which is the cost of evaluating a candidate, and the answer is Dream-RSI's replay tree: score candidate policies inside a simulator built from the discovery history and deploy only the survivor. First draft of this case asked instead whether to compact the context at a fixed seventy percent of the window, and it routed to context-window-engineering at the first run. That was the case's defect and not the library's: compaction is one of three mechanisms delta 5 lifts and it is a mechanism the neighbour owns outright, so a positive case built on it tests a boundary rather than this delta. Re-aimed at the half no other skill covers. The compaction arithmetic is still tested, by eval task rhsi-t8, where it belongs, because it is checkable as a number rather than as a routing decision."
     },
     {
       "id": "rhsi-neg-1",
@@ -56,6 +64,17 @@
       "expect": "self-improving-post-training-loops",
       "prompt": "We want the agent's own successful rollouts to become the training data for the next fine-tune of the model itself. How do we decide which rollouts are good enough to train on, and how do we keep the run from collapsing?",
       "rationale": "Belongs to the other neighbour. Self-referential improvement again, and the words loop, own rollouts and improve itself all appear, but the thing being updated is the weights, which is the boundary this skill's description draws explicitly. Routing it here would give scaffold-edit gates to a question about teacher gating and collapse."
+    }
+  ],
+  "retired_cases": [
+    {
+      "id": "rhsi-pos-3",
+      "kind": "positive",
+      "expect": "recursive-harness-self-improvement",
+      "prompt": "Thirteen coding agents are committing to one shared repository trying to push the same metric, and for five days every one of them has been building on the same idea. How do we get the exploration spread out again?",
+      "anchor": "when several agents rewrite one shared codebase and converge on the same idea",
+      "rationale": "The Agora monoculture finding is the only evidence in the library that speaks to a population of self-editing agents collapsing, and the diversity-signal answer is not obvious.",
+      "retired": "2026-11-02. This case tested the trigger 'when several agents rewrite one shared codebase and converge on the same idea', and the ADR-38 length retrofit cut section 8, the Agora population finding, along with that clause of the description. It is retired rather than rewritten because the skill no longer answers the question, so a pass would be the wrong outcome, which is the handling ac-pos-3 received on 2026-10-06. It passed on its last run before retirement and went to silence the moment the description clause left, which is the engine agreeing that the clause was the whole of its coverage. The finding is queued in docs/research/reading-queue.md for a seat that can give it a page, and nothing in this library covers it today."
     }
   ]
 }
