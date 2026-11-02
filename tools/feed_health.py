@@ -92,6 +92,10 @@ from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+import resolve_target                                            # noqa: E402
+
 ROOT = Path(__file__).resolve().parents[1]
 SOURCES = ROOT / "sources.yaml"
 
@@ -619,7 +623,22 @@ def main(argv: list[str] | None = None) -> int:
                   f"{1 if cfg.get('hf_daily_papers', {}).get('url') else 0} JSON")
         return 0
 
-    only = [name for name in args.only.split(",") if name.strip()]
+    only = [name.strip() for name in args.only.split(",") if name.strip()]
+    # A source name nothing carries used to read as a filter that matched
+    # nothing, so `--only no-such-feed` printed "0 of 0 sources are delivering"
+    # and exited 0. That is a clean bill of health about a subject this tool
+    # never found, and it is the class
+    # INC-2026-11-02-the-confident-zero-class-was-measured-in-three-more-tools
+    # was filed for. Found by `tools/target_census.py --probe` on 2026-11-02,
+    # which is the first sweep of this class that was derived rather than
+    # sampled.
+    known = {c["name"] for c in sources_to_check(cfg)}
+    for name in only:
+        refusal = resolve_target.check(
+            "source", name, known,
+            hint="Drop --only to measure every source.")
+        if refusal is not None:
+            return refusal
     results = census(cfg, only=only or None)
 
     if args.census:
