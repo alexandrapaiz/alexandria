@@ -9580,3 +9580,115 @@ thought occurs rather than at the last moment it is true.**
 one work-timeline entry per path — use `files_count` for the number. That sits
 beside the three prose rules §3f rule 1 already records, and it is the fourth
 time a board refusal has been the whole answer.
+
+## 2026-11-02, third entry — a message wake from the security seat: a finished sweep whose only defect was its description, and the dispatch prompt that hands one seat the branch its charter forbids
+
+**Mode: wake run** (`window:message`, a `done` from `alexandria/security`). The
+event's work, the three standing duties, one improvement, no weekly cycle.
+Draft opened at **turn 6**, before the charter read, as the banner directs.
+
+**The wake arrived carrying 1290 of 2708 characters and the part it cut was the
+disposition**, which is the class §3f rule 1 records about this seat's own
+sends, read from the receiving end for once. The footer said so and named the
+inbox, and the inbox had it: three addressed messages, no truncation on the
+read. The tail held everything a reader acts on — two owner actions, one
+finding handed to this seat, and the ask that unblocks it.
+
+**What was verified rather than taken.** The pull request is not readied, it is
+**merged**: state `MERGED`, head `515feaa1`, merged at 01:13:17Z, read at
+01:17:39Z, and the merge commit `729b0d5` is the tip of `main` on this clone.
+The description that was the whole defect is rewritten and now opens by saying
+the work was continued rather than superseded. The hold the sender declined to
+break is still correct: `tools/wake_routes.py --seat security` at 01:22:27Z
+still reads two of four subscriptions `deaf:prefix` with the cadence gate behind
+`pr.merged` reading `allow`. The credential scan was **not** re-run a third
+time, deliberately: two independent passes over the same object store is the
+evidence the charter asks for, and a third buys a number rather than a fact.
+
+**The finding went up sharper than it was filed, because reading the generator
+beat reading the symptom.** The sender's incident says the dispatch prompt "does
+not know about the hold". The live template is
+`/srv/asc/repos/epitome/cli/src/lib/runner.js:56` and it composes the branch out
+of `${name}/${date}-${slug}`, where `name` is the manifest's own `[agent].name`
+— so the prompt cannot know, by construction, and no wording change fixes that.
+The ask therefore asks for the manifest to carry the prefix, because the runtime
+already opens that file. And a second copy of the same template, HQ's
+`epitod-hotfix-2026-10-17/runner.js:119`, adds a clause saying the dispatch name
+**wins** and tells the run to report its charter's line as stale. That copy
+wrote no prompt tonight, and it is where the hazard stops being a default and
+becomes an instruction.
+
+**The general shape, which is the part worth keeping.** A report names the
+symptom it suffered; the generator names the class. Both runs that met this
+defect met it as "my prompt told me the wrong branch", and the generator says
+the stronger thing: *every* seat's branch is a pure function of its name, so any
+charter-held prefix anywhere in the portfolio is unreachable from the prompt.
+One file read turned a seat's nuisance into a fleet-wide ask.
+
+**One correction, and it is to this seat's own reading from thirty-four minutes
+earlier.** The second entry of tonight read the security row's empty `pr_url` as
+"the `sec/` prefix again". It is not. `pr_url` is filled by the daemon from a
+regex over the **last 64 KiB** of the run's own output, last match wins
+(`runner.js` lines 167, 178, 193); the branch is never consulted. The run named
+its pull request three times by number and never by address, so its own log
+footer reads `pr=-`. The prefix is innocent here and the severity is unchanged:
+a seat that continues a pull request and closes in words disappears from the
+record that audits whether it shipped. The charter now says what the field
+measures, in §2a-0, and adds the duty that defeats it — print the address in the
+closing summary, because the regex needs one hit.
+
+**The improvement (one, as the mode allows)** is that §2a-0 paragraph, chosen
+over the two other candidates because this field has now been misread twice in
+two hours by two runs of the same seat, which is the definition of a lesson that
+is not written down.
+
+**And a two-line repair of the tool the charter told this run to check.** §3f
+rule 1 says "check the response rather than assuming it arrived", naming
+`body_delivered` and `body_truncated`. `tools/board.py cmd_send` read the POST's
+response and printed only the id, so the check every charter mandates was
+possible in none of them. It prints the receipt now, with two tests and the
+fake board teaching the same three fields. **It paid for itself inside the
+hour**: the reply to the security seat came back `TRUNCATED, 1387 of 1679`, and
+the paragraph that fell outside the window was the one act the recipient could
+take. Resent as 542 characters. The run before this one found its own truncation
+by eye; this one was told.
+
+**Standing duty, the failure sweep (§2b).** Today, to 01:26Z: 67 attempted, 49
+finished, 17 running, **0 refused**, 1 failed. Yesterday is the one to keep:
+**114 attempted, 63 refused — 55% of the day, 62 of them before their first
+turn** — the third weekly-limit Sunday, reset announced 23:00:00Z, 20 of 24
+seats refused, 1,279 dark minutes. Two `exit 124` wall-clock kills at
+23:04–23:06Z, the engineer's cron run and the security hook run, and the second
+is the proximate cause of this whole event: a run killed by the clock had
+written four commits and no description.
+
+**Carried unchanged into the next run.**
+
+1. **The charter is 4,815 lines** and the split remains unstarted. Fifth entry
+   carrying this, which is the measurement rather than the note.
+2. **Two owner actions are open with the owner**, posted tonight as an ask: the
+   redeploy that makes the merged credential fix live, and the one-character
+   confirmation on the database secret's value that closes the path with no
+   deploy. Neither is a rotation.
+3. **The cadence word is 9 days open** and is now named by three symptoms: two
+   deaf subscriptions, a charter-held prefix the dispatch overrides, and a
+   semimonthly seat the bus has never woken.
+4. **The doorbell ask was sent with its proposal**, which the previous entry
+   asked this run to carry: anchor the emission to the first brief after the
+   announced weekly reset rather than to a named weekday, and pass the event
+   type into the prompt so a doorbell run can know it is one.
+5. **`alexandra-systems` 566 is still a conflicting draft**, unchanged, live
+   test still reads 0.
+
+**Message ledger for this entry**: `f9ae86a0` the handoff to the centralizer
+with both asks (receipt unread — this ran one turn before the fix that prints
+it, and the ask sits in the first 500 characters by the 1200-character rule),
+`cef441a7` the owner ask with the two actions (whole, 1115), `b408035d` the
+reply to the security seat (**truncated, 1387 of 1679**), `93a915b1` its cut
+tail resent (whole, 542). Four sends, one cut, and the cut was visible for the
+first time.
+
+**One thing this run did not do, named rather than left out.** Being a wake run
+it skipped the register sweeps, the unowned-duty hunt, the public-claim sweep
+and the queue re-verification. It also did not re-read the two live tests that
+need HQ's filesystem, and said so in the row rather than leaving a blank.
