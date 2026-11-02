@@ -5781,8 +5781,84 @@ PRESS_CASES = [
 ]
 
 
+def refusal_owner(found):
+    """Who clears a REFUSED, read off the dict rather than out of its sentence.
+
+    `press_verdict` collapses every refusal into one word, which was right
+    while every refusal had one remedy. It does not any more. On 2026-11-02
+    the engineer seat gave `undeployed_commits` the shallow check its own
+    docstring had promised since the function existed, and put `shallow: True`
+    on the dict "so that you need not grep a sentence". This is the caller
+    that sentence was written for, and until now there was none: the flag
+    arrived and reached nothing in this file.
+
+    The distinction is worth a function because the three causes have three
+    owners. A depth is this run's own and it is two commands away. A digest
+    that matches a full history is the deploy's, which is another seat's. A
+    job that has never reported is neither, and concluding anything about the
+    press from it is the mistake this whole gate exists to stop.
+
+    Measured on a shallow clone of this repository rather than reasoned: with
+    the module as it stands on `main` the refusal reads "the deploy was built
+    from code that is not in this history" over a checkout holding one commit,
+    and with the engineer's branch in place the same clone reads "the depth is
+    the cause and the deploy has not been judged".
+
+    So `depth` is answerable only once that branch is on `main`, and this
+    function says `deploy` on a shallow clone until it is. That window is
+    named in the line `press` prints rather than papered over, and this file
+    does not re-ask git the question itself: the module that owns it is
+    already imported two lines above the call, and a second reader of one fact
+    in this file is the parallel structure the charter forbids before it
+    forbids anything else.
+    """
+    if "why" not in found:
+        return None
+    if found.get("shallow") is True:
+        return "depth"
+    if "searched" in found:
+        return "deploy"
+    return "receipt"
+
+
+#: One line per owner, for the reader of a refusal. `deploy` names the command
+#: that falsifies it, because in the window before the shallow flag reaches
+#: `main` that is the reading this gate gets wrong and the reader needs a way
+#: to check it in one call.
+REFUSAL_LINES = {
+    "depth": "the cause is this checkout's depth, which is this run's own to "
+             "clear: git fetch --unshallow, then run this gate again",
+    "deploy": "the cause is read as the deploy, so the image was built from "
+              "code this history does not hold. Confirm with git rev-parse "
+              "--is-shallow-repository before routing it: a shallow checkout "
+              "lands here too until the engineer seat's shallow check is on "
+              "main",
+    "receipt": "nothing has been reported to diff against, so this is a fact "
+               "about the receipt and not about the press",
+}
+
+REFUSAL_CASES = (
+    # The five shapes `undeployed_commits` actually returns, in its own order.
+    ({"why": "this job has never reported a running digest"}, "receipt"),
+    ({"why": "pipeline.weekly cannot be read at origin/main here"}, "receipt"),
+    ({"why": "this checkout has no history for the app's files"}, "receipt"),
+    ({"why": "the running digest matches none of the last 232 commits",
+      "searched": 232}, "deploy"),
+    ({"why": "this checkout is a shallow clone, so the 1 commit(s) of history "
+             "it holds cannot place the running digest: git fetch --unshallow",
+      "searched": 1, "shallow": True}, "depth"),
+    # A recovered deploy is not a refusal at all, and the owner of one is
+    # nobody. The case is here because `press` calls this on every path.
+    ({"deployed_commit": "abc1234", "searched": 232}, None),
+    # `is True` and not truthiness, for the reason the engineer gave it: a git
+    # that cannot answer must not be reported as a shallow clone.
+    ({"why": "the running digest matches none of the last 1 commits",
+      "searched": 1, "shallow": None}, "deploy"),
+)
+
+
 def press_cases():
-    """The verdict function against its four pinned cases."""
+    """The verdict function, the queued count and the refusal owner, pinned."""
     rc = 0
     now = datetime.datetime(2026, 10, 27, tzinfo=datetime.timezone.utc)
     for found, gen, queued, want in PRESS_CASES:
@@ -5803,7 +5879,16 @@ def press_cases():
                   f"{want!r} and got {got!r}")
     print(f"QUEUED_CASES                               "
           f"{len(QUEUED_CASES) - stale} of {len(QUEUED_CASES)}")
-    return rc | stale
+    owners = 0
+    for found, want in REFUSAL_CASES:
+        got = refusal_owner(found)
+        if got != want:
+            owners = 1
+            print(f"  FAIL    refusal_owner wanted {want!r} and got {got!r} "
+                  f"for {found.get('why', 'a recovered deploy')[:48]}")
+    print(f"REFUSAL_CASES                              "
+          f"{len(REFUSAL_CASES) - owners} of {len(REFUSAL_CASES)}")
+    return rc | stale | owners
 
 
 def press():
@@ -5895,12 +5980,16 @@ def press():
         print("          nothing being found")
     print()
     print(f"  {'FAIL' if verdict != 'CURRENT' else 'OK  '}    {verdict}: {why}")
+    owner = refusal_owner(found)
+    if owner:
+        print(f"          {REFUSAL_LINES[owner]}")
     print()
     print("A verdict on an issue is a verdict on the generator that wrote it,")
     print("so the run that cannot name that generator is grading an unnamed")
-    print("artifact. REFUSED is the answer to act on rather than to read")
-    print("past: it means the window ran out and the number is recoverable,")
-    print("not that the press was built from code nobody pushed.")
+    print("artifact. REFUSED never means the press is current, and it does")
+    print("not mean one thing: the line under it says which of three causes")
+    print("was read and who clears it, because the depth of this checkout is")
+    print("the run's own to fix in two commands and the other two are not.")
     return rc | (verdict != "CURRENT")
 
 
