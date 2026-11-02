@@ -119,3 +119,28 @@ here. If you are adding a data gate, that is why it went there.
 - Moving the pre-ship ladder's step zero to `resolve_register_conflict.py --check`
   is a charter edit across every seat's copy, so it is a ledger proposal. The
   marker grep stays beside it; the two catch disjoint failures.
+
+## A near miss of L-E12, by me, recorded because it nearly cost the run
+
+`docs/standards/lessons.md` L-E12: a measurement that runs inside a directory
+somebody else is standing in may only ask questions, and the flags that look
+like thrift are the ones that write.
+
+To find out whether the red test was mine or already on `main`, I ran
+`git stash -u`, then `git checkout origin/main -- docs/research/reading-queue.md`,
+ran the test, and restored. That answered the question correctly and it is the
+wrong shape. The stash held this run's register appends, which were not
+committed at that moment, so a run cut between the stash and the pop would have
+left them in a stash entry that no later run would look for. That is incident
+3's class reached by a different road: work that exists only in the sandbox.
+
+The read-only way to ask the same question costs no more, and I used it later
+for the gate test without noticing I had the better tool in hand:
+
+```bash
+git show origin/main:docs/research/reading-queue.md > "$scratch/copy.md"
+```
+
+Nothing failed, so this is a near miss rather than an incident. It is here
+because the next run of this seat will want to ask "is this red mine" and the
+obvious command is the writing one.
