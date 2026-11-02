@@ -66,6 +66,42 @@ def schema_names():
     return relations, columns
 
 
+def columns_of(table: str, schema: str | None = None) -> list[str]:
+    """Every column `db/schema.sql` gives one table, in declaration order.
+
+    `schema_names()` above returns the schema's whole union of column names,
+    which answers "does this name exist anywhere" and cannot answer "is this
+    the whole row". A receipt that republishes a table is the second question:
+    it is a pass-through rather than a projection, so a column the schema has
+    and the receipt does not is a column no consumer of the receipt can ever
+    see.
+
+    Reads `ALTER TABLE ... ADD COLUMN` as well as `CREATE TABLE`, because half
+    this schema's columns arrive that way and a check that read only the create
+    would go green on exactly the migration it exists to catch.
+
+    Added 2026-11-02 for `deploy_runtime`, after the writer seat found that the
+    one reader every seat can actually run names its seven columns by hand.
+    """
+    pglast = pytest.importorskip("pglast")
+    found: list[str] = []
+    for node in walk(pglast.parse_sql(schema if schema is not None else SCHEMA)):
+        name = type(node).__name__
+        if name == "CreateStmt" and getattr(node, "relation", None) is not None \
+                and node.relation.relname == table:
+            for element in node.tableElts or ():
+                if type(element).__name__ == "ColumnDef" and element.colname:
+                    found.append(element.colname)
+        if name == "AlterTableStmt" and getattr(node, "relation", None) is not None \
+                and node.relation.relname == table:
+            for command in node.cmds or ():
+                definition = getattr(command, "def_", None)
+                if definition is not None and type(definition).__name__ == "ColumnDef" \
+                        and definition.colname:
+                    found.append(definition.colname)
+    return found
+
+
 def literals(source: str) -> dict[str, str]:
     """Every `sql`...`` template literal in a JavaScript module, by name.
 

@@ -668,3 +668,56 @@ def test_the_quarantine_mechanism_excuses_expires_and_reports_itself_spent():
         "a-skill-that-needs-quoting"], (
         "a library with no refusals left should report every entry as spent"
     )
+
+
+def test_two_quarantine_entries_expire_on_their_own_dates():
+    """The fourth property, added 2026-11-02, and it was a ledger entry first.
+
+    Until this run the expiry was one string beside the dict, so it belonged to
+    the mechanism rather than to the excuse. Two consequences, both named in the
+    2026-10-27 ledger entry that proposed the fix: an entry added the day before
+    the deadline gets one day without anything saying so, and a run that moves
+    the deadline out to give a new entry its week resurrects every older entry
+    for the same week. The second one happened on 2026-11-02, when the engineer
+    seat moved the date from 2026-11-03 to 2026-11-09 for one new entry. The
+    dict was empty, so nothing came back from the dead, and that is the reason
+    this test exists rather than the reason it does not need to.
+
+    The subjects are this test's own, for the reason the test above gives: a
+    mechanism measured only against live data stops being measured the day the
+    live data is clean.
+    """
+    registrar = _registrar()
+    old_refusal = ("skills/an-old-entry/SKILL.md: `description:` holds an "
+                   "unquoted colon, which YAML reads as a nested key")
+    new_refusal = ("skills/a-new-entry/SKILL.md: the list item `\"one\"` carries "
+                   "`- \"two\"` after its closing quote, so it is more than one "
+                   "entry on one line")
+    fake = {
+        "an-old-entry": ("filed 2026-10-20, a week was plenty", "2026-10-27"),
+        "a-new-entry": ("filed 2026-11-02 and it needs a week", "2026-11-09"),
+    }
+    both = [old_refusal, new_refusal]
+
+    assert registrar.quarantined_problems(
+        both, today="2026-10-21", quarantine=fake) == set(both), (
+        "both excuses are live on a day inside both windows"
+    )
+    assert registrar.quarantined_problems(
+        both, today="2026-11-02", quarantine=fake) == {new_refusal}, (
+        "the old entry expired on 2026-10-27 and must not be carried by the "
+        "new entry's later date, which is the resurrection half of the defect"
+    )
+    assert registrar.quarantined_problems(
+        both, today="2026-11-09", quarantine=fake) == set(), (
+        "every entry is past its own date, so nothing is excused"
+    )
+
+    # A bare string still works and takes the default, so no existing entry
+    # had to be rewritten to get this.
+    assert registrar.quarantine_entry(
+        "plain", quarantine={"plain": "a reason"})[1] == (
+        registrar.FRONTMATTER_QUARANTINE_EXPIRES)
+    assert registrar.quarantine_entry(
+        "plain", quarantine={"plain": "a reason"}, expires="2026-12-01") == (
+        "a reason", "2026-12-01")

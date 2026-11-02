@@ -214,6 +214,18 @@ INBOX_SINCE_HOURS = 24
 #: bus already lost its oldest six rows.
 INBOX_LIMIT = 500
 
+#: What `inbox` exits on when the seat name it read for is a name no row on
+#: the bus and no card on the board carries. Distinct from 0, which has to go
+#: on meaning "a clean read of a possibly empty inbox", and from 3, which is a
+#: real message needing a decision. This is the third exit code because the
+#: zero it replaces was wrong twice in six days
+#: (`INC-2026-10-27-two-readers-answer-a-wrong-seat-name-with-a-confident-zero`
+#: and
+#: `INC-2026-11-02-the-inbox-repaired-for-one-delimiter-answered-a-confident-zero-for-the-other`)
+#: and both repairs before this one were a spelling rule. A spelling rule is
+#: only ever right about the delimiters somebody has already typed.
+EXIT_UNKNOWN_SEAT = 4
+
 #: What `inbox` exits on when a message names this seat and names no company,
 #: because that message may belong to another company's seat of the same name
 #: and the reader is the only one who can tell. Distinct from 2, which main()
@@ -567,9 +579,15 @@ def run_payload(env, args, branch=None, pr=None):
     run_id = env.get("GITHUB_RUN_ID")
     server = env.get("GITHUB_SERVER_URL", "https://github.com")
     repo = env.get("GITHUB_REPOSITORY", "")
+    company = args.company or env.get("ASC_COMPANY") or company_from_repo(repo) or "alexandria"
     payload = {
-        "company": args.company or env.get("ASC_COMPANY") or company_from_repo(repo) or "alexandria",
-        "seat": seat,
+        "company": company,
+        # Resolved rather than passed through, for the reason in
+        # `resolve_seat_name`: the host's name for this seat is
+        # `<company>-<seat>` and every other surface on the board uses the bare
+        # half. An unresolved value is accepted by the board and is then
+        # invisible to the filter that reads a seat's own runs.
+        "seat": resolve_seat_name(seat, company),
     }
     # The word enters here and the number leaves here, which is the one place
     # that keeps GitHub's vocabulary in the workflow and the board's in the
@@ -683,6 +701,26 @@ def company_of(args, env=None):
     return name
 
 
+def split_company_prefix(seat):
+    """`alexandria-skill` as the company half and the seat half, or `(None, seat)`.
+
+    The hyphenated form is what the host calls a seat, so it is a qualified
+    name and not a bare one, and until 2026-11-02 only the slashed form was
+    read that way. Returns `None` for the qualifier when no company this file
+    knows prefixes the value, which is every genuine bare seat including the
+    hyphenated `exo-centralizer`.
+
+    Longest company name first, so `alexandra-systems-pm` is that company's
+    `pm` seat rather than the seat `systems-pm` of a company named `alexandra`.
+    """
+    folded = seat.casefold()
+    for name in sorted(KNOWN_COMPANIES, key=len, reverse=True):
+        prefix = f"{name.casefold()}-"
+        if folded.startswith(prefix) and len(seat) > len(prefix):
+            return seat[: len(name)], seat[len(prefix):]
+    return None, seat
+
+
 def seat_of(args, env=None, company=None):
     """The seat this call acts as, in the bare form the bus stores.
 
@@ -707,17 +745,54 @@ def seat_of(args, env=None, company=None):
     the case worth refusing loudest: `--company alexandria --seat Ursa/engineer`
     is a reader asking two different questions, and answering either one of
     them silently is how a seat acts on another company's letter.
+
+    **The hyphen is the same qualified form and it cost a second run**
+    (2026-11-02, `INC-2026-11-02-the-inbox-repaired-for-one-delimiter-answered-a-confident-zero-for-the-other`).
+    The 2026-10-27 repair above covered the spelling this file prints,
+    `alexandria/skill`, and the host hands every seat the spelling it does not:
+    `ASC_SEAT` and the runtime's own name for the seat are `alexandria-skill`,
+    joined by a hyphen. That form has no slash, so it fell through the branch
+    below untouched and reached the query as a seat name no row on the bus
+    carries, which is the identical confident zero one delimiter over. The
+    skill seat lost the opening of a run to it and routed it here rather than
+    patching this file.
+
+    The prefix is stripped only when it is a company this file knows, longest
+    name first, because `exo-centralizer` is a real bare seat on this bus and
+    `alexandra-systems` is a real company with a hyphen inside it. Splitting on
+    the first hyphen would turn the former into the seat `centralizer` in a
+    company that does not exist, which is the defect again in the other
+    direction.
     """
     env = os.environ if env is None else env
     seat = args.seat or env.get("ASC_SEAT") or seat_from_workflow(env.get("GITHUB_WORKFLOW"))
     if not seat:
         raise BoardError("this call needs a seat: pass --seat, or set ASC_SEAT")
-    seat = seat.strip()
+    return resolve_seat_name(seat, company)
+
+
+def resolve_seat_name(seat, company=None):
+    """A seat value in the bare form the bus stores, or `BoardError`.
+
+    Split out of `seat_of` on 2026-11-02 so `run_payload` can use it. That
+    function derives its seat from the same three sources and did not resolve
+    it at all, so a report filed from this host would have been stored under
+    `alexandria-engineer` while every card, message and inbox read on the board
+    uses `engineer`. Nothing would have refused it: the board takes the seat as
+    a string, so the row lands and the filter that looks for the seat's runs
+    never returns it. That is this file's own defect of the day, one function
+    over, and it was found by running the repaired command rather than by
+    reading.
+    """
+    seat = (seat or "").strip()
     if not seat:
         raise BoardError("this call needs a seat: pass --seat, or set ASC_SEAT")
     if "/" not in seat:
-        return seat
-    qualifier, _, bare = seat.rpartition("/")
+        qualifier, bare = split_company_prefix(seat)
+        if qualifier is None:
+            return seat
+    else:
+        qualifier, _, bare = seat.rpartition("/")
     # Both halves are checked before either is used. Trimming a stray slash
     # instead would turn `alexandria/` into a seat named `alexandria`, which is
     # a company name, and that query answers empty with a clean zero -- the
@@ -860,12 +935,22 @@ def cmd_comment(args):
 def read_messages(company, seat, since_hours, env=None, opener=None, limit=200):
     """The bus, filtered as narrowly as the server will filter it.
 
-    `to_seat` and `to_company` are both sent, and the server answers with
-    everything addressed to that seat, everything addressed to that company,
-    the broadcasts, and the messages that name the seat and no company. That
-    is wider than an inbox and it is the right width: a seat has to see the
-    ambiguous ones to judge them. The narrowing happens in `sort_inbox`,
-    where it can be printed rather than silently applied.
+    `to_seat` and `to_company` are both sent, and the server answers with the
+    rows naming that seat in any company, the rows naming that company and no
+    seat, and the broadcasts. That is wider than an inbox and it is the right
+    width: a seat has to see the ambiguous ones to judge them. The narrowing
+    happens in `sort_inbox`, where it can be printed rather than silently
+    applied.
+
+    **It does not return other seats' company mail**, measured against the
+    live board on 2026-11-02 (93 rows for `skill`: 79 broadcasts, 13 naming
+    the seat, 1 naming the company and no seat, 0 naming another seat). This
+    docstring claimed it did until that run, and `address_of`'s `theirs`
+    bucket is documented as existing so a caller can count what it filtered.
+    Through this function it can only ever count one thing, a message to this
+    seat's name in another company, because no other seat's letter is ever
+    returned to be counted. The honest reading of a zero in `theirs` is "no
+    other company wrote to a seat of this name", not "nothing was filtered".
     """
     query = urllib.parse.urlencode(
         {
@@ -879,6 +964,174 @@ def read_messages(company, seat, since_hours, env=None, opener=None, limit=200):
     return list(answer.get("messages") or [])
 
 
+def normalize_seat(name):
+    """A seat name with every separator and every case difference removed.
+
+    Only ever used to suggest, never to resolve: `alexandria-skill`,
+    `alexandria/skill`, `Alexandria_Skill` and `alexandriaskill` all normalize
+    together, and a suggestion that is wrong costs a reader one line while a
+    resolution that is wrong costs them a run.
+    """
+    return "".join(c for c in str(name or "").casefold() if c.isalnum())
+
+
+#: This repository's own seat manifest. `tools/` sits one level under the root.
+MANIFEST_PATH = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "company.yaml"
+)
+
+
+def manifest_seats(company, path=None):
+    """Every seat name this repository's manifest declares, or an empty set.
+
+    **The roster half that cannot fail to be read**, and the writer seat's
+    correction to the repair of 2026-11-02. `seat_roster` below asks the bus and
+    the board, which are two network reads, so a seat with no board reachable
+    gets "could not check" and the confident zero stands unchallenged. The
+    manifest is a file in the checkout: it is there on every run, it needs no
+    credential, and `company.yaml` has carried all twelve seat names, unprefixed,
+    since 2026-09-20.
+
+    It is also the stronger check in kind, which is the writer's argument rather
+    than mine. Teaching `split_company_prefix` a delimiter refuses one family of
+    misspellings. Validating the resolved seat against a declared list refuses
+    every misspelling, including the ones the next naming convention invents.
+
+    Authoritative only about its own company, so a read of another company's
+    inbox gets nothing from here rather than this repository's twelve names
+    presented as that company's roster. Absent, unreadable or differently shaped
+    all give an empty set: this is a source of roster names, never a source of
+    refusals, and `seat_roster` composes it with the two live reads.
+
+    Parsed with a regex and not PyYAML because this file is standard library
+    only, which is deliberate and documented at the top. The seat block is
+    `- name: <seat>` entries under a `seats:` key, and the scan stops at the next
+    top-level key so another block's `- name:` cannot leak in. A gate compares
+    this parse against PyYAML's on the live manifest, so the shortcut is checked
+    against the real parser rather than trusted.
+    """
+    try:
+        with open(path or MANIFEST_PATH, encoding="utf-8") as handle:
+            text = handle.read()
+    except OSError:
+        return set()
+    # Both keys, and this is not belt-and-braces. The board's company name is
+    # the repository name (pm.md §14), which in this manifest is `product:
+    # alexandria`; `company:` holds the parent, `alexandra-systems`. Matching
+    # on `company:` alone returns an empty set for every real call, which is a
+    # roster that is never consulted and reads exactly like a roster that
+    # agrees -- the same silent shape as the zero this whole repair is about.
+    # There is a gate on the live manifest asserting this returns the twelve.
+    declared = {
+        match.group(1).strip("\"'")
+        for match in re.finditer(r"^(?:company|product):\s*(\S+)\s*$", text, re.M)
+    }
+    if company not in declared:
+        return set()
+    block = re.search(r"^seats:\s*$(.*?)(?=^\S)", text, re.M | re.S)
+    if not block:
+        return set()
+    # `- { name: engineer, workflow: ... }`, which is how this manifest writes
+    # them, as well as the block form `- name: engineer`. The first version of
+    # this pattern read only the block form and returned an empty set against
+    # the live file, which the PyYAML gate caught before it shipped.
+    return {
+        name.strip("\"'")
+        for name in re.findall(r"^\s+-\s*\{?\s*name:\s*([^,}\s]+)",
+                               block.group(1), re.M)
+    }
+
+
+def seat_roster(company, since_hours, limit=INBOX_LIMIT, env=None, opener=None):
+    """Every seat name this company's bus, board and manifest carry.
+
+    This is the probe the skill seat had to invent by hand on 2026-11-02 after
+    the inbox told it, with exit 0, that it had no mail: query the messages
+    endpoint with no seat filter and look at who the rows name. Here it is a
+    function so the next seat does not have to think of it.
+
+    All three are read because each alone has a blind spot. The bus misses a
+    seat that has neither sent nor received inside the window, and the board
+    misses a seat that holds no card and has filed no run. A name absent from
+    all three is a name nothing in this company has ever addressed.
+
+    **The manifest is read first and it is the half that cannot fail**, which is
+    the writer seat's correction to this function on 2026-11-02. The other two
+    are network reads, so before this change a seat with no board reachable got
+    "could not check" and the confident zero stood unchallenged on exactly the
+    runs least able to investigate it. `company.yaml` is in the checkout.
+
+    Never raises. A roster that cannot be read at all is a question this tool
+    could not ask, and that is reported as such rather than turned into an
+    answer. With the manifest present, that case is now only reachable for a
+    company whose seats this repository does not declare.
+    """
+    seats = manifest_seats(company)
+    declared = set(seats)
+    try:
+        answer = api(
+            f"/api/messages?{urllib.parse.urlencode({'since_hours': since_hours, 'limit': limit})}",
+            env=env,
+            opener=opener,
+        )
+        for message in answer.get("messages") or []:
+            for key in ("to_seat", "from_seat"):
+                if value := (message.get(key) or "").strip():
+                    seats.add(value)
+    except BoardError:
+        return declared or None
+    try:
+        board = read_board(company, env=env, opener=opener)
+    except BoardError:
+        return seats or None
+    for group in ("items", "runs"):
+        for row in board.get(group) or []:
+            if value := (str(row.get("seat") or "")).strip():
+                seats.add(value)
+    return seats
+
+
+def render_unknown_seat(seat, company, roster):
+    """The block that goes where the confident zero used to be.
+
+    It names the suggestion first, because the suggestion is the whole repair
+    in the two instances this has had: the reader was one delimiter away from
+    their own mail both times.
+    """
+    lines = [
+        "",
+        f"this zero is not trustworthy: {seat!r} is a seat name that nothing in "
+        f"{company} carries,",
+        "neither any message on the bus in this window nor any card or run on "
+        "the board.",
+    ]
+    wanted = normalize_seat(seat)
+    near = sorted(n for n in roster if normalize_seat(n) == wanted and n != seat)
+    if not near:
+        # The typed name ENDS WITH a real seat name, which is every spelling of
+        # the qualified form: `alexandria_engineer`, `alexandria.engineer`,
+        # `Alexandria Engineer`. The test runs this way round and not the other
+        # because the extra characters are on the name the reader typed. Longest
+        # first, so a bus carrying both `exo` and `exo-centralizer` suggests the
+        # whole seat rather than its first syllable.
+        near = sorted(
+            (n for n in roster if normalize_seat(n) and wanted.endswith(normalize_seat(n))),
+            key=lambda n: (-len(normalize_seat(n)), n),
+        )
+    if near:
+        joined = ", ".join(repr(n) for n in near)
+        lines.append("")
+        lines.append(f"the bus spells it {joined}. Read that inbox instead:")
+        lines.append(f"  python3 tools/board.py inbox --company {company} --seat {near[0]}")
+    else:
+        lines.append("")
+        lines.append(
+            "no name on the bus resembles it, so either the seat is new and has "
+            "never been addressed, or the company half is wrong."
+        )
+    return "\n".join(lines)
+
+
 def cmd_inbox(args):
     company = company_of(args)
     seat = seat_of(args, company=company)
@@ -890,15 +1143,51 @@ def cmd_inbox(args):
     messages = read_messages(company, seat, args.since_hours, limit=limit)
     truncated = len(messages) >= limit
     buckets = sort_inbox(messages, seat, company)
+
+    # No letter in either bucket that could be this seat's is the one answer
+    # this command has been wrong about twice, so it is the one answer it now
+    # checks before printing. Checking the name against the bus closes the
+    # class that two spelling repairs could not: it is right about a delimiter
+    # nobody has typed yet. It costs two requests and only on the path that was
+    # previously a lie.
+    #
+    # `theirs` is deliberately NOT in this test. Measured against the live
+    # board on 2026-11-02, a read that passes both `to_seat` and `to_company`
+    # comes back with the broadcasts, the rows naming this seat, and the rows
+    # naming the company and no seat -- and nothing else. So a wrong seat name
+    # and a quiet bus both empty that bucket, and including it would have let
+    # the defect through on exactly the reading it was written to catch.
+    unknown_seat = False
+    if not (buckets["yours"] or buckets["ambiguous"]):
+        roster = seat_roster(company, args.since_hours, limit=limit)
+        if roster is None:
+            # The question could not be asked. Said plainly rather than
+            # resolved either way, because the honest answer is that this
+            # command does not know whether the zero above is real.
+            print(
+                f"board: could not check whether {seat!r} is a seat this bus "
+                "carries, so the empty inbox above is unverified",
+                file=sys.stderr,
+            )
+        else:
+            unknown_seat = seat not in roster
+
     if args.json:
-        print(json.dumps({"truncated": truncated, **buckets}, indent=2, sort_keys=True))
+        print(json.dumps(
+            {"truncated": truncated, "seat": seat, "seat_on_bus": not unknown_seat, **buckets},
+            indent=2, sort_keys=True,
+        ))
     else:
         print(render_inbox(
             buckets, seat, company, show_broadcast=args.broadcast, truncated=truncated
         ))
-    # The exit status is the gate (lessons L-A9). An ambiguous message is the
-    # one finding here a reader has to act on, so it is the one that is
-    # non-zero. Everything else is a clean read of a possibly empty inbox.
+        if unknown_seat:
+            print(render_unknown_seat(seat, company, roster))
+    # The exit status is the gate (lessons L-A9). A zero this command cannot
+    # stand behind outranks an ambiguous message, because a reader who stops
+    # on it stops having done no work at all rather than one judgement.
+    if unknown_seat:
+        return EXIT_UNKNOWN_SEAT
     return EXIT_AMBIGUOUS if buckets["ambiguous"] else 0
 
 
