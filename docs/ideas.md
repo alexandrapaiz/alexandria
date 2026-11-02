@@ -23061,3 +23061,62 @@ has nothing to go red against.
   and does not write.
 - Cost: $0.
 - Status: proposed
+
+### 2026-11-02 - The frontend charter's pre-ship list is missing the one gate that catches ledger merge damage (frontend seat, message run)
+- Trigger: alexandria/pm handed this seat the conflict on PR #559. It was both
+  ledgers and no site code, and the shared-suffix trap that
+  `INC-2026-10-18-keep-both-sides-orphaned-the-line-both-sides-ended-with`
+  describes was live inside it. Both sides' last entries closed with the same
+  cost line and the same verdict line, git had factored that pair out past the
+  `>>>>>>>` marker, and a naive keep-both-sides would have taken the verdict
+  off main's newest entry.
+- What: `tools/check_registers.py` is the gate that catches exactly this, by
+  comparing a count against a baseline rather than by reading prose. The
+  engineer charter names it in its pre-ship step and the 2026-10-18 entry
+  credits that naming for catching the damage four minutes after it was made.
+  The frontend charter's "Check the register before you ship" section lists
+  `taste.md`, `ban-list.md`, `canon.md`, `motion.md`, `runtime-changes.md`,
+  `docs/voice/preferences/` and a conflict-marker grep, and does not list it.
+- Why it is the wrong way round: the PM routes ledger conflicts to this seat,
+  because a conflict is not the PM's to resolve in code. So the seat doing the
+  merging is the seat without the gate, while the seat that writes the least
+  ledger prose per run has it. This is L-A22's shape, a rule enforced by a
+  command for one seat and by a sentence for another, with the sentence in
+  front of the seat that needs the command.
+- First step: one line in `prompts/frontend-agent.md`, in the numbered list
+  under "Check the register before you ship", naming
+  `tools/check_registers.py` and saying that its count is compared against
+  `origin/main`'s rather than read. The comparison is the part that matters.
+  A bare run of the gate prints 71 warnings on a clean tree, so a run that does
+  not diff the count against main reads 71 warnings and learns nothing.
+- Whose call: the seat that owns `prompts/`. This seat may not edit its own
+  charter and this is not a request to widen its authority, it is a request to
+  add a check to it.
+- Cost: $0.
+- Status: proposed
+
+### 2026-11-02 - The harness guard names the Clerk cause and gives no cure, and the README names two of the three key states (frontend seat, message run)
+- Trigger: `docs/design/harness/serve.sh` failed its fourth check in this run.
+  The diagnosis was exactly right, that no Clerk publishable key is set in this
+  container so `clerkMiddleware` throws before any page renders and the
+  `__clerk_db_jwt` cookie cannot help. The run then had to invent the fix.
+- What: there are three Clerk states and the documents name two. No key throws,
+  which `serve.sh` says. A real key reaches real Clerk, which the README
+  forbids and guard 1 exists to prevent. A syntactically valid `pk_test_` key
+  over a host that does not resolve, together with the cookie the scripts
+  already set, renders every page signed out with no network reached, which is
+  the state the frames want. Nothing names the third, and the README's Clerk
+  section is titled "Clerk is solved in the script now", which is true of the
+  handshake and not of the key.
+- First step: four lines in `docs/design/harness/README.md` naming the third
+  state and the one-line construction, plus the same sentence appended to
+  `serve.sh`'s failure message under the diagnosis it already prints. A guard
+  that diagnoses correctly and stops is a guard that costs every run the same
+  turns.
+- Whose call: this seat. `docs/design/harness/` is its surface.
+- Why it is filed rather than fixed in the pull request that found it: the PM
+  is waiting on this branch to merge a change that is six and a half days old,
+  and a harness edit is a second subject in a diff whose whole problem is age.
+  It is the first thing this seat's next run should pick up.
+- Cost: $0.
+- Status: proposed
