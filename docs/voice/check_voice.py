@@ -6004,6 +6004,9 @@ def press_write_site(path=None):
 ZONE_RECORDED = "recorded"
 ZONE_ALARMED = "alarmed-and-unrecorded"
 ZONE_SILENT = "silent"
+# The narrowed form of the third zone, and the only one of these four that a
+# repository can reach on its own. See `zones_open`.
+ZONE_NEVER_INVOKED = "silent, narrowed to never-invoked"
 
 # What each zone is, and the surface that holds the answer. The third column is
 # the half of this that matters: a zone whose evidence lives somewhere nothing
@@ -6036,16 +6039,40 @@ def zone_words(sites):
             f"({span}), or was never invoked at all",
             f"modal app logs {PRESS_MODAL_APP}, which no instrument here "
             f"reads"),
+        ZONE_NEVER_INVOKED: (
+            f"was never invoked. The {len(ahead)} calls ahead of the handler "
+            f"({span}) are excluded, not unread: this image got past all of "
+            f"them when it printed the newest edition, and none of them reads "
+            f"anything that changed since",
+            f"modal app list, or the fact that a later firing moves this row "
+            f"at all"),
     }
 
 
 
-def zones_open(slot_fired, record_fresh):
+def zones_open(slot_fired, record_fresh, printed_on_this_image=False):
     """Which zones a receipt reading leaves open. Never fewer than it does.
 
-    Two booleans in, because those are the only two facts the receipt carries
-    about a firing: did a slot come due after the newest edition, and is there
-    a run record newer than that edition.
+    Three booleans in: did a slot come due after the newest edition, is there a
+    run record newer than that edition, and did the image named on that record
+    produce the newest edition itself.
+
+    **The third one is the only narrowing available without asking a human, and
+    it is worth the parameter.** When the recorded run IS the run that printed
+    the newest edition, the row's digest is the digest of an image that
+    demonstrably got past every line ahead of the handler. Nothing in those
+    lines depends on the week: `press_write_site` names them, and on the press
+    today they are a `bool(.strip())`, the calendar read, the window
+    arithmetic, two `open()` calls on files baked into that image, and two
+    `hashlib` digests of what those calls returned. An identical image invoked
+    on a later Monday cannot fail there, because there is nothing for it to
+    fail on that changed. So zone 3 collapses to its never-invoked half and the
+    two zones that stay open are the two the owner's inbox separates.
+
+    That narrowing is an inference and this function marks it as one by
+    returning a different zone name rather than the same name with fewer
+    members. The condition is printed beside it, because a caller that cannot
+    see the condition cannot tell a narrowing from a measurement.
 
     The count is **two** where the returned correction said three, and the
     difference is worth carrying rather than rounding off. `record_runtime`
@@ -6065,20 +6092,28 @@ def zones_open(slot_fired, record_fresh):
         return ()
     if record_fresh:
         return (ZONE_RECORDED,)
+    if printed_on_this_image:
+        return (ZONE_ALARMED, ZONE_NEVER_INVOKED)
     return (ZONE_ALARMED, ZONE_SILENT)
 
 
 ZONES_CASES = (
     # Nothing is owed, so there is no zone question to ask.
-    (False, False, ()),
-    (False, True, ()),
-    # The reading of 2026-11-02T02:05Z: one slot fired, the record frozen at
-    # 2026-10-19T09:01:21Z. Two zones, and the sentence this replaces named one
-    # of them and asked for a redeploy.
-    (True, False, (ZONE_ALARMED, ZONE_SILENT)),
+    (False, False, False, ()),
+    (False, True, False, ()),
+    (False, False, True, ()),
+    # One slot fired, the record frozen, and nothing known about the image.
+    # Two zones, and the sentence this replaces named one of them and asked
+    # for a redeploy on it.
+    (True, False, False, (ZONE_ALARMED, ZONE_SILENT)),
+    # The reading of 2026-11-02: the same, except the frozen record IS the run
+    # that printed 2026-W42, 81 seconds before its row landed. Zone 3 narrows.
+    (True, False, True, (ZONE_ALARMED, ZONE_NEVER_INVOKED)),
     # A slot fired and something wrote the row after the edition. That settles
     # that a run happened. It does not settle that the CRON ran it; see below.
-    (True, True, (ZONE_RECORDED,)),
+    # The image fact cannot narrow a zone that is already down to one.
+    (True, True, False, (ZONE_RECORDED,)),
+    (True, True, True, (ZONE_RECORDED,)),
 )
 
 # How close to a firing a run record has to sit to be that firing. The live row
@@ -6188,12 +6223,12 @@ def zones_cases():
     print(f"WRITE_SITE_CASES                           "
           f"{len(WRITE_SITE_CASES) - sites_bad} of {len(WRITE_SITE_CASES)}")
     bad |= sites_bad
-    for slot_fired, fresh, want in ZONES_CASES:
-        got = zones_open(slot_fired, fresh)
+    for slot_fired, fresh, printed, want in ZONES_CASES:
+        got = zones_open(slot_fired, fresh, printed)
         if got != want:
             bad = 1
-            print(f"  CASE    zones_open({slot_fired}, {fresh}) wanted "
-                  f"{want} and got {got}")
+            print(f"  CASE    zones_open({slot_fired}, {fresh}, {printed}) "
+                  f"wanted {want} and got {got}")
     print(f"ZONES_CASES                                "
           f"{len(ZONES_CASES) - bad} of {len(ZONES_CASES)}")
     worse = 0
@@ -6362,7 +6397,22 @@ def cadence():
                 print("  hand `modal run` writes it identically, the table is")
                 print("  one upserted row per app, and this one has already")
                 print("  overwritten whatever the last firing left.")
-        open_zones = zones_open(bool(slots), fresh)
+        # Is the row's image the image that printed the newest edition? The
+        # row carries the digest and `first_seen_at`, so this is readable: the
+        # recorded run is that edition's own run when its row landed shortly
+        # BEFORE the edition row did, which is the order those two writes
+        # happen in (1885, then the `digests` upsert). On this receipt the gap
+        # is 91 seconds.
+        seen_first = (runs.get(PRESS_APP) or {}).get("first_seen_at")
+        printed_on = bool(
+            not fresh and 0 <= (since - last).total_seconds()
+            <= SLOT_TOLERANCE_MINUTES * 60)
+        print(f"  its digest                               "
+              f"{(runs.get(PRESS_APP) or {}).get('runtime_sha') or 'none'}"
+              f", first seen {seen_first or 'unknown'}")
+        print(f"  that run is the one that printed {newest}   "
+              f"{'yes' if printed_on else 'no'}")
+        open_zones = zones_open(bool(slots), fresh, printed_on)
         sites, site_why = press_write_site()
         if open_zones and sites is None:
             print()
