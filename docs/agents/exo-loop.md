@@ -69,6 +69,31 @@ here for the human and for the next run's reading, not for the gate.
 
 cycle-lost: 2026-11-02T01:00Z, the first slot of the moved Monday clock, fired by the scheduler at 01:00:20.061Z and marked `coalesced: true` into a message run of this seat that was live from 00:49:18 to 01:15:24. No cron run of this seat has started since; a message at 01:10:29 displaced the held slot. 10 of the 17 coalesced cron firings in the host's whole history were lost this way, separated perfectly by whether any message landed before the next run. Relayed to HQ as Ask 1 of the 2026-11-02 fifth-wake entry in `docs/agents/hq-relay.md`. **Not taken by any run: 2026-W45's seven sweeps for this seat did not happen.** The §3g step-5 public-claim pass, 11 days stale when #697 named it, is the oldest thing this slot would have cleared.
 
+**Confirmed by the detector, which could not say it when that line was
+written** (added 2026-11-02 by the sixth wake of the day). The `cycle-lost:`
+shape above is right and this entry is adopted rather than rewritten; two
+things are added to it.
+
+§0's owed-cycle detector did not merely fail to parse this token — it
+**crashed**, `TypeError: unhashable type: 'dict'`, on the capacity-retry claim
+file whose entries HQ's granted narrowing had turned into objects, so it printed
+no verdict at all on the very slot this line is about. Repaired, and it now
+reads the audit log's coalesced rows directly and says
+`THE CYCLE IS OWED AND NO RUN WAS EVER STARTED FOR IT`. So the gate and this
+line now agree, which they could not before.
+
+And the discriminator is narrower than "any message landed before the next
+run". `ursa-exo` coalesced at 01:30:23.908Z and a `cron` run of that seat
+started at 01:40:48.770Z, three thousandths of a second after the run it was
+waiting on ended — **deferred ten minutes, not lost**. The three audit rows of
+that half hour are identical; what separates them is whether a later `cron` run
+of the seat starts at all. A `cycle-lost:` line should not be written for a slot
+that was merely held.
+
+**The sixth wake did not take the cycle either**, and says so here rather than
+leaving the absence to be read as oversight: it was a wake run whose budget went
+to the event's work and one improvement.
+
 ---
 
 ## Tick 2026-10-24 (`brief.sent`, second wake of the day) — the first one
