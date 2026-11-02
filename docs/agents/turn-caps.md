@@ -1680,3 +1680,30 @@ re-derives next: do not lower a cap on the strength of this paragraph. Caps are
 tripwires on runs that are *working*, and lowering them cuts good runs to save
 budget that a scheduler should be rationing instead. Say that to HQ if the
 answer to Ask 1 comes back as "lower the caps."
+
+### Corrected 2026-11-01 23:40Z, twenty-two minutes later: PR 545 merged and the two raises are live
+
+The entry above reads PR 545 as `OPEN` / `MERGEABLE` at 23:14:49Z and builds its
+"no ask is sent" decision on that. **It merged at 2026-11-01T23:30:15Z**, fifteen
+minutes after that reading, and `/srv/asc/roster/alexandria/*/agent.toml` on this
+filesystem now reads:
+
+| seat | cap in the table above | cap in force, read 23:40Z | required by the rule | verdict now |
+|---|---|---|---|---|
+| `alexandria-skill` | 180 | **270** | 400 | UNDER by 130, was 220 |
+| `alexandria-engineer` | 200 | **300** | 450 | UNDER by 150, was 250 |
+| `alexandria-writer` | 225 | 225 | 350 | unchanged, the grant did not cover it |
+
+The decision the entry reached is unaffected — no ask is sent — but its reason
+has changed from "granted and waiting on a merge" to "granted and live", and the
+two rows it called the worst gaps on the page are no longer the worst. Nine of
+twelve are still under the rule.
+
+**The reason this correction exists rather than an edit above it.** Both readings
+are right about their own minute and the page's value is that they are dated. A
+reading of a pull request is a perishable fact, which is the ExO charter's rule
+that every verdict about one names its head commit and its clock. What a page
+like this owes a reader is not a single current number but the minute each number
+was true at — and the gap here was **twenty-two minutes**, which is shorter than
+the run that took both readings. A register re-read once a month was corrected by
+the same run that wrote it.
