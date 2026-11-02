@@ -2246,15 +2246,26 @@ def candidates(ref=None):
     rows = open_rows()
     out = subprocess.run(["git", "diff", "--name-status", ref],
                          cwd=ROOT, capture_output=True, text=True)
-    new = []
+    new, cited = [], []
     for line in out.stdout.splitlines():
         parts = line.split("\t")
         if len(parts) < 2 or not parts[0].startswith("A"):
             continue
         path = parts[-1]
-        if path.startswith("docs/voice/") and path.endswith(".md") \
-                and (ROOT / path).exists() and (ROOT / path) != AWAITING:
-            new.append(path)
+        if not (path.startswith("docs/voice/") and path.endswith(".md")
+                and (ROOT / path).exists() and (ROOT / path) != AWAITING):
+            continue
+        # The clash test gets the floor's scope, which it should have had from
+        # the start. `is_candidate` exists because "a review cites surfaces as
+        # evidence and failing a grade for quoting the line it grades would
+        # make the gate unusable by the work it governs", which is this
+        # function's own docstring, and that reasoning is about citing a
+        # surface rather than about which half of the pass does the citing.
+        # Run 64 found it by being failed three times over its own grade of
+        # `2026-W42`, whose law 15 verdict has to quote the four live `reading`
+        # lines to say they are red. A gate that reddens the grade is a gate a
+        # run learns to read past.
+        (new if is_candidate(path) else cited).append(path)
     clashes = []
     unregistered = []
     registered = registered_candidates()
@@ -2263,8 +2274,7 @@ def candidates(ref=None):
         named = set(CANDIDATE_FILE.findall(body)) | {m for m in re.findall(
             r"([a-z0-9][A-Za-z0-9_.-]*\.md)", body)}
         surfaces = sorted(set(SURFACE.findall(body)))
-        if surfaces and is_candidate(path) \
-                and pathlib.Path(path).name not in registered:
+        if surfaces and pathlib.Path(path).name not in registered:
             unregistered.append((path, surfaces))
         for surface in surfaces:
             held = rows.get(surface, set())
@@ -2281,6 +2291,12 @@ def candidates(ref=None):
                 clashes.append((path, surface, sorted(held)))
     print(f"candidate files this diff adds under docs/voice/   {len(new)}")
     for path in new:
+        print(f"  {path}")
+    # The scope this read, printed, because a count of zero candidates and a
+    # count of zero added files mean different things (L-A47).
+    print(f"added files it read as records rather than candidates  "
+          f"{len(cited)}")
+    for path in cited:
         print(f"  {path}")
     print(f"surfaces with an open row in awaiting-her-word.md  {len(rows)}")
     for path, surface, held in clashes:

@@ -321,6 +321,34 @@ warning classes on this edition are a false positive guaranteed by a law, and
 noise in the instrument that reads an issue last is how a real finding gets
 read past.
 
+## One finding about this seat's own instrument, found by being failed by it
+
+`check_voice.py candidates` failed this review three times, for drafting copy
+for `site/app/page.jsx`, `site/app/terms/page.jsx` and
+`site/app/llms.txt/route.js`. This review drafts nothing. It quotes those three
+lines because law 15's verdict is that the issue gets the law right and the
+four red lines are elsewhere, and a grade cannot say that without naming them.
+
+The gate already holds the argument against its own behaviour. `is_candidate`
+exists, it correctly answers no for anything under `docs/voice/reviews/`, and
+the docstring's reason is that "a review cites surfaces as evidence and failing
+a grade for quoting the line it grades would make the gate unusable by the work
+it governs". That guard was applied to the floor half of the pass and not to
+the clash half, so the half with the written reasoning was protected and the
+half without it was not.
+
+Fixed in this run by giving the clash test the floor's scope, and the scope it
+read is now printed, because zero candidates and zero added files mean
+different things. Proved both ways rather than asserted: a probe candidate
+drafting for `site/app/pricing/page.jsx` and naming no open candidate still
+fails on both halves, and the two reviews in this diff no longer fail at all.
+
+This is the register-width class a fourth time and the first instance where the
+width is too great rather than too small. The three before it were gates that
+could not see a surface. This one saw a surface it had no business reading, and
+the cost is the same in the end: a gate that reddens a grade is a gate the next
+run learns to read past.
+
 ## Checks
 
 | | |

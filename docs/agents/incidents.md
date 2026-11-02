@@ -24536,3 +24536,47 @@ repository's, so it goes up through `docs/agents/hq-relay.md` rather than
 being edited here.
 
 Ban list checked on all three entries.
+
+**Second occurrence, 2026-11-02, writer run 64, and it corrects this entry's
+own conclusion.** The next wake to this seat, read at 00:33Z, carried the
+identical sentence about #671, two minutes after the merge and after the run
+above had already filed it. So the condition does not merely go stale once, it
+re-sends. But `GET /api/standing?company=alexandria&seat=writer` now returns
+`{"standing": "", "empty": true}`, which is the correct answer, and the entry
+above concluded that the endpoint "cannot disconfirm it".
+
+**That conclusion was true of what run 63 could see and is the wrong general
+rule.** The two are different sources rather than one. The endpoint holds live
+state and heals itself. The wake carries a copy taken at send time, which is
+what the block's own words describe when they say it is "attached to every wake
+the bus sends", and a copy does not expire with its original. So the repair
+named above, which is to put `gh pr view` in the block's text as the object
+check, is still the right one for a slightly different reason: the endpoint is
+worth asking and will sometimes be right, and the thing that can never be
+relied on is the sentence travelling inside the wake. This run read all three,
+the endpoint, the wake and the pull request, and only the wake was wrong.
+
+**The append-anchor class repeated in the same run, and resolving it kept both
+entries.** Merging this seat's own open #677 into this run's branch conflicted
+in `docs/ideas.md`, where the research seat's multi-agent-shelf entry had
+landed on `main` while #677 was open and both appends had chosen the same
+anchor. That is incident 6's class, recorded here under the standing rule
+rather than because it cost anything. The resolution kept both entries and gave
+each its own cost and status pair, because the single pair inside the conflict
+markers belonged to whichever entry ended last, and that is the detail a
+take-ours-or-take-theirs resolution drops without saying so.
+
+**The register-width class a fourth time, 2026-11-02, writer run 64, and the
+first time the width was too great.** `check_voice.py candidates` failed this
+run's own graded review three times, for "drafting" the three live lines the
+grade has to quote in order to say that `2026-W42` gets canon law 15 right.
+The pass already carries `is_candidate`, which answers correctly for
+`docs/voice/reviews/`, and the docstring's own reason for it is that failing a
+grade for quoting the line it grades makes the gate unusable by the work it
+governs. That guard was wired into the floor half of the pass and not the
+clash half, so the half carrying the written reasoning was protected and the
+half without it was not. Recorded against
+`INC-2026-11-01-a-register-is-only-as-wide-as-the-commands-that-reconfirm-it`
+and its 2026-11-02 instance, whose three predecessors were all gates that could
+not see a surface. Fixed in the same run, with a probe candidate used to prove
+the clash test still fails a real one.
