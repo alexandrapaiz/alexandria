@@ -54,15 +54,18 @@ class FakeConn:
     `distill_queue` would pass a call-ordered fake and fail in production.
     """
 
-    def __init__(self, papers=(), claims=()):
+    def __init__(self, papers=(), claims=(), columns=("prompt_sha",)):
         self.papers = list(papers)      # (id, title, abstract, decision, source, distilled_at)
         self.claims = list(claims)      # (paper_id, prompt_sha)
+        self.columns = set(columns)     # which optional columns the schema has
         self.statements = []
 
     def execute(self, sql, params=()):
         flat = " ".join(sql.split())
         self.statements.append((flat, params))
         wanted = params[0] if params else []
+        if "information_schema.columns" in flat:
+            return FakeCursor([(1,)] if params[1] in self.columns else [])
         if "from papers p" in flat:
             return FakeCursor([r for r in self.papers if r[0] in wanted])
         if "from claims" in flat:
@@ -280,3 +283,27 @@ def test_the_named_list_is_never_silently_truncated():
     # `max_papers` must not appear as a slice or a limit on this path.
     assert "[:max_papers]" not in branch
     assert "limit %s" not in branch
+
+
+def test_an_unmigrated_database_reads_every_named_paper_rather_than_raising():
+    """`prompt_sha` ships with the code that writes it; the schema is applied by hand.
+
+    A statement naming a column the schema run has not reached yet does not
+    skip a guard, it aborts the transaction, which would take the whole run
+    down rather than this one check. So the column is asked about, and where it
+    is absent there is no evidence about what has been read: the same answer a
+    NULL gives, taking the same branch.
+    """
+    conn = FakeConn(
+        papers=[("a", "t", "x", "distill", "arxiv", dt.datetime(2026, 9, 14))],
+        claims=[("a", "aaaaaaaaaaaa")],
+        columns=(),
+    )
+    rows, lines = distill.explicit_intake(conn, ["a"], shas=TODAY)
+    assert [r[0] for r in rows] == ["a"]
+    said = " ".join(lines)
+    assert "claims.prompt_sha is missing" in said
+    assert "db/schema.sql" in said
+    # And the claims table is not read at all, because reading it is what would
+    # have raised.
+    assert not any("from claims" in s for s, _ in conn.statements)

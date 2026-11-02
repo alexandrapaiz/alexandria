@@ -1291,15 +1291,35 @@ def explicit_intake(conn, paper_ids, shas=None, force=False):
     ).fetchall():
         found[row[0]] = row
 
+    # Asked rather than assumed, the way every other optional column in this
+    # file is asked about. `prompt_sha` ships with the code that writes it and
+    # the schema is applied by hand, so a deploy that lands first would make
+    # this statement raise, and a raised statement aborts the whole transaction
+    # rather than skipping one guard. On a database without the column there is
+    # no evidence about what has been read, which is the same answer a NULL
+    # gives and takes the same branch: read it again.
+    # `prompt_sha` is asked about rather than assumed, the way every other
+    # optional column in this file is. It ships with the code that writes it
+    # and the schema is applied by hand, so on a database the schema run has
+    # not reached yet this statement would raise, and a raised statement aborts
+    # the whole transaction rather than skipping one guard. Where the column is
+    # absent there is no evidence about what has been read, which is the same
+    # answer a NULL gives and takes the same branch: read it again.
     stamped = {}
-    for pid, sha in conn.execute(
-        "select paper_id, prompt_sha from claims where paper_id = any(%s)",
-        (wanted,),
-    ).fetchall():
-        stamped.setdefault(pid, []).append(sha)
-
-    today = {s for s in (shas or {}).values() if s}
     rows, lines = [], []
+    stamping = has_column(conn, "claims", "prompt_sha")
+    if stamping:
+        for pid, sha in conn.execute(
+            "select paper_id, prompt_sha from claims where paper_id = any(%s)",
+            (wanted,),
+        ).fetchall():
+            stamped.setdefault(pid, []).append(sha)
+    else:
+        lines.append("claims.prompt_sha is missing, so nothing here can tell a "
+                     "second reading from a first and every named paper is "
+                     "read again; run db/schema.sql")
+
+    today = {sha for sha in (shas or {}).values() if sha}
     missing = [pid for pid in wanted if pid not in found]
     if missing:
         lines.append(
