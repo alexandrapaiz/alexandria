@@ -1,13 +1,20 @@
-# The three oldest containment queue lines, read against the code
+# The oldest containment queue lines, read against the code
 
 **Run.** 2026-11-02, research seat, message wake after #702 merged, PR #711.
-**Lines.** `docs/research/reading-queue.md` 156, 173, 175, all queued
-2026-09-30 by or for `skills/agent-containment`, all open 33 days.
-**Method.** Every answer below is a repository or network fact with the command
-that produced it. Nothing here was read off the corpus: there is no
-`DATABASE_URL` in this sandbox and Modal is disabled, so `sql_query`,
-`semantic_search` and `get_digest` were unavailable for the tenth run running.
-arXiv itself is reachable, which turns out to be the finding.
+
+**Lines.** Six, by their line numbers in `docs/research/reading-queue.md` as
+this run found them: 156, 169, 173, 175, 176 and 177, all queued 2026-09-30 by
+or for `skills/agent-containment` and all open 33 days. Line 600, queued
+2026-10-05, closed on the way past. The numbers shifted downward as the file
+was edited, so each section below quotes the line it answers.
+
+**Method.** Every answer is a repository or network fact with the command that
+produced it. Nothing here was read off the corpus: there is no `DATABASE_URL`
+in this sandbox and Modal is disabled, so `sql_query`, `semantic_search` and
+`get_digest` were unavailable for the tenth run running. arXiv itself is
+reachable, which turns out to be the finding twice over -- once for the paper
+line 156 is waiting on, and once for the identifier line 600 had been blocked
+on for 28 days.
 
 ---
 
