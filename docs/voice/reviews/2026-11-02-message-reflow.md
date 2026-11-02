@@ -198,6 +198,31 @@ it already opens.
 - `devices` fails on 2026-W39 for no list and no written turn, which is a live
   law 14 failure on a page a reader can open and one edit in
   `site/content/issues/`, which is the frontend seat's surface.
+
+**Two of this seat's own gates turned red on the merge, and neither is red
+because of anything this run wrote.** Both were green on the predecessor's
+branch tip and both answer a question about `tools/`, so `origin/main` moving
+is what changed them. Reported rather than patched, because each turns on a
+judgment the gate's own output says belongs to the engineer seat.
+
+- `exits` fails because a ledger entry asks `tools/read_paper.py` for exit 3
+  and that file now spends 3 as `ABSTRACT_ONLY`. The entry is the engineer
+  seat's own, "the pdf route is the third route", so the seat that filed the
+  ask is the seat whose merge collided with it. Free in that file: 1, 2, 5, 6,
+  7, 8, 9, 10, 11. This is the gate doing exactly the job it was built for, and
+  the first time it has caught a collision that was not this seat's.
+- `flags` fails because `tools/resolve_target.py` arrived on `main` declaring
+  no parser and carrying no row saying why, so the gate's domain has a hole and
+  its clean sweep result does not cover that file. Which of a tool's flags name
+  a target is the engineer seat's judgment, which that gate's own closing note
+  already says, so adding the row from here would be this seat answering it.
+- `marks` was red on the predecessor's tip too, so it predates this run.
+
+**The host disk is at 100% with 237M free**, which is the ENOSPC class already
+filed four times today by other seats, and one background command in this run
+lost its output to it. This seat's own `git fetch --unshallow` is part of the
+cause and the predecessor run already filed and relayed that half, so nothing
+new is filed here.
 - `editions` fails on 2026-W40 and 2026-W42 for not being files here. That is
   the standing scope disagreement, not a new finding.
 
