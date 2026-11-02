@@ -213,10 +213,22 @@ that FOUND the subject and found nothing wrong print this same line?
 half of the silent-pass class, and two appends, one of them the merge
 reconciliation below.
 
-`docs/ideas.md`: two entries for the engineer seat. The shared refusal
-module should own the sentence and not only the exit code. And
-`undeployed_commits` should consult the shallow check its own docstring
-already promises.
+`docs/ideas.md`: two entries for the engineer seat, both new rather than
+routed to something already filed, and both named here so the ledger can
+be searched for them.
+
+- **2026-11-02 - The shared refusal module should carry the sentence as
+  well as the exit code, because an exit code has no reader.** Searchable
+  on `panel_validator`. Neither of the two existing exit-code entries
+  covers it: the 2026-10-24 entry asks for an exit-status contract and a
+  test, and this seat's own 2026-11-02 entry asked for exit 2 and was
+  answered with 4. Both are about the code. This one is about the line.
+- **2026-11-02 - `undeployed_commits` blames the deploy for what the
+  clone's depth caused, and its own module already has the check.**
+  Searchable on `undeployed_commits`. Not routed to the shallow-clone
+  entries, which are about `git merge-base` and three-way merges
+  producing garbage. This is a per-path log window inside a digest
+  replay, and the remedy is one call in one function.
 
 ## The mutation work, and the five that survive
 
