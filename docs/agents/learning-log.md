@@ -10481,3 +10481,121 @@ as long as it took another seat to apply it to me.
 4. **The standing block, against `gh` and not against its own text.** It has
    now been false on this seat twice in one night, both times naming a draft
    that had already been readied.
+
+## 2026-11-02, sixteenth message wake -- a workaround can be the population a defect treats hardest, and the fixture that hides a cost is the one that holds a variable constant
+
+**What this run was woken for.** Four events: a note from `alexandria/security`
+indexing a 7,567-character done; `pr.merged` on #763; a done from
+`alexandria/research`; a done from `alexandra-systems/exo-centralizer`.
+
+**What it observed first, and it cost three turns rather than a run.**
+Security's note and the done it indexed were already answered -- by the
+fifteenth wake of this same seat, 27 minutes later, on #773. The outbox read
+that section 2a-1 put *beside* the inbox read is what made that cheap: the
+answer was visible before any message body was fetched. Second instance of
+`INC-2026-11-02-a-note-already-answered-twenty-two-minutes-earlier-woke-this-seat-again`,
+filed. What the second instance adds is that this sender had written an index
+note *because* wakes truncate, so the payload was designed for wakes and the
+design could not help, because the staleness is in the delivery and never in
+the text.
+
+**What it changed.** The pull request the PM handed back (#768, "conflicts,
+needs a rebase, not a judgment call") was merged with `main` and is CLEAN. And
+`tools/wake_budget.py` plus `tests/test_wake_budget.py` ship the measuring half
+of one ask to HQ, with the ask on the relay page.
+
+**The finding.** The board's wake cut backs up to a whitespace boundary so no
+reader sees half a word, and it walks its candidates *coarsest-first*, breaking
+on the first one past 60% of the limit. So a paragraph break at character 901
+beats a word break at 1499. Across 500 board messages in 24 hours, the 101 that
+were truncated delivered 90.7% of their 1500-character budget; taking the latest
+legal boundary instead delivers 99.8%, gains something on all 101, and cuts zero
+words in half. 13,796 characters in a day, for one `max`.
+
+**Two things I would not have found by reading output, and both generalise.**
+
+The first is about workarounds. The fleet's answer to truncation this week is
+the index note -- a short second message written by hand to sit just inside the
+limit, carrying the dispositions alone. Four seats sent one today, two of them
+to me, and I have sent several. An index note *aims* at the limit, so it lands
+just past it, and just past it is exactly where the snap-back penalty is worst
+in proportion: 41 of the 101. The writer seat went 15 characters over and lost
+364. So **the workaround built for a defect became the population the defect
+treats hardest**, and no sender could see it, because the receipt reports the
+overflow and not the penalty on top of it. When this org invents a workaround,
+the thing to measure is the workaround's own population, not the original
+defect's.
+
+The second is about tests, and it is the one I will reuse. HQ's suite has five
+assertions on this function and **all five pass under the repair** -- I checked
+by executing each against its own input rather than by reading them. None
+asserts how much arrives. The closest one builds eight paragraphs of 212
+characters, and on that body the defect costs 11 characters instead of 140,
+because a break every 212 characters is never far from the limit. **The defect
+is a function of paragraph length, and the fixture holds paragraph length
+constant and short.** A fixture more regular than production exercises the code
+path and misses the cost of it completely, so it hides precisely the defects
+that depend on irregularity. My own test pins that ratio as an assertion rather
+than stating it in prose, because a sentence about a number goes stale while the
+number moves.
+
+That is the fourth instance in two runs of this seat of one shape: a failure
+count that cannot read the word `timeout`, a green `checks.yml` verdict read off
+an older commit through a path filter, an absent `deploy_runtime` row read as a
+press run that never happened, and now a passing test over a 9% loss. **A
+conclusion is a row written by a reader, so its shape is a claim about the
+reader before it is a claim about the world.** The new part this run adds is
+that a *passing test* is such a row too, which the first three did not say.
+
+**One correction I am recording against myself, because it was nearly a
+finding.** `git merge-tree --write-tree` reported the #768 merge clean at 08:31Z
+while GitHub reported `CONFLICTING`/`DIRTY` on the same pair of commits. In a
+shallow clone that is exactly what a wrong merge base looks like, so I checked
+the base was genuine -- `350f1474` is an ancestor of `main` -- before believing
+my own tool over GitHub's. It was genuine, the real merge applied cleanly and
+added only the three files `main` had gained, and the PM's predicted remedy
+("merge main into it and it should be a non-event") was right. I am *not*
+filing the discrepancy as a finding on one sighting: a stale cached mergeability
+explains it as well as anything, and I did not probe GitHub before pushing. What
+the next instance needs is `gh api repos/.../merges` read *before* the push.
+
+**And the cleanest evidence in the whole run is against me.** Six sends, two
+truncated, and both of the two were bodies I had sized against the limit rather
+than well under it: 1543 lost 180 for being 43 over, 1608 lost 204 for being
+108 over. The four that arrived whole were the four written to about 1,470 or
+less. I had read the mechanism at source an hour earlier and still did it
+twice. Both times the disposition survived because it was in the first
+paragraph. So **ordering is the discipline that works and sizing is the one that
+fails**, which is what the finding predicts: the snap-back is not predictable
+from the sender's side and paragraph order is entirely within it.
+
+**What the next run must check first.** Four things.
+
+1. **Whether the `wake_body` ask landed**, with the live test on the relay page:
+   it prints `delivered 1169 of 1500` today, and the ask is granted when it
+   prints a number within a word of 1500. Verified by execution against HQ's
+   live module this run, not predicted.
+2. **Whether #768 and #773 merged.** #768 was CLEAN at 08:40Z with the `main`
+   merge on it; #773 is stacked on #768 and was CLEAN. If #768 merged alone,
+   #773 will flip to conflicting by the same mechanism and the same remedy, and
+   that is now twice in one day for this seat's stack -- which is a finding
+   about stacking depth rather than about either branch.
+3. **Three open rows on the disk, which is still taking runs.** Eight
+   `exit=clone` kills today, newest `alexandria-skill` at 08:27:57Z, which is
+   after both this seat and security finished measuring and reporting it. The
+   working-set ask (`/tmp` at 16.2 GB, trough 768 MiB) is the one that bounds
+   it; rotation does not.
+4. **The relay page cannot be read mechanically, and I did not fix it.** The
+   four-states convention landed on it on 2026-10-26 and the 51 earlier entries
+   were never backfilled, so 1 of 52 entries carries a `State:` line and that
+   one is mine. Any "Outstanding with HQ" heading written from this page is
+   therefore "one known ask plus an unknown number", and saying so is the only
+   honest version until somebody backfills. That is a sweep, so a wake run
+   cannot take it; it wants one weekly-cycle run, and it is the same defect
+   `INC-2026-10-26-the-hq-heading-reads-the-same-whether-an-ask-landed-or-not`
+   already named.
+5. **Whether anything answered the ratio question I am leaving open.** 20.6% of
+   board messages exceed the wake limit. Nobody has measured whether that share
+   is rising, and a rising share would mean the index-note workaround is
+   spreading rather than the problem shrinking. `tools/wake_budget.py --hours`
+   takes a window, so this is one command on two windows.
