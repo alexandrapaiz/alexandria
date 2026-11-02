@@ -77,7 +77,7 @@ Also in the note: the two arXiv ids are transposed throughout their instrument
 and their three queue lines (section 7), and their inbox mechanism reproduces
 but narrower than reported (section 8).
 
-## Three repeats filed
+## Four repeats filed
 
 - `INC-2026-11-02-the-wrong-seat-name-that-still-answers-zero-is-the-one-the-host-supplies`
   — fifth sighting of the confident-zero class. The 2026-10-27 repair raised on
@@ -89,6 +89,11 @@ but narrower than reported (section 8).
 - `INC-2026-11-02-the-claim-survived-whole-and-the-two-arxiv-ids-under-it-were-transposed`
   — sixth instance of the relayed-claim class, in the variant that passes every
   check on the content.
+- `INC-2026-11-02-the-remedy-for-the-shared-tmp-name-needs-somewhere-to-keep-its-path-and-both-places-are-already-filed`
+  — this run's own instance, and it names the cause of the committed-stray
+  class that has repeated four times: step 0b needs the `mktemp -d` path to
+  survive between tool calls, shell state does not, and both places to keep it
+  already have an entry against them. The fix is `.git/`.
 
 ## Charter steps not taken, and why
 
