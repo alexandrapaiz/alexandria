@@ -42,6 +42,18 @@ objects reachable from no ref, which git collects. L-E12 says a measurement may
 only ask questions, and `tests/test_check_pr_green.py` holds that promise: the
 caller's branch, HEAD, refs and working tree are the same after a run.
 
+**One honest limit on that, measured on this tool's own first day.** The cleanup
+is a `finally`, so it survives an exception and a failing suite, and it does not
+survive the process being killed. A run stopped with a signal leaves one
+worktree of roughly 430 MB on the shared volume and one registration in
+`.git/worktrees`, and the manual cleanup is `git worktree prune` plus removing
+the directory. This matters more than it looks: six directories under a sibling
+instrument's prefix were holding 2.6 GB on this host while this was written, and
+the first reading was almost reported as a leak before a second reading twenty
+minutes later showed one directory at 400 MB. Live concurrent runs and killed
+runs look identical from outside, so the number worth quoting about a tool like
+this is its peak concurrent footprint rather than a leak count.
+
 Exit codes, following `tools/merge_order.py` so this can sit in front of an
 `&&`, with one addition:
 
