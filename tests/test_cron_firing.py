@@ -1394,6 +1394,24 @@ def test_a_timeout_is_not_a_clean_finish(tmp_path):
     assert cf.reason_of(run, now=datetime(2026, 11, 2, 0, 30, tzinfo=UTC)) == "timeout"
 
 
+def test_a_wall_kill_leaves_its_pull_request_unknown_rather_than_absent(tmp_path):
+    """The claim the docstring makes, pinned so prose cannot drift off it again.
+
+    A killed run's `pr=-` must never read as "this run chose to stop and
+    shipped nothing". The seat's own 2026-11-01T23:04:44Z re-fire is the
+    worked example: killed on the wall, `pr=-` in its trailer, and #657 open
+    on the branch it had already pushed. The function gets this right through
+    `exit_code` being None rather than through any mention of the wall clock,
+    which is why it is worth a test of its own: the behaviour is correct by
+    side effect, and a later edit to the final clause could take it away
+    without touching anything that currently fails.
+    """
+    run = cf.parse_run(timeout_log(tmp_path, "alexandria-security",
+                                   "2026-11-01T23-04-44-320Z", "hook"))
+    assert run["pr"] is None
+    assert cf.pr_absence_is_evidence(run) is False
+
+
 def test_a_numeric_trailer_is_unchanged_by_the_widening(tmp_path):
     path = write_log(tmp_path, "alexandria-engineer", "2026-10-25T11-06-03-756Z",
                      "cron", completed(), exit_code=0,
@@ -1577,3 +1595,88 @@ def test_a_malformed_audit_line_is_skipped_rather_than_fatal(tmp_path):
         encoding="utf-8")
     rows = cf.read_coalesced(logs.parent / "audit.jsonl", day="2026-11-02")
     assert [row["seat"] for row in rows] == ["ursa-security"]
+# --- the provider's third refusal, which is not a limit --------------------
+#
+# Added by the security seat on 2026-11-02 from its own 03:48:09Z run. The two
+# refusals this file knew were capacity limits carrying `api_error_status:
+# 429`. A content safeguard is a third kind: it declines the message, it
+# carries `stop_reason: "refusal"` with `api_error_status: null`, and it never
+# clears by waiting.
+
+def safeguard_refused(classifier="bio", model="Opus 5", turns=17):
+    """The real shape of the 2026-11-02 03:48:09Z refusal of this seat.
+
+    Copied field for field from the log, including the two that mislead:
+    `subtype` reads `success` beside `is_error: true`, and `api_error_status`
+    is null rather than a status. No prompt text and no classifier payload,
+    only the shape.
+    """
+    return {"type": "result", "subtype": "success", "is_error": True,
+            "num_turns": turns, "api_error_status": None,
+            "stop_reason": "refusal", "terminal_reason": "api_error",
+            "result": (f"API Error: {model}'s safeguards flagged this message "
+                       f"(https://www.anthropic.com/legal/aup). Our "
+                       f"intentionally broad safeguards allow us to deliver "
+                       f"more capabilities faster, but can sometimes flag "
+                       f"legitimate tasks.\n\nTry rephrasing the request in a "
+                       f"new session or change your model.\n\nDetails: "
+                       f"`[{classifier}]`"),
+            "duration_ms": 154602}
+
+
+def test_a_content_safeguard_refusal_is_classified_and_not_read_as_our_crash(tmp_path):
+    """The defect this exists for: it used to come back `nonzero-exit`.
+
+    `classify_refusal` gated on `api_error_status == 429`, and a safeguard
+    refusal carries null there, so the provider declining our message was
+    reported in the same word as the seat's own code failing.
+    """
+    path = write_log(tmp_path, "alexandria-security", "2026-11-02T03-48-09-517Z",
+                     "message", safeguard_refused(), exit_code=1, turns=17)
+    run = cf.parse_run(path)
+    assert run["refusal"] == "safeguard-refusal"
+    assert run["api_error_status"] is None
+    assert cf.reason_of(run) == "safeguard-refusal"
+
+
+def test_a_safeguard_refusal_is_not_one_of_the_two_capacity_limits(tmp_path):
+    """The distinction is the point, so it is asserted rather than implied.
+
+    A weekly or session limit tells a reader to wait and says until when. A
+    safeguard refusal has no reset at all, so collapsing it into either one
+    tells a reader to wait for a window that never arrives. That was the live
+    misreading on the night this was found.
+    """
+    for classifier in ("bio", "cyber"):
+        path = write_log(tmp_path, "alexandria-security",
+                         f"2026-11-02T03-48-09-51{len(classifier)}Z", "message",
+                         safeguard_refused(classifier=classifier),
+                         exit_code=1, turns=17)
+        refusal = cf.parse_run(path)["refusal"]
+        # Positively, so the assertion below cannot be satisfied by `None`,
+        # which is what the first draft of this test allowed: it passed
+        # against the unfixed code because an unclassified refusal is also
+        # not one of the three words.
+        assert refusal == "safeguard-refusal"
+        assert refusal not in (
+            "weekly-limit", "session-limit", "unclassified-429")
+
+
+def test_the_two_capacity_limits_still_classify_as_they_did(tmp_path):
+    """The narrowness of the change above, asserted rather than assumed."""
+    weekly = write_log(tmp_path, "alexandria-engineer",
+                       "2026-11-02T11-06-03-756Z", "cron",
+                       refused("You've hit your weekly limit · resets 11pm (UTC)"),
+                       exit_code=1, turns=1)
+    session = write_log(tmp_path, "alexandria-engineer",
+                        "2026-11-02T12-06-03-756Z", "cron",
+                        cut_off(), exit_code=1, turns=89)
+    assert cf.parse_run(weekly)["refusal"] == "weekly-limit"
+    assert cf.parse_run(session)["refusal"] == "session-limit"
+
+
+def test_a_clean_run_is_not_turned_into_a_refusal_by_the_new_branch(tmp_path):
+    """`stop_reason` is absent from an ordinary result object, not empty."""
+    path = write_log(tmp_path, "alexandria-engineer", "2026-11-02T13-06-03-756Z",
+                     "cron", completed(), exit_code=0, turns=25)
+    assert cf.parse_run(path)["refusal"] is None
