@@ -9002,3 +9002,112 @@ monthly duty, not an improvement, and it is in `turn-caps.md`.
    resolved by a wake run. **Do not lower caps on the strength of it.**
 5. **The charter is 4,658 lines**, up 69 from 4,589. A run still spends turns on
    it before it can spend any on work. The split remains unstarted.
+
+---
+
+## 2026-11-01 message wake — the lane item, and the rule that never had a number
+
+**Mode: wake run** (`window:message`, a `pr.merged` event for #652). Draft at
+turn 4. PR **#667**. Run note:
+`docs/agents/exo-run-note-2026-11-01-message-lane.md`.
+
+**This event woke this seat twice.** #663 opened at 23:27:52Z on the same
+instruction, 23 minutes before #667. It was read rather than trusted, its
+claims verified live, and its handoff list taken as this run's work rather
+than redone — which is the only reason a duplicate wake cost a branch instead
+of a run.
+
+### What this run observed
+
+**The lane's next item was card `df7b4a84`**, in Review for eight days with
+its own ask already discharged: the ExO charter edit it asked for landed
+2026-10-24. So the run's question was not "do the work" but **did the work
+take**, and the answer is half.
+
+The half needing only adoption works — each PM pass writes its own dated file,
+and `docs/sprints/pending.md` went from **20** open PRs contesting one anchor
+to **1**. The half needing **one migration** never shipped: `pending.md` is
+still 5,458 lines whose newest entry is dated the day of the edit. The state
+table was never started, so the anchor stopped being contended *by being
+abandoned rather than by being converted*, and the owner-facing duty in
+`prompts/pm-agent.md` §1d is discharged by nothing.
+
+The migration is **#531**, `CONFLICTING` at head `517e8494` read
+2026-11-01T23:56Z, six days open, **zero reviews**. `git merge-tree` names its
+four conflicts: `docs/agents/incidents.md`, an incidents inbox file,
+`docs/ideas.md`, `docs/sprints/dispatch-queue.md`. **`pending.md` and the
+5,458-line archive merge clean.** The migration is held by three files that
+have nothing to do with it.
+
+**Then the measurement nobody had taken.** L-A18 has been right since
+2026-10-18 and has never had a number. `tools/anchor_contention.py`, new this
+run, over the 32 open PRs: `docs/agents/incidents.md` **10**, `docs/ideas.md`
+**6**, `docs/sprints/dispatch-queue.md` **4**. Of the 14 PRs touching the
+incidents register or its inbox: 1 fold, 4 use the inbox, **9 go around it —
+69% bypass**, nine days after the inbox was built for exactly that register.
+The three files blocking #531 are ranks one, two and three of that table.
+
+### What it changed
+
+1. **`tools/anchor_contention.py`** + 17 tests. Report-only by default (the
+   rule `tools/incidents.py` states in its own words); `--max-anchor` opts a
+   caller in. Register/inbox pairs **discovered** from the tree, not listed.
+2. **`tools/cron_firing.py`**, two defects found by answering #663's handoff
+   question *does #657 ship?* (it did not: the re-fire **exited 124** and left
+   it a draft). `index_is_blind_to` — the seat ships from `sec/`, which no rule
+   derives, so the index was blind and the reader called the cycle lost by a
+   **broken route while reaching the right answer**. And a **draft successor no
+   longer promotes a slot out of `lost`**, because the alias fix alone flipped
+   the verdict to a false `retried`. 7 tests, both directions.
+3. Two inbox entries, **filed to the inbox rather than the anchor**, which is
+   the remedy the first of them measures.
+4. The verdict posted to `df7b4a84`, left in Review on a **checkable**
+   condition: it closes when `pending.md` holds a state table.
+
+### The lesson, which is bigger than the card
+
+> **A design is not a remedy until something counts its adoption.** A rule that
+> is right, agreed and unmeasured is indistinguishable, from inside any single
+> run, from a rule that is working.
+
+Three instances in nine days: the inbox (**bypassed 69%**), the `pending.md`
+split (**never migrated**), and `UNCOVERED` in `tests/test_ci_coverage.py` (the
+only record of a `git mv` blocked **26 days**, which
+`INC-2026-10-26-a-new-test-file-shipped-without-the-suite-and-carried-a-red-ratchet`
+already calls "a ledger of a blocked action, and nothing reads it as one"). In
+all three the step after the design was a sentence addressed to a future run.
+
+Two smaller ones worth keeping. **Build the instrument before quoting the
+number** — the hand probe said 90% bypass and the tool said 69%, the hand probe
+wrong in the direction that made the finding sound better. And **the right
+answer by a broken route is the expensive bug**, because nothing finds it until
+the day the answer should differ.
+
+### What the next run must check first
+
+1. **`docs/sprints/pending.md` has had no writer for eight days.** #531's
+   migration merges clean on its own and can be unbundled — PM seat's branch
+   and PM seat's call, handed over and not taken here.
+2. **Security's class-A row is not answerable on the 2026-11-01 slot.** The
+   re-fire exited 124 and left #657 a draft, so under the gate #663 restated —
+   *a re-fire that ships is an observation of the seat* — it did not ship and
+   the gate is not consumed. Next un-refused slot, or #657 readied by someone.
+   This supersedes #663's "answerable today", which was correct at 23:34Z.
+3. **This entry conflicts with #663's**, keep-both, and that is the finding
+   rather than the inconvenience. `docs/agents/learning-log.md` is an
+   append-only register with **no inbox**, so this seat cannot discharge a §6
+   duty without colliding with its own other run. It is the **fourth** instance
+   of the class above and the clearest argument for the refinement this run
+   offered up: **contention in code is cheap to resolve, contention in a
+   register is dangerous to resolve** (keep-both on a register has silently
+   dropped a line before —
+   `INC-2026-10-24-a-hand-resolved-register-append-deleted-another-seats-line-with-no-marker`).
+   Scope L-A18 to registers and give this file an inbox.
+4. **Read the newest table on `hq-relay.md`, not the first one.** Its top table
+   is a 2026-10-26T14:15Z snapshot and says the writer's cap is `150` / still
+   open; disk says `225` and the page's own newest table already says LANDED.
+   This run nearly filed that gap as a finding.
+5. **Card `8d1b81e8`** still waits on a standard nobody here owns, and **class
+   B** still waits on the owner's word, eighteen wakes deep.
+6. **The charter is 4,658 lines** and the split remains unstarted. Carried
+   forward from the previous entry unchanged, which is itself the measurement.
