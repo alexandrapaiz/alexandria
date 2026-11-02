@@ -13,11 +13,14 @@ The research seat's refutation pass of 2026-11-02
 against their own starter files. This instrument is the sweep, and it measures
 rather than reads.
 
-Ten of the library's twenty-two project tasks carry a `tests_pass` check with one
-starter module and one pytest file. For each, this runs the starter file
+Fourteen of the library's twenty-four project tasks carry a `tests_pass` check
+with one starter module and one pytest file. For each, this runs the starter file
 unchanged as the answer and counts the probes it already passes. That number is
 the task's floor: a subject that changes nothing scores it, so a prediction that
-the bare arm does worse than the floor is arithmetically impossible.
+the bare arm does worse than the floor is arithmetically impossible. The count
+was written here as ten of twenty-two when the file was new and the run printed
+fourteen for most of the day, which is the defect this instrument exists to
+catch, in the instrument (research seat, 2026-11-02).
 
     python3 skills/_validation/project_fixture_probe.py
     python3 skills/_validation/project_fixture_probe.py --json
@@ -30,6 +33,15 @@ re-runs into a number a gate re-derives. Both of the numbers the agent-containme
 suite asserted in prose are correct, and they were correct by luck rather than by
 check until this file existed.
 
+`--check` also fails on a `tests_pass` row whose `pass_condition` asserts a
+per-probe count, because the rule below makes that false by construction rather
+than by measurement. Declaring the measured `stub_score` closes the number and
+cannot close the sentence: `ac-t12` declared 2 of 5, measured 2 of 5, and passed
+`--check` at exit 0 with the false sentence intact until 2026-11-02. This
+function is the only reader `pass_condition` has anywhere, since
+`tools/skill_eval.py` never mentions the field and `normalize` does not carry
+it.
+
 **The finding this instrument was written to record, which is about the harness
 and not about any task.** `tools/skill_eval.py:tests_pass` returns 1.0 on exit 0
 and 0.0 otherwise. It is binary. So every row below whose floor is not a clean
@@ -40,6 +52,13 @@ count in both arms, so a partial improvement is visible" -- and that sentence is
 false. `parses` tasks are the ones that get partial credit, because
 `score_answer` means their assertion hits. The two forms are the opposite way
 round from how the suites describe them.
+
+Three was the right count and the repair reached two of them, which two register
+entries then recorded as all three. The gate above is why that cannot recur: it
+reads the field rather than the entry about the field. Run against the library on
+2026-11-02 it named seven rows, not one. `ac-t12` was the third copy of the
+sentence, and six control rows define their own criterion over "the with-skill
+arm's pass count", which is the same absent number under a different noun.
 """
 import argparse
 import contextlib
@@ -77,6 +96,29 @@ PYTEST_FAILED = re.compile(r"(\d+) (?:failed|error)")
 COLLECTION_DIED = re.compile(r"ImportError|INTERNALERROR|error during collection",
                              re.I)
 TIMEOUT_S = 180
+
+# A `tests_pass` row's `pass_condition` claiming a per-probe count. `tests_pass`
+# returns 1.0 on exit 0 and 0.0 on anything else, so no count of any kind leaves
+# this scorer, and a row asserting one is false by construction rather than by
+# measurement. Both families below are drawn from rows that actually shipped:
+# the first from `ac-t9`/`ac-t10`/`ac-t12`, the second from the six control rows
+# that define their own criterion over a count the harness never produces.
+COUNT_CLAIMED = re.compile(
+    r"harness reports the (?:passing )?count"
+    r"|reports the count of passing"
+    r"|partial improvement is visible"
+    r"|partial credit is (?:reported|visible)"
+    r"|pass (?:count|rate) is not below",
+    re.I)
+# The same sentence quoted in order to withdraw it. `ac-t9` and `ac-t10` keep
+# the refuted wording in place so a reader who met the number before meets the
+# retraction with it, which is the house practice and must not be a failure.
+COUNT_WITHDRAWN = re.compile(
+    r"an earlier version"
+    r"|said the opposite"
+    r"|that sentence was false"
+    r"|until \d{4}-\d{2}-\d{2}",
+    re.I)
 
 
 def project_tasks(root):
@@ -178,6 +220,32 @@ def declaration_problems(slug, task):
     return out
 
 
+def pass_condition_problems(slug, task, check):
+    """A `tests_pass` row may not assert a count this scorer cannot produce.
+
+    This is the only reader `pass_condition` has. `tools/skill_eval.py` never
+    mentions the field and `normalize` does not carry it, so until this function
+    existed it was a documentation string inside a machine-readable file with
+    nothing checking it, and three rows said the harness reported a per-probe
+    count. Declaring the measured `stub_score` closes the number and cannot
+    close the sentence: `ac-t12` declared 2 of 5, measured 2 of 5, and passed
+    `--check` at exit 0 with the false sentence intact
+    (research seat, 2026-11-02).
+    """
+    condition = check.get("pass_condition")
+    if not condition:
+        return []
+    if not COUNT_CLAIMED.search(condition):
+        return []
+    if COUNT_WITHDRAWN.search(condition):
+        return []
+    return [f"{slug}/{task['id']}: `pass_condition` asserts a per-probe count "
+            "in a `tests_pass` row, and `tools/skill_eval.py:tests_pass` "
+            "returns 1.0 on exit 0 and 0.0 on anything else, so no count "
+            "leaves it. Say what the scorer does, or quote the old sentence "
+            "as withdrawn"]
+
+
 def problems(rows):
     out = []
     for r in rows:
@@ -211,9 +279,10 @@ def _verdict(rows, bad):
         failures=len(bad),
         pass_line=f"Every one of the {len(rows)} declared stub scores matches "
                   "what the starter file just scored.",
-        fail_line=f"{len(bad)} of these {len(rows)} rows cannot be read as "
-                  "written: either a declared stub score disagrees with the "
-                  "measurement, or the probe never ran at all.")
+        fail_line=f"{len(bad)} findings over these {len(rows)} rows cannot be "
+                  "read as written: a declared stub score disagrees with the "
+                  "measurement, or a `pass_condition` asserts a count this "
+                  "scorer cannot produce, or the probe never ran at all.")
 
 
 def main():
@@ -229,8 +298,9 @@ def main():
     tasks = list(project_tasks(args.skills_dir))
     rows = [measure(*t) for t in tasks]
     bad = problems(rows)
-    for slug, task, _starter, _check in tasks:
+    for slug, task, _starter, check in tasks:
         bad += declaration_problems(slug, task)
+        bad += pass_condition_problems(slug, task, check)
     undeclared = [r for r in rows if r["declared"] is None]
     unswept = [t["id"] for _s, t, _st, _c in tasks
                if not ((t.get("fixture_leak") or {}).get("swept"))]
