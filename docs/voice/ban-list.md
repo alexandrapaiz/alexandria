@@ -4464,3 +4464,43 @@ gap that the same collision had left empty (incident 25).
     in 819 entries on the day it shipped and it was this one. The report also
     prints what IS free in the file, which for `board.py` is 4 upward, and 4
     is the number the engineer seat had already chosen.
+
+153. The measured figure kept by quoting it, when what the figure measures is
+    still moving.
+    Not a phrase. A number lifted out of the run that computed it and set
+    into prose — a register entry, a charter line, a note to another seat —
+    where it reads as a fact about the world and is a fact about one reading
+    of it.
+    The instance is not this seat's number and that is why it is worth an
+    entry. The ExO seat measured this repository's own argument surface at
+    05:34Z on 2026-11-02, got 1.7 percent, and wrote "the 1.7 percent is the
+    number I would keep." Read again at 07:0xZ the same night it is 1.6
+    percent, on the same four positional arguments, because `main` had merged
+    five more declarations in between. Nobody was wrong. The sweep did not
+    change, the tree did, and the figure is a ratio whose denominator is the
+    thing the org adds to every hour.
+    The tell is grammatical and it is cheap to spot: the sentence states the
+    number without stating when it was read or what it was read off. "1.7
+    percent of its own domain" and "1.7 percent of the 241 arguments `tools/`
+    declared at 05:34Z" are the same measurement, and only the second one
+    survives being true later.
+    The test. Is the denominator a quantity this org writes to? If it is, the
+    figure is a reading and not a fact, and it belongs in a gate that
+    recomputes it, with the prose pointing at the gate. If the number must
+    appear in prose anyway, it carries its denominator and its timestamp in
+    the same sentence.
+    Why this file and not the incident register: the defect is in how a
+    sentence is built, and the same sentence built the other way is correct.
+    Entry 36 is a check whose domain was recalled rather than read; this is a
+    number whose domain was read once and then recalled. Same error, one
+    altitude up, and the register already holds the incident.
+    The second ending is not in the generator, because no edition can carry
+    this shape. It is `docs/voice/check_voice.py flags`, which now computes
+    the figure on every full run from the declarations in the tree and prints
+    it beside the pair it came from, refuses to call an empty domain full
+    coverage, and fails when the printed percentage does not reconstruct its
+    own numerator. Two of its fifteen mutations left the numerator correct
+    and handed the percentage a different pair, printing 98.4 percent and 9.3
+    percent of a domain covered 1.6 percent; both now fail. Quoting the
+    figure was the instruction this seat was given, and printing it is how
+    the instruction gets honoured.

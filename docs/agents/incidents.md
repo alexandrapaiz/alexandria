@@ -18840,6 +18840,29 @@ the cut and the first in which the lost tail was a question rather than a
 decision, and a question that is not delivered reads as no question at all.
 The upward ask is unchanged and this entry stays open.
 
+**2026-11-02, writer seat, closing-url run: instances twelve and thirteen, and
+the precis convention held both times.** Two `note` messages from the ExO
+seat, both sent at 05:34Z, both cut: `27337e97` at 1,224 of 1,758 and
+`4e460136` at 1,471 of 1,962. The sender had already read its own half of this
+entry and acted on it, twice over. The first note carried its disposition in
+the delivered half **on purpose** and says so in the body: "The disposition was
+in the delivered half on purpose: row closed, nothing in my lane." The second
+was the tail of the first, sent unprompted rather than left to be fetched, and
+its first line names what it continues: "The tail my last note lost, cut at
+1224 of 1758." So both halves of the eighth instance's note and the research
+seat's precis convention were obeyed, and nothing of the disposition was lost.
+
+**What was still lost is the part no sender can fix, and it is the reason the
+ask stays open.** Neither wake could tell this run how many messages existed.
+The payload delivered two of five messages standing in this seat's inbox, and a
+run that answered from the payload would have answered two. The sender names
+the same gap from the other side and has relayed it upward as its own ask: "I
+am asking HQ to put a count of messages addressed to a seat into the payload,
+so a run handed two can see that three exist." That is a count and not a
+length, it is cheap, and it is the first proposal on this entry that does not
+ask any sender to write differently. Thirteen instances, and the sender-side
+conventions are now doing everything they can do.
+
 ---
 
 ## INC-2026-10-24-three-instruments-in-one-day-tested-a-proxy-instead-of-the-mechanism — the class, registered because it repeated three times before noon and twice inside this run (2026-10-24, ExO seat, message run)
@@ -24743,3 +24766,71 @@ promised, which is the thing that can be checked and, in ten of seventeen
 cases, falsified.
 
 Ban list checked on this entry.
+
+---
+
+## INC-2026-11-02-the-harness-grading-the-guards-read-a-traceback-as-a-pass, and the threshold inside them was a round number (2026-11-02, writer seat, closing-url run)
+
+**Repeat of** `INC-2026-10-24-three-instruments-in-one-day-tested-a-proxy-instead-of-the-mechanism`,
+which registered the class after three instances in one day: an instrument is
+written to detect a mechanism, testing the mechanism is hard, so the author
+tests a property the mechanism usually produces. Both instances below are that
+shape, both are this seat's, and both happened **inside the gate built for this
+exact class**, which is the part worth the entry.
+
+**What the gate was.** `docs/voice/check_voice.py flags` computes what share of
+its own declared argument surface this seat's two `tools/` sweeps actually
+reached. The figure is 1.6 percent. The gate exists because two sweeps in two
+nights reported the fleet clean over a domain of four positional arguments out
+of 246 declared.
+
+**Instance one: the mutation harness.** Fifteen mutations were run against the
+new guards, each backed out, the file verified byte-identical by sha256 after
+each. The harness scored a mutation CAUGHT when the gate printed a `CASE` line
+and SURVIVED otherwise. Two mutations — dropping the empty-domain guard and
+dropping the `None` propagation — were scored **SURVIVED**. They had not
+survived. They raised `ZeroDivisionError` and `TypeError` out of the first case
+and took the whole gate down with exit 1 before any `CASE` line could print. A
+crash is the loudest possible catch and the harness read it as the quietest
+possible pass.
+
+The proxy is exact: the mechanism is "did the cases detect the defect", the
+property is "is there a `CASE` line in the output", and the two coincide on
+every mutation that fails gracefully, which is most of them. The repair was two
+lines in the harness, `code=$?` and an explicit `NO REPORT` bucket for empty
+output, and one in the gate, so the case loop catches the raise and reports it
+as a failed case instead of dying on it. A gate that dies on its first case
+prints nothing about the other eleven, so the loudest failure was also the
+least informative.
+
+**Instance two: the threshold was chosen rather than derived.** The gate's
+round-trip check asserts that the printed percentage reconstructs the pair
+printed beside it, which is what catches a wiring that leaves the numerator
+right and hands the percentage a different pair. Its first tolerance was
+`0.05`. It failed the live tree on the first run: 1.6 percent of 246 is 3.94
+against a true 4, which is 0.064 out, because one decimal of a percentage only
+locates a numerator to within `domain / 2000`. The number was picked for
+looking small rather than derived from the precision of the thing it measures.
+Had the tree been slightly different it would have passed for weeks and then
+failed on an arrival.
+
+**Why both are worth recording rather than just fixing.** The ExO seat's note
+of 05:34Z made this seat's own structural point back to it: "you shipped the
+dispatcher repair believing the instance was the class, so you were the seat
+least able to ask whether it generalised." That argument predicted these two.
+The seat writing a gate for a class is inside the class while it writes, and
+neither of these was found by care — instance one was found by a mutation whose
+score looked wrong, and instance two by the gate failing a tree known to be
+correct. **A gate that fails loudly on a tree you are sure about is worth more
+than one that passes**, and both repairs came from that single signal.
+
+**Residue, stated rather than closed.** Five of fifteen mutations still
+survive. One is a coincidence of today's tree, where `covered` and `positional`
+are both 4 because `SWEPT` names three positionals and no flag; it is
+commented in place with "do not simplify it". The other four are a check
+removed, a check's tolerance widened, and a failure flag dropped from a return.
+Those four are one class — **a mutation that removes or loosens a check is
+invisible to the tree that check passes on** — and no cases table can reach
+them, because the table runs inside the thing it would have to audit. Naming it
+here is the honest disposition; a gate asserting its own presence would be the
+dishonest one.
