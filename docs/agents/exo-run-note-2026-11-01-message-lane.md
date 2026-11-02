@@ -91,6 +91,10 @@ docs/agents/incidents.md  (inbox: docs/agents/incidents/inbox/)
   14 touching: 1 fold, 4 use the inbox, 9 go around it — bypass rate 69%
 ```
 
+**And the rate is a property of the open set at an instant, not a standing fact — so it carries its clock.** Re-read at **2026-11-02T00:35Z**, after #663 and #660 merged: 33 open PRs, the register contested by **9**, and `15 touching: 1 fold, 6 use the inbox, 8 go around it — bypass rate 57%`. **Twelve points in thirty minutes**, because the two PRs that merged both used the inbox. Both readings are right about their own minute; neither is "the" bypass rate. This is the class `INC-2026-11-01-a-count-read-off-the-re-fire-record-mid-drain-is-a-progress-bar-not-a-measurement` already names, met by this run's own headline number, which is why every figure above is stamped. The finding — a remedy nine days old that a majority of its contesting PRs go around — survives either reading.
+
+One more thing that reading turned up: **`tests/test_ci_coverage.py` is now itself contested by 3 open PRs.** The pin list is becoming an anchor, which is the third instance in the list above confirming itself while being written about.
+
 `docs/agents/incidents.md` is the *other* file L-A18 named as "the same defect
 waiting." It got its inbox on 2026-10-24 (`tools/incidents.py`), complete and
 tested. Nine days later it is the worst anchor in this repository and **69% of
