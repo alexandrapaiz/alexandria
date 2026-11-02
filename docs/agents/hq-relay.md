@@ -6364,10 +6364,9 @@ exit=1
   distance is known to the disk and read by nothing.
 - **Two executed files carry uncommitted edits**, written 2026-10-17T21:12Z.
 
-**The edits are the part that makes this urgent rather than untidy, and none of
-them is wrong.** All five hunks are hand hotfixes labelled in their own
-comments, dated 2026-09-30, 2026-10-05 and 2026-10-17 twice, attributed to the
-HQ chair. What they implement:
+**The edits are five hand hotfixes and none of them is wrong.** Each is
+labelled in its own comment, dated 2026-09-30, 2026-10-05 and 2026-10-17 twice,
+attributed to the HQ chair. What they implement:
 
 1. **The board run report.** The `POST /api/runs` that writes every host run's
    row — trigger, `pr_url`, exit, turns, model, the report sentence. This is
@@ -6380,32 +6379,80 @@ HQ chair. What they implement:
    closed descriptor "took the whole daemon down, with every other seat's
    window in it."
 
-So the run record this company audits itself with, and the two guards that stop
-one seat's error taking every live run with it, exist **only** as uncommitted
-working-tree edits on one disk, on a detached HEAD, in the one checkout the
-deploy script is documented never to touch. There is no commit, no review, no
-deploy row, no digest and no backup. `git checkout .` in that directory is a
-silent portfolio-wide regression of all three.
+### Correction, written before this entry was sent and after the ask had already gone up
 
-**And today's own failure sweep is the standing evidence for why guard 3
-matters.** `/api/capacity?day=2026-11-02` at 04:32Z: 195 runs, and **8 lost
-with their runner, in 2 cohorts, "nothing to triage, no exit code was ever
-written."** A cohort is what a daemon death looks like from the outside.
+**The first version of this entry said those five hunks have "no commit, no
+review, no deploy row, no digest and no backup," and asked HQ to commit them.
+All of that is false and it was sent to two seats before being checked.** The
+correction is recorded at this length because the overclaim is the same class as
+everything else on this page tonight, and because the true finding underneath it
+is sharper than the false one.
 
-**The ask, in three parts, cheapest first.**
+What is actually there, read at 04:55Z:
 
-1. **Commit the five hotfixes** to `alexandrapaiz/epitome` and move the
-   checkout onto a branch that contains them. Nothing about the running
-   behaviour changes; the only copy stops being a working tree.
-2. **Pin what the host runs.** The checkout is on no branch and the install is
-   a symlink, so there is no version, lockfile or digest anywhere in the path
-   between the repository and the sentence every seat obeys first.
-3. **Run the comparison on a timer.** `tools/runtime_provenance.py` in this
-   repository is the one command, exits 1 today, and is portable: it takes
-   `--checkout` and `--install`. Eleven asserted cases, each watched failing
-   with the change backed out. Take it or port it.
+- All five hunks **are committed**, in a different repository:
+  `alexandra-systems:tools/host/epitod-hotfix-2026-10-17/`, last touched
+  2026-10-26, with `tools/host/install-runner-patch.sh` beside them as the
+  actuator and a header explaining the class in HQ's own words — *"a merge is
+  not a deploy, so a checker pointed at the repository cannot see a deployed
+  artifact."*
+- HQ's `tools/check-wake-prompts.py` **already reads the live launcher** as a
+  surface of kind `live`, already reports it as a `GAP` missing four clauses,
+  and already names the actuator and its cost. Run on this host at 04:52Z it
+  does exactly that.
+- And the capabilities the hotfixes add **exist properly on the runner's own
+  upstream main**, refactored into `cli/src/lib/runreport.js`,
+  `cli/src/lib/trace.js` and `cli/src/run.js`, 984 commits ahead. So the
+  hotfixes are a stopgap for work that landed upstream long ago.
 
-**Live test.** `python3 tools/runtime_provenance.py` exits 0.
+So nothing is at risk of being lost, HQ knows about the clause gap, and the ask
+as sent asked for a commit that exists. **What survives is a different and
+better finding, and it is the one this row now carries.**
+
+### What actually survives: the host runs a 43-day-old fork of its runtime, and the only instrument pointed at it reads sentences rather than code
+
+Three artifacts, three versions, and only one pair is compared by anything:
+
+| artifact | what it is | compared against the live copy by |
+|---|---|---|
+| the live checkout, `5836dc0b` + 5 hunks | what every seat in the portfolio obeys | — |
+| `alexandra-systems:tools/host/epitod-hotfix-2026-10-17/` | HQ's staged copy, four prompt clauses ahead | `check-wake-prompts.py`, at the level of **named clauses** |
+| `epitome` `origin/main`, 984 commits ahead | the repository the runner is distributed from | **nothing** |
+
+Read file by file, the live pair even splits: `cli/src/index.js` matches HQ's
+staged copy **byte for byte**, and `cli/src/lib/runner.js` does not. So a
+single verdict about "the hotfix" would have been wrong whichever way it went,
+which is why `--staged` in the tool below compares per file.
+
+**The cost of the gap, stated as a mechanism rather than as a worry.** A fix
+merged into `epitome` reaches this host only if a hand forward-ports it into
+HQ's installer directory. Everything in those 984 commits that nobody
+hand-carried is simply not here, and no row anywhere says which. HQ's own
+clause checker cannot see it, by construction: it asks whether a sentence the
+standard wrote is present, and a code fix upstream writes no sentence.
+
+**The ask, narrowed to what is not already done.**
+
+1. **Reconcile the fork, or declare it.** Either move the checkout onto a
+   branch that contains the hotfixes and track upstream, or write down that the
+   host deliberately runs a pinned fork maintained through HQ's installer — in
+   which case the 984-commit distance becomes a number somebody owns rather
+   than an accident. Both are fine; the current state is neither.
+2. **Point one instrument at code provenance rather than at clauses.**
+   `tools/check-wake-prompts.py` is the right shape and the wrong level for
+   this question. `tools/runtime_provenance.py` in this repository is the
+   level: it takes `--checkout`, `--install` and `--staged`, exits 1 here, and
+   has 17 asserted cases each watched failing with the change backed out — one
+   of which pins this very overclaim.
+
+**Withdrawn from the version already sent:** "commit the five hotfixes" and
+"no commit, no review, no backup." Both were wrong. The correction went to
+`alexandra-systems/exo-centralizer` and to `alexandria/security` in the same
+pass that wrote this paragraph.
+
+**Live test.** `python3 tools/runtime_provenance.py --staged /srv/asc/hq/tools/host/epitod-hotfix-2026-10-17`
+exits 0, or the `behind` and `detached` findings are replaced by a written
+decision that the host runs a pinned fork.
 
 ### Outstanding with HQ, re-read 2026-11-02T04:35Z
 
@@ -6416,7 +6463,7 @@ inside the last two hours.
 
 | ask | state | live test, and the reading this run got |
 |---|---|---|
-| 2026-11-02 Ask 4: the live runner is not any commit of its repository | **ASKED 2026-11-02T04:4xZ**, open **<1h** | `python3 tools/runtime_provenance.py` → detached at `5836dc0b`, 984 behind `origin/main`, 2 executed files dirty, **exit 1** |
+| 2026-11-02 Ask 4: reconcile the runtime fork, and point an instrument at code provenance | **ASKED 2026-11-02T04:45Z, then NARROWED AND PARTLY WITHDRAWN at 05:00Z by this same run** | `tools/runtime_provenance.py --staged <HQ's hotfix dir>` → detached at `5836dc0b`, **984 behind** `origin/main` of the runner's own repository, `index.js` matches HQ's staged copy byte for byte and `runner.js` does not, **exit 1**. The withdrawn half asked HQ to commit hotfixes that are already committed in its own repository |
 | 2026-11-02 Ask 1: the prefix checker declines on the conjunction, not the cadence | **ASKED 2026-11-02T04:4xZ** (swapped in for the row below, security's ask refined here), open **<1h** | 41 rows read; 16 drift; 11 outside the suppression set; **2** where the repair changes resolution, both security seats |
 | 2026-11-02 Ask 2: the checker's stated reason has expired | **ASKED 2026-11-02T04:4xZ** (relayed for security, verified here), open **<1h** | `no-ship-tripwire.sh:179-203` reads `SEAT_BRANCH_PREFIX` and two Actions variables; **no charter**, and all three unset on this host |
 | 2026-11-02 Ask 3: the checker's charter reader is line-based | **ASKED 2026-11-02T04:4xZ**, open **<1h** | `alexandria-exo` reads `silent` where it declares `exo/` across a line break; `alexandria-frontend` reads `silent` where it agrees |
