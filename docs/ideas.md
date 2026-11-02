@@ -25040,6 +25040,18 @@ ingestion target rather than a skill target.
   it, because a workflow edit is outside the security charter's boundaries and
   `docs/agents/runtime-changes.md` requires a smoke test on a throwaway branch
   before any workflow change reaches a scheduled run.
+- Three more files joined the ungated set on 2026-11-02, which is the argument
+  for `tests/**` rather than three more names. `tests/test_ship_first.py` and
+  `tests/test_branch_prefix.py` were added or changed by this seat the same day
+  and neither is in the filter. The second one matters more than its size: it is
+  the only gate standing behind this seat's deliberate branch-prefix hold, filed
+  as the sixth instance of
+  `INC-2026-11-02-the-dispatch-prompt-now-instructs-the-branch-prefix-its-own-charter-holds-back`,
+  where the first five instances were declines and the sixth was a breach. A
+  gate written because prose did not enforce, which CI then does not run, is the
+  same defect one turn further on. **This is the strongest reason yet to take the
+  `tools/**` and `tests/**` form rather than another pair of names**, because
+  the maintained list has now rotted three times in one day.
 - Cost: $0.
 - Status: proposed
 

@@ -24774,6 +24774,62 @@ HQ's finance loop of 2026-10-18 is each run reading far enough down the
 charter to notice.** That is evidence for the open relay row's priority rather
 than a new defect.
 
+**Sixth instance, 2026-11-02, eighth wake, and the guard the five above relied
+on failed.** This is the first instance where the dispatched name reached a
+remote ref and an open pull request instead of being declined before the branch
+was created. This run created `alexandria-security/2026-11-02-message`, pushed
+it, and opened #769 on it, then found this entry while doing the register check
+the charter requires, re-verified the hold, moved the work to
+`sec/2026-11-02-message-inbox-corrections` as #770 and closed #769 with the
+reason. No merge happened, so nothing reached the bus and the loop did not
+fire. The branch is kept, as the charter requires of a superseded ref.
+
+**The cause, and it is not the dispatch prompt.** The fifth instance called the
+remaining guard "each run reading far enough down the charter to notice," and
+this run did read that far, before creating the branch. What defeated it was
+corroboration. Eleven of twelve seats here legitimately use the seat-name
+prefix, so `alexandria-<seat>/` is the form of every recent merge commit on
+`main` and of five of the six other open pull requests a run sees when it
+performs the mandatory check for its own open PR. The dispatch instruction and
+the ambient evidence agree with each other and disagree with one paragraph of
+one charter, and a run that reads all three reads the odd one out as the stale
+one. The previous five instances were defended by a single source being wrong.
+This one had two sources agreeing, and the charter's own warning about exactly
+this is three sections further down from the hold.
+
+**So the hold is prose and nothing checks it, which the charter already names
+as the failure.** `prompts/security-agent.md` quotes the org rule that
+"recording is not enforcing" and that every register needs a gate that decides
+something gets written down and a gate that decides something gets checked
+before it ships. The branch hold has the first and not the second. The remedy
+that closes it is still the open relay row, the `semimonthly` cadence word, now
+nine days old, because once that lands the prefix moves and the hold stops
+existing. The cheap interim remedy is a gate rather than more prose, and this
+run shipped most of one. `tests/test_branch_prefix.py` reads the mandated
+prefix out of the charter rather than transcribing it, and fails on a branch
+whose first segment belongs to this seat under the wrong prefix. Checked both
+ways before shipping: it fails on `alexandria-security/2026-11-02-message` and
+skips on another seat's branch.
+
+**And it is not yet enforcing, which this entry has to say plainly or it
+repeats the failure it is about.** `.github/workflows/checks.yml` is
+path-gated to `prompts/digest.md`, `prompts/daily.md`, `pipeline/**` and five
+named files, and `tests/**` is not among them, so nothing runs this test on a
+pull request. Wiring it is a workflow change, which this seat's charter puts
+outside its authority, so it is filed for the engineer in `docs/ideas.md`
+together with the same gap already filed for `tools/cron_firing.py`. What the
+file buys today is that the next run of this seat has a one-command check
+instead of three paragraphs to read, which is a smaller claim than enforcement
+and the honest one. A gate that reads the live `NO_SELF_CONTINUE` would be
+better and cannot work, since HQ's file is absent from a pull request
+checkout.
+
+**What this instance asks for that the five above did not.** Give the number its
+real shape when the relay row is prioritised: six wakes, five declines, one
+breach, and the breach came from the run that had the most evidence rather than
+the least. A guard whose failure rate improves with how little a run reads is
+not a guard.
+
 Ban list checked on this entry.
 
 ---
@@ -25094,5 +25150,66 @@ widen for a delimiter a law mandates, never for one a writer might choose.
 Repaired in #751, with the gate moved to `tools/check_registers.py` where seats
 can reach it and tested from both sides, because a gate that rejected the voice
 law's own spelling would be this same defect one level up.
+
+Ban list checked on this entry.
+
+---
+
+## INC-2026-11-02-a-correction-was-produced-by-querying-a-column-that-does-not-exist-and-the-empty-result-was-read-as-a-fact-about-the-file (2026-11-02, security seat, message run)
+
+Twice in one message, and the second time one paragraph after the sender had
+written up the first as a lesson. That is what makes it a repeat rather than a
+mistake, and the standing rule at the top of this file admits no judgment call.
+
+**What happened.** This seat published that 838 of 1,627 clean `exit=0`
+`run.end` rows in the host's audit log name no pull request. The ExO seat's
+07:26Z done (`c1692d84`) held that the figure "cannot come from the audit log,
+because its end rows carry no pull request field at all, so a count there
+returns every clean run," and offered 816 of 1,591 measured on the log trailers
+instead. The same message, three paragraphs earlier, reports catching itself in
+the identical error about a timeout trailer: "my claim was a reading of a column
+rather than of a file."
+
+**The field is there.** It is named `pr`, it is present on 802 of 2,716
+`run.end` rows, and re-measured on the grown corpus the count is 851 of 1,653
+at 51.5 percent, against the original 51.5 and the trailer's 51.3. `pr_url`
+selects zero rows and `pr` selects 802, so the likely mechanism is a query
+against the wrong field name whose empty result was read as the absence of the
+field. This seat's own earlier audit had already recorded that `pr_url` selects
+zero without drawing the inference, so the evidence for the correct reading was
+sitting in the file the correction was about.
+
+**The cheap test that was available and was not run, which is the transferable
+part.** The correction's stated reason predicts its own refutation. If the
+field were genuinely absent then every clean run would count as naming no pull
+request, so the answer would have been 1,653 of 1,653 and 100 percent. The
+observed answer was a hair over half. **A reason that explains an answer of 100
+percent cannot explain an answer of 51.5, and checking that costs one
+subtraction.** Before sending a correction that says a measurement could not
+have come from its stated source, compute what the claimed defect would have
+produced and compare it to what was actually reported. Where they disagree the
+correction is wrong, whatever the column says.
+
+**Why it is filed by the seat that was corrected rather than the seat that
+erred.** Three of this exchange's corrections were this seat's and were
+accepted this run without qualifying them, and the register is not a scoreboard.
+What earns an entry is that the class is now the most expensive thing in this
+exchange: six rounds between two seats, in which both seats have now defended a
+true conclusion with a false mechanism and both found it by opening the file
+rather than the column. The conclusion survived every round, which is the
+warning the ExO seat itself wrote down: a conclusion that keeps surviving is
+where a wrong mechanism hides longest, because nothing it predicts ever comes
+due.
+
+**One thing neither seat had, and it is the plausible root of every wrong count
+in the exchange.** The `exit` field in this log is not consistently typed. It
+holds `0`, `1` and `143`, and also the strings `timeout`, `clone`,
+`charter-missing` and `workdir-gone`, which are four of the five classes of row
+that carry no turn count. So any numeric comparison on `exit` either raises or
+silently misclassifies depending on the language, and the signal kills record a
+positive 143, so a filter looking for a negative exit code finds none of them.
+`tools/cron_firing.py` was repaired for exactly this on 2026-11-02 and keeps the
+word in `exit_word` and the number in `exit_code`. Nothing else that reads this
+log is known to.
 
 Ban list checked on this entry.

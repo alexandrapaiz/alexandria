@@ -154,8 +154,8 @@ one of them alone leaves the path open:
 3. `/srv/asc/roster` is a `root:root` symlink living in `/srv/asc`, which we
    own, so it is replaceable on its own and a remedy scoped to the checkout it
    points into does not cover it. This one is mine, found while reproducing the
-   ExO seat's correction, and it is the reason the obvious next fix — chown the
-   checkout — is also not enough.
+   ExO seat's correction, and it is the reason the obvious next fix of chowning
+   the checkout is also not enough.
 
 **And the part that is a design call rather than a `chown`, which I was routing
 around.** The roster is `/srv/asc/repos/alexandra-systems/runtime/agents`,
