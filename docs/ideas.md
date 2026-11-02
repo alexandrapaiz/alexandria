@@ -25210,3 +25210,87 @@ with the engine it guards is the shape this repository keeps finding.
 - Whose call: the engineer seat for the sweep; this run did the one file.
 - Cost: $0.
 - Status: proposed
+
+## 2026-11-02 - the scorer is binary where its suites say it is not, and two smaller things (skill seat, fifth pass)
+
+Three items, all found while amending the five eval rows research's refutation
+pass returned. The first is the one that matters and it is not in this seat's
+write surface.
+
+### 2026-11-02 - `tests_pass` is binary, which puts a ceiling on the differential screen (skill seat)
+
+- What: `tools/skill_eval.py:tests_pass` returns `1.0` on exit 0 and `0.0` on
+  anything else. So a `project` task with a four-probe pytest suite has two
+  scores available to it, and an answer that passes three probes scores what an
+  answer that passes none scores. Measured through the harness's own function
+  rather than read off it: four candidate answers to `ac-t9` and `ac-t10`, two
+  of which pass 3 of 4 probes, all scored `0.0`.
+- Why it matters beyond tidiness: ADR-38 rule 5 counts a task only if the bare
+  subject fails or scores **partial** on it, and rule 6 says a hard check
+  outranks a judged one. Those two rules point in opposite directions today,
+  because the hard-check form is the one that cannot express a partial.
+  `skills/_validation/project_fixture_probe.py` measures that 12 of 12 project
+  tasks with a hard check have a floor short of a clean sweep, so every one of
+  them reports 0.0 in both arms unless the subject sweeps the suite, and the
+  partial improvement each of their predictions is about is invisible to the
+  delta. `parses` tasks already get this right: `score_answer` means their
+  assertion hits.
+- First step: parse the `N passed` / `N failed` summary the command already
+  prints and return the fraction, keeping exit 0 as the pass condition for the
+  task's own verdict. `project_fixture_probe.py` does exactly this parse today
+  and can be read as the reference. Keep `None` for the unrunnable cases
+  `tests_pass` already distinguishes, because an exit 127 is a fact about the
+  machine.
+- Whose call: the engineer seat. `tools/` is not this seat's surface, and the
+  three `pass_condition` fields that asserted the harness already did this have
+  been corrected on this seat's side rather than left to describe a fix nobody
+  has made. Filed as
+  `INC-2026-11-02-three-suite-fields-described-harness-behaviour-the-harness-does-not-have`.
+- Cost: $0, no model call.
+- Status: proposed
+
+### 2026-11-02 - a project task's starter file can shadow a standard-library module, and one did (skill seat)
+
+- What: `rhsi-c1`'s starter file was named `bisect.py`. The probe command runs
+  in a working directory containing it, so it shadowed the stdlib `bisect` that
+  `_pytest._code.source` imports, and pytest died before collecting a single
+  probe. The task therefore scored 0.0 in **both** arms whatever the subject
+  wrote, and because a control is passed when its two arms agree, it passed
+  trivially while measuring nothing. It has been renamed to `first_bad.py` on
+  this seat's side and now measures a floor of 0 of 4.
+- Why a gate rather than a fix: the instance is repaired and the class is not.
+  Nothing stops the next project task from being called `json.py`, `types.py`
+  or `logging.py`, and the failure is silent in the worst way, because a dead
+  control reports agreement.
+- First step: one clause in `tools/skill_eval.py --check`, failing any project
+  task whose starter file stem is in `sys.stdlib_module_names`. That is a
+  one-line membership test against a set the interpreter already ships.
+- Whose call: the engineer seat for the gate; this run did the one file.
+- Cost: $0.
+- Status: proposed
+
+### 2026-11-02 - the ban-list checker reads a regex literal as prose (skill seat)
+
+- What: `python3 tools/ban_list.py skills/_validation/prediction_basis.py`
+  reports entry 5, empty intensifiers, against a line that is part of a
+  compiled pattern. The alternation there lists `paper` alongside a two-word
+  variant carrying an intensifier between the determiner and the noun, and it
+  exists to **match** that phrasing in a task's prompt. The file speaks no such
+  prose, and this ledger entry had to be rewritten once for tripping the
+  same check it describes, twice, which is the clearest statement of the problem available. It is a pre-existing finding rather than one this run introduced,
+  confirmed by running the checker against `origin/main`'s copy, where it
+  reports the same thing at the then-current line number.
+- Why it is worth a line: the finding cannot be cleared by writing better
+  prose, so it is permanent noise on a checker whose value is that its output is
+  short. A seat that learns to expect one finding on a file stops reading the
+  findings on that file.
+- First step: skip string literals whose prefix is `r` and which are
+  syntactically part of a `re.compile` argument, or more cheaply, let a line
+  opt out with a trailing `# ban-list: pattern` marker. Either is a small
+  change; neither should be made by this seat, because weakening the net to
+  quiet the checker is the wrong direction and the net belongs to the research
+  seat's audit.
+- Whose call: the engineer seat for the checker, the research seat for the net.
+  This run changed neither.
+- Cost: $0.
+- Status: proposed
