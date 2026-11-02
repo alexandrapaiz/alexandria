@@ -132,5 +132,35 @@ would have carried the answer; the lost block was the deploy-block finding,
 which is the one thing in the reply the writer could not have got elsewhere.
 
 **Verdict on this run's own pull request, with both fields the §"every verdict"
-rule requires:** PR 680, head `9d06b401ffb3485f879299de266c73e4079fef4c`,
-`MERGEABLE`, `isDraft false`, readied and read **2026-11-02T01:14Z**.
+rule requires:** PR 680, head `68445cd4`, `MERGEABLE`, `isDraft false`, read
+**2026-11-02T01:26Z**. Readied at 01:14Z at head `9d06b401`.
+
+## The one repeat this run filed against itself
+
+The merge ask named head `9d06b401` and the run committed twice more after it,
+so the ask was stale within five minutes. **The run of this seat before this
+one did exactly the same thing within the hour** — ask `7341c5e4` at 00:48:02Z,
+correction `ad7c0380` thirty-four seconds later. Both runs obeyed the
+§"every verdict" rule to the letter: each ask carried a head and a clock, and
+each was accurate when taken.
+
+The gap is that the rule governs a claim's **content** and says nothing about
+its **position in a run**, and readying plus asking feel like the closing acts
+while the last commit is usually bookkeeping that arrives after them. Filed as
+`INC-2026-11-02-the-merge-ask-named-a-head-that-moved-twice-in-one-hour-and-both-were-this-seat`
+and fixed with one line beside the content rule: **the merge ask is the last
+act of the run, nothing is committed after it, and if something must be then
+the ask is re-sent rather than corrected.** This run re-sent rather than
+correcting a second time, which is the new rule applied to itself.
+
+**And one board validator rule learned by being refused**, recorded because no
+file here stated it: `data.files` must be a list of paths, because the store
+draws one timeline entry per path and a count there is a wrong fact rather than
+a type error. The refusal named its own remedy — `files_count` — which is the
+fourth time this seat has found a board refusal to be the whole answer. It
+belongs beside the three prose rules §3f rule 1 records.
+
+**The refspec defect bit this run too**, which is the 15-day open unshallow
+ask earning its place on the heading: `git rev-parse` could not resolve this
+branch's remote-tracking ref after `git push -u`, exactly as the 2026-10-27
+re-read recorded before that row vanished.

@@ -9562,3 +9562,21 @@ centralizer (whole, 1259), `2d4de620` the per-reset reading (1177),
 `9d9c718c` the merge ask to the PM (1310). Five of six whole; the one cut was
 seven blocks where four would have done, and the block lost was the one finding
 the recipient could not have got elsewhere.
+
+**And one repeat filed against this run itself.** The merge ask named a head
+commit and two more commits followed it, so the ask was stale in five minutes
+— and the run before this one did the same within the hour. Both obeyed the
+§"every verdict" rule exactly; the rule governs content and is silent on
+position in a run. Fixed with one line: **the merge ask is the last act of the
+run**, and where something must follow it the ask is re-sent rather than
+corrected. Filed as
+`INC-2026-11-02-the-merge-ask-named-a-head-that-moved-twice-in-one-hour-and-both-were-this-seat`.
+The general form is worth more than the fix: **a rule requiring a field to be
+measured does not say when to measure it, and a run takes the reading when the
+thought occurs rather than at the last moment it is true.**
+
+**One board validator rule learned by refusal**, for the next run's composer:
+`data.files` must be a list of paths and not a count, because the store draws
+one work-timeline entry per path — use `files_count` for the number. That sits
+beside the three prose rules §3f rule 1 already records, and it is the fourth
+time a board refusal has been the whole answer.
