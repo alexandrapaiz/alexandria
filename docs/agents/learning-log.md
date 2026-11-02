@@ -9152,3 +9152,268 @@ company can name.
 6. **The charter split**: `prompts/exo-agent.md` is **4,658** lines, unchanged.
    This run spent turns 7–12 in it, after the draft, which is the ship-first
    reordering working as designed.
+
+---
+
+## 2026-11-01 message wake — the lane item, and the rule that never had a number
+
+**Mode: wake run** (`window:message`, a `pr.merged` event for #652). Draft at
+turn 4. PR **#667**. Run note:
+`docs/agents/exo-run-note-2026-11-01-message-lane.md`.
+
+**This event woke this seat twice.** #663 opened at 23:27:52Z on the same
+instruction, 23 minutes before #667. It was read rather than trusted, its
+claims verified live, and its handoff list taken as this run's work rather
+than redone — which is the only reason a duplicate wake cost a branch instead
+of a run.
+
+### What this run observed
+
+**The lane's next item was card `df7b4a84`**, in Review for eight days with
+its own ask already discharged: the ExO charter edit it asked for landed
+2026-10-24. So the run's question was not "do the work" but **did the work
+take**, and the answer is half.
+
+The half needing only adoption works — each PM pass writes its own dated file,
+and `docs/sprints/pending.md` went from **20** open PRs contesting one anchor
+to **1**. The half needing **one migration** never shipped: `pending.md` is
+still 5,458 lines whose newest entry is dated the day of the edit. The state
+table was never started, so the anchor stopped being contended *by being
+abandoned rather than by being converted*, and the owner-facing duty in
+`prompts/pm-agent.md` §1d is discharged by nothing.
+
+The migration is **#531**, `CONFLICTING` at head `517e8494` read
+2026-11-01T23:56Z, six days open, **zero reviews**. `git merge-tree` names its
+four conflicts: `docs/agents/incidents.md`, an incidents inbox file,
+`docs/ideas.md`, `docs/sprints/dispatch-queue.md`. **`pending.md` and the
+5,458-line archive merge clean.** The migration is held by three files that
+have nothing to do with it.
+
+**Then the measurement nobody had taken.** L-A18 has been right since
+2026-10-18 and has never had a number. `tools/anchor_contention.py`, new this
+run, over the 32 open PRs: `docs/agents/incidents.md` **10**, `docs/ideas.md`
+**6**, `docs/sprints/dispatch-queue.md` **4**. Of the 14 PRs touching the
+incidents register or its inbox: 1 fold, 4 use the inbox, **9 go around it —
+69% bypass**, nine days after the inbox was built for exactly that register.
+The three files blocking #531 are ranks one, two and three of that table.
+
+### What it changed
+
+1. **`tools/anchor_contention.py`** + 17 tests. Report-only by default (the
+   rule `tools/incidents.py` states in its own words); `--max-anchor` opts a
+   caller in. Register/inbox pairs **discovered** from the tree, not listed.
+2. **`tools/cron_firing.py`**, two defects found by answering #663's handoff
+   question *does #657 ship?* (it did not: the re-fire **exited 124** and left
+   it a draft). `index_is_blind_to` — the seat ships from `sec/`, which no rule
+   derives, so the index was blind and the reader called the cycle lost by a
+   **broken route while reaching the right answer**. And a **draft successor no
+   longer promotes a slot out of `lost`**, because the alias fix alone flipped
+   the verdict to a false `retried`. 7 tests, both directions.
+3. Two inbox entries, **filed to the inbox rather than the anchor**, which is
+   the remedy the first of them measures.
+4. The verdict posted to `df7b4a84`, left in Review on a **checkable**
+   condition: it closes when `pending.md` holds a state table.
+
+### The lesson, which is bigger than the card
+
+> **A design is not a remedy until something counts its adoption.** A rule that
+> is right, agreed and unmeasured is indistinguishable, from inside any single
+> run, from a rule that is working.
+
+Three instances in nine days: the inbox (**bypassed 69%**), the `pending.md`
+split (**never migrated**), and `UNCOVERED` in `tests/test_ci_coverage.py` (the
+only record of a `git mv` blocked **26 days**, which
+`INC-2026-10-26-a-new-test-file-shipped-without-the-suite-and-carried-a-red-ratchet`
+already calls "a ledger of a blocked action, and nothing reads it as one"). In
+all three the step after the design was a sentence addressed to a future run.
+
+Two smaller ones worth keeping. **Build the instrument before quoting the
+number** — the hand probe said 90% bypass and the tool said 69%, the hand probe
+wrong in the direction that made the finding sound better. And **the right
+answer by a broken route is the expensive bug**, because nothing finds it until
+the day the answer should differ.
+
+### What the next run must check first
+
+1. **`docs/sprints/pending.md` has had no writer for eight days.** #531's
+   migration merges clean on its own and can be unbundled — PM seat's branch
+   and PM seat's call, handed over and not taken here.
+2. **Security's class-A row is not answerable on the 2026-11-01 slot.** The
+   re-fire exited 124 and left #657 a draft, so under the gate #663 restated —
+   *a re-fire that ships is an observation of the seat* — it did not ship and
+   the gate is not consumed. Next un-refused slot, or #657 readied by someone.
+   This supersedes #663's "answerable today", which was correct at 23:34Z.
+3. **This entry conflicted with #663's and the conflict was resolved in this
+   run**, keep-both, #663's first — #663 merged while this ran, so the
+   prediction below came true within the hour. It is the finding rather than
+   the inconvenience. `docs/agents/learning-log.md` is an
+   append-only register with **no inbox**, so this seat cannot discharge a §6
+   duty without colliding with its own other run. It is the **fourth** instance
+   of the class above and the clearest argument for the refinement this run
+   offered up: **contention in code is cheap to resolve, contention in a
+   register is dangerous to resolve** (keep-both on a register has silently
+   dropped a line before —
+   `INC-2026-10-24-a-hand-resolved-register-append-deleted-another-seats-line-with-no-marker`).
+   Scope L-A18 to registers and give this file an inbox.
+
+   Two things learned from resolving it. `tools/resolve_register_conflict.py`
+   already **refuses** a test file as "not an append-only register", so the
+   code-versus-register distinction this run argued for **exists in the house
+   tool and not in the prose rule** — the gap is L-A18's, not the tooling's.
+   And the tool's ordering rule, "ours first, because ours is the side that is
+   already on the trunk", assumes a branch-into-trunk merge; on a
+   `git merge origin/main` into a feature branch, *theirs* is the trunk, and
+   following it would have put the newer entry above the older one in a log
+   whose header says newest at the bottom. Worth one line to that tool.
+4. **Read the newest table on `hq-relay.md`, not the first one.** Its top table
+   is a 2026-10-26T14:15Z snapshot and says the writer's cap is `150` / still
+   open; disk says `225` and the page's own newest table already says LANDED.
+   This run nearly filed that gap as a finding.
+5. **Card `8d1b81e8`** still waits on a standard nobody here owns, and **class
+   B** still waits on the owner's word, eighteen wakes deep.
+6. **The charter is 4,658 lines** and the split remains unstarted. Carried
+   forward from the previous entry unchanged, which is itself the measurement.
+
+## 2026-11-02 message wake — the lane item that withdrew its own ask, and an instrument that could not test the fix it was pointed at
+
+**Mode: wake run.** Trigger `window:message`, three events: #663 merged, #667
+merged, and a note from `alexandra-systems/exo-centralizer` answering this
+page's claim-window ask. So: the events' work, three standing duties, **one**
+improvement, no cycle. Draft #676 opened at **turn 4**, inside the turn-ten
+deadline. PR: #676.
+
+### The standing condition on the wake was already false, and the wake said so itself
+
+The wake carried a standing block naming #667 as an open draft with no live run
+behind it, offering three acts. **#667 had been readied and merged at
+00:29:18Z**, twenty-seven minutes before this run read the block. The standing
+text is right about its own unreliability — it says a wake queued behind a run
+carries conditions older than itself and to confirm with `GET /api/standing` —
+and that call returns `{"empty": true}` for this seat now. Cost: three turns,
+paid deliberately. **The lesson is that the confirmation step is cheap and the
+act is not**: readying, closing, or writing a clause into a merged pull request
+would all have been wrong, and two of the three are hard to undo.
+
+### Three drafts stranded in one night, in three repositories
+
+Found while answering the above rather than by looking: #667 (this seat's,
+readied in time), **#657** (security's re-fired semimonthly slot, killed by the
+wall clock, open draft at head `b76f5f8a` with 4 commits), and **#566**
+(`alexandra-systems`, carrying the claim-window fix, open draft and
+`CONFLICTING` at head `b48d0305`). Filed as
+`INC-2026-11-02-three-draft-stranded-runs-in-one-night-and-the-wake-was-the-only-reader-of-one`.
+Handed #657 to the security seat (`d5fb92bf`) rather than readying it, because
+a finished sweep and a stub look identical from outside the diff.
+
+**And the host wrote `pr=- ` for a run that had opened a pull request.**
+Security's log ends `# exit=timeout pr=- session=- turns=-` while #657 exists.
+A killed run never reaches the line that would have been honest, so under
+`exit=timeout` every other field on that trailer is an **unknown and not a
+zero**. `tools/cron_firing.py` was hardened for this on 2026-11-01 against a
+predicted case; this is the measured one.
+
+### The improvement: our live test could not have tested the fix it was pointed at
+
+The best thing this run found is a defect in this seat's own instrument. The
+relay page's live test for the claim-window ask read
+`/srv/asc/state/.epito/capacity-retry.json` for more than one distinct date.
+**That file only changes during a cascade.** `exo-centralizer` ran it before
+doing the work and read `['2026-11-01']` for sixteen seats; this run ran it after
+and read the same thing. Two readings an hour apart, straddling the work,
+identical, and **neither is evidence about the work**.
+
+Generalise it, because it is not about crons. **A live test whose subject is an
+artifact produced by a failure can only answer during a failure.** Between
+failures it reads "not landed" forever, and it reads that *most convincingly*
+right after a fix ships, because the newest thing in the artifact is the last
+outage. This is the inverse of the class this seat filed on 2026-11-01 (an
+instrument that cannot say *not yet*): an instrument that cannot say *not
+applicable yet*. The replacement reads the remedy instead of its exhaust —
+`python3 /srv/asc/hq/tools/capacity-retry.py --help | grep -ci 'window\|horizon'`
+— needs no network, no cascade and no run logs, and reads **0** today.
+
+The substantive reading that test produced: the fix is **right and not live**.
+The deployed copy at HQ `main c41fabc` still walks two days
+(`sorted({now - timedelta(days=1), now})`), so the note's present tense is true
+of its branch and false of the host. `exo-centralizer`'s measurement was better
+than ours — thirteen re-fires under the old window against sixteen under the
+derived one, and the three newly reachable seats are `alexandria-market`,
+`epitome-market` and `ursa-research`. **This page found one of three.** A
+single-seat observation named a population two-thirds larger than the observer
+could see, which is the argument for routing a mechanism guess up rather than
+sitting on it.
+
+### The lane item: card `8d1b81e8`, and it withdrew this seat's own ask
+
+The previous entry's item 5 said this card "still waits on a standard nobody
+here owns." It does not wait on anything, and the reason is a number nobody had
+taken. Over the last 200 merged pull requests here, measured 00:42Z:
+
+| | charter-touching (Tier C) | everything else |
+|---|---|---|
+| n | 16 | 184 |
+| median wait | **0.4h** | **0.9h** |
+| over 24h | **1 of 16** | **22 of 184** |
+| merged by the owner | 16 of 16 | — |
+
+Charter diffs are the **fastest** class of pull request in this repository and
+Tier C is enforced without a single bypass. The outlier waited 138.1h against a
+137.4h dark stretch, so it was the outage. **The ask is withdrawn** (`d0c3cecd`,
+accepted whole at **1325** characters, which displaces 1304 as the longest body
+known to arrive intact).
+
+**The part a successor must actually carry.** This seat's own run note of
+2026-10-24 says the correction "has been on this seat's branch through nine
+consecutive runs, held by the defect it repairs." The pull request that carried
+it merged in **twenty-five minutes**. It sat on a branch for nine runs because
+this seat superseded itself to a chain of **depth seven**. **A run that reasons
+about a hold from the age of its own branch will blame the gate every time**,
+because the branch's age is visible from inside the run and the pull request's
+wait is not. The only reading that separates them is the wait on the PR, and it
+is one `gh pr list` away. That false attribution then travelled: into a run
+note, onto a board card, into an ask delivered to HQ at 1336 of 1336 characters,
+and onto this page's heading — from which it silently **fell off nine days ago
+while still being recorded as delivered**, which is how a live ask becomes
+invisible without ever being closed.
+
+### Standing duties
+
+- **Failure sweep (§2b).** 22 rows in 12h; 7 failures or thin runs. Five are
+  turn-one weekly-limit refusals from before the 23:00Z reset. Two are
+  `exit=124` kills with no turn count: `engineer` 23:06:00 (cron, left nothing)
+  and `security` 23:04:44 (hook, left #657). No failure on `main`; today's
+  `tools/cron_firing.py` run claims no lost cycle, which is the 2026-11-01
+  hardening holding.
+- **Outstanding with HQ (§3f).** Re-read at 00:36–00:41Z and rewritten. The
+  re-vendor of `standards/pm.md` **LANDED** and leaves the heading — `grep -c
+  'deadline is turn ten'` reads 1 here against 0 last night, and the payoff was
+  immediate: the board's item routes used by this run came out of the refreshed
+  copy. The weekly-budget ask **half landed**: `/api/capacity` grew
+  `weekly_reset_at` and `limit_scope`, which read `2026-11-01 23:00:00Z` and
+  `weekly` on `?day=2026-11-01`, so the diagnostic half is there and the
+  budgeting half is not; the ask is narrowed rather than kept whole.
+- **This entry (§6).** Written into the same file that collided with itself last
+  run. **No conflict this time** — one run of this seat, one append. The
+  argument for giving this register an inbox is unchanged and untested by this
+  run rather than weakened by it.
+
+### What the next run must check first
+
+1. **`alexandra-systems` 566 is a conflicting draft** carrying the claim-window
+   fix. The live test is `--help | grep -ci 'window\|horizon'` on
+   `/srv/asc/hq/tools/capacity-retry.py`; **0** means the host still walks two
+   days no matter what any branch says. Do not re-ask for the fix — it exists.
+   Ask whether it is readied.
+2. **#657 is security's draft**, handed over at 00:4xZ. Its next scheduled slot
+   is **2026-11-15T13:00Z**, a fortnight out, so if it is still a draft the
+   semimonthly cycle is lost twice from one refusal.
+3. **Card `8d1b81e8` is closed and its ask withdrawn.** If you find the
+   merge-checklist ask in the register and are tempted to re-raise it, the
+   number is in the relay entry of 2026-11-02 and in this entry. It is not a
+   gap.
+4. **`docs/sprints/pending.md` still has no writer**, carried from the previous
+   entry unchanged. #531's migration merges clean alone and can be unbundled;
+   PM's branch, PM's call.
+5. **Class B still waits on the owner's word**, nineteen wakes deep now.
+6. **The charter is 4,658 lines** and the split remains unstarted. Third entry
+   carrying this unchanged, which is itself the measurement.

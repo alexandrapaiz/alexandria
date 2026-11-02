@@ -2285,17 +2285,32 @@ DEADLINE = re.compile(r"deadline (\d{4}-\d{2}-\d{2}T\d{2}:\d{2})Z")
 #: the hour is the defect this check was written for.
 SILENCE = re.compile(r"silence rule|proceeds as (?:recommended|asked)", re.I)
 
+#: A row that names the ask it was posted as. `tools/board.py` prints an id and
+#: the PM's pass records it, so the eight-hex prefix is the one durable handle a
+#: row can carry back to the message. A row with an ask has a clock whether or
+#: not it prints the hour. A row with neither has never had one started.
+ASKED = re.compile(r"\bask[a-z]*\s+`?([0-9a-f]{8})", re.I)
+
 #: What `deadline_findings` must say, pinned against a fixed clock so a case
 #: here means the same thing on every day this file is run. The rows are the
-#: register's own, trimmed to the cells that carry the reading. The false cases
-#: are load-bearing in the usual direction: a question with no clock at all is
-#: the ordinary shape of this table and must stay silent, because nine of its
-#: ten rows wait on her with no standard attached and failing them would make
-#: the check unusable by the register it reads.
+#: register's own, trimmed to the cells that carry the reading.
+#:
+#: **The first case was `()` and it was wrong, which cost four days.** The note
+#: it carried said a question with no clock at all is the ordinary shape of this
+#: table and must stay silent, "because nine of its ten rows wait on her with no
+#: standard attached". That premise was false on the day it was written.
+#: `docs/standards/pm.md` section 22 has been law since 2026-10-16 and it covers
+#: "every other reservation a charter makes, in every company", with four
+#: exceptions that are money, accounts, secrets and widening a seat's own
+#: authority. None of this table's rows is one of the four. So every row here
+#: has a standard attached, every row is owed an ask with a clock on it, and a
+#: row carrying neither an ask nor an hour is the finding rather than the norm.
+#: The gate was written on 2026-10-26, ten days after the premise expired, and
+#: the row it could not see had its clock run out on 2026-10-28T06:19Z.
 #: Fields: (the codes expected, the row)
 DEADLINE_CASES = (
-    ((), "| Does a paid tier keep a bullet for a machine that does not "
-     "exist, hedged, or lose the bullet? | `claim-repairs-2026-10-18.md`, "
+    (("unasked",), "| Does a paid tier keep a bullet for a machine that does "
+     "not exist, hedged, or lose the bullet? | `claim-repairs-2026-10-18.md`, "
      "finding 8 | 2026-10-18 |"),
     (("expired",), "| Does the corrected page carry a notice? | "
      "`w42-correction-2026-10-26.md` | 2026-10-26. deadline "
@@ -2309,6 +2324,17 @@ DEADLINE_CASES = (
      "`w42-correction-2026-10-26.md` | 2026-10-26. Posted as a formal ask, "
      "and under the silence rule it proceeds as recommended at about 20:44 "
      "UTC on 2026-10-28 |"),
+    # An ask with no readable hour is `unreadable` and not `unasked`: the clock
+    # started when the message was posted and the row cannot say when it ends.
+    # This is the shape every row should be moving towards and the one the
+    # register wrote in prose for five days.
+    (("unreadable",), "| Are the skill files the paid product? | "
+     "`skills-copy-2026-10-18.md`, surface 3 | 2026-10-18. Posted as ask "
+     "`db6d191e` under the silence rule |"),
+    # An ask and an unexpired hour: nothing to say. The end state of a row.
+    ((), "| Are the skill files the paid product? | "
+     "`skills-copy-2026-10-18.md`, surface 3 | 2026-10-18. Posted as ask "
+     "`db6d191e`, deadline 2026-11-30T06:19Z under the silence rule |"),
 )
 
 #: The clock `DEADLINE_CASES` is read against. 2026-10-29, the day after the
@@ -2335,11 +2361,20 @@ def question_rows():
 
 
 def deadline_findings(row, now):
-    """One row's clock problems, as codes, read against a given moment."""
+    """One row's clock problems, as codes, read against a given moment.
+
+    Three codes and they are not degrees of the same thing. `unasked` is a row
+    with no clock because nobody started one. `unreadable` is a row with a clock
+    nothing can read. `expired` is a clock that ran out with the row still in
+    the table, which under the standard means the answer is already in force.
+    """
     found = DEADLINE.findall(row)
+    asked = ASKED.search(row) or SILENCE.search(row)
     out = []
-    if SILENCE.search(row) and not found:
+    if asked and not found:
         out.append("unreadable")
+    elif not found:
+        out.append("unasked")
     for stamp in found:
         when = datetime.datetime.fromisoformat(stamp).replace(
             tzinfo=datetime.timezone.utc)
@@ -2404,6 +2439,8 @@ def deadlines():
     print(f"questions awaiting her word                {len(rows)}")
     print(f"carrying a readable deadline               "
           f"{sum(1 for r in rows if DEADLINE.search(r))}")
+    print(f"naming the ask they were posted as         "
+          f"{sum(1 for r in rows if ASKED.search(r))}")
     print(f"read at                                    "
           f"{now.strftime('%Y-%m-%dT%H:%MZ')}")
     for row in rows:
@@ -2412,14 +2449,21 @@ def deadlines():
             question = [c.strip() for c in row.split("|")][1]
             print(f"  FAIL    {question[:88]}")
             if code == "unreadable":
-                print("            argues a silence rule and names no "
+                print("            names an ask or a silence rule and no "
                       "`deadline YYYY-MM-DDTHH:MMZ`")
+            elif code == "unasked":
+                print("            no ask and no deadline. Section 22 covers "
+                      "every reservation a charter makes except money, "
+                      "accounts,")
+                print("            secrets and a seat's own authority, so this "
+                      "row is owed an ask from the PM and has never had one")
             else:
                 print("            the deadline passed and the row is still "
                       "open, so the recommendation in the candidate is in "
                       "force and this register says it is still a question")
     if rc == 0:
-        print("  every clock here is readable and none of them has run out")
+        print("  every row names its ask, every clock is readable, and none "
+              "of them has run out")
     print()
     print("A reservation for the owner that proceeds on her silence is the one")
     print("row in this register whose answer arrives without anybody acting,")
@@ -3834,6 +3878,148 @@ def slotwords():
     print("is the family ban list 100 belongs to. The ban is not the fix.")
     print("The sweep is.")
     return 1 if hits else 0
+
+
+#: What `slot_heading` has to get right. The first four are the headings the
+#: product serves today, which is the only reason this gate exists. The rest
+#: are the four best headings `2026-W42` printed, because a detector that fires
+#: on one of those is a detector somebody deletes within a week.
+#: Fields: (fires, the heading as it is printed)
+SLOT_HEADING_CASES = (
+    (True, "## What to read"),
+    (True, "## What fell behind: the assumptions that let agents run unchecked"),
+    (True, "## What is gaining ground: recursive self-improvement with fewer "
+           "guardrails"),
+    (True, "## What is genuinely new: where memory lives and who can pull the "
+           "plug"),
+    (False, "## Budget-constrained agents can now improve their own harnesses"),
+    (False, "## How you show skills to an agent beats how you find them"),
+    (False, "## Self-evolved skills beat human curation when the verifier is "
+            "specific"),
+    (False, "## Hidden reasoning can be encrypted, not merely hidden"),
+    # The second form of the read slot, which is the one the generator teaches
+    # and `2026-W39` and `2026-W40` both printed. It opens on the same word and
+    # it names the day's list rather than the act of listing.
+    (False, "## Three papers for anyone wiring memory or kill switches into "
+            "production"),
+    (False, "## What to read if you have one hour"),
+)
+
+
+def slot_heading(heading, dress):
+    """Why one printed heading is a framework name, or the empty string.
+
+    Two readings and both are quoted law rather than taste.
+
+    The first is the ban's own list, read out of `prompts/digest.md` by
+    `SLOT_DRESS` so it cannot drift from the rule: a heading that IS one of
+    those phrasings, or that wears one as the label before a colon, is the
+    internal name printed. `2026-W42` serves `## What to read`.
+
+    The second is the colon. Law 12's text says a paraphrase of a banned
+    heading is the banned heading, and the generator says in its own words that
+    a colon does not launder it. A heading that opens on `What` and then breaks
+    to a colon is the slot label with the day's news bolted behind it, which is
+    the construction `2026-W40` serves three times. The shape is the finding
+    and no list of phrasings can hold it, because the laundered label is
+    written fresh each time: `gaining ground` and `genuinely new` are in no
+    list anybody keeps.
+
+    What this deliberately does not fire on is a heading that opens on `What`
+    and makes a claim. `## What to read if you have one hour` is the generator's
+    own worked answer for this slot and it has to pass.
+    """
+    text = heading.lstrip("#").strip().strip("*_")
+    low = text.lower().rstrip(" .")
+    label = low.split(":", 1)[0].strip() if ":" in low else low
+    for d in dress:
+        if label == d:
+            return f"the ban's own phrasing, {d!r}"
+    if ":" in low and low.startswith("what "):
+        return f"a slot label laundered by a colon, {label!r}"
+    return ""
+
+
+def slotheads(paths=None):
+    """Does an ISSUE print the heading the generator bans? Ban list 143's other half.
+
+    `slotwords` asks this of `prompts/digest.md` and answers it well. Nothing
+    asked it of the artifact. On 2026-11-01 the previous run of this seat found
+    that the pre-send gate's heading ban and the canon's share no phrase at all,
+    measured the cost at four live headings, and routed the repair to the
+    engineer because `tools/` is pipeline code and this seat may not write it.
+    That routing is right and the proposal is still `proposed`.
+
+    What it left is this seat's own instrument, which could not name any of the
+    four either. `slotwords` reads the generator and never an issue. `measure`
+    prints every heading carrying a colon and that print does not reach its exit
+    code, because that code means the character gate and a second meaning on one
+    return value is L-A44. So the one ruling the owner has given twice, the
+    second time in capitals, had no command that returns a verdict on an
+    artifact, and `## What to read` is serving right now.
+
+    A count without a verdict is what let the other two print. This is the
+    verdict, on this seat's surface, today, rather than after a deploy.
+
+        python3 docs/voice/check_voice.py slotheads --live
+    """
+    if not GENERATOR.exists():
+        print(f"  {GENERATOR.name} is missing")
+        return 1
+    gen = GENERATOR.read_text(encoding="utf-8")
+    start, end = gen.find(SLOT_BAN_OPEN), gen.find(SLOT_BAN_CLOSE)
+    if start < 0 or end < 0:
+        print("  the ban paragraph is not where its own sentences say it is")
+        print("  Nothing below was read, because the phrasings come out of")
+        print("  that paragraph and a guess at it is not a list.")
+        return 1
+    dress = sorted(set(SLOT_DRESS.findall(gen[start:end])))
+    wrong = [(fires, case) for fires, case in SLOT_HEADING_CASES
+             if bool(slot_heading(case, dress)) is not fires]
+    for fires, case in wrong:
+        print(f"  BROKEN  the detector is {'missing' if fires else 'firing on'}"
+              f" a case it is asserted against")
+        print(f"            {case[:84]}")
+    if wrong:
+        print()
+        print("SLOT_HEADING_CASES says what this pass has to do. Nothing below")
+        print("was read, because a detector failing its own cases reports a")
+        print("clean issue for the wrong reason.")
+        return 1
+    print(f"  the detector's own cases       "
+          f"{len(SLOT_HEADING_CASES)} pass")
+    print(f"  phrasings the ban names        {len(dress)}: "
+          f"{', '.join(repr(d) for d in dress)}")
+    retired = hidden_weeks()
+    paths = paths or sorted((ROOT / "site/content/issues").glob("*.md"))
+    rc = 0
+    for raw in paths:
+        path = pathlib.Path(raw)
+        if not path.exists():
+            print(f"  {shown_path(path)}: missing")
+            rc = 1
+            continue
+        if path.stem in retired:
+            print(f"  SKIP    {shown_path(path)}  retired, not served")
+            continue
+        heads = re.findall(r"^#{1,6} .*$", path.read_text(encoding="utf-8"),
+                           re.M)
+        hits = [(h, why) for h in heads
+                for why in [slot_heading(h, dress)] if why]
+        if not hits:
+            print(f"  OK      {shown_path(path)}  {len(heads)} heading(s), "
+                  f"none of them a framework name")
+            continue
+        rc = 1
+        for h, why in hits:
+            print(f"  FAIL    {shown_path(path)}  {h.strip()[:68]}")
+            print(f"            {why}")
+    print()
+    print("Canon law 12 and incident 20. The framework's internal names are")
+    print("never printed, and she has ruled it twice because the first ruling")
+    print("reached the register and not the artifact. Strike the label and the")
+    print("colon, and check whether what is left is the heading.")
+    return rc
 
 
 #: The seventeen cases `past_tense_you` has to satisfy, as data rather than as
@@ -5690,7 +5876,7 @@ def main():
     takes_paths = {"measure", "links", "delivery", "compare", "firstuse",
                    "queued",
                    "generator", "specimens", "standalone", "devices",
-                   "captions", "marks", "provenance"}
+                   "captions", "marks", "provenance", "slotheads"}
     # `--live` is the answer to `editions`, inside one run. It replaces the
     # archive glob with the editions the product actually serves, fetched from
     # the public pages and un-rendered, so a pass grades what a reader opens
@@ -5736,6 +5922,7 @@ def main():
                      ("marks", marks),
                      ("ungated", ungated),
                      ("slotwords", slotwords),
+                     ("slotheads", slotheads),
                      ("captions", captions),
                      ("blockrules", blockrules),
                      ("compare", compare), ("selfcheck", selfcheck)):

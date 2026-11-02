@@ -24092,6 +24092,113 @@ seat under ADR-22 and this seat's charter has it proposing targets, not files.
 
 Ban list checked on this entry.
 
+## INC-2026-11-01-the-ledger-ratchet-is-red-a-fourth-time-and-no-run-between-the-third-and-this-one-saw-it — (2026-11-01, security seat)
+
+**Observed** in this run's debug sweep. `python3 -m pytest tests/ -q` on a tree
+branched from `origin/main` returns
+`tests/test_ledger.py::test_every_live_entry_carrying_a_readable_status_has_the_contract_fields`
+red at **210** readable entries in `docs/ideas.md` missing contract fields,
+against a bound of 206 whose own message dates it to 2026-10-17.
+
+**The count, because the count is the entry.** 206 measured 2026-10-17, red at
+207 on 2026-10-24, red at 209 on 2026-10-26, red at 210 today. That is a fourth
+breach and a third recorded repeat, and the standing rule at the top of this
+file binds every seat rather than only the one that reads the file weekly.
+
+`INC-2026-10-26-the-ledger-ratchet-went-red-twice-in-48-hours-and-both-gates-are-in-the-uncovered-pin`
+is the finding about the mechanism and it is still correct in every particular,
+so this entry adds two things and repeats none of it.
+
+**The first is that the half-life got longer and that is not good news.** The
+2026-10-26 entry measured the remedy's half-life at two days, between the
+2026-10-24 repair and the 2026-10-26 breach. This breach is six days after
+that one. The reason is not that the drift slowed. It is that `main` has taken
+no commit since 2026-10-27 01:34, so there were five days in which nothing
+appended to the ledger and nothing ran the suite. The ratchet did not hold for
+six days, it was simply not looked at for five of them, and the fourth breach
+was already sitting on `main` for the whole of that window. **A gate that only
+fires when somebody runs the suite by hand reports the fleet's idle time as
+compliance.**
+
+**The second is that this run is the first to find it from outside the seats
+that caused it.** The first three instances were found by the engineer, skill
+and PM seats, each of which was appending to `docs/ideas.md` in the same run,
+so each found it while holding the thing that broke it. This run appends three
+entries too, and found it before writing them, on a tree that was clean. That
+matters only because it rules out one comfortable reading: the breach is not an
+artifact of a seat measuring its own append.
+
+**And this run then added to the drift itself, which is the honest half.** Of
+the three entries appended here, one was missing its `What` field and took the
+count to 211. It was caught by re-running the same gate after the append, and
+the field was supplied, so the number this branch ships is `main`'s 210 and not
+211. Worth recording because it is the mechanism in miniature: the seat writing
+an incident about the ratchet broke the ratchet in the same commit, and the
+only reason it noticed is that it ran the suite twice rather than once. Six
+seats append here daily and the gate runs on no pull request.
+
+**Not repaired here, deliberately, and the reason is a register conflict rather
+than scope.** The open `proposed` entry of 2026-10-26, "Whether the ledger
+contract covers a craft scan", says in its own first step that **nothing should
+move the 206 until the owner or the PM decides which shape a craft scan is**.
+Supplying the missing fields is what the first two instances did and it is the
+right remedy for an ordinary entry, but most of the drift is craft scans whose
+shape is a different document from the contract in `prompts/engineer-agent.md`.
+So a seat that repairs them is guessing at the answer the ledger is waiting
+for, and a seat that raises the bound is doing the one thing that entry forbids.
+This run did neither and wrote down why.
+
+Ban list checked on this entry.
+
+## INC-2026-11-01-a-source-text-gate-passed-on-code-whose-guard-was-deleted-because-the-comment-above-it-explained-the-words — (2026-11-01, security seat)
+
+**Observed** while writing `tests/test_mcp_dsn_redaction.py` in this run, and
+caught before it shipped rather than after, which is the only reason this is an
+incident about a near miss rather than about a defect on `main`.
+
+Two of that file's assertions read `mcp/server.py` as text, because the code
+they guard lives inside `serve()` and cannot be imported without Modal, a
+database and the embedding model. One of them was
+`assert "from None" in body`, guarding the `raise ... from None` that stops a
+chained exception printing the unredacted message back out.
+
+**It passed against a `db()` with `from None` deleted.** The comment three
+lines above the guard reads "`from None` is deliberate: a chained original
+would print the unredacted message straight back out through the traceback."
+So the prose explaining the guard satisfied the test checking for the guard. A
+second assertion failed the same way for the same reason.
+
+**This is a repeat, and the prior instance is the mirror image of it.**
+`tests/path.test.mjs` already documents this class and already solves it, in
+the comment above its own `codeOnly` helper: "A check that reads prose would
+fail on the explanation of why it passes, which is the kind of gate someone
+switches off." That file found the direction where prose makes a gate **fail**
+noisily, which is self-announcing. This run found the direction where prose
+makes a gate **pass** silently, which is not. Same mechanism, opposite sign,
+and only one of the two signs tells you about itself.
+
+**What was done.** Both assertions were rewritten to read the `ast` instead of
+the source text, where there are no comments to be fooled by, and where
+`raise X from None` is distinguishable from `raise X` precisely: the former
+parses as `cause=Constant(None)` and the latter leaves `cause` as the attribute
+`None`. Then all five single-guard mutations of `db()` were applied in turn and
+each was confirmed to turn the file red. Two of the four original assertions
+did not bite and were indistinguishable from the two that did until that was
+run.
+
+**The transferable rule, which is the reason this is written down at all.**
+Incident 32's rule is that every gate is tested against an artifact known to
+fail it before the gate is trusted. This is the corollary for the specific case
+of a gate that reads source text: **the artifact known to fail it must be
+produced by mutating the source it guards, and no other artifact will do.**
+A hand-written string that looks like broken code tests the assertion against
+itself. Only deleting the real guard tests it against the thing it is for. Any
+seat writing a source-level gate for code it cannot import is in this position,
+and `tests/test_ci_coverage.py`'s `UNCOVERED` set currently pins 63 files,
+several of which assert over source for the same reason.
+
+Ban list checked on this entry.
+
 ## INC-2026-11-01-relative-to-root-raised-on-a-served-edition-again - the gate crashed only once it had a finding, and the class was fixed in another pass on 2026-10-06 (2026-11-01, writer seat)
 
 **This is a repeat.** The same call in the same file raised on the same kind of
@@ -24248,5 +24355,194 @@ entry of 2026-10-26 names the first step for the engineer, which is to make the
 assertion report rather than gate, and this entry adds only that the direction is
 not a clean function of length and should be characterised before anything is
 tuned to it.
+
+Ban list checked on this entry.
+
+## INC-2026-11-02-the-gate-was-in-the-union-and-still-could-not-see-the-row - fourth instance, and the answer had been in force four days and eighteen hours (2026-11-02, writer seat, run 62)
+
+**Repeat of** `INC-2026-11-01-a-register-is-only-as-wide-as-the-commands-that-reconfirm-it`,
+filed by this seat's own previous run, which stated the class in general form
+after three instances in nine days and named the fix as naming the set of
+passes that re-confirm `docs/voice/awaiting-her-word.md`. It also said the
+sweep itself was "left to the next run as the ledger's own kind of debt". This
+is the next run and this entry is what the sweep found.
+
+**What happened.** On 2026-10-26 at 06:19:51Z the PM posted ask `db6d191e` to
+the owner: is `docs/voice/value.md` still owed its own approval, or did her
+approval of the five pages on 2026-09-29 settle it in substance. The ask
+carried the PM's own recommendation, which was to treat the five pages as
+having cleared it and open the gate, and named the forty-eight-hour line.
+`docs/standards/pm.md` section 22 is law since 2026-10-16 and says such a
+reservation proceeds as recommended after forty-eight hours of her silence.
+No reply arrived. So the answer has been in force since 2026-10-28T06:19Z.
+
+Nothing in the repository said so for four days and eighteen hours.
+`value.md` still read "Status: awaiting her approval ... Until then no site
+copy is drafted", which is the charter's precondition on every copy round.
+`awaiting-her-word.md` still carried the row in its "Questions awaiting her
+word" table. And `check_voice.py deadlines`, which exists for exactly this,
+printed `every clock here is readable and none of them has run out` on every
+run since the gate was written.
+
+**Why this instance is not the same mechanism as the first three, and that is
+the point of filing it.** The three instances in the entry above are all the
+same shape: the command that would have seen the defect was outside the set of
+commands the register re-confirms itself with. The remedy that entry proposes,
+name the union and run it, would not have caught this one. `deadlines` was
+inside the union. It ran on every writer run. It read the right file, found the
+right table, and reported the row as clean.
+
+It did that because its fail condition read a field the row did not have. The
+gate failed a row that argued the silence rule and named no hour, and failed a
+row whose named hour had passed. A row with no hour at all was silent by
+design, and the design was written down:
+
+> The false cases are load-bearing in the usual direction: a question with no
+> clock at all is the ordinary shape of this table and must stay silent,
+> because nine of its ten rows wait on her with no standard attached and
+> failing them would make the check unusable by the register it reads.
+
+**That premise was false on the day it was written.** Section 22 became law on
+2026-10-16 and covers "every other reservation a charter makes, in every
+company", with four exceptions that are money, accounts, secrets and widening
+a seat's own authority. Not one row of that table is one of the four. So every
+row had a standard attached, every row was owed an ask with an hour on it, and
+the gate was written on 2026-10-26, ten days after the sentence justifying its
+blind spot stopped being true.
+
+**So the class is wider than the entry above states it.** A register of live
+defects is as wide as the union of the commands that re-confirm it, AND as deep
+as each of those commands' fail conditions. A predicate that reads a field is
+blind to a row without the field, and the absence of a field is the most common
+way a bookkeeping row is wrong. This is the same shape as writer run 58's
+finding, where a candidate for a surface the register had never held passed
+because the check compared candidates against rows and a missing row is not a
+clash, and as the board's two open writer rows on `candidates` and `routed`
+recall. Four of this seat's own gates have now had it.
+
+**Fixed in this pull request.** `deadline_findings` grows a third code,
+`unasked`: no ask id and no deadline token, which under section 22 means nobody
+ever started the clock. `DEADLINE_CASES` goes from four to six and the first
+case's expected value is inverted from nothing to `unasked`, with the false
+premise quoted in the comment so the next reader sees why it moved. The
+register now reports two rows red, both of them genuinely unasked at fifteen
+days, and both are routed to the PM as board handoff `9574b0d1` with this
+seat's recommendation on each, because section 22 puts the posting in that
+seat's hands.
+
+**What was deliberately not done.** The resolution was recorded, not decided.
+The recommendation in force is the PM's, carried verbatim, and `value.md`'s new
+status line says in its own words that clearing the precondition is not
+approving the page and that rewriting the page from the five approved ones is
+still owed. A seat ruling on its own precondition would be widening its own
+authority, which is the one thing section 21 reserves to her with no silence
+rule attached.
+
+Ban list checked on this entry.
+
+## INC-2026-11-02-the-twice-ruled-law-had-a-gate-on-the-generator-and-none-on-the-artifact (2026-11-02, writer seat, run 62)
+
+**Repeat of incident 20**, which is the owner's ruling that the framework's
+internal section names are never printed, given twice, the second time in
+capitals, after the artifact that followed the first ruling printed them
+anyway. `docs/agents/registers.md` was written to answer that incident and its
+whole thesis is that every register needs two gates, one that decides something
+gets written down and one that decides something gets checked before it ships.
+
+**What happened.** The newest issue the product serves, `2026-W42` of
+2026-10-19, prints `## What to read`. `2026-W40` prints three more:
+`## What is gaining ground: ...`, `## What is genuinely new: ...`,
+`## What fell behind: ...`. Four framework headings live, which writer run 61
+measured and reported on 2026-11-01.
+
+That run then did the archive-side repair. Law 12's slot ban in
+`prompts/digest.md` named five phrasings and `what to read` was not one of
+them, so the ban now names six, and `check_voice.py slotwords` derives what it
+sweeps for from that list. The run also filed the pre-send gate's half of the
+repair to `docs/ideas.md` for the engineer, correctly, because `tools/` is
+pipeline code and this seat may not write it.
+
+**What no pass of this seat's own instrument could do, before or after that
+run, is return a verdict on an artifact.** `slotwords` reads
+`prompts/digest.md` and never an issue. `measure` prints every heading carrying
+a colon, and that print does not reach its exit code, because the exit code
+means the character gate and `tests/test_voice_enforcements.py` asserts on it
+by name. So widening the ban from five dresses to six widened what one command
+reads in the generator and changed nothing about whether a served issue
+carrying one of the six is ever caught by a command. The specimen was on the
+product while the fix was being written.
+
+**This is registers.md's own argument turned on a gate this seat built.** The
+archive-side gate was repaired on the day the defect was found. The
+artifact-side gate did not exist. That is the exact asymmetry incident 20 is
+about, nine weeks later, on the same law.
+
+**Fixed in this pull request.** `check_voice.py slotheads`, ten pinned cases,
+two readings and both quoted law rather than taste. The first is the ban's own
+list of phrasings, read out of `prompts/digest.md` by the same regex
+`slotwords` uses, so it cannot drift from the rule. The second is the colon: a
+heading that opens on `What` and breaks to a colon is the slot label with the
+day's news bolted behind it, which is the construction `2026-W40` serves three
+times and which no list of phrasings can hold, because `gaining ground` and
+`genuinely new` are in no list anybody keeps. Run with `--live` it names all
+four live headings with the reason for each, and `## What to read if you have
+one hour`, which is the generator's own worked answer for that slot, passes.
+
+The ledger proposal for the pre-send gate stays where run 61 put it and is not
+superseded. This closes the half that is on this seat's surface and can run
+today rather than after a deploy.
+
+Ban list checked on this entry.
+
+## INC-2026-11-02-the-dispatch-prompt-now-instructs-the-branch-prefix-its-own-charter-holds-back: second run in two days handed a branch name that would defeat a deliberate hold, and the first was recorded only in a pull request body (2026-11-02, security seat)
+
+This seat's charter holds its branch prefix at `sec/` on purpose. The reason is
+written at length in `prompts/security-agent.md` and measured by
+`tools/wake_routes.py`: correcting the prefix to `alexandria-security/` would
+turn a seat the bus cannot route to into a seat that wakes itself on its own
+merges, because `semimonthly` is still absent from `NO_SELF_CONTINUE` in HQ's
+`runtime/board/api.py`. The charter fixes the order. The cadence word lands
+first, then the prefix moves.
+
+The resident runtime's dispatch prompt instructs the opposite. The 2026-11-01
+re-fire was told to work on `alexandria-security/2026-11-01-hook`, and this
+run was told to work on `alexandria-security/2026-11-02-message`. Both runs
+declined and stayed on `sec/`, so no harm reached the bus either time.
+
+**Why it is an incident rather than a nuisance.** The instruction is correct
+for eleven of twelve seats here and wrong for exactly the one seat whose
+charter spent a long section explaining why. A seat that follows its dispatch
+prompt over its charter would open the PR on `alexandria-security/`, a merger
+would merge it, and the merge would wake this seat, which is HQ's finance loop
+of 2026-10-18 reproduced. The guard against that is a run reading the charter
+closely enough to notice that an instruction it was handed is the thing the
+charter forbids, and that guard holds only as long as every future run reads
+that far.
+
+**The part that makes it a repeat and not a first.** The 2026-11-01 run did
+notice, and it wrote the measurement and the reasoning into PR #657's
+description. Nothing sweeps pull request bodies. That is the mechanism named in
+this seat's own charter under
+`INC-2026-10-24-one-event-wakes-two-runs-and-the-second-pays-a-whole-run-to-find-out`,
+whose first two instances "were written up carefully in pull request bodies,
+which nothing sweeps, so the third seat rediscovered the class from scratch."
+This run rediscovered it from scratch, including re-running
+`tools/wake_routes.py` to confirm the cadence gate still reads `allow`. The
+cost was small because the instrument exists. The cost is not small for the
+run that does not find the instrument.
+
+**What this entry asks for, and it is not the prefix.** The prefix is already
+correctly held and the ask that unblocks it is open on
+`docs/agents/hq-relay.md` as the 2026-10-24 cadence word, now nine days old.
+What is new here is that the dispatch prompt is a second source of truth about
+branch names and it does not know about the hold. Until the cadence word
+lands, a seat whose charter holds a prefix should have that hold reach the
+thing that writes its prompt, or the prompt should name the charter as the
+authority on the branch rather than naming a branch. Filed for the ExO seat
+and then HQ, because the dispatch prompt is not this repository's file.
+
+`tools/wake_routes.py --seat security`, run on this branch against today's
+`main`, still prints both deaf doors and the masked cadence answer behind
+`pr.merged` still reads `allow`.
 
 Ban list checked on this entry.
