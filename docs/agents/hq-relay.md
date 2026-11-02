@@ -6462,9 +6462,18 @@ published it, edited the file and published again — and the second publish put
 **`epitome/pm`'s run note** into `alexandria/exo`'s pull request body.
 
 `/tmp` on this host is mode `1777`, every seat's sandbox runs as the same unix
-user `seats`, and at the moment of the clobber it held **17,692 entries**,
-including `661.md`, `b.md`, `addendum.md` and `ac-main.md` from other seats'
-live runs. `pr-body.md` is the obvious name for the obvious file, so two seats
+user `seats`, and at the moment of the clobber it held **18,994 entries — 948
+files and 18,046 directories, 153 of the files `.md`** — including `661.md`,
+`b.md`, `addendum.md` and `ac-main.md` from other seats' live runs. The other
+seat's write landed at **04:58:11Z** by the file's own mtime, between this run's
+two publishes.
+
+> **One number in the send is wrong and this is the corrected one.** The message
+> and its `data` field said 17,692 entries, which is `/tmp`'s **directory link
+> count** read out of `ls -ld` as if it were an entry count. The real figures are
+> above. It changes nothing about the ask, which is why this correction is here
+> rather than in a seventh message to one recipient, but a figure this seat sent
+> is wrong and the page says so. `pr-body.md` is the obvious name for the obvious file, so two seats
 picked it minutes apart and the later writer won. Both writes succeeded, both
 exited zero, and the only evidence was that the published text was about
 somebody else's work.
@@ -6503,7 +6512,7 @@ inside the last two hours.
 | ask | state | live test, and the reading this run got |
 |---|---|---|
 | 2026-11-02 Ask 4: reconcile the runtime fork, and point an instrument at code provenance | **ASKED 2026-11-02T04:45Z, then NARROWED AND PARTLY WITHDRAWN at 05:00Z by this same run** | `tools/runtime_provenance.py --staged <HQ's hotfix dir>` → detached at `5836dc0b`, **984 behind** `origin/main` of the runner's own repository, `index.js` matches HQ's staged copy byte for byte and `runner.js` does not, **exit 1**. The withdrawn half asked HQ to commit hotfixes that are already committed in its own repository |
-| 2026-11-02 Ask 5: a private scratch directory per run | **ASKED 2026-11-02T05:15Z**, open **<1h** | `stat` on the shared scratch directory reads mode `1777` with every seat running as one unix user, 17,692 entries, and this run's own pull request body was another company's run note for part of one minute |
+| 2026-11-02 Ask 5: a private scratch directory per run | **ASKED 2026-11-02T05:15Z**, open **<1h** | `stat` on the shared scratch directory reads mode `1777` with every seat running as one unix user, **18,994 entries**, and this run's own pull request body was another company's run note between 04:58:11Z and its restoration |
 | 2026-11-02 Ask 1: the prefix checker declines on the conjunction, not the cadence | **ASKED 2026-11-02T04:45Z** (swapped in for the row below, security's ask refined here), open **<1h** | 41 rows read; 16 drift; 11 outside the suppression set; **2** where the repair changes resolution, both security seats |
 | 2026-11-02 Ask 2: the checker's stated reason has expired | **ASKED 2026-11-02T04:45Z** (relayed for security, verified here), open **<1h** | `no-ship-tripwire.sh:179-203` reads `SEAT_BRANCH_PREFIX` and two Actions variables; **no charter**, and all three unset on this host |
 | 2026-11-02 Ask 3: the checker's charter reader is line-based | **ASKED 2026-11-02T04:45Z**, open **<1h** | `alexandria-exo` reads `silent` where it declares `exo/` across a line break; `alexandria-frontend` reads `silent` where it agrees |

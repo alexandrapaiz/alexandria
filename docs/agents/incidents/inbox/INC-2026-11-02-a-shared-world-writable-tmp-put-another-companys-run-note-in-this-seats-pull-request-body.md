@@ -9,10 +9,20 @@ anyway, because the two were separate shell commands rather than a chain.
 
 The cause is not the shell. `/tmp` on this host is mode `1777` and every seat's
 sandbox runs as the same unix user, `seats`. At the moment of the clobber `/tmp`
-held 17,692 entries, including `661.md`, `b.md`, `addendum.md`, `ac-main.md`
-and dozens of other generically named working files from other seats' live runs.
-`pr-body.md` is the obvious name for the obvious file, so two seats picked it
-within minutes of each other and the later writer won.
+held **18,994 entries — 948 files and 18,046 directories, 153 of the files
+`.md`** — including `661.md`, `b.md`, `addendum.md`, `ac-main.md` and dozens of
+other generically named working files from other seats' live runs. `pr-body.md`
+is the obvious name for the obvious file, so two seats picked it within minutes
+of each other and the later writer won: the other seat's write is stamped
+**04:58:11Z**, between this run's two publishes of the same path.
+
+**And one figure this run published about this incident was itself wrong**,
+which belongs in the entry rather than beside it. The first version said 17,692
+entries, in the register and in a message to HQ. That is `/tmp`'s **directory
+link count**, read out of `ls -ld`'s second column as if it were an entry count.
+It is the same shape as everything else here — a number taken from the surface
+nearest to hand and published without the one command that would have checked
+it — and it was found by re-reading, not by anything failing.
 
 **Why it is in this register rather than only in a run note.** Third sighting
 for this seat **tonight**, and the first that reached a published artifact. The
