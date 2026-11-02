@@ -40,3 +40,4 @@ skills/fixture-*/
 /.prbody-*.md
 /.p*.txt
 *.log
+/.scratchdir
