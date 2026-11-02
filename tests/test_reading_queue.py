@@ -773,3 +773,205 @@ def test_the_live_queue_serves_a_blocked_skills_papers_on_the_next_run():
     assert not any(i.asked_by.rstrip("/") in asking for i in before), (
         "the old order already reached every blocked skill, so this test is no "
         "longer measuring the defect it was written for")
+
+
+# --- the append path, added 2026-11-02 --------------------------------------
+#
+# Why there is a writer at all. The research seat asked this seat on 2026-11-02
+# to run `modal run pipeline/ingest.py --ids 2602.05366,2510.22670` for two
+# papers nine and thirteen months old, which the ingest job's fourteen-day
+# ceiling can never reach, and said in the same message that the credential for
+# that command has been absent for eleven consecutive runs. This file is the
+# other route to the same place: a scheduled job drains it, and writing to it
+# needs no credential. What it did not have was a writer, so every request was
+# a hand edit into 3,161 append-only lines whose own header asks the writer to
+# grep first and whose format makes a wrong line invisible rather than broken.
+
+SECTIONED = QUEUE + """
+## Queued 2026-10-01 by skills/first
+
+- [ ] arxiv:2601.11111 — the first section's line — asked by skills/first — 2026-10-01
+
+## Queued 2026-10-02 by skills/second
+
+- [ ] arxiv:2601.22222 — the last section's line — asked by skills/second — 2026-10-02
+"""
+
+
+def test_the_added_line_is_read_back_by_the_parser_that_decides_the_fetch():
+    """The only check worth having: the writer validated by the reader.
+
+    `parse` skips any line it cannot read, so a malformed request is not a
+    broken request. It is a request that silently does not exist, which is the
+    one failure this path is built to make impossible.
+    """
+    before = rq.pending(QUEUE, limit=None)
+    after, line = rq.add(QUEUE, "2602.05366", "Multi-Field Tool Retrieval",
+                         "the research seat", "2026-11-02")
+    served = rq.pending(after, limit=None)
+    assert len(served) == len(before) + 1, [i.paper_id for i in served]
+    added = [i for i in served if i.paper_id == "arxiv:2602.05366"]
+    assert len(added) == 1, [i.paper_id for i in served]
+    assert added[0].checked is False
+    assert added[0].asked_by == "the"          # the display token, as documented
+    assert added[0].asking_skill == ""         # a seat is not a blocked skill
+    assert line in after
+    assert after.startswith(QUEUE.rstrip("\n"))   # append, never insert
+
+
+def test_an_id_already_in_the_file_is_refused_with_every_line_it_is_on():
+    """The file's own header rule, enforced instead of recorded.
+
+    `INC-2026-10-27-a-paper-struck-as-read-was-requeued-as-the-highest-value-
+    unread-paper-the-next-day`: a line landed 1,374 lines below a strike of the
+    same id. Append-only is exactly the property that means a writer never has
+    to read the file, so the rule asking them to grep is the rule most easily
+    skipped.
+    """
+    with pytest.raises(ValueError) as struck:
+        rq.add(QUEUE, "2603.22455", "already read", "me", "2026-11-02")
+    assert "struck" in str(struck.value)
+    with pytest.raises(ValueError) as open_line:
+        rq.add(QUEUE, "2602.12670", "asked a third time", "me", "2026-11-02")
+    # Both of the lines that carry it, not just the first. Counted on the
+    # marker rather than on the word "line", which the explanatory half of the
+    # message also uses.
+    assert str(open_line.value).count("(open)") == 2, str(open_line.value)
+
+
+def test_a_version_suffix_does_not_slip_past_the_duplicate_check():
+    """`2608.04828` and `2608.04828v3` are one paper in `papers` and must be
+    one line here. The queue's live file carries both spellings."""
+    with pytest.raises(ValueError, match="already in this file"):
+        rq.add(QUEUE, "2608.04828", "the bare id of a v3 line", "me", "2026-11-02")
+    with pytest.raises(ValueError, match="already in this file"):
+        rq.add(QUEUE, "arxiv:2608.04828v9", "a different version", "me", "2026-11-02")
+    # And the version is dropped from what gets written, because `resolve`
+    # looks the line up in `papers`, which is keyed on the bare id.
+    _, line = rq.add(QUEUE, "arxiv:2510.22670v2", "under-documented tools",
+                     "the research seat", "2026-11-02")
+    assert "arxiv:2510.22670 " in line and "v2" not in line
+
+
+def test_a_request_that_cannot_be_a_request_is_refused_and_not_written():
+    for bad, why in (
+        (dict(arxiv_id="notanid"), "not an arXiv id"),
+        (dict(why="   "), "needs a reason"),
+        (dict(asked_by=""), "needs an asker"),
+        (dict(why="an em — dash in the reason"), "em dash"),
+        (dict(asked_by="skills/x — and more"), "em dash"),
+    ):
+        kwargs = dict(arxiv_id="2602.05366", why="a reason", asked_by="me",
+                      date="2026-11-02")
+        kwargs.update(bad)
+        with pytest.raises(ValueError, match=why):
+            rq.add(QUEUE, **kwargs)
+
+
+def test_an_awkward_reason_still_parses_back_as_one_request():
+    """The reasons seats actually write, run through the writer and the reader.
+
+    Queue lines in the live file carry colons, hyphens, quotes, parentheses,
+    percentages and arXiv ids inside the reason. A separator chosen badly would
+    make some of those unparseable, and the failure would be silent.
+    """
+    for why in ("a reason: with a colon",
+                "a reason - with a hyphen",
+                'a reason with "quotes" and (parens)',
+                "60.6% to 67.9% exact match (+7.3)",
+                "the baseline in arxiv:2608.04828 section 4.4",
+                "a reason\twith a tab and   collapsed    spaces"):
+        after, line = rq.add(QUEUE, "2602.05366", why, "the research seat",
+                             "2026-11-02")
+        read = rq.parse(line)
+        assert len(read) == 1 and read[0].arxiv_id == "2602.05366", line
+        assert rq.pending(after, limit=None)[-1].paper_id == "arxiv:2602.05366"
+
+
+def test_an_id_in_the_reason_is_not_what_the_line_requests():
+    """`ARXIV.search` takes the first id on the line, and the format puts the
+    requested one first. A reason that cites another paper must not change what
+    gets fetched, and queue lines cite other papers constantly."""
+    _, line = rq.add(QUEUE, "2510.22670",
+                     "the ablation arxiv:2602.05366 table 5 measures a weight on",
+                     "the research seat", "2026-11-02")
+    assert rq.parse(line)[0].paper_id == "arxiv:2510.22670"
+
+
+def test_filing_under_an_earlier_section_is_refused_rather_than_inserted():
+    """Two seats write this file and both of them append. Writing into the
+    middle of it is how a concurrent append loses a line, so a named section
+    that is not the last one is a refusal with its line number rather than a
+    quiet append somewhere else."""
+    with pytest.raises(ValueError, match="not the last heading"):
+        rq.add(SECTIONED, "2602.05366", "a reason", "me", "2026-11-02",
+               section="Queued 2026-10-01 by skills/first")
+
+
+def test_the_last_section_is_reused_and_a_new_one_is_created():
+    reused, line = rq.add(SECTIONED, "2602.05366", "a reason", "me",
+                          "2026-11-02",
+                          section="Queued 2026-10-02 by skills/second")
+    assert reused.count("## Queued 2026-10-02 by skills/second") == 1
+    assert reused.rstrip().endswith(line)
+    fresh, line = rq.add(SECTIONED, "2602.05366", "a reason", "me",
+                         "2026-11-02", section="Queued 2026-11-02 by me")
+    assert "## Queued 2026-11-02 by me" in fresh
+    assert fresh.index("## Queued 2026-11-02 by me") > \
+        fresh.index("## Queued 2026-10-02 by skills/second")
+    assert fresh.rstrip().endswith(line)
+
+
+def test_the_cli_writes_nothing_on_a_dry_run_and_exits_2_on_a_refusal(tmp_path, capsys):
+    path = tmp_path / "reading-queue.md"
+    path.write_text(QUEUE)
+    code = rq.main(["--add", "2602.05366", "--why", "a reason", "--asked-by",
+                    "the research seat", "--file", str(path), "--dry-run"])
+    out, err = capsys.readouterr()
+    assert code == 0
+    assert "arxiv:2602.05366" in out
+    assert path.read_text() == QUEUE, "a dry run wrote to the file"
+
+    code = rq.main(["--add", "2603.22455", "--why", "a reason", "--asked-by",
+                    "me", "--file", str(path)])
+    out, err = capsys.readouterr()
+    assert code == 2, err
+    assert "refused" in err and "struck" in err
+    assert path.read_text() == QUEUE, "a refusal wrote to the file"
+
+
+def test_the_cli_appends_once_and_says_what_the_route_needs(tmp_path, capsys):
+    """The printed route is half of what this command is for.
+
+    An appended line is not an ingested paper. The queue's content is baked
+    into distill's image at deploy time, so the line reaches the cron on the
+    next `modal deploy`. A command that wrote the line and said nothing would
+    leave the caller believing the paper was on its way.
+    """
+    path = tmp_path / "reading-queue.md"
+    path.write_text(QUEUE)
+    before = len(rq.pending(QUEUE, limit=None))
+    code = rq.main(["--add", "arxiv:2602.05366v1", "--why", "Multi-Field Tool "
+                    "Retrieval, the only measured weights on this field",
+                    "--asked-by", "the research seat", "--date", "2026-11-02",
+                    "--file", str(path), "--section", "Queued 2026-11-02 by me"])
+    out, err = capsys.readouterr()
+    assert code == 0, err
+    text = path.read_text()
+    assert len(rq.pending(text, limit=None)) == before + 1
+    assert "## Queued 2026-11-02 by me" in text
+    assert "modal deploy" in err, err
+    assert "tier b" in err, err
+    assert str(before) in err and str(before + 1) in err
+
+
+def test_the_live_file_is_still_writable_by_this_path():
+    """The gates above all run against a fixture. This one asks the question
+    about the file the pipeline actually reads, because that file is 3,161
+    lines written by three seats and the fixture is fourteen."""
+    text = rq.read_file(rq.QUEUE_PATH)
+    assert text, rq.QUEUE_PATH
+    after, line = rq.add(text, "2699.99999", "a probe that is never committed",
+                         "the engineer seat", "2026-11-02")
+    assert len(rq.pending(after, limit=None)) == len(rq.pending(text, limit=None)) + 1
+    assert rq.parse(line)[0].paper_id == "arxiv:2699.99999"

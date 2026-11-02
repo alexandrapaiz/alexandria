@@ -297,8 +297,203 @@ def sourced_from_tree(root: str | pathlib.Path = ".") -> set[str]:
     return sourced
 
 
+# The documented format, as one template rather than as prose a writer retypes.
+# `docs/research/reading-queue.md`'s own header states it, every reader in this
+# module parses it, and until 2026-11-02 the only writer of it was a hand.
+LINE = "- [ ] arxiv:{arxiv_id} \u2014 {why} \u2014 asked by {asked_by} \u2014 {date}"
+
+
+def normalise_id(raw: str) -> str:
+    """`arxiv:2602.05366v2`, `2602.05366`, ` 2602.05366 ` -> `2602.05366`.
+
+    The version suffix is dropped because `papers` is keyed on the bare id and
+    `resolve` looks the line up there: a line that carries `v2` and a corpus row
+    that does not are the same paper, and keeping the suffix here would make the
+    duplicate check below miss its own file. `parse` already reads a `v2` line
+    correctly, so existing lines are unaffected.
+    """
+    found = ARXIV.search(raw if raw.lower().startswith("arxiv:") else f"arxiv:{raw}")
+    return found.group("id") if found else ""
+
+
+def hits(text: str, arxiv_id: str) -> list[Item]:
+    """Every checklist line in the file that already carries this id.
+
+    This is the file's own rule, which is the first thing its header asks a
+    writer to do and the thing nothing enforced:
+
+        grep -n '<the arxiv id>' docs/research/reading-queue.md
+
+    That rule arrived after `INC-2026-10-27-a-paper-struck-as-read-was-requeued-
+    as-the-highest-value-unread-paper-the-next-day`, where a line landed 1,374
+    lines below a strike of the same id and repeated the mis-attribution the
+    strike existed to correct. A rule in a header is not a gate: append-only is
+    exactly the property that means a writer never has to read the file, so the
+    one writer who most needs the grep is the one the format lets skip it.
+
+    Matched on the normalised id, so a `v2` line and a bare line collide the way
+    they do in `papers`.
+    """
+    want = normalise_id(arxiv_id)
+    return [i for i in parse(text) if normalise_id(i.arxiv_id) == want]
+
+
+def compose(arxiv_id: str, why: str, asked_by: str, date: str) -> str:
+    """One queue line in the documented format, or a reason it cannot be one.
+
+    Raises `ValueError` rather than returning something malformed. A malformed
+    line in an append-only file is invisible: `parse` skips any line it cannot
+    read, so a request that does not match the format is not a broken request,
+    it is a request that silently does not exist. That is the failure this
+    whole path is built to make impossible, so it is checked before the write
+    and again after it.
+    """
+    want = normalise_id(arxiv_id)
+    if not want:
+        raise ValueError(f"{arxiv_id!r} is not an arXiv id this file's parser reads")
+    why = " ".join(why.split())
+    if not why:
+        raise ValueError("a line needs a reason: it is what the research seat "
+                         "reads to decide whether the paper answers it")
+    asked_by = " ".join(asked_by.split())
+    if not asked_by:
+        raise ValueError("a line needs an asker: `pending` groups by it and the "
+                         "strike is addressed to it")
+    if "\u2014" in why or "\u2014" in asked_by:
+        raise ValueError("neither the reason nor the asker may contain an em "
+                         "dash: it is this format's field separator")
+    line = LINE.format(arxiv_id=want, why=why, asked_by=asked_by, date=date)
+    # The writer checked by the reader, which is the only check worth having
+    # here. Everything above is a rule about the format; this asks the parser
+    # that actually decides what distill fetches.
+    read = parse(line)
+    if len(read) != 1 or read[0].arxiv_id != want or read[0].checked:
+        raise ValueError(f"composed a line this module's own parser does not "
+                         f"read back as one unchecked request: {line!r}")
+    if read[0].asked_by != asked_by.split()[0].rstrip(",."):
+        raise ValueError(f"composed a line whose asker reads back as "
+                         f"{read[0].asked_by!r} rather than {asked_by!r}")
+    return line
+
+
+def add(text: str, arxiv_id: str, why: str, asked_by: str, date: str,
+        section: str = "") -> tuple[str, str]:
+    """The file's new text and the line that was added, or a raised reason.
+
+    Appends, never inserts. `section` names a `## ` heading to file the line
+    under, and it is honoured only when it is the file's **last** heading or
+    absent from it: filing under an earlier heading would mean writing into the
+    middle of a file two seats treat as append-only, which is how a concurrent
+    append loses a line. An earlier heading is refused with its line number
+    rather than silently appended to the end, because a writer who named a
+    section wants that section.
+    """
+    line = compose(arxiv_id, why, asked_by, date)
+    found = hits(text, arxiv_id)
+    if found:
+        raise ValueError(
+            f"{normalise_id(arxiv_id)} is already in this file on "
+            + "; ".join(f"line {i.line_no} ({'struck' if i.checked else 'open'})"
+                        for i in found)
+            + ". A struck line means the paper is read and the answer is on it; "
+              "an open line means add your reason to it rather than opening a "
+              "second.")
+    headings = [(n, l.strip()) for n, l in enumerate(text.splitlines(), start=1)
+                if l.startswith("## ")]
+    body = text.rstrip("\n")
+    if section:
+        want = f"## {section}" if not section.startswith("## ") else section
+        existing = [n for n, l in headings if l == want]
+        if existing and headings and headings[-1][1] != want:
+            raise ValueError(
+                f"{want!r} is at line {existing[0]} and is not the last "
+                f"heading in the file, so filing under it would write into the "
+                f"middle of an append-only file. Name a new section.")
+        if not existing:
+            body += f"\n\n{want}"
+    return f"{body}\n\n{line}\n", line
+
+
+def _flag(argv: list[str], name: str, default: str = "") -> str:
+    """`--name value`, or `--name=value`, or the default."""
+    for n, arg in enumerate(argv):
+        if arg == name and n + 1 < len(argv):
+            return argv[n + 1]
+        if arg.startswith(f"{name}="):
+            return arg.split("=", 1)[1]
+    return default
+
+
+def add_cli(argv: list[str], today: str = "") -> int:
+    """`--add`, the one command that puts a paper in front of a scheduled job.
+
+    Why this is a command rather than a hand edit, in the words of the handoff
+    that asked for it. On 2026-11-02 the research seat asked this seat to run
+    `modal run pipeline/ingest.py --ids ...` for two papers the fourteen-day
+    ingest window can never reach, and said in the same message that the
+    credential for it has been absent for eleven consecutive runs. The by-id
+    backfill is a hand run by construction. This file is the other route to the
+    same place, it is drained by a scheduled job, and writing to it needs no
+    credential at all, so it is the route that can be taken from here.
+
+    What it prints is the part that matters as much as what it writes: the
+    pending count before and after, and the two conditions between an appended
+    line and a paper in the corpus. The queue's CONTENT is baked into distill's
+    image at deploy time, so a line appended today reaches the cron on the next
+    `modal deploy` and reaches a hand `modal run` immediately.
+    """
+    import datetime
+
+    path = _flag(argv, "--file", QUEUE_PATH)
+    text = read_file(path)
+    if not text:
+        print(f"no reading queue at {path}", file=sys.stderr)
+        return 1
+    date = today or _flag(argv, "--date") or \
+        datetime.date.today().isoformat()
+    try:
+        after, line = add(
+            text,
+            arxiv_id=_flag(argv, "--add"),
+            why=_flag(argv, "--why"),
+            asked_by=_flag(argv, "--asked-by"),
+            date=date,
+            section=_flag(argv, "--section"),
+        )
+    except ValueError as exc:
+        print(f"refused: {exc}", file=sys.stderr)
+        return 2
+    before = len(pending(text, limit=None))
+    now = len(pending(after, limit=None))
+    # The reader's count, not an increment this function assumes. A line that
+    # composes and parses can still fail to become a request, and the only
+    # thing that can say it did is `pending` over the file as it will be.
+    if now != before + 1:
+        print(f"refused: the queue goes from {before} pending to {now}, and an "
+              f"append must be exactly one more", file=sys.stderr)
+        return 2
+    if "--dry-run" in argv:
+        print(line)
+        print(f"dry run, nothing written. {before} pending now, {now} after",
+              file=sys.stderr)
+        return 0
+    pathlib.Path(path).write_text(after)
+    print(line)
+    print(f"appended to {path}: {before} pending before, {now} after, "
+          f"{MAX_PER_RUN} of them per distill run", file=sys.stderr)
+    print("the route from here: distill resolves every unchecked line against "
+          "`papers` and ingests what the corpus has never seen at tier b with a "
+          "deep_read triage row, ahead of the day's intake. The queue's content "
+          "is baked into distill's image, so this line reaches the cron on the "
+          "next `modal deploy` and a hand `modal run pipeline/distill.py::distill` "
+          "immediately.", file=sys.stderr)
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     argv = list(sys.argv[1:] if argv is None else argv)
+    if "--add" in argv or any(a.startswith("--add=") for a in argv):
+        return add_cli(argv)
     long = "--long" in argv
     # The order a distill run will actually use. Without this the CLI printed
     # file order and the run used the grouped order, so the one tool that exists
