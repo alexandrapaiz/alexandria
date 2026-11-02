@@ -174,15 +174,23 @@ def probe(repo: pathlib.Path) -> int:
         base = pathlib.Path(tmp)
         empty_dir = base / "no-skills"
         empty_dir.mkdir()
+        # One tree per treatment rather than per gate. The gates only read, and
+        # the company host runs twelve seats on one `/tmp` that was at 99 percent
+        # while this was written, so five copies of a tree three of them share is
+        # a cost with nothing bought by it.
+        trees: dict[str, pathlib.Path] = {}
         for gate in GATES:
-            tree = base / f"t{len(rows)}"
-            for top in PROBE_TREE:
-                shutil.copytree(repo / top, tree / top)
-            EMPTIERS[gate["empty"]](tree)
-            code, out = _run(tree, gate["argv"], empty_dir)
+            treatment = gate["empty"]
+            if treatment not in trees:
+                tree = base / treatment
+                for top in PROBE_TREE:
+                    shutil.copytree(repo / top, tree / top)
+                EMPTIERS[treatment](tree)
+                trees[treatment] = tree
+            code, out = _run(trees[treatment], gate["argv"], empty_dir)
             if gate.get("expect") == "nonzero_on_planted_defect":
                 plain = [a for a in gate["argv"] if a != "--json"]
-                ref_code, _ = _run(tree, plain, empty_dir)
+                ref_code, _ = _run(trees[treatment], plain, empty_dir)
                 earned = code != 0 if ref_code != 0 else True
                 why = (f"plain run exits {ref_code} on the planted defect, "
                        f"this invocation exits {code}")

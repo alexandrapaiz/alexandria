@@ -10,6 +10,10 @@ the library listing skips it.
 - `decoys.json` — the null model. Eight plausible skills from domains this
   library does not serve. A skill fires only when it strictly outranks all of
   them on a prompt.
+- `earned_pass.py` — the denominator gate, and the one place an instrument
+  here may say it passed. `--probe` runs every registered gate against an
+  input it cannot honestly pass and exits 1 if any of them reports a pass.
+  Five of five did before 2026-11-02.
 - `results/` — recorded runs. Each bundle names the engine version, the
   pre-registered policy, and the sha256 of every `SKILL.md` it judged, so a
   result is a receipt for exactly the text that produced it.
