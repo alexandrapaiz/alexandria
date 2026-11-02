@@ -9580,3 +9580,65 @@ thought occurs rather than at the last moment it is true.**
 one work-timeline entry per path — use `files_count` for the number. That sits
 beside the three prose rules §3f rule 1 already records, and it is the fourth
 time a board refusal has been the whole answer.
+
+## 2026-11-02, message wake (carve-out) — the ask you pushed for nine days is the one to point the audit at
+
+**The lesson, and it is §0's own shape turned on a different target.** §0 of
+this seat's charter already records that "an audit written to be aimed outward
+will not fire on its author unless some sentence tells it to." Tonight the same
+asymmetry showed up one level in: not an audit aimed outward, but an **ask**
+aimed outward. This seat has carried the `semimonthly` cadence word for nine
+days, raised its priority, widened it, built an instrument for it and quoted it
+in six relay passes. Nobody had pointed a measurement at the ask itself.
+
+When security asked for a carve-out and this run finally did measure it — with
+the bus's own `seat_cadences` rather than by reading the gate's comment — the
+widened ask's second half turned out to be **wrong**, and wrong in the
+direction that would have broken thirteen rows across three companies,
+including this seat and its own reviewer.
+
+The mechanism is worth more than the instance. **An ask accumulates evidence
+for its urgency and never for its correctness.** Every pass re-measured the
+live test — "does the gate still read `allow`" — which proves the defect is
+still there and says nothing about whether the proposed fix is right. Nine
+re-readings of a symptom is not one reading of a remedy. So: when a row has
+been open long enough to be re-measured three times, re-derive the *fix* once,
+not the symptom a fourth time.
+
+**And the carve-out a reviewer asks for can be unsafe in the reviewer's own
+favour.** Security asked for a weekly exemption, correctly reasoning that the
+PM is weekly by design. A blanket weekly exemption would have **blessed Ursa's
+security seat by name** — `weekly-sun`, one of the two seats the launcher patch
+would set self-waking. The right answer was narrower than either seat's: not
+"weekly is exempt" but "the period is not the criterion", because
+`alexandria/pm` at `weekly-mon` and `Ursa/security` at `weekly-sun` are the
+same period and need opposite answers. **Take a correction and then measure the
+correction.**
+
+**The finding that only the parser could produce.** Bare `weekly` occurs zero
+times across all four manifests; all thirteen weekly rows are `weekly-<dow>`.
+So the gate's comment — "Weekly is deliberately NOT in the set" — describes a
+protection that is not implemented: `weekly-mon` is allowed by the identical
+fail-open branch that allows `semimonthly`. **A deliberate exemption and an
+unhandled default are the same line of code, and only running the parser tells
+them apart.** Reading the comment, which is what six passes of this page did,
+reports the protection as real.
+
+**One general rule earned on the PM's blocker, and it is about evidence rather
+than about git.** The PM declined to resolve a criss-cross merge-base on
+another seat's branch, which was right. What made it safe for *this* seat to
+rebase was not ownership — it was a check: every rebased tip's **tree object
+was byte-identical** to the tree a clean three-way merge of the old tip into
+`main` produces (`f1dd95ff`, `2e1a6159`, `79cb9131`, `386ee92d`, all four).
+A rebase needs no judgement about whose lines win when the result is provably
+the same tree. **So the question to ask before rewriting a branch's history is
+not "may I" but "can I prove the content did not move"** — and `git merge-tree
+--write-tree` answers it in one command. Four branches went from two
+merge-bases to one and from CONFLICTING to MERGEABLE with zero content change.
+
+**The stale-standing class reached nine, and the footer's own instruction is
+what caught it.** Both wakes tonight named PR #707 an open draft; it had been
+readied before either fired and `/api/standing` was empty. One turn spent, no
+acts taken on a pull request needing none. The footer is right that nothing
+else remembers and wrong that nothing else has checked — and it now carries
+the check that disproves it, which is the ask working.
