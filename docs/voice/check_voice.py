@@ -1330,6 +1330,28 @@ SURFACE_GLOBS = ("site/app/**/*.jsx", "site/app/**/*.js", "site/lib/*.js",
 # answering it here.
 ARCHIVE_GLOBS = ("site/content/issues/*.md",)
 
+# The target every line of copy converges on, which is not a surface and is
+# read here anyway. `claims` was pointed at the pages that already shipped, so
+# the one gate the writer charter hands this seat for its step-1b duty could
+# not see a candidate before it left the seat's hands, and it could not see
+# `docs/voice/value.md` at all. That page is where a candidate is told what to
+# say, so a promise with no machine under it lands there one step before it
+# lands on a page, and every candidate written against it inherits the promise
+# while this check stays green on the surfaces. L-A21's first half, with the
+# scope narrower than the subject: name a change that would break what this
+# gate governs, then ask whether the gate would have SEEN it.
+#
+# One file and not the whole directory, deliberately. The other candidate
+# files under docs/voice/ quote the specimens she rejected and the law that
+# rejects them, which is the construction L-A23 names, and a per-sentence
+# hedge test cannot tell a candidate from the rejection printed beside it to
+# warn against it. Reading them needs a convention that marks which lines are
+# the candidate, that convention does not exist, and inventing one here would
+# redden ten existing files over prose nobody can fix. Filed in docs/ideas.md
+# with the proposal rather than guessed at. Until then `claims` takes a path,
+# so a round can aim it at the file it is drafting.
+TARGET_GLOBS = ("docs/voice/value.md",)
+
 # Words that carry no claim. Overlap is scored on the rest, because the claim
 # in the register and the claim on the page are rarely the same string: the
 # register holds "revised when the research sharpens it" and /llms.txt prints
@@ -1509,7 +1531,7 @@ def surface_sentences(path):
     return out
 
 
-def claims():
+def claims(paths=()):
     """Every registered quality claim against the surface that prints it.
 
     docs/agents/quality-claims.md says a claim with no mechanism ships hedged
@@ -1563,12 +1585,21 @@ def claims():
     rows, fails = claim_rows(), []
     hedged, moved, spread, gone = [], [], [], []
     surfaces = []
-    for glob in SURFACE_GLOBS:
-        surfaces += sorted(ROOT.glob(glob))
+    if paths:
+        surfaces = [pathlib.Path(x) if pathlib.Path(x).is_absolute()
+                    else ROOT / x for x in paths]
+    else:
+        for glob in SURFACE_GLOBS + TARGET_GLOBS:
+            surfaces += sorted(ROOT.glob(glob))
     scanned = [(p, surface_sentences(p)) for p in surfaces if p.is_file()]
     print(f"rows in docs/agents/quality-claims.md       {len(rows)}")
     print(f"  not `held`, so hedged or not shipped      "
           f"{sum(1 for r in rows if r['state'] != 'held')}")
+    # L-A47: an instrument's scope is part of its answer. A run that aims this
+    # at one candidate and a run that swept every surface print the same
+    # verdict otherwise, and only one of them has checked the product.
+    print(f"scope                                       "
+          f"{'aimed at ' + ', '.join(shown_path(p) for p, _ in scanned) if paths else 'the shipped surfaces and the target'}")
     print(f"reader-facing surfaces read                 {len(scanned)}")
     print(f"  sentences in them                         "
           f"{sum(len(s) for _, s in scanned)}")
@@ -1582,7 +1613,14 @@ def claims():
         cited = {p for p, _ in row["where"]}
         hits = []
         for path, sentences in scanned:
-            rel = str(path.relative_to(ROOT))
+            # `shown_path` and never `relative_to(ROOT)`. Its own docstring
+            # says the idiom is inlined in six passes, and this was the
+            # seventh: the line raised the moment `claims` was first aimed at
+            # a candidate dumped into /tmp, which is how a round proves the
+            # gate catches the page it is replacing. Same defect as
+            # `standalone` on 2026-11-01, one day later, in the pass that
+            # reports the FINDING rather than the scope.
+            rel = shown_path(path)
             for line, body in sentences:
                 have = claim_words(body)
                 score = max((len(w & have) / len(w)) if w else 0 for w in words)
@@ -5874,7 +5912,7 @@ def main():
     paths = sys.argv[2:]
     rc = 0
     takes_paths = {"measure", "links", "delivery", "compare", "firstuse",
-                   "queued",
+                   "queued", "claims",
                    "generator", "specimens", "standalone", "devices",
                    "captions", "marks", "provenance", "slotheads"}
     # `--live` is the answer to `editions`, inside one run. It replaces the
