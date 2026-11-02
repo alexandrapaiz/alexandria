@@ -299,6 +299,24 @@ def test_the_inbox_directory_and_its_readme_exist():
     assert "L-A18" in readme
 
 
+def test_a_colon_separated_heading_still_keys_on_its_id():
+    """The register already held one, so the parser had to learn it.
+
+    `INC-2026-11-02-the-dispatch-prompt-...-holds-back` separates its id from
+    its summary with `: ` where the skeleton this tool writes uses ` - `. Before
+    2026-11-02 that heading did not match `INC_ID`, so `heading_key` keyed the
+    entry on its whole heading: the id a charter would cite found nothing, and a
+    second filing of the same id would not have collided with the first, which
+    is the only guarantee the `INC-YYYY-MM-DD-slug` scheme makes.
+    """
+    heading = ("INC-2026-11-02-a-slug: a summary after a colon "
+               "(2026-11-02, engineer seat)")
+    assert inc.heading_key(heading) == "INC-2026-11-02-a-slug"
+    entry, = inc.split_entries(f"## {heading}\n\nBody.\n")
+    assert entry.inc_id == "INC-2026-11-02-a-slug"
+    assert entry.date == "2026-11-02"
+
+
 def test_the_live_register_ids_all_parse():
     """Every INC heading in the register yields the id a charter would cite."""
     text = (ROOT / "docs" / "agents" / "incidents.md").read_text()
