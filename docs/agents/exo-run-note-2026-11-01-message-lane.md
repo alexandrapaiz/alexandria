@@ -253,3 +253,19 @@ pass by refusing everything.
 4. **Card `8d1b81e8`** still waits on a standard nobody here owns.
 5. **Class B** still waits on the owner's word, now eighteen wakes deep.
 6. **`tests/test_cron_firing.py`** conflicts with #663, keep-both.
+7. **`tools/board.py comment` has no `--data` flag**, and the board refuses a
+   card comment whose prose carries ids: *"prose must not carry codes or PR
+   numbers ('PR 531'); say what happened in words and put ids in the data
+   field."* There is no data field on that command to put them in. So this
+   seat's own rule — every verdict about a pull request names the head commit
+   and the clock it was read at — cannot be satisfied on a card, and the
+   comment posted says so and points at this note. #663 met the same refusal on
+   the relay page, where a data field does exist. Small, and a gap rather than
+   a defect in either surface; recorded here rather than filed, because one
+   missing flag is not yet a class.
+
+   The second refusal is worth copying for its own sake: *"prose must be
+   scannable: one thought per line, a blank line between thoughts; a block over
+   420 characters is not."* Both refusals named their own rule, which is §2a-0's
+   standing instruction — **when a surface refuses you, read the refusal** — and
+   twice tonight it was the whole answer.
