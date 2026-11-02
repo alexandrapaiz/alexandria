@@ -3433,10 +3433,12 @@ claim a public surface makes about the quality of what we ship, with the
 mechanism that would have to run for the claim to hold, its state, and the
 number with the date it was measured.
 
-Every run, five things. **This line said "three things" on 2026-10-18, the
+Every run, six things. **This line said "three things" on 2026-10-18, the
 day a run added step 4 below it and did not count it**, which is the same
 defect the register's own summary paragraph keeps producing and is recorded
-there. A list with a number in its stem has two places to edit.
+there. A list with a number in its stem has two places to edit. It said "five"
+until 2026-11-02, when step 6 was added and the stem was edited in the same
+commit, which is the only reason this sentence is not a third instance.
 
 1. **Read the surfaces for claims added since your last run.** `site/app/`
    including `site/app/llms.txt/route.js`, `site/emails/`, and any launch
@@ -3537,6 +3539,55 @@ there. A list with a number in its stem has two places to edit.
    2026-10-18, wrote that a reading taken from the repo cannot tell us which,
    and stopped there, correctly, because taking the other reading is this
    seat's duty and no charter had said so.
+
+6. **Score a cadence claim twice, clock and record, and never once**
+   (added 2026-11-02, message wake from the writer seat, written out in
+   `docs/agents/quality-claims.md` under "The 2026-11-02 sweep"). A claim
+   about a cadence — "every day", "each week", "at the pace of" — is two
+   claims in one sentence, and they take different instruments. **The clock**
+   is "is it true of the current period", and one reading answers it. **The
+   record** is "has it been true of every period it covers", and only a series
+   of readings answers it, one per period. A sweep that takes one reading has
+   answered the first and has said nothing about the second.
+
+   The cost of scoring them together, measured on one row in both directions.
+   The growth row went to `contradicted` on 2026-10-11 on a clock reading and
+   carried it as a verdict about the record for three weeks. On 2026-11-02 a
+   forwarded clock reading would have moved it to `held` by the identical
+   reasoning, the other way. Same row, same method, opposite answers, and
+   neither reading was ever evidence about the half it was being quoted for.
+
+   Two consequences, and the second is the one a run will want to skip.
+
+   - **A cell whose state names no half is unfinished.** Write "held on the
+     clock, contradicted on the record" and say which reading answered which.
+   - **Keep the series in the cell.** A cadence row's freshness number is
+     almost always a *maximum* — `claims_newest`, `press.newest_week` — and a
+     maximum cannot report a hole it has already been filled past. The growth
+     row proves it: the gap was provable while it was still open and became
+     unprovable the hour it closed, because the only instrument was a number
+     that had moved. This is the 2026-10-25 backlog rule ("the delta is the
+     evidence and a single depth is not") applied to the freshness number
+     beside the backlog.
+
+   **And a week that has ended is not a slot that has fired.** For any
+   cadence-shaped row the measurable event is the schedule's firing, not the
+   calendar's turning. The forwarded reading this rule came from counted two
+   missed editions when one slot had passed and the next was eight hours out;
+   the verdict was right and the count was one too many, and the difference
+   was the whole of what the next run should watch. Read the schedule — for
+   the press it is `modal.Cron("0 9 * * 1")` in `pipeline/weekly.py` — and
+   count firings.
+
+   **Where a receipt publishes a run record beside the output, read both.**
+   The delivery receipt's `deploy` block is one row per scheduled job written
+   by the job itself, and `pipeline/runtime_sha.py` sets `recorded_at = now()`
+   on every run, so it says when a stage last *ran*. A frozen output tells you
+   the claim is false; only the run record separates absent from broken from
+   unscheduled-since-the-last-repair, and those three take different fixes
+   from different seats. On 2026-11-02 that one field showed the press had not
+   executed since 2026-10-19 while its four siblings all ran on 2026-11-01,
+   which no reading of `newest_week` could have shown.
 
 The two failures behind this, because the pattern is worth stating once.
 On 2026-09-18 the site said a skill is revised when the research moves.
