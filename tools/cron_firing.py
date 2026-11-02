@@ -1349,11 +1349,14 @@ def main(argv=None):
     parser.add_argument("--history-days", type=int, default=14,
                         help="how far back to look for a slot's other firings")
     parser.add_argument("--now", default=None,
-                        help="an ISO stamp to read the day as of, rather than "
-                             "the wall clock. The grace window in `reason_of` "
-                             "makes one verdict a function of the time of "
-                             "asking, so a reading that has to be reproduced "
-                             "needs the clock pinned")
+                        help="an ISO stamp that pins the clock a verdict is "
+                             "reached at, which is not the day being read: "
+                             "`--day` chooses that. The grace window in "
+                             "`reason_of` makes one verdict a function of the "
+                             "time of asking, so a reading that has to be "
+                             "reproduced needs the clock pinned. Passing "
+                             "`--now` alone still reads today, which the first "
+                             "clause here used to claim otherwise")
     parser.add_argument("--prs", default=None,
                         help="a file of `gh pr list --json "
                              "number,url,headRefName,createdAt` output, which "

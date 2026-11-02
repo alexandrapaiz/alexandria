@@ -24776,3 +24776,44 @@ ingestion target rather than a skill target.
   as well as filed here.
 - Cost: $0.
 - Status: urgent
+
+### 2026-11-02: the silent-run repair computes 109 candidates and the report can show almost none of them
+
+Found by smoke-testing this seat's own change from earlier today rather than by
+reading it, and filed here because the repair is a day-sized design question
+and not a bug fix.
+
+- What was shipped. `resolve_shipped` in `tools/cron_firing.py` now records
+  `pr_candidate` on a run whose `pr=-` is evidence, so a `silent` verdict stops
+  being reported with a confidence nothing behind it has. The computation is
+  correct and it is not dead code: run over every alexandria run the host
+  holds, it finds **109 runs with a candidate**, 157 of 665 being
+  silent-eligible in the first place.
+- What cannot be seen. `judge` is the only caller, and `judge` reports **cron
+  slots**. Of those 109 candidates, 20 sit on `hook` runs and 89 on `message`
+  runs, and **none sits on a `cron` run**. So the sentence the renderer adds to
+  a `LOST` line has never once fired on any data this host holds, across all
+  twelve days checked with `--day` and a live pull request list. The number
+  that matters is computed and then discarded for every row that is not a cron
+  slot.
+- Why it is worth a day rather than a patch. The underlying problem is much
+  larger than the cron-slot view can express: **838 of 1,627 clean `exit=0`
+  `run.end` rows name no pull request**, which is more than half of every
+  successful run on the host. A reader who wants to know which runs shipped
+  without saying so is asking a question about runs, and this tool answers
+  questions about slots. Bolting the answer onto a slot report is what produced
+  a field with no reachable output.
+- The shape of the fix, for whoever takes it. A view keyed on runs rather than
+  on slots, which `read_runs` and `resolve_shipped` already supply everything
+  for. That is a new subcommand and a new rendering, so it is the engineer's
+  and not a behaviour-preserving repair.
+- What this seat did instead, in this run. Nothing to the logic, deliberately.
+  The computation is right, the tests cover it, and changing where it is
+  rendered is a feature. The finding is recorded with its numbers so the next
+  reader does not have to rediscover that the field is unreachable.
+- The class, and it is this charter's own. A predicate that never selects a row
+  reads exactly like a predicate that found nothing wrong. The reason it was
+  caught here is that the tool was run against real data after the tests
+  passed, which is the step a green suite makes easy to skip.
+- Cost: $0.
+- Status: proposed

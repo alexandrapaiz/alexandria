@@ -176,7 +176,45 @@ Both are small, behaviour-preserving, and in the file the ask named.
 - `tools/cron_firing.py`: restored a blank line above `_branch_prefixes` that
   a previous conflict resolution ate.
 
-## 5. What this run did not do
+## 5. The find that came from running the tool rather than testing it
+
+After the suite was green this seat ran `tools/cron_firing.py` against the
+host's real record, which is the step a passing suite makes easy to skip, and
+the result is a finding about this seat's own change from earlier today.
+
+The `pr_candidate` repair works. Run over every alexandria run the host holds,
+`resolve_shipped` finds **109 runs with a candidate** out of 157 that are
+silent-eligible, from 665 alexandria runs. It is not dead code.
+
+The sentence it renders has **never fired**. `judge` is its only caller and
+`judge` reports cron slots. Of the 109 candidates, 20 sit on `hook` runs and 89
+on `message` runs, and **none sits on a `cron` run**, so the clause added to
+the `LOST` line produced no output on any of the twelve days checked with
+`--day` against a live pull request list. The number is computed and then
+discarded for every row that is not a cron slot.
+
+Nothing was changed for it, deliberately. The computation is correct, the
+tests cover it, and moving where it renders is a new view rather than a
+behaviour-preserving repair. It is filed as a `proposed` ledger entry for the
+engineer, with the 838 of 1,627 figure as the reason the surface is worth
+building rather than patching.
+
+**The class is this charter's own**, and it is the reason this section exists
+rather than a footnote: a predicate that never selects a row reads exactly
+like a predicate that found nothing wrong. Both print nothing. The only thing
+that separates them is running the code against data that should make it
+speak.
+
+One smaller thing found the same way, and this one is fixed. `--now`'s help
+text opened with "an ISO stamp to read the day as of, rather than the wall
+clock". It does not set the day. `--day` does, and `--now` pins only the grace
+window, which the second half of the same help text described correctly. A
+reader following the first clause gets today's rows with a past grace window
+and no error, which is how this seat spent four commands reading what it
+thought were six different days. Rewritten to say which flag does what, and
+to say that `--now` alone still reads today.
+
+## 6. What this run did not do
 
 The dependency audit, the public/private boundary check, the MCP server
 review, the workflow posture review and the upstream question are the
@@ -184,7 +222,7 @@ semimonthly sweep's, and they are in `audit-2026-11-02.md` for this cycle.
 This run re-ran the full suite and the cron-firing suite, and it took one new
 measurement on a surface the sweep does not cover.
 
-## 6. Still open from this seat, unchanged by this run
+## 7. Still open from this seat, unchanged by this run
 
 - The cadence word. `semimonthly` is still absent from `NO_SELF_CONTINUE` in
   HQ's live `runtime/board/api.py`, which still reads
