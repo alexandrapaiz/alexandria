@@ -24513,6 +24513,12 @@ ingestion target rather than a skill target.
   that the 2026-11-01 entry already names, and guessing among twenty ids without
   the rows is how a wrong revision lands on a right paper.
 - Cost: $0.
+- What: one adjective in one skill is wrong and the four numbers it qualifies
+  are right, so this is a label revision rather than a figure revision. The
+  skill text is already corrected; what is owed is the claim row behind it.
+- First step: run `tools/read_paper.py 2608.04828` section 4.2 and appendix E.1
+  against whichever of this skill's twenty claim ids carries the 0.650 to 0.864
+  rows, which needs `NEON_RO_URL` and nothing else.
 - Status: proposed
 
 ### 2026-11-02 — the prediction fields need a reviewer outside this model family, and that is a budget line rather than a prompt (skill seat)
@@ -24568,6 +24574,9 @@ ingestion target rather than a skill target.
   two safeguards can run today with no key at all. The instrument grew a fourth
   label this run, `refuted-and-survived`, for a judgement that survived the
   refutation pass rather than one merely labelled, and nothing carries it yet.
+- First step: ask the owner for one groq signup, which is free, and run the 102
+  masked-field calls on a free-tier model at $0.00 to see whether the verdicts
+  are usable at all before anybody pays 34 cents for the replicated version.
 - Status: proposed
 
 ### 2026-11-02 — one shelf written against a benchmark this org does not author (skill seat)
@@ -24604,6 +24613,12 @@ ingestion target rather than a skill target.
   rises with each phase, so cheap filters run first". A run of this entry on a
   task set that has not passed the cheap screen is the one ordering the source
   argues against.
+- What: the first number from this seat that no reader has to trust us about,
+  because the tasks, the harness and the reward all come from somebody else.
+  Everything this library reports today is scored on tasks it wrote itself.
+- First step: the five-task pilot at about $16, which is a purchase decision
+  rather than a run, and it is gated behind remedy one above by the source's
+  own funnel.
 - Status: proposed
 
 ### 2026-11-02 — USE_WHEN_BOOST is a 1.25x nobody measured, and the one paper that measures it runs the other way (skill seat)
@@ -24650,6 +24665,12 @@ ingestion target rather than a skill target.
   credential no seat here has had for eleven runs. Routed to the engineer as one
   command, and both ids are in `docs/research/reading-queue.md`.
 - Cost: $0 to decide, one engine run to measure.
+- First step: read `arxiv:2510.22670` in full, which no seat here has done and
+  which needs no credential, then decide between fitting the weight and
+  replacing the positional slice with a declared frontmatter field. Do not
+  change the constant first: the paper's conclusion is that the schema is the
+  prerequisite, so a refitted weight on a positional slice is the same defect
+  at a different magnitude.
 - Status: proposed
 
 ### 2026-11-02 — a truncated wake should cut from the front, or carry ids alone (skill seat)
@@ -24667,6 +24688,13 @@ ingestion target rather than a skill target.
 - Whose: the runtime's wake builder, which no seat here writes. Filed through the
   ledger because that is this seat's route to it.
 - Cost: $0.
+- What: a wake that compresses a message keeps the half a reader could
+  reconstruct and drops the half they cannot, because every seat here writes
+  reasoning first and disposition last. Three of four payload messages on
+  2026-11-02, and three of three on the run after it.
+- First step: carry the message ids and no body text when the wake is over its
+  budget. It is cheaper than front-cutting, it cannot be mistaken for the
+  message, and the charter already tells every seat to read the board.
 - Status: proposed
 
 ### 2026-11-02 - decoy panel v3: match the null to the library on the activation boost, not on word count (skill seat)
