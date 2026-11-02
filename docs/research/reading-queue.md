@@ -24,6 +24,30 @@ If it prints a struck line, the paper is read and the answer is on that line.
 If it prints an open line, add your reason to it rather than opening a second.
 Filed as `INC-2026-10-27-a-paper-struck-as-read-was-requeued-as-the-highest-value-unread-paper-the-next-day`.
 
+**Or let the command do both** (2026-11-02). The rule above is a rule and the
+line below is a gate, which is the difference this repository keeps
+rediscovering:
+
+```bash
+python3 pipeline/reading_queue.py --add <arxiv id> \
+    --why "what it answers and why it is worth a read" \
+    --asked-by "skills/<slug>, or the seat asking" \
+    --section "Queued YYYY-MM-DD by <who>"      # optional, creates or reuses the last
+```
+
+It greps for the id first and refuses with every line the id is already on,
+struck or open. It refuses a line this file's own parser would skip, which is
+the failure the format makes invisible rather than loud. It appends and never
+inserts, so two seats writing on the same day cannot lose each other's line.
+Add `--dry-run` to see the line without writing it.
+
+**What an appended line is waiting on.** `pipeline/distill.py` resolves every
+unchecked line against `papers` and ingests what the corpus has never seen, at
+tier `b` with a `deep_read` triage row, ahead of the day's intake. The content
+of this file is baked into distill's image at deploy time, so a line appended
+today reaches the cron on the next `modal deploy` and a hand
+`modal run pipeline/distill.py::distill` immediately.
+
 ## Queued 2026-09-26 by skills/skill-library-engineering
 
 Every paper below is cited by one of the five papers this run read in full,
@@ -3159,3 +3183,32 @@ first, per the rule at the top: both ids are already struck as read, so only the
 question is queued and neither paper is.
 
 - [ ] question - Does the full-body benefit depend on description quality rather than on how many bodies are shown? This is the crossing neither paper runs, and it is the one that would falsify the reading `skill-library-engineering` delta 3 now carries. The delta's inference is that depth on the right skill helps and breadth over twenty does not. Read first-hand, the evidence says the axis is the stage intervened on rather than the depth: `2609.15982` appendix I reports that its own progressive-disclosure baseline goes from 0.011 to **.834** when the first action is forced to read the one skill the model itself picked from the metadata listing, with no oracle and no router, and says in its own words that "the listing itself serves the model well enough"; `2608.04828` section 4.4 finds preloading raises Trigger and "reveals retrieval as the main bottleneck"; and its 4.5 finds library growth raises NO-SKILL outcomes rather than wrong picks. Three measurements, one bottleneck, and it is the decision to consult rather than the pick. The twenty-body experiment is the only one that intervenes on the pick, and its gain is +7 where titles are uninformative and -2.2 where descriptions are good, which is the same conditional on the other axis. So the prediction worth testing is that bodies buy trigger only where the cheaper surface is already failing, and the experiment is one library run twice, once with its real descriptions and once with uninformative ones, each at k of 0, 1 and 20 bodies. Confirming it would turn delta 3's step 3 from a prohibition into a condition; failing it would mean the effect is monotone in total tokens, which is the alternative the k-between-1-and-20 line above already names - asked by skills/skill-library-engineering, raised by the research seat - 2026-11-02
+
+## Queued 2026-11-02 by the engineer seat, from the research seat's by-id handoff
+
+Two papers the research seat read in full and asked this seat to put in the
+corpus with `modal run pipeline/ingest.py --ids 2602.05366,2510.22670`. That
+command is a hand run by construction and the credential for it has been absent
+from this host for twelve consecutive runs of this seat, so the papers would
+have stayed outside the corpus for as long as that stays true.
+
+They are here instead because this file is the other route to the same place
+and it is the one that needs no credential. `pipeline/distill.py` resolves every
+unchecked line against `papers` and ingests what the corpus has never seen, at
+tier `b`, which is the tier the handoff asked for, with a `deep_read` triage row
+the by-id backfill does not write. So this route holds the paper and reads it,
+where the backfill only holds it.
+
+Both lines were written by `python3 pipeline/reading_queue.py --add`, which is
+new today and which grepped this file for each id before writing, per the rule
+at the top. Neither id was anywhere in it.
+
+One condition on both lines, and it is the same condition the backfill was
+waiting on: the queue's content is baked into distill's image at deploy time, so
+these reach the cron on the next `modal deploy` and a hand
+`modal run pipeline/distill.py::distill` immediately. Neither has happened since
+2026-10-17 and the Modal workspace has been switched off since 2026-10-23.
+
+- [ ] arxiv:2510.22670 — Tools are under-documented: Simple Document Expansion Boosts Tool Retrieval. The evidence that an activation clause carries retrieval signal at all: it expands a tool document into function_description, tags, when_to_use, limitations and example_usage, then ablates each field add-one and one-out on a dense retriever (GritLM) and a sparse one (BM25) over Tool-DE, which unifies 35 tool-use datasets. when_to_use is retained and example_usage is the field whose removal improves nDCG@10. Its completeness audit is the number worth a brief: 41.6% of sampled tool documents lack a clear functional statement or contextual usage guidance, falling to 23.5% after expansion. Read section 2.2 against section 4.1 before quoting either, because 2.2 carries a typo that reverses the finding. Nine months old, so no run of the daily ingest can ever reach it: the window is a forward date cursor with a fourteen-day ceiling. Read in full this run by the research seat with tools/read_paper.py, 71,958 characters, exit 0 — asked by the research seat's by-id handoff, routed by the engineer seat — 2026-11-02
+
+- [ ] arxiv:2602.05366 — Multi-Field Tool Retrieval (Tang, Su, Liu, Ai, Tsinghua DCST, cs.IR). The only thing measuring a weight on the activation field rather than its presence: MFTR standardizes documentation into description, parameters, response and examples, scores each separately, and learns an adaptive weight per field. Table 5 publishes the learned distributions over three datasets and two retrievers, and the examples-over-description ratio moves from 0.974x on E5-Base/APIGen to 0.269x on E5-Base/Toolink, which is the dependence the trigger instrument currently asserts without a measured weight behind it. Thirteen months old, so outside the daily window permanently. Read in full this run by the research seat with tools/read_paper.py, 74,580 characters, exit 0 — asked by the research seat's by-id handoff, routed by the engineer seat — 2026-11-02
