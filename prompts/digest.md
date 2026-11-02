@@ -1636,62 +1636,61 @@ the rule's question to the thing in front of you.
   sentence does not define, and that the opening's first sentence does not
   define either, is undefined, and the repair is a plainer title rather than a
   longer opening.
-  Then go back
-  through the issue from the top and list every term of art it uses: method
-  names, training vocabulary, metric and benchmark names, coined names,
-  every acronym, and every ordinary English word doing a technical job
-  ("teacher", "student", "gradients", "reward", "rollout", "alignment").
-  That last class is the one this pass exists to catch, because it does not
-  look like jargon on the page and so never gets listed.
+  Then go back through the issue from the top and list every term of art it
+  uses. Two classes, and the second is the one this pass exists to catch,
+  because it does not look like jargon on the page and so never gets listed:
+  the visible terms of art, and every ordinary English word doing a technical
+  job ("teacher", "student", "gradients", "reward", "rollout", "alignment").
   **Inside that class the role nouns have their own tell, and the tell is the
   article.** Two models in a training setup pick up nicknames, and a nickname
   arrives with "the" in front of it as though the reader had been introduced
   already. So check each one against the sentence that INTRODUCES it rather
   than the sentence that uses it. Where one sentence hands over one half of a
   pair with "a" and the other half with "the", the half carrying "the" is
-  bare however naturally it reads, and you have the usual two fixes: say what
-  it is in that same sentence, or drop the nickname and name the thing. For
-  each one, find the FIRST place it appears anywhere in the issue, and that
-  includes the title, the contents line, a heading, a
-  bold lead-in and an item headline, not just the body prose. That first
-  sentence must carry the term's plain-words clause. Where it does not, you
-  have two fixes and no third: write the clause into that sentence, or strike
-  the term and say the plain thing in its place. A definition sitting in the
-  second mention fails the pass, so move it up. Keep each clause a clause,
-  because a definition that turns into two extra sentences trades the
-  outsider problem for the density one.
-  Count the term the reader MEETS, not the term you defined, because a word
-  can fail this pass while holding a perfectly good clause. If you hand over
+  bare however naturally it reads. For each one, find the FIRST place it
+  appears anywhere in the issue, and that includes the title, the contents
+  line, a heading, a bold lead-in and an item headline, not just the body
+  prose. That first sentence must carry the term's plain-words clause. Where
+  it does not, you have two fixes and no third: write the clause into that
+  sentence, or strike the term and say the plain thing in its place. A
+  definition sitting in the second mention fails the pass, so move it up. Keep
+  each clause a clause: one that grows into two sentences trades the outsider
+  problem for the density one.
+  Count the term the reader MEETS, not the term you defined: a word can fail
+  this pass while holding a perfectly good clause. If you hand over
   one name for an idea and then carry the idea under a second name, the
   second name is bare however well the first was introduced, and the reader
-  has been given a definition for a word the issue does not use. Two fixes
-  and no third, the same two as above. Use one name for one idea from the
-  title to the close, which is almost always the better issue. Or, where the
-  sources genuinely force both words on you, join them at the first
-  appearance of the SECOND one: "the night shift, which is that same
-  overnight pass under the name the vendors use". What you never do is
-  define one and print the other.
-  **This pass is a count, and it failed on its first print as an
-  instruction.** A rule asking you to prefer one name does not survive a
-  payload whose every field uses the other one.
+  has been given a definition for a word the issue does not use. The same two
+  fixes apply. Use one name for one idea from the title to the close, which is
+  almost always the better issue. Or, where the sources genuinely force both
+  words on you, join them at the first appearance of the SECOND one: "the
+  night shift, which is that same overnight pass under the name the vendors
+  use". What you never do is define one and print the other.
+  **This pass is a count and not a preference**, because a rule asking you to
+  prefer one name does not survive a payload whose every field uses the other.
   So count, once, before you output. Take the two or three words the issue
   leans on hardest, and for each one count its appearances. Where two words
   share one idea, the smaller count is the one to delete, all of it, including
   the gloss that was attached to it. One idea, one word, one clause that
   introduces it, and the word the TITLE uses is the word that gets the clause.
-  **The list is built by frequency, not by what looks like jargon, and that is
-  the whole of this pass.** Everything above says which words need a clause and
-  says it twice. Nothing above produces the list, and the class this pass names
-  as the one it exists to catch is defined by not looking like jargon, so a
-  writer assembling the list by eye leaves out exactly the words the pass was
-  written for.
-  So build the list mechanically before you judge anything. Take every word and
-  short phrase in the finished issue that appears three times or more and is
-  not ordinary English doing an ordinary job. Write it down with its count and
-  with the sentence where it first appears. Then the clause requirement above
-  runs down that list, entry by entry, and an entry whose first sentence has no
-  clause in it is not finished. A word you would not have thought to list is
-  the one this step is for.
+  **The list is built mechanically, never by eye**, because nothing above
+  produces it and a list assembled by eye leaves out exactly the class this
+  pass was written for.
+  So build it before you judge anything. Write each entry
+  down with its count and with the sentence where it first appears. Then the
+  clause requirement above runs down that list, entry by entry, and an entry
+  whose first sentence has no clause in it is not finished.
+  **Two passes, because one threshold cannot catch both classes (canon law
+  12a).** Ordinary English doing a technical job is caught by frequency: every
+  word or short phrase appearing three times or more. The floor is for that
+  class and keeps it.
+  Everything VISIBLY a term of art is listed at its first appearance, count of
+  one, no threshold: every acronym, benchmark, model, dataset, library,
+  product, coined method name, and every hyphenated compound built out of
+  field vocabulary. Nearly every undefined term an issue ships is used once or
+  twice, so a floor of three reaches almost none of them: a benchmark named
+  once in the sentence reporting its number is named once, and that sentence
+  is the only place the reader can be handed it.
   If this pass turns up more than about five terms needing a definition in
   one issue, the issue is carrying too much, not too little explaining. Cut
   an item and run it again.
