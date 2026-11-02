@@ -610,6 +610,26 @@ UNCOVERED = {
     # the defect they exist for, one level down.
     "tests/test_wake_routes.py",
     "tests/test_ship_first.py",
+    # Added 2026-11-01 by the security seat with the `db()` DSN redaction, and
+    # pinned for the structural reason every line above gives: the step that
+    # would run it goes in `.github/workflows/checks.yml`, which this seat's
+    # token may not write and which its own charter forbids it to touch. The
+    # staged replacement runs it, because it runs the suite rather than naming
+    # files. Counted into
+    # `INC-2026-10-17-the-pin-list-grew-for-the-seventh-time-in-nine-days`
+    # rather than opening a second incident on the same pattern, and the number
+    # that entry asked for is now 25 days of waiting since 2026-10-07.
+    #
+    # What it guards, and it is the reason this pin is worth reading twice.
+    # `db()` hands psycopg the `DATABASE_URL` secret, and libpq echoes the
+    # whole connection string back in its parse error when the value does not
+    # begin exactly with `postgres://`. One leading space in the secret is
+    # enough, that exception leaves through an MCP tool call to whoever called
+    # it, and what it carries is the production database password. The audit
+    # that found it is docs/security/audit-2026-11-01.md. So this is a file
+    # whose assertions stand between a stray keystroke in a secret and a
+    # credential disclosure, reporting nothing on any pull request.
+    "tests/test_mcp_dsn_redaction.py",
     # Added 2026-11-02 by the ExO seat, pinned for the same structural reason
     # as every line above: the step that would run it goes in
     # `.github/workflows/checks.yml`, which no seat's token may write by
