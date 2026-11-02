@@ -45,3 +45,26 @@ class, and until somebody runs it the next improvement to this library picks the
 tripwire up again. Note also that `tests/test_skill_scope.py` is outside this
 seat's declared write surface; that is recorded in the ledger entry and in the
 pull request rather than left implicit.
+
+**A third instance in the same run, and this one does not go red at all.** After
+fixing the assertion above, a grep for the same literal across this seat's own
+files found `skills/_validation/trigger_test.py` emitting, in a live warning a
+reader is meant to act on, the sentence "Measured at 3 of 67 today." The suite
+is 68. That warning fires on every run today, so the instrument has been telling
+its reader a stale number in the present tense, and no gate anywhere notices
+because a message is not an assertion.
+
+So the class has two halves and only one of them is loud. A stale literal in a
+test fails and gets fixed, eventually, by whoever the failure inconveniences. A
+stale literal in prose the same instrument prints is read as current forever.
+The second half is the one worth sweeping for, and it is the half that no amount
+of running the test suite will surface.
+
+The figure is now dated to 2026-11-02 with the reason it is dated rather than
+live. One note on the repair, because the first attempt was worse than the
+defect: interpolating the live count read `len(cases)`, and `cases` is not in
+scope in `panel_audit`, whose arguments are `(skills, decoys)`. That would have
+raised `NameError` the moment the warning fired, turning a wrong number into a
+crash on every run. It was caught by checking the enclosing function's
+arguments before committing rather than by the tests, which do not exercise that
+branch.
