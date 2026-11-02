@@ -5849,10 +5849,18 @@ today, four of them undecided, eleven rows.**
 
 **The reading.** `/api/capacity?day=2026-11-02` at 02:11Z: 95 attempted, 69
 completed, 0 refused, **1 failed**, 25 running, 0 lost, 24 seats.
-`alexandria`'s own block: 30 attempted, **0 failed**. The host's audit log on
-the same day holds **94 `run.end` rows, 13 of them non-zero — ten `timeout`
-and three `1`** — across nine seats in four companies, four of the ten this
-company's. Every timeout sits at almost exactly 3,600,000 ms.
+`alexandria`'s own block: 30 attempted, **0 failed**. The host's audit log at
+the same minute held **94 `run.end` rows dated today, 13 of them non-zero —
+ten `timeout` and three `1`** — across nine seats in four companies, four of
+the ten this company's. Every timeout sits at almost exactly 3,600,000 ms.
+
+**Both figures carry their clock, and a second read was taken, because the day
+is not over and a count off a file the host is still writing is a progress bar
+(§2b, added 2026-11-01).** At **02:21Z** the same command returns **98 rows,
+14 non-zero — eleven `timeout` and three `1`**: one further wall-clock kill in
+ten minutes, HQ's own engineer at 02:11:42Z. The gap this ask is about widened
+between the two reads rather than closing, which is the direction that makes
+it worth your time.
 
 **Reproduced by execution, not argued.** `tools/capacity.py:112`:
 

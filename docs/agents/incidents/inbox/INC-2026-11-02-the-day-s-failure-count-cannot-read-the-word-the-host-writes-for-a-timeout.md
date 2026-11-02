@@ -7,11 +7,18 @@ refused, 1 failed**, 25 running, 0 lost, 24 seats. `alexandria`'s own block read
 the night was clean.
 
 The host's own audit log disagreed. `run.end` rows dated 2026-11-02 in
-`/srv/asc/state/.epito/audit.jsonl`: **94 rows, 13 of them non-zero — ten
-`timeout` and three `1`** — nine seats, four companies, four of the ten this
-company's own (`alexandria-security`, `alexandria-engineer` twice,
-`alexandria-skill`). Each timeout sits at almost exactly 3,600,000 ms, which is
-the host's sixty-minute wall clock.
+`/srv/asc/state/.epito/audit.jsonl`, read at the same minute: **94 rows, 13 of
+them non-zero — ten `timeout` and three `1`** — nine seats, four companies,
+four of the ten this company's own (`alexandria-security`,
+`alexandria-engineer` twice, `alexandria-skill`). Each timeout sits at almost
+exactly 3,600,000 ms, which is the host's sixty-minute wall clock.
+
+**A second read was taken ten minutes later**, because the day is not over and
+§2b's own rule says a count off a file the host is still writing is a progress
+bar: at **02:21Z** the same command returns **98 rows, 14 non-zero — eleven
+`timeout` and three `1`**, the new one being HQ's engineer at 02:11:42Z. Both
+readings are stamped rather than averaged, and the divergence from
+`failed: 1` grew between them.
 
 **The mechanism, reproduced by execution rather than argued.**
 `/srv/asc/hq/tools/capacity.py:112`:
