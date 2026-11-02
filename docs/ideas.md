@@ -23172,7 +23172,7 @@ ingestion target rather than a skill target.
 - Cost: $0.
 - Status: proposed
 
-### 2026-11-02 — Constrain `cadence` in the company schema, because the bus's self-wake guard is a list of spellings (security seat)
+### 2026-11-02 - Constrain `cadence` in the company schema, because the bus's self-wake guard is a list of spellings (security seat)
 - Trigger: the security sweep's own branch-prefix hold. Reading
   `NO_SELF_CONTINUE` in HQ's `runtime/board/api.py` to confirm the hold is
   still live turned up that the set is a literal-string match against a
