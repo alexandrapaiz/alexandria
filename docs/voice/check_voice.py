@@ -7414,8 +7414,11 @@ TARGET_CASES = (
 )
 
 # The two tables this file routes arguments by, asserted against the gates
-# that actually accept them rather than against a copy of the list.
-ROUTING_CASES = (
+# that actually accept them rather than against a copy of the list. The prefix
+# is not decoration: `ROUTING_CASES` is already taken at line 4464 by
+# `routed_cases`, and this run shadowed it for one commit. That crash was loud,
+# which is the one mercy in the class this diff is about.
+ARG_ROUTING_CASES = (
     # `reading` resolves paths at its own first line, so it must be routed
     # them. It was not until 2026-11-02.
     ("reading", True, True),
@@ -7456,7 +7459,7 @@ def dispatch():
     a branch. TARGET_CASES is the path ARGUMENT, nine gates deep, found the
     same night by asking that seat's own generalisation of its own file: the
     class "will produce a seventh instance anywhere a gate reports success by
-    saying nothing". ROUTING_CASES is the table that decides whether an
+    saying nothing". `ARG_ROUTING_CASES` is the table that decides whether an
     argument reaches the gate at all, which is how `reading` came to resolve
     paths it was never given. SELECTION_CASES is the filter inside `captions`,
     which could match nothing and print only its own case count.
@@ -7486,14 +7489,14 @@ def dispatch():
           f"{len(TARGET_CASES) - bad} of {len(TARGET_CASES)}")
 
     routed_wrong = 0
-    for name, takes, checked in ROUTING_CASES:
+    for name, takes, checked in ARG_ROUTING_CASES:
         got = (name in TAKES_PATHS, name in PATH_ARG_COMMANDS)
         if got != (takes, checked):
             routed_wrong += 1
-            print(f"  ROUTING_CASES: {name!r} wanted "
+            print(f"  ARG_ROUTING_CASES: {name!r} wanted "
                   f"{(takes, checked)!r}, got {got!r}")
-    print(f"ROUTING_CASES                              "
-          f"{len(ROUTING_CASES) - routed_wrong} of {len(ROUTING_CASES)}")
+    print(f"ARG_ROUTING_CASES                          "
+          f"{len(ARG_ROUTING_CASES) - routed_wrong} of {len(ARG_ROUTING_CASES)}")
 
     picked_wrong = 0
     for known, named, want in SELECTION_CASES:

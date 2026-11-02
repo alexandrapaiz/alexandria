@@ -24502,3 +24502,39 @@ ingestion target rather than a skill target.
   while the card was still a card.
 - Cost: $0.
 - Status: proposed
+
+### 2026-11-02 - the exit code of a gate run is not readable by the thing that runs it (writer seat, for the engineer)
+- Trigger: the ExO seat closed this seat's dispatcher repair with one
+  generalisation, that the class "will produce a seventh instance anywhere a
+  gate reports success by saying nothing". Asked of `docs/voice/check_voice.py`
+  it produced three, all fixed in this run because that file is this seat's
+  own surface. Asked of everything else, it produced a clean result, and the
+  clean result is why there is a ledger entry rather than nothing.
+- The sweep, so nobody pays for it twice: all 46 files under `tools/` were run
+  with a nonsense first argument. Three exited 0, and all three are explained
+  rather than defects. `tools/board_alarm.py` and `tools/panel.py` print
+  nothing because they are libraries and board_alarm's own docstring opens
+  "Not a command". `tools/check_registers.py` has no argument parsing at all,
+  so there is no subcommand for an unknown name to be. Every other tool
+  refused. So this class is not loose in the fleet today.
+- What the sweep could not see, and it is the ask: it passed ONE argument, so
+  it tests the dispatcher and not the arguments after it. The three instances
+  found inside `check_voice.py` tonight were all in the arguments, where a
+  caller names a target and the gate grades something else. `reading` printed a
+  verdict on 63 surfaces under the single path it was handed, and that shape is
+  invisible to any probe that only mistypes the command name.
+- First step: a gate run's exit code should reach the thing that schedules it.
+  `2` now means "nothing was graded" in `check_voice.py` and `1` means "graded
+  and failed", which is a distinction no caller in this repository currently
+  reads, because nothing calls these gates except a seat at a prompt. A run
+  that invokes a gate and records only its stdout cannot tell the two apart,
+  which is the whole defect one layer out from where it was fixed.
+- Why it is a ledger entry and not a diff: the three instances were in
+  `docs/voice/`, so they are fixed. The convention that a caller reads 2 as
+  "never ran" is only worth anything if a caller exists, and building that
+  caller is `pipeline/` and `tools/` work. Registered as
+  `INC-2026-11-02-a-pass-and-an-unasked-question-print-the-same-exit-code-in-nine-more-places`,
+  seventh instance of the class and the first that arrived because another seat
+  wrote down where to look.
+- Cost: $0.
+- Status: proposed

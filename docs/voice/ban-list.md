@@ -4332,3 +4332,66 @@ gap that the same collision had left empty (incident 25).
     sentence about labels is the tinker the structure-watch step refuses and
     the one run 51 reverted inside its own run. The lever is the deploy and
     the pre-send gate, and both are in `docs/ideas.md` under this run's date.
+
+150. The pass that is indistinguishable from the question never being asked.
+    Not a phrase, and like 146 it bans a reading rather than a sentence: an
+    exit code read as a verdict on the artifact when it is a verdict on
+    nothing. The ExO seat found the instance that named it on 2026-11-02, by
+    running
+    `check_voice.py cadence` against `main`, where that subcommand had shipped
+    only on this seat's branch. It printed nothing and exited 0, and so did a
+    nonsense argument. That is filed as
+    INC-2026-11-02-the-subcommand-dispatcher-answered-ok-to-a-name-it-did-not-have
+    and repaired in the same diff.
+    The entry exists because of what that seat said when it closed the
+    repair, which is the sentence to carry: "the class will produce a seventh
+    instance anywhere a gate reports success by saying nothing". The four
+    earlier repairs of this class all assumed the bad output was visible,
+    because all four shipped a wrong SENTENCE, and a sentence can be read and
+    disputed. An empty stdout is also what a clean pass prints, so it has no
+    reader and no artifact to disagree with.
+    Asked of this file the same night, it had three more, all at the argument
+    level rather than the name level, and they are the seventh instance of a
+    class that already had six.
+    ```
+    $ python3 docs/voice/check_voice.py measure /nothing/here.md
+    /nothing/here.md: missing
+    [exit 0]
+
+    $ python3 docs/voice/check_voice.py captions site/content/issues/2026-W39.md
+    CAPTION_FRAME cases                        11 of 11
+    [exit 0]
+
+    $ python3 docs/voice/check_voice.py reading site/content/issues/2026-W39.md
+    surfaces read                               63
+    [exit 0]
+    ```
+    The first is four gates (`measure`, `links`, `firstuse`, `provenance`)
+    answering 0 to an artifact nobody opened, while `delivery`, `devices`,
+    `marks` and `specimens` answered 1 and `standalone` raised, so one file
+    answered one condition four ways. The second is the purest instance in the
+    register: `captions` selects from a fixed table, a path outside that table
+    empties the selection, and the only line left is the gate's count of its
+    own cases, which reads greener than a real pass. The third is a verdict
+    about 63 surfaces printed under the one path the caller named, which is
+    entry 91 inside the file that enforces entry 91.
+    ```
+    Enforced docs/voice/check_voice.py: "dispatch"
+    LANDED docs/voice/check_voice.py: "A target this file cannot open is the dispatcher's defect at the argument level"
+    LANDED docs/voice/check_voice.py: "none of the paths named is a declared caption set"
+    ```
+    One check in `main` rather than one per gate, because the altitude is the
+    repair: the dispatcher's own fix sits there and nine gates had each been
+    left to get this right alone. Exit 2 and not 1, so a caller separates "this
+    was never graded" from "this was graded and failed", which is the
+    distinction the silent 0 destroyed. Thirteen asserted cases across
+    TARGET_CASES, ROUTING_CASES and SELECTION_CASES, and each of the three
+    repairs was backed out in a worktree to confirm its own cases fail without
+    it, because a case that passes either way is the defect wearing the
+    remedy's clothes.
+    The sweep this entry owes, and it is the reason to read the whole table
+    rather than the fix: every gate in this file was run alone and all 31
+    print a line on an ordinary pass, so the defect is never in the ordinary
+    run. It is reachable only when the caller names a target, which means it
+    is reachable only by the runs that are being most careful about which
+    artifact they graded.
