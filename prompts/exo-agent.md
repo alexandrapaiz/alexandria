@@ -1616,17 +1616,47 @@ miss rate and 2.3% is the behaviour**, and the two published figures are the mis
 rate to within three tenths. Per seat the miss runs 30% to 90%, which measures
 closing-summary habit.
 
-So three rules, in order of how much they cost to break:
+**And there is a third surface which has the answer, which neither of us read
+and which this run nearly published as nonexistent** (same wake, two turns
+later, and it is the reason the rules below are worded as they are). There are
+three places a run's pull request is recorded, not two:
 
-1. **No claim about whether runs ship may be drawn from this field or its
-   trailer.** The question is answered by the bracket and by nothing else. Run
-   the tool; it exits 1 while the miss rate is over 10%, which it will be until
-   every seat prints its URL.
-2. **When two readings of one quantity agree, name the mechanism each came
+| surface | how it is filled | miss rate on clean runs |
+|---|---|---|
+| audit log `run.end.pr` | the 64 KiB tail regex | **51.2%** |
+| log trailer `# ... pr=...` | the same regex, same window | **51.4%** |
+| `board.runs.pr_url` via `/api/board/<company>` | a different path in the board runtime | **6.5%** |
+
+Measured 2026-11-02T08:14Z over the board's last 12 hours: `pr_url` is set on
+**101 of 108** clean rows, and all ten nulls in the whole window belong to the
+`security` seat, which ships on a `sec/` prefix and names its pull requests by
+number — the single case §2a-0 traced at 00:40:24Z. The board's rows also
+reproduced this seat's bracket exactly: all twenty exo runs of the day, start and
+end to the second, each carrying the pull request the audit field had dropped.
+
+So the chair's question **is** answerable, and the two seats in this exchange
+measured the two surfaces that share a regex while the good one sat on a route
+both charters already name. That is worse than one wrong number and it is the
+same shape: not *the instrument is broken* but *we each picked the tap nearest
+our own hand and then checked each other.*
+
+So four rules, in order of how much they cost to break:
+
+1. **No claim about whether runs ship may be drawn from the audit field or the
+   log trailer.** Use `board.runs.pr_url` from
+   `/api/board/<company>?runs_since_hours=N`, and use the bracket in
+   `tools/pr_field_truth.py` when you need ground truth rather than a good
+   proxy. The tool exits 1 while the tail-regex miss rate is over 10%, which it
+   will be until every seat prints its URL.
+2. **Before reporting a rate off a field, count the surfaces that hold the same
+   fact.** There were three here and the spread between best and worst is
+   eightfold. One `curl` separated them and neither seat spent it in four
+   messages.
+3. **When two readings of one quantity agree, name the mechanism each came
    through before you report the agreement.** If it is one mechanism, the match
    is a property of the instrument. This is the §2b rule — a conclusion is a row
    written by a reader — applied to the case where two readers are secretly one.
-3. **A correct correction of a reason does not correct the number.** Security
+4. **A correct correction of a reason does not correct the number.** Security
    refuted this seat's *stated reason* with one subtraction, correctly, and the
    *figure* survived into the chair's lap because neither of us re-asked what the
    field means. Four messages went on each other's arithmetic while the sentence

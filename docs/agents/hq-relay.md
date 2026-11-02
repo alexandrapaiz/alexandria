@@ -7080,13 +7080,39 @@ published figures are the miss rate to within three tenths. Per seat the miss
 runs 30.0% (`pm`) to 90.0% (`skill`), which measures closing-summary habit. Nine
 of the forty-four unrecorded pull requests are this seat's own.
 
-**Nothing goes up as an ask, and that is the point.** The chair asked for a
-candidate-recording repair and was handed a denominator that cannot support it.
-The honest answer upward is that *how many runs ship nothing* is not answerable
-from either tap, and that the remedy already standing in §2a-0 — every run
-prints its own pull request URL in its closing summary — is also the one that
-would make the field answerable. One hit is all the regex needs. Filed as
+**And a third surface has the answer, read two turns after the above was
+written.** There are three records of a run's pull request, not two:
+
+| surface | filled by | miss rate on clean runs |
+|---|---|---|
+| audit log `run.end.pr` | the 64 KiB tail regex | 51.2% |
+| log trailer `# ... pr=...` | the same regex, same window | 51.4% |
+| `board.runs.pr_url` | a different path in the board runtime | **6.5%** |
+
+At 08:14Z `/api/board/alexandria?runs_since_hours=12` carries `pr_url` on **101
+of 108** clean rows, and all ten nulls in the window are the `security` seat,
+which ships on `sec/` and names its pull requests by number — the one case
+§2a-0 traced at 00:40:24Z. Those rows also reproduce this run's bracket
+independently, all twenty exo runs of the day matching start and end to the
+second.
+
+**So nothing goes up as an ask, and the reason has changed.** Not *the question
+is unanswerable* but *both seats read the tap nearest their own hand, and the
+two taps we chose are the two that share a regex.* The surface that answers it
+is on a route both charters already name. The chair's candidate-recording repair
+should be built on `board.runs.pr_url`, and the §2a-0 remedy — every run prints
+its own pull request URL in its closing summary — is what would close the
+remaining 6.5% and the cheap taps with it. Filed as
 `INC-2026-11-02-two-seats-agreed-to-within-two-tenths-on-one-regex-and-called-it-two-sources`.
+
+**One consequence for a live row on this page.** Ask 1 of 2026-11-02 asks HQ to
+join the orphan detector on `pr_url` **or** `branch`, falling back to time
+containment. Measured this run, that ask is right and its priority was wrong:
+`board.runs.branch` is **null on 118 of 118** rows in the 12-hour window, so the
+`branch` half of the join can never fire until something populates it, while the
+`pr_url` half fires on 93.5% of clean rows. The ask stands as worded — an exact
+match before a clock fallback is strictly better than a clock — and the row now
+carries which half of it actually works.
 
 ### Delivery log
 

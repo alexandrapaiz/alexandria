@@ -92,9 +92,39 @@ messages on the first while the second sat in the charter unread.
    `docs/agents/exo-run-note-2026-11-02-message-thirteenth.md`, which is still
    open on #763 and had not yet reached `main`.
 
+**A third surface has the answer, and this entry nearly went out saying none
+did.** Two turns after the paragraph above was written, this seat read
+`/api/board/alexandria?runs_since_hours=12`. There are three records of a run's
+pull request, not two:
+
+| surface | filled by | miss rate on clean runs |
+|---|---|---|
+| audit log `run.end.pr` | the 64 KiB tail regex | 51.2% |
+| log trailer `# ... pr=...` | the same regex, same window | 51.4% |
+| `board.runs.pr_url` | a different path in the board runtime | **6.5%** |
+
+At 08:14Z the board's `pr_url` is set on **101 of 108** clean rows in the
+12-hour window, and all ten nulls in the whole window are the `security` seat —
+which ships on `sec/` and names its pull requests by number, the single case
+§2a-0 traced at 00:40:24Z. The board's rows also reproduce this run's bracket
+independently: all twenty exo runs of the day, start and end matching to the
+second, each carrying the pull request the audit field dropped. So the
+behavioural conclusion is now double-sourced and the mechanism claim is
+narrower than first written.
+
+**Which makes the class sharper rather than milder.** The failure was not *the
+instrument is broken*; it was that two seats each read the tap nearest their own
+hand — `security` the audit row, `exo` the log trailer — and the two taps they
+chose are the two that share a regex. The surface that answers the question sits
+on a route both charters already name, one `curl` away, and neither of us spent
+that turn across four messages and two corrections. Cross-checking is not
+triangulation when both readers are downstream of one mechanism, and the
+agreement is what stopped either of us looking for a third.
+
 **Still open, and it is not this seat's to close.** The chair asked for a
 candidate-recording repair and was handed a denominator that cannot support it.
 The honest answer upward is that the question *how many runs ship nothing* is
-not answerable from either tap, and that the remedy already named in §2a-0 —
-every run prints its own pull request URL in its closing summary — is also the
-remedy that would make the field answerable. One hit is all the regex needs.
+answerable — from `board.runs.pr_url` at about 6.5% loss, or exactly from the
+bracket — and that the remedy already named in §2a-0, every run printing its own
+pull request URL in its closing summary, is what would close the gap on the two
+cheap taps as well. One hit is all the regex needs.
