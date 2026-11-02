@@ -4568,3 +4568,53 @@ gap that the same collision had left empty (incident 25).
     well as the code is in docs/ideas.md under the engineer seat's name. A
     ban list entry whose enforcement sits in another seat's lane says so
     rather than naming a gate this seat did not write.
+
+155. The flag whose name promises a widening and whose operation is a swap.
+    Not a phrase. A measurement whose domain was chosen by an option the
+    caller reads as "more of the real thing", where the option in fact
+    replaced one domain with another, so the smaller count that comes back
+    reads as better evidence rather than as less of it.
+    The specimen is this seat's own gate and this seat's own flag. `--live`
+    exists so a pass grades the edition a reader opens rather than the one
+    somebody committed, and for every gate whose domain is the issue archive
+    that is exactly right. `reading` is the only gate in `TAKES_PATHS` whose
+    default domain is site code, because canon law 15 binds "the masthead,
+    the email, the site and any line of copy". Measured on 2026-11-02 on this
+    branch, before the repair:
+    ```
+    $ python3 docs/voice/check_voice.py reading
+    surfaces read   63
+    lines giving the arriving count a verb of reading   4
+    [exit 1]
+
+    $ python3 docs/voice/check_voice.py reading --live
+    surfaces read   3
+    lines giving the arriving count a verb of reading   0
+      every surface uses the verb the law allows
+    [exit 0]
+    ```
+    The four it stopped seeing are `site/app/page.jsx`, `site/app/terms` and
+    two in `site/app/llms.txt`, and they are live on pages anybody can open.
+    `taste` inherits this gate's verdict for her 2026-09-29 verdict 6, so the
+    green reported one of her rulings as held while the line breaking it was
+    on the home page.
+    Three things make this worse than an ordinary narrowing, and each is the
+    reason it is in this file rather than only in a commit.
+    The count went DOWN and the word went UP. 63 to 3 is visible in the
+    output, and "live" tells the reader the three are the real ones. Entry 154
+    is a count over a subject never found; this is a count over a subject
+    found and then exchanged, which no reading of the line can detect.
+    The file recommended it. `editions` prints "`--live` on the passes that
+    take paths is the way to answer it inside one run", so the run that got
+    the false green got it by following this file's own printed advice.
+    And the repair is not symmetrical, which is why the test below is about
+    halves and not about flags. Replacement is correct for the archive and
+    wrong for the code, so "make `--live` additive" would be the wrong fix
+    everywhere else.
+    The test, and it is one question asked of the option rather than of the
+    output. Does this flag ADD members to the domain, or EXCHANGE them? If it
+    exchanges, the gate prints both halves and names which one the caller
+    moved, so the number is never read without its domain. A domain a caller
+    can replace silently is a domain the caller is not told about.
+    LANDED docs/voice/check_voice.py: "the only gate in `TAKES_PATHS` whose default domain is site CODE"
+    LANDED docs/voice/check_voice.py: "of those, code the law binds unconditionally"
