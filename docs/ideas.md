@@ -25733,10 +25733,20 @@ ingestion target rather than a skill target.
   catch of a collision belonging to another seat, which is the only reason it
   exists, and the catch was wrong. A gate whose first cross-seat finding is a
   false positive teaches its next reader to skim it.
+- First step: carry the matched line into the finding and print it under the
+  verdict, in the one gate that reports exit-code collisions. The gate already
+  holds the line number, so the line is one read away and no new measurement
+  is involved.
 - Cost: $0
 - Status: proposed
 
 ### 2026-11-02 - Craft scan: Zotero's translators decide a link's canonical form in the ingest layer, where alexandria asked a model to decide it at write time, and what alexandria does better is record why
+- Trigger: today's build moved a url decision out of a prompt and into code,
+  so the honest comparison is a product that has always kept that decision in
+  the capture layer.
+- What: a scan of Zotero's translator architecture against the resolver this
+  run shipped, with one thing worth stealing and one thing alexandria already
+  does better, below.
 - The product: Zotero, and specifically its translator architecture rather than
   the reference manager around it. A translator is per-site code that turns a
   page into a structured item, and the url normalisation lives there: given an
