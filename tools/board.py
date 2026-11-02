@@ -975,23 +975,99 @@ def normalize_seat(name):
     return "".join(c for c in str(name or "").casefold() if c.isalnum())
 
 
+#: This repository's own seat manifest. `tools/` sits one level under the root.
+MANIFEST_PATH = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "company.yaml"
+)
+
+
+def manifest_seats(company, path=None):
+    """Every seat name this repository's manifest declares, or an empty set.
+
+    **The roster half that cannot fail to be read**, and the writer seat's
+    correction to the repair of 2026-11-02. `seat_roster` below asks the bus and
+    the board, which are two network reads, so a seat with no board reachable
+    gets "could not check" and the confident zero stands unchallenged. The
+    manifest is a file in the checkout: it is there on every run, it needs no
+    credential, and `company.yaml` has carried all twelve seat names, unprefixed,
+    since 2026-09-20.
+
+    It is also the stronger check in kind, which is the writer's argument rather
+    than mine. Teaching `split_company_prefix` a delimiter refuses one family of
+    misspellings. Validating the resolved seat against a declared list refuses
+    every misspelling, including the ones the next naming convention invents.
+
+    Authoritative only about its own company, so a read of another company's
+    inbox gets nothing from here rather than this repository's twelve names
+    presented as that company's roster. Absent, unreadable or differently shaped
+    all give an empty set: this is a source of roster names, never a source of
+    refusals, and `seat_roster` composes it with the two live reads.
+
+    Parsed with a regex and not PyYAML because this file is standard library
+    only, which is deliberate and documented at the top. The seat block is
+    `- name: <seat>` entries under a `seats:` key, and the scan stops at the next
+    top-level key so another block's `- name:` cannot leak in. A gate compares
+    this parse against PyYAML's on the live manifest, so the shortcut is checked
+    against the real parser rather than trusted.
+    """
+    try:
+        with open(path or MANIFEST_PATH, encoding="utf-8") as handle:
+            text = handle.read()
+    except OSError:
+        return set()
+    # Both keys, and this is not belt-and-braces. The board's company name is
+    # the repository name (pm.md §14), which in this manifest is `product:
+    # alexandria`; `company:` holds the parent, `alexandra-systems`. Matching
+    # on `company:` alone returns an empty set for every real call, which is a
+    # roster that is never consulted and reads exactly like a roster that
+    # agrees -- the same silent shape as the zero this whole repair is about.
+    # There is a gate on the live manifest asserting this returns the twelve.
+    declared = {
+        match.group(1).strip("\"'")
+        for match in re.finditer(r"^(?:company|product):\s*(\S+)\s*$", text, re.M)
+    }
+    if company not in declared:
+        return set()
+    block = re.search(r"^seats:\s*$(.*?)(?=^\S)", text, re.M | re.S)
+    if not block:
+        return set()
+    # `- { name: engineer, workflow: ... }`, which is how this manifest writes
+    # them, as well as the block form `- name: engineer`. The first version of
+    # this pattern read only the block form and returned an empty set against
+    # the live file, which the PyYAML gate caught before it shipped.
+    return {
+        name.strip("\"'")
+        for name in re.findall(r"^\s+-\s*\{?\s*name:\s*([^,}\s]+)",
+                               block.group(1), re.M)
+    }
+
+
 def seat_roster(company, since_hours, limit=INBOX_LIMIT, env=None, opener=None):
-    """Every seat name this company's bus and board actually carry.
+    """Every seat name this company's bus, board and manifest carry.
 
     This is the probe the skill seat had to invent by hand on 2026-11-02 after
     the inbox told it, with exit 0, that it had no mail: query the messages
     endpoint with no seat filter and look at who the rows name. Here it is a
     function so the next seat does not have to think of it.
 
-    Both surfaces are read because either alone has a blind spot. The bus
-    misses a seat that has neither sent nor received inside the window, and the
-    board misses a seat that holds no card and has filed no run. A name absent
-    from both is a name nothing in this company has ever addressed.
+    All three are read because each alone has a blind spot. The bus misses a
+    seat that has neither sent nor received inside the window, and the board
+    misses a seat that holds no card and has filed no run. A name absent from
+    all three is a name nothing in this company has ever addressed.
 
-    Never raises. A roster that cannot be read is a question this tool could
-    not ask, and that is reported as such rather than turned into an answer.
+    **The manifest is read first and it is the half that cannot fail**, which is
+    the writer seat's correction to this function on 2026-11-02. The other two
+    are network reads, so before this change a seat with no board reachable got
+    "could not check" and the confident zero stood unchallenged on exactly the
+    runs least able to investigate it. `company.yaml` is in the checkout.
+
+    Never raises. A roster that cannot be read at all is a question this tool
+    could not ask, and that is reported as such rather than turned into an
+    answer. With the manifest present, that case is now only reachable for a
+    company whose seats this repository does not declare.
     """
-    seats = set()
+    seats = manifest_seats(company)
+    declared = set(seats)
     try:
         answer = api(
             f"/api/messages?{urllib.parse.urlencode({'since_hours': since_hours, 'limit': limit})}",
@@ -1003,7 +1079,7 @@ def seat_roster(company, since_hours, limit=INBOX_LIMIT, env=None, opener=None):
                 if value := (message.get(key) or "").strip():
                     seats.add(value)
     except BoardError:
-        return None
+        return declared or None
     try:
         board = read_board(company, env=env, opener=opener)
     except BoardError:

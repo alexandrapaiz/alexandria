@@ -1199,25 +1199,129 @@ def test_the_json_form_carries_the_verdict_so_a_script_can_read_it(live_board, c
     assert json.loads(capsys.readouterr().out)["seat_on_bus"] is True
 
 
-def test_a_roster_that_cannot_be_read_is_reported_as_unasked_not_as_an_answer(
-        live_board, capsys, monkeypatch):
-    # The honest third state. The command does not know, so it says it does not
-    # know and leaves the exit status alone rather than failing a run on a
-    # board hiccup.
+def refuse_the_unfiltered_read(monkeypatch):
+    """The board up for a filtered read and down for the roster probe."""
     real = board.api
 
-    def refuse_the_unfiltered_read(path, *a, **kw):
+    def refusing(path, *a, **kw):
         if path.startswith("/api/messages?") and "to_seat" not in path:
             raise board.BoardError("board unreachable", code=None)
         return real(path, *a, **kw)
 
-    monkeypatch.setattr(board, "api", refuse_the_unfiltered_read)
+    monkeypatch.setattr(board, "api", refusing)
+
+
+def test_the_manifest_answers_the_roster_question_when_the_board_cannot(
+        live_board, capsys, monkeypatch):
+    """The writer seat's correction, and the behaviour change worth naming.
+
+    Until 2026-11-02 both roster sources were network reads, so a board that
+    could not answer the unfiltered probe left the confident zero unverified:
+    the command printed "could not check" and exited 0, which is the same exit a
+    good read of an empty inbox gives. That is the honest answer only while
+    there is nothing else to ask. `company.yaml` is in the checkout, so there
+    was.
+    """
+    refuse_the_unfiltered_read(monkeypatch)
+    code = board.main(["inbox", "--company", "alexandria", "--seat", "enginer"])
+    captured = capsys.readouterr()
+    assert code == board.EXIT_UNKNOWN_SEAT, captured.err
+    assert "not trustworthy" in captured.out
+    assert "could not check" not in captured.err
+    # And the suggestion still works off the manifest alone, which is the half
+    # that proves the manifest is a usable roster and not just a yes/no oracle.
+    # `enginer` above is not suggestible: it drops a letter, so it neither
+    # normalises to a real name nor ends with one. `alexandria_engineer` is the
+    # case layer two exists for, a delimiter nobody taught the resolver.
+    board.main(["inbox", "--company", "alexandria", "--seat", "alexandria_engineer"])
+    suggested = capsys.readouterr().out
+    assert "the bus spells it 'engineer'" in suggested, suggested
+    assert "--seat engineer" in suggested
+
+
+def test_a_roster_that_cannot_be_read_at_all_is_still_reported_as_unasked(
+        live_board, capsys, monkeypatch):
+    # The honest third state, now reachable only when the manifest is gone too.
+    # The command does not know, so it says it does not know and leaves the exit
+    # status alone rather than failing a run on a board hiccup.
+    refuse_the_unfiltered_read(monkeypatch)
+    monkeypatch.setattr(board, "MANIFEST_PATH", "/nonexistent/company.yaml")
     code = board.main(["inbox", "--company", "alexandria", "--seat", "enginer"])
     captured = capsys.readouterr()
     assert code == 0
     assert "could not check" in captured.err
     assert "unverified" in captured.err
     assert "not trustworthy" not in captured.out
+
+
+def test_the_manifest_parse_agrees_with_pyyaml_on_the_live_file():
+    """A regex standing in for a YAML parser, checked against the YAML parser.
+
+    `board.py` is standard library only and that is deliberate, so the manifest
+    is read with a regex. The shortcut is only honest if something compares it
+    to the real thing on the real file, and this gate earned its place twice
+    while the function was being written: the first pattern matched `company:`
+    where the board's company name is the `product:` key, and the second read
+    only the block form `- name: x` where this manifest writes inline mappings
+    `- { name: x, ... }`. Both returned an empty set for every real call, which
+    is a roster that is never consulted and reads exactly like a roster that
+    agrees.
+    """
+    yaml = pytest.importorskip("yaml")
+    with open(board.MANIFEST_PATH, encoding="utf-8") as handle:
+        declared = yaml.safe_load(handle)
+    truth = {seat["name"] for seat in declared["seats"]}
+    assert board.manifest_seats("alexandria") == truth
+    assert len(truth) == 12, sorted(truth)
+
+
+def test_the_manifest_is_authoritative_only_about_its_own_company():
+    """Another company's inbox must not be checked against this one's seats.
+
+    The failure would be confident and wrong in the expensive direction: a real
+    seat of another company reported as a name nothing carries, with a
+    suggestion drawn from this repository's twelve.
+    """
+    assert board.manifest_seats("Ursa") == set()
+    # The parent name resolves too, because `company:` is `alexandra-systems`
+    # and the board may be asked for either.
+    assert board.manifest_seats("alexandra-systems") == board.manifest_seats("alexandria")
+
+
+def test_an_unreadable_manifest_contributes_nothing_and_refuses_nothing(tmp_path):
+    """This is a source of roster names, never a source of refusals.
+
+    A manifest that is absent, truncated mid-write, or reshaped by a later
+    convention must leave the two live reads doing exactly what they did
+    before. Returning a refusal from here would make a file edit able to break
+    every seat's inbox.
+    """
+    assert board.manifest_seats("alexandria", path=str(tmp_path / "gone.yaml")) == set()
+    empty = tmp_path / "empty.yaml"
+    empty.write_text("company: alexandria\n")
+    assert board.manifest_seats("alexandria", path=str(empty)) == set()
+    reshaped = tmp_path / "reshaped.yaml"
+    reshaped.write_text("product: alexandria\nseats:\n  engineer: {}\n")
+    assert board.manifest_seats("alexandria", path=str(reshaped)) == set()
+
+
+def test_the_seat_block_does_not_leak_another_blocks_names(tmp_path):
+    """The scan stops at the next top-level key, so a sibling list cannot leak.
+
+    `company.yaml` carries `surfaces:` and `standards:` beside `seats:`, and a
+    roster that quietly absorbed another block's names would accept a surface
+    path as a seat name.
+    """
+    path = tmp_path / "c.yaml"
+    path.write_text(
+        "product: alexandria\n"
+        "seats:\n"
+        "  - { name: engineer, cadence: daily }\n"
+        "  - name: pm\n"
+        "surfaces:\n"
+        "  - { name: not-a-seat }\n"
+    )
+    assert board.manifest_seats("alexandria", path=str(path)) == {"engineer", "pm"}
 
 
 def test_the_roster_reads_both_surfaces_because_each_has_a_blind_spot(live_board):
