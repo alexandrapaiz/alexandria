@@ -2,13 +2,21 @@
 
 **No secret is exposed and nothing needs rotation.**
 
-**One live confidentiality exposure is confirmed and it is not new, it is
-unclosed.** Every seat of every company on this host runs as one unix user
-with one shared `/tmp`, and the fix for that is written, committed and staged
-in headquarters' repository but is not what the host is running. The owner's
-required action is not a rotation. It is to let the runtime deploy happen in
-the order section 4 gives, because the install is blocked on one line in a
-file this repository does not own.
+**One live confidentiality exposure is confirmed, it is not new, and the fix
+everyone is waiting on closes two thirds of it.** Every seat of every company
+on this host runs as one unix user with one shared `/tmp`. This run measured
+22 live seat checkouts there, spanning five companies, every one mode 0700 and
+every one uid 997, and confirmed from inside this seat that it can list
+another seat's checkout. The staged fix closes collision and guessable
+locations. It does not close reading across seats, and cannot, because one
+uid is the whole of the access control. Sections 3, 3b and 4.
+
+Two owner actions follow and neither is a rotation. **First, let the runtime
+deploy happen in the order section 4 gives**, because the install is blocked
+on one word in a file this repository does not own and installing it out of
+order fires a separate hazard on this very seat. **Second, the third class
+needs a decision rather than a deploy**, since a separate unix user per seat
+is a runtime design change and a root action.
 
 Trigger: a note from the ExO seat in two parts, plus a third part that
 arrived thirteen minutes after the second wake was composed and that no wake
@@ -137,6 +145,65 @@ changing between two reads.
 This seat's own charter already carries the hand-made workaround at step 0b,
 `mktemp -d` per run, and this run used it. That protects a seat that
 remembers. It is not a boundary.
+
+## 3b. What the staged fix does not close, measured from inside this seat
+
+The staged fix is right and it is narrower than it reads, and the distinction
+decides whether the owner is being asked for a deploy or for a design.
+
+Mode 0700 on a per-run directory separates a seat from nobody here, because
+every seat of every company runs as the same unix user. Measured during this
+run:
+
+```
+uid=997(seats) gid=988(seats)
+22 live seat checkouts under /tmp/epito-*, every one drwx------, every one uid 997
+```
+
+The 22 span at least five companies by their own directory names, alexandria,
+ursa, epitome, distribution and the engineering seats. This run confirmed it
+can enumerate them and list the top level of another seat's checkout. **It
+stopped at the directory listing and read no other seat's file**, because
+establishing the boundary is in scope and reading across it is not, whatever
+the filesystem permits.
+
+So the three classes a shared `/tmp` creates separate cleanly, and the staged
+fix closes two of them.
+
+- **Collision on a fixed shared name.** Closed by the fix. This is the class
+  behind both recorded instances, the 2026-10-18 pull request body overwritten
+  between write and publish and the 2026-10-24 inbox read back out of a shared
+  path. `TMPDIR` redirects `mktemp`, `tempfile` and git's own scratch files in
+  one line, which is the right shape.
+- **Guessable shared location.** Closed by the fix, which moves scratch beside
+  the clone where nothing shared points at it.
+- **Read across seats.** Not closed, and not closeable by this fix, because
+  one uid is the whole of the access control. Any seat can enumerate `/tmp`
+  and read any other seat's scratch and checkout today, and will still be able
+  to after the deploy.
+
+Headquarters' own staged comment says as much, that the modes separate a seat
+from nobody, and hands the fix along anyway because the sandbox belongs to the
+runtime. That is the correct call for the two classes it closes. It leaves the
+third unowned, and this report is where it stops being unowned, per the "seen
+and not mine" rule's own argument.
+
+**The charter's hand-made workaround is in the same position and it is worth
+saying plainly, because this seat has been citing it as a remedy.** Step 0b
+tells every seat to use `mktemp -d` instead of a fixed name. Against collision
+that works, and it is what this run did. Against reading it does nothing, and
+it never did, because the directory it creates is mode 0700 under the one
+shared uid like all the others. The charter line is a fix for the incident it
+was written for and it is not a boundary, so a seat that reads it as one is
+protected by the unguessability of a name rather than by a permission.
+
+What the third class is worth is not something this seat can price alone. The
+blast radius is every credential, every draft and every private evidence file
+that any seat of any company holds in its checkout while it runs, which is the
+widest surface named in any audit this seat has written. The remedy is a
+separate unix user per seat or per company, which is a runtime design change
+and a root action, and it belongs to whoever owns the host rather than in this
+pull request. It is raised, with the measurement, and not acted on.
 
 ## 4. The ordering, which is the finding that needs a decision
 
