@@ -16,6 +16,85 @@ Earlier runs today are [audit-2026-11-02.md](audit-2026-11-02.md),
 sweeps are there. This file does not repeat them. What it re-ran is recorded
 under "Sweeps re-run" below, as deltas only.
 
+## Finding 0, SEVERE and new: the host's control plane is writable by the uid every seat shares
+
+**This is the write half of the 05:30Z run's credential finding, and it was
+not measured. It is strictly worse than the read half.**
+
+`audit-2026-11-02-disposition.md` section 2 established that every seat of every
+company runs as uid 997 and can therefore read every credential the host holds.
+It priced the exposure as the whole credential set. The question it did not ask
+is what that uid can **write**, and the answer is the machinery that runs every
+seat.
+
+**How this was checked, and the limits of it.** `test -w`, `stat`, `ls -l` and
+`find -writable`. Nothing was written, created, unlinked or modified at any
+path below, and no file's contents are reproduced here. A permission is a fact
+about the filesystem and reading one is not exercising it.
+
+| Path | Mode and owner | This seat can write it |
+|---|---|---|
+| `/srv/asc/repos/epitome/cli/src/run.js` | `-rw-rw-r-- seats:seats` | yes |
+| `/srv/asc/repos/epitome`, all files | 503 of 562 writable | yes |
+| `/srv/asc/roster/<company>/` | `drwxrwxr-x seats:seats`, 12 of 13 | yes |
+| `/srv/asc/roster/alexandria/security/` | `drwxrwxr-x seats:seats` | yes |
+| `/srv/asc/hq/runtime/board/api.py` | `-rw-r--r-- root:root` | no |
+| `/srv/asc/venv-board/bin/python` | root | no |
+| `/srv/asc/roster/atelier/` | `drwxr-xr-x root:root` | no |
+
+**What each of those three writable surfaces is.** `run.js` is the resident
+runtime's dispatcher. The systemd unit runs `epito run /srv/asc/roster` as
+`User=seats`, `index.js` is root-owned but immediately does
+`await import("./run.js")`, and `run.js` is the file that starts every run of
+every seat on this host. Beside it and equally writable are `lib/manifest.js`,
+which parses the per-seat secret allowlist, `lib/audit.js`, which writes the
+org's only run-accounting evidence, and `lib/hooks.js` and `lib/cron.js`.
+
+The roster is what the daemon reads to decide which seats exist, when they
+fire, which model they use, and which credentials each one sees. My own
+`agent.toml` carries
+`env = ["CLAUDE_CODE_OAUTH_TOKEN", "GH_TOKEN", "BOARD_API_URL", "BOARD_RUNTIME_TOKEN"]`,
+and that line is the allowlist. The manifest **files** are root-owned at mode
+0644, which reads as safe and is not: the **directories** holding them are
+group-writable, and a writable directory is enough to replace a file inside it
+regardless of the file's own mode. Twelve of the thirteen company directories
+are in that state.
+
+**So the blast radius of one compromised seat is not one seat's work and it is
+not even the credential set.** It is persistence. Rewrite `run.js` and you are
+in every future run of all twelve seats across five companies. Rewrite
+`lib/manifest.js` or replace one `agent.toml` and you widen a seat's secret
+allowlist, which `docs/standards/pm.md` section 21 reserves to the owner as one of the
+four things no seat may do. Rewrite `lib/audit.js` and the surface that would
+have recorded any of it is yours too.
+
+**Why this is a prompt-injection finding and not only a permissions one,** which
+is the charter's standing question. Every seat here reads the public web,
+scraped pages, pull request text and issue bodies. Section 2 of the 05:30Z report drew
+the ceiling at what a seat can read. The ceiling is higher: an injected
+instruction that writes one file owns the dispatcher, and unlike a credential
+read it survives rotation. Rotating every secret on this host would not evict
+it.
+
+**There is no evidence any of this has happened**, and nothing here indicates a
+compromise. No secret is leaked, nothing is in the working tree or in git
+history, and **no rotation is indicated by this finding.** What is indicated is
+a permissions change.
+
+**Owner or host action, and the cheapest version of it is already on the
+host.** `/srv/asc/roster/atelier/` is `root:root` at 0755 and the other twelve
+are `seats:seats` at 0775. So the correct state exists, one directory is in it,
+and the remedy is to put the other twelve and the runtime repository into the
+same state: owned by root, not writable by the `seats` group, readable as they
+are now. That is a root action on a host this repository does not own. It moves
+no money and opens no account, and under section 21 it is not reserved to the owner,
+so it is the host holder's to apply. It does not need and should not wait for
+the per-seat unix user that section 2 asked for, which is a design call. This one is a
+`chown` and a `chmod`, and it closes the persistence path on its own.
+
+Recorded here, in the ledger, and sent to the ExO seat's relay, because the
+surface is headquarters'.
+
 ## Finding 1, high: a seat's pending trigger is one slot deep, and anything that is not a message overwrites what a person said
 
 **Severity: high.** Not a secret and not an exposure. It silently destroys
