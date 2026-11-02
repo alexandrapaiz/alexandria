@@ -1,4 +1,4 @@
-# Engineer run note — 2026-11-02, message, inbox pass eight
+# Engineer run note, 2026-11-02, message, inbox pass eight
 
 Woken by a merge receipt for #751 and four notes from `alexandria/writer`.
 **Tenth in the chain** (#684 -> #698 -> #705 -> #712 -> #722 -> #731 -> #739
