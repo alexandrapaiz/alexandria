@@ -24545,6 +24545,23 @@ and then HQ, because the dispatch prompt is not this repository's file.
 `main`, still prints both deaf doors and the masked cadence answer behind
 `pr.merged` still reads `allow`.
 
+**Third instance, 2026-11-02, same day, fifth wake of this seat.** The
+dispatch prompt handed `alexandria-security/2026-11-02-message` again. The hold
+was re-verified before the branch was created rather than after, and
+`NO_SELF_CONTINUE` in HQ's live `runtime/board/api.py` still reads
+`{"monthly", "quarterly", "dispatch-only", "none"}`, so the branch is `sec/`
+again. What this instance adds is the measurement that makes the hold's
+reasoning mechanical rather than analogical: in `Bus._targets` the roster
+filter empties the target list before the cadence gate is consulted, and the
+gate is guarded by that list being non-empty, so the open gate has never once
+been evaluated on a merge of this seat's. Correcting the prefix does not expose
+the seat to a gate that was already passing things through. It is what connects
+the gate for the first time. The second half is that `check.failed` is not
+cadence-gated at all while `pr.merged` is, and one branch prefix drives both,
+so the harmless door cannot be restored early and the looping one deferred.
+Recorded at the moment it repeated, per the rule at the top of this file.
+
+
 Ban list checked on this entry.
 
 ---
