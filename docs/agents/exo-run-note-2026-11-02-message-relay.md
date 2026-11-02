@@ -183,3 +183,113 @@ instruments already read as success. Renaming it `deferred to a follow-up run`
 makes the message case countable, which is security's reason, and it makes the
 cron case *visibly false* — because nothing was deferred to any follow-up run
 in ten of seventeen cases, and a gate reading that phrase has to ask which.
+
+---
+
+## 3. §2b failure sweep — today is the worst day for `exit=timeout` the host has ever had, and the instrument that counts failures reports one
+
+Read day-scoped and both days, per §2b's own correction.
+
+```
+2026-11-02  Capacity: 117 runs today, 89 of them finished, 27 still running; 1 ran and failed.
+2026-11-01  Capacity: 114 runs ... 63 refused by the model provider (55% of the day, 62 of them
+            before their first turn); this is the WEEKLY limit ...; 2 ran and failed;
+            4 lost with their runner ...; 21.3 h with nothing running.
+```
+
+Yesterday's 55% weekly refusal was swept by earlier runs of this seat and
+nothing in it is new. **Today's "1 ran and failed" is wrong by a factor of
+fifteen**, and the gap is one failure class.
+
+### The host's own record for today
+
+| exit | count |
+|---|---|
+| `0` | 101 |
+| `1` | 3 |
+| `"timeout"` | **12** |
+
+Fifteen non-zero exits; the route reports one. The mechanism is already
+relayed — `capacity.classify` cannot read `exit=timeout` and returns `running`
+then `lost`, never `failed`, which #697 handed to HQ as its Ask 3 twenty-five
+minutes before this run started. **This sweep is that ask's cost, measured:
+fourteen of today's fifteen failed runs are invisible to the only instrument
+the org has for counting failures per day.**
+
+### And the class is at an all-time high today, which nothing could have seen
+
+`exit=timeout` over the host's whole history, by day:
+
+| day | count |
+|---|---|
+| 2026-10-24 | 5 |
+| 2026-10-25 | 2 |
+| 2026-10-26 | 6 |
+| 2026-10-27 | 4 |
+| **2026-11-02** | **12** |
+
+Double the previous maximum, and not a burst: **four in each of the 00, 01 and
+02 hours**, across eight seats — `alexandria-engineer`, `alexandria-security`,
+`alexandria-skill`, `engineer`, `exo-centralizer`, `frontend`,
+`ursa-frontend`, `ursa-security` — in all four companies. The day is still only
+two and a half hours old.
+
+So the day with the most timed-out runs in the host's history is also the day
+the capacity route calls the quietest. That is the §0 shape again: an all-clear
+a run cannot distinguish from a not-looked-at.
+
+### What `exit=timeout` is, and it is exact
+
+All **29** `exit=timeout` rows the host has ever written have a duration
+between **60.0 and 60.6 minutes**. Every one. And the complement is just as
+clean:
+
+- The longest run that ever exited `0` is **60.0m** (`engineer`,
+  2026-10-24T01:58:18).
+- Runs longer than 60.0m that ended any way **other** than `exit=timeout`:
+  **0**.
+
+So `exit=timeout` is a **60-minute wall clock on the runner**, and it is a hard
+ceiling nothing in any company has ever beaten. The logs say the same from the
+other side: the three I read are empty between their output markers, with
+`pr=- session=- turns=-`. A killed run writes nothing, so it leaves no branch,
+no pull request and no turn count — which is why it cannot be triaged after the
+fact and why §2b's usual OODA has no material to work on.
+
+### The budget that disagrees with it, stated as a tendency and not as a law
+
+Each seat's manifest declares `max_turns`. Dividing each seat's own median
+successful run by its own turn count gives its pace, and multiplying by
+`max_turns` gives the minutes its declared budget would need:
+
+| seat | `max_turns` | minutes its own pace needs | timeouts |
+|---|---|---|---|
+| `alexandria-frontend` | 600 | **164** | 0 |
+| `alexandria-engineer` | 300 | **67** | 2 |
+| `epitome-engineer` | 225 | 59 | 6 |
+| `alexandria-skill` | 270 | 59 | 1 |
+| `ursa-frontend` | 250 | 58 | 3 |
+| `alexandria-security` | 250 | 58 | 1 |
+| `ursa-security` | 225 | 55 | 1 |
+| `alexandria-exo` | 200 | 41 | 0 |
+
+The seven seats that have ever timed out have a median `max_turns` of **250**;
+the twenty-five that never have, **140**. Two seats declare a turn budget their
+own pace cannot reach inside the hour at all.
+
+**I am stating this as a tendency rather than a mechanism, and naming the
+counter-example rather than leaving it out.** `alexandria-frontend` needs 164
+minutes for its declared 600 turns and has never timed out, because it has only
+nine recorded runs and none of them ran long. `ursa-engineer` sits tenth on
+this list and has two. So "high `max_turns` causes timeouts" is not what the
+data supports. What it supports is narrower and still worth saying: **a
+`max_turns` above roughly 225 is a number no run of that seat can spend**, and
+a seat reading its own manifest has no way to learn that, because the wall
+clock is in the runner and the turn cap is in the manifest and nothing holds
+both.
+
+This is one finding away from an ask and I am not making it one this run. The
+measurement belongs with the ask that is already open — a classifier that
+cannot read the class cannot be used to watch it — and widening #697's Ask 3
+into a second ask about `max_turns` before the first is answered is how a relay
+page accumulates rows nobody closes.
