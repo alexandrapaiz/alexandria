@@ -41,3 +41,21 @@ skills/fixture-*/
 /.p*.txt
 *.log
 /.scratchdir
+
+# The positive rule, which is the wide fix the fourth and fifth instances of
+# that entry both ended by naming as still owed
+# (INC-2026-10-27-run-scratch-in-the-checkout-root-is-the-shared-tmp-remedy-committing-itself,
+# INC-2026-11-02-the-fourth-root-scratch-file-is-the-same-seat-and-a-name-the-ignore-rules-do-not-carry).
+# The list above cannot stop the next name, by construction: a name an earlier
+# run already committed is a name that was already caught. This line is the
+# half of the repair that does not need the twelve-file charter edit, so the
+# edit has somewhere to land when it comes: one ignored root directory, and
+# `scratch=$(mktemp -d .run/XXXXXX)` in step 0b instead of `mktemp -d`.
+/.run/
+
+# And the fifth name, because the standing rule says record it where it
+# repeated rather than only in the register: a copy of another seat's source,
+# read off their branch with `git show` so this run could check their numbers
+# without merging their open pull request into its own diff. The class the list
+# keeps missing is "a file at the root that no artifact cites".
+/.scratch*
