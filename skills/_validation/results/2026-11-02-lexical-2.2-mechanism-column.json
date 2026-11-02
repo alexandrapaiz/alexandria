@@ -13,7 +13,7 @@
   "library": {
     "agent-containment": {
       "path": "skills/agent-containment/SKILL.md",
-      "sha256": "a7610cef1effd264"
+      "sha256": "6f24d04866814c80"
     },
     "agent-memory-selection": {
       "path": "skills/agent-memory-selection/SKILL.md",
@@ -95,7 +95,7 @@
     {
       "skill": "agent-containment",
       "source": "skills/agent-containment/triggers.json",
-      "skill_sha256": "a7610cef1effd264",
+      "skill_sha256": "6f24d04866814c80",
       "suite_version": 2,
       "cases": [
         {

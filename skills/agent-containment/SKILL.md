@@ -7,7 +7,7 @@ provenance:
   extracted: 2026-09-30
   revised: 2026-11-02
   validated: ""
-  differential_screen: "not run. This seat has no route to either eval arm (no GROQ_API_KEY in agent-skill.yml, no benchmark provider in pipeline/budget.py), both queued in docs/agents/pending-workflow-changes.md. Every section below is unscreened; the Validation tags name which ones this run expects a bare subject to already supply."
+  differential_screen: "not run. This seat has no route to either eval arm (no GROQ_API_KEY in agent-skill.yml, no benchmark provider in pipeline/budget.py), both queued in docs/agents/pending-workflow-changes.md, item 12. Every section below is unscreened; the Validation tags name which ones this run expects a bare subject to already supply. 2026-11-02 adds one measurement of the blocker rather than another description of it: `--plan` prices the cheap arm at 72 subject calls on kimi-k2.6 at $0.00813 each, about $0.59 against the $0.75 cap, so the obstacle is one secret and not the money. The same absence stops the ADR-40 item 6 task audit, which needs the judge model and exits `NoModelAnswered`, so every task here is also unaudited for ambiguity, gameability and realism."
   reviews:
     - "none filed yet. The lane is open at reviews/ (ADR-38); see reviews/README.md for what this skill most wants reported."
   claims: [1652, 1653, 1654, 1655, 1656, 1224, 1225, 1226, 1227, 1228, 882, 883, 884, 885, 167]
