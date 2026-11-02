@@ -1845,33 +1845,63 @@ def weekly(week: str = "") -> str:
     regenerating = bool(week.strip())
     week, dates = week_from_label(week) if regenerating else week_just_ended()
 
-    # One line for both paths, and that is the repair for
-    # `INC-2026-10-18-press-recovery-content-anchor`. The label and the date
-    # range were put on one anchor on 2026-09-28 and the nine queries that fill
-    # the body were left on `now() - interval '7 days'`, independently. On a
-    # Monday the two agree closely enough that nobody notices. On any other
-    # day, which is what a recovery always is, the issue prints the right week
-    # on the masthead and the seven days before the run underneath it,
-    # permanently, because `digests` upserts on week. That is why the 2026-W41
-    # recovery was withdrawn on 2026-10-18 rather than run, and the one-off
-    # manual run in this module's own docstring is exactly such a recovery.
-    #
-    # For an on-time cron this moves the bound by the seconds the run takes to
-    # start. For a late one it moves it to the week the issue says it is about.
-    # Both are what the masthead already claims.
-    window = week_window(week)
-    prompt = open("/root/prompts/digest.md").read()
-    short_prompt = open("/root/prompts/digest-short.md").read()
-    # Which prompt wrote the issue is not known until the walk is over, so the
-    # sha is taken from whichever one did. A row that says `digest.md` for an
-    # issue the short edition wrote would be a record of record that is wrong
-    # about the one fact it exists to hold.
-    shas = {EDITION_FULL: hashlib.sha256(prompt.encode()).hexdigest()[:12],
-            EDITION_SHORT: hashlib.sha256(
-                short_prompt.encode()).hexdigest()[:12]}
-    sha = shas[EDITION_FULL]
-
     try:
+        # The invocation record, first, and in a connection of its own. This
+        # order is the repair for the ExO seat's card of 2026-11-02: the press
+        # had no agent-readable record that it was INVOKED. The row went in
+        # after the availability check and after the reads below, so a death
+        # anywhere above it left no row, and the only trace of a run that
+        # started was an alarm email, which is a record a person reads and no
+        # seat can query. Every surface that asks "did the press run" reads
+        # `deploy_runtime`, and `first_seen_at` on this same row is what dates
+        # a deploy for `tools/delivery_health.py`, so the app most likely to be
+        # missing its slot was exactly the app the drift guard could not see.
+        #
+        # Guardrail, sprint 2026-09-28 item 2: this says what the container is
+        # actually running. It cannot raise and cannot abort a transaction;
+        # pipeline/runtime_sha.py says how.
+        #
+        # Its own connection rather than the run's, because the run's closes
+        # before the model call on purpose (the comment at `print_issue` says
+        # why) and the availability check below is a network call. A record
+        # written and committed in a second is the cheapest durable write this
+        # function has, and the only thing left above it is the connect itself,
+        # which is the one failure no row can survive anyway.
+        with psycopg.connect(os.environ["DATABASE_URL"]) as conn:
+            print(runtime_guard().record_runtime(conn, "weekly", __file__)[1])
+
+        # One line for both paths, and that is the repair for
+        # `INC-2026-10-18-press-recovery-content-anchor`. The label and the
+        # date range were put on one anchor on 2026-09-28 and the nine queries
+        # that fill the body were left on `now() - interval '7 days'`,
+        # independently. On a Monday the two agree closely enough that nobody
+        # notices. On any other day, which is what a recovery always is, the
+        # issue prints the right week on the masthead and the seven days
+        # before the run underneath it, permanently, because `digests` upserts
+        # on week. That is why the 2026-W41 recovery was withdrawn on
+        # 2026-10-18 rather than run, and the one-off manual run in this
+        # module's own docstring is exactly such a recovery.
+        #
+        # For an on-time cron this moves the bound by the seconds the run takes
+        # to start. For a late one it moves it to the week the issue says it is
+        # about. Both are what the masthead already claims.
+        #
+        # Inside the try as of 2026-11-02, with the two reads below it. A
+        # prompt file missing from the image raised here, above the try, so it
+        # produced no row and no alarm mail either: the press failed in the one
+        # way that reached nobody at all.
+        window = week_window(week)
+        prompt = open("/root/prompts/digest.md").read()
+        short_prompt = open("/root/prompts/digest-short.md").read()
+        # Which prompt wrote the issue is not known until the walk is over, so
+        # the sha is taken from whichever one did. A row that says `digest.md`
+        # for an issue the short edition wrote would be a record of record that
+        # is wrong about the one fact it exists to hold.
+        shas = {EDITION_FULL: hashlib.sha256(prompt.encode()).hexdigest()[:12],
+                EDITION_SHORT: hashlib.sha256(
+                    short_prompt.encode()).hexdigest()[:12]}
+        sha = shas[EDITION_FULL]
+
         # Run-start availability check, before a single token is spent and
         # before the citation pass burns twenty minutes writing nothing.
         # Incident 24: the budget guard proved the request fit a model that no
@@ -1879,10 +1909,6 @@ def weekly(week: str = "") -> str:
         available = check_availability()
 
         with psycopg.connect(os.environ["DATABASE_URL"]) as conn:
-            # Guardrail, sprint 2026-09-28 item 2: say what this container is
-            # actually running before anything else happens. It cannot raise and
-            # cannot abort this transaction; pipeline/runtime_sha.py says how.
-            print(runtime_guard().record_runtime(conn, "weekly", __file__)[1])
             if regenerating:
                 # The citation pass writes today's counts into citation_log,
                 # and this run reports on a week that is over. Refreshing

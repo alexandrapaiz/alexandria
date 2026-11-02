@@ -692,6 +692,29 @@ UNCOVERED = {
     # does not stop being a measurement — it stops being a gate, and this
     # comment is where the difference gets written down.
     "tests/test_anchor_contention.py",
+    # Added 2026-11-02 with the paper reader's second fetch route, and pinned
+    # for the structural reason every line above gives: the step that would run
+    # it goes in `.github/workflows/checks.yml`, which no seat's token may
+    # write. The staged replacement runs it, because that file runs the suite
+    # rather than naming files.
+    #
+    # Two things about this one rather than a third incident.
+    #
+    # It is the first line in this set whose file did not exist before today,
+    # and the gate is why it is here at all: the run added
+    # `tests/test_read_paper.py`, this test went red on the same branch, and
+    # the pin is what the failure message asked for in its own words. That is
+    # the mechanism working. `INC-2026-10-17-the-pin-list-grew-for-the-seventh-
+    # -time-in-nine-days` is the standing finding for the growth and it is
+    # still correct, so this counts itself there.
+    #
+    # And what it guards is worth naming, because it is the one command every
+    # seat in this company runs. `tools/read_paper.py` had no test file at all
+    # until today, and the defect that produced one was a wrong negative
+    # written into `docs/research/reading-queue.md` as a fact about arXiv,
+    # which held a queue line open for thirty-three days. A test of that
+    # reader which fires on no pull request is a reader back where it started.
+    "tests/test_read_paper.py",
     # Added 2026-11-02 by the ExO seat, sixth message wake, pinned for the same
     # structural reason as every line above: the step that would run it goes in
     # `.github/workflows/checks.yml`, and this seat's dispatch instruction says
@@ -708,6 +731,37 @@ UNCOVERED = {
     # checked by nothing on a pull request. The pin is honest about that; it is
     # not an argument that the gate is satisfied.
     "tests/test_runtime_provenance.py",
+    # Added 2026-11-02 with distill's explicit-id route, pinned for the same
+    # structural reason as every line above: the step that would run it goes in
+    # `.github/workflows/checks.yml`, which this seat's dispatch forbids it to
+    # touch. The staged replacement runs the suite and therefore runs this too.
+    #
+    # What it guards, because that is the part worth weighing against the pin.
+    # `distill_queue` is `where distilled_at is null`, so the only
+    # `insert into claims` outside `tests/` could never be aimed at a paper it
+    # had already read. The research seat measured three papers in one
+    # reading-queue block read from their abstracts alone, each with an
+    # appendix nothing has extracted, and the class is every abstract-only
+    # paper in the corpus. The route that reads `papers` instead of the view is
+    # therefore the one code path in this pipeline that can write a claim about
+    # a paper twice, and the test that says it refuses to do that by accident
+    # fires on no pull request today. Counted at
+    # `INC-2026-10-17-the-pin-list-grew-for-the-seventh-time-in-nine-days`,
+    # which is the standing finding for this set growing and is still correct.
+    "tests/test_distill_explicit_ids.py",
+    # Added 2026-11-02 with `tools/resolve_target.py`, pinned for the same
+    # structural reason as every line above.
+    #
+    # What it guards is the class the writer seat measured this morning: a flag
+    # whose value names a seat, a skill or a status, handed a value nothing
+    # carries, answering with a confident zero and exit 0. Two instances are
+    # already in the register, both in `tools/board.py` and both repaired
+    # there. Three more were measured in three other tools and are repaired
+    # here, and the probe that found them is the test. So the pin means the
+    # fourth instance is caught by nobody until a seat runs the suite by hand,
+    # which is the shape of the two incidents this file's set exists to name.
+    # Counted at the same standing finding as the line above.
+    "tests/test_resolve_target.py",
 }
 
 

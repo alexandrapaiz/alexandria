@@ -358,11 +358,10 @@ def review_file(row, raw: str, problems: list[str]) -> list[Finding]:
             # reviewer says `unknown` for exactly as long as that is true. The
             # ADR-36 gate still blocks, the same way it does for a draft
             # waiting on the queue.
+            reason, expiry = registrar.quarantine_entry(slug)
             findings.append(Finding(
                 "registrable", "unknown",
-                f"{problem} Quarantined until "
-                f"{registrar.FRONTMATTER_QUARANTINE_EXPIRES}: "
-                f"{registrar.FRONTMATTER_QUARANTINE[slug]}."))
+                f"{problem} Quarantined until {expiry}: {reason}."))
             continue
         waiting = waiting_on_the_queue(row, raw) if "cites no claim ids" in problem else ""
         if waiting:

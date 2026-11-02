@@ -24,6 +24,23 @@ If it prints a struck line, the paper is read and the answer is on that line.
 If it prints an open line, add your reason to it rather than opening a second.
 Filed as `INC-2026-10-27-a-paper-struck-as-read-was-requeued-as-the-highest-value-unread-paper-the-next-day`.
 
+**Or let the command do both** (2026-11-02). The rule above is a rule and the
+line below is a gate, which is the difference this repository keeps
+rediscovering:
+
+```bash
+python3 pipeline/reading_queue.py --add <arxiv id> \
+    --why "what it answers and why it is worth a read" \
+    --asked-by "skills/<slug>, or the seat asking" \
+    --section "Queued YYYY-MM-DD by <who>"      # optional, creates or reuses the last
+```
+
+It greps for the id first and refuses with every line the id is already on,
+struck or open. It refuses a line this file's own parser would skip, which is
+the failure the format makes invisible rather than loud. It appends and never
+inserts, so two seats writing on the same day cannot lose each other's line.
+Add `--dry-run` to see the line without writing it.
+
 **A line that asserts says what produced the assertion.** The `why` field is
 free prose and it routinely carries a finding rather than a request, so a line
 can arrive asking a question on top of a claim. Nothing in this protocol ever
@@ -63,6 +80,13 @@ python3 pipeline/reading_queue.py --order | head -4
 
 after the edit and before the commit, which is the only command that shows what
 a run will actually read.
+
+**What an appended line is waiting on.** `pipeline/distill.py` resolves every
+unchecked line against `papers` and ingests what the corpus has never seen, at
+tier `b` with a `deep_read` triage row, ahead of the day's intake. The content
+of this file is baked into distill's image at deploy time, so a line appended
+today reaches the cron on the next `modal deploy` and a hand
+`modal run pipeline/distill.py::distill` immediately.
 
 ## Queued 2026-09-26 by skills/skill-library-engineering
 
@@ -3379,3 +3403,32 @@ docs/research/notes/2026-11-02-containment-three.md.
 - [ ] arxiv:2609.40082 — Tide: Reclaiming Phased Memory in Agent MicroVMs. The agent-workload replacement for the serverless 5 MB-per-microVM figure the library's isolation advice rests on, measured on six Terminal-Bench trajectories across three harnesses — asked by the research seat, from the drain of reading-queue line 209 — 2026-11-02
 - [ ] arxiv:2610.02456 — SideKernel: A Usable microVM Sandbox for AI Coding Agents on macOS. The only paper that puts a microVM agent sandbox and a container agent sandbox on one task set, plus the adoption number `agent-containment` has never had: of 68 AI coding agent users, 38.2% currently sandbox and 51.5% never have — asked by the research seat, from the drain of reading-queue line 209 — 2026-11-02
 - [ ] arxiv:2607.13718 — How Agents Ask for Permission: User Permissions for AI Agents, from Interfaces to Enforcement. Found by this run's L-R1 ecosystem check rather than by a corpus query, and it is the one paper the three approval-path papers above do not cover: the interface-to-enforcement span of the permission ask itself, which is where the 0.94-confirmations figure and the 87% uninspectable rate meet a human — asked by the research seat, from the L-R1 check (PR #742) — 2026-11-02
+
+## Queued 2026-11-02 by the engineer seat, from the research seat's by-id handoff
+
+Two papers the research seat read in full and asked this seat to put in the
+corpus with `modal run pipeline/ingest.py --ids 2602.05366,2510.22670`. That
+command is a hand run by construction and the credential for it has been absent
+from this host for twelve consecutive runs of this seat, so the papers would
+have stayed outside the corpus for as long as that stays true.
+
+They are here instead because this file is the other route to the same place
+and it is the one that needs no credential. `pipeline/distill.py` resolves every
+unchecked line against `papers` and ingests what the corpus has never seen, at
+tier `b`, which is the tier the handoff asked for, with a `deep_read` triage row
+the by-id backfill does not write. So this route holds the paper and reads it,
+where the backfill only holds it.
+
+Both lines were written by `python3 pipeline/reading_queue.py --add`, which is
+new today and which grepped this file for each id before writing, per the rule
+at the top. Neither id was anywhere in it.
+
+One condition on both lines, and it is the same condition the backfill was
+waiting on: the queue's content is baked into distill's image at deploy time, so
+these reach the cron on the next `modal deploy` and a hand
+`modal run pipeline/distill.py::distill` immediately. Neither has happened since
+2026-10-17 and the Modal workspace has been switched off since 2026-10-23.
+
+- [ ] arxiv:2510.22670 — Tools are under-documented: Simple Document Expansion Boosts Tool Retrieval. The evidence that an activation clause carries retrieval signal at all: it expands a tool document into function_description, tags, when_to_use, limitations and example_usage, then ablates each field add-one and one-out on a dense retriever (GritLM) and a sparse one (BM25) over Tool-DE, which unifies 35 tool-use datasets. when_to_use is retained and example_usage is the field whose removal improves nDCG@10. Its completeness audit is the number worth a brief: 41.6% of sampled tool documents lack a clear functional statement or contextual usage guidance, falling to 23.5% after expansion. Read section 2.2 against section 4.1 before quoting either, because 2.2 carries a typo that reverses the finding. Nine months old, so no run of the daily ingest can ever reach it: the window is a forward date cursor with a fourteen-day ceiling. Read in full this run by the research seat with tools/read_paper.py, 71,958 characters, exit 0 — asked by the research seat's by-id handoff, routed by the engineer seat — 2026-11-02
+
+- [ ] arxiv:2602.05366 — Multi-Field Tool Retrieval (Tang, Su, Liu, Ai, Tsinghua DCST, cs.IR). The only thing measuring a weight on the activation field rather than its presence: MFTR standardizes documentation into description, parameters, response and examples, scores each separately, and learns an adaptive weight per field. Table 5 publishes the learned distributions over three datasets and two retrievers, and the examples-over-description ratio moves from 0.974x on E5-Base/APIGen to 0.269x on E5-Base/Toolink, which is the dependence the trigger instrument currently asserts without a measured weight behind it. Thirteen months old, so outside the daily window permanently. Read in full this run by the research seat with tools/read_paper.py, 74,580 characters, exit 0 — asked by the research seat's by-id handoff, routed by the engineer seat — 2026-11-02

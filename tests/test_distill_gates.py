@@ -361,14 +361,50 @@ def test_preflight_asks_both_providers_with_the_real_keys(monkeypatch):
     assert by_url["https://api.groq.com/openai/v1/models"] == "Bearer groq-key"
 
 
+def gate_bodies() -> str:
+    """The two gates' own bodies, and nothing that happens to sit between them.
+
+    This used to be `SOURCE[index("def preflight"):index("def drain_forecast")]`,
+    which is a region and not a function. On 2026-11-02 two helpers were added
+    between those two names and this test went red on the word "insert" inside
+    one of their docstrings, having found nothing at all about either gate. A
+    positional slice between two function names silently widens every time
+    anybody adds a function there, so it either fails for the wrong reason or,
+    the direction that matters, keeps passing while the thing it guards moves
+    out of the region. Named boundaries instead: each gate is sliced from its
+    own `def` to the next top-level `def`.
+    """
+    out = []
+    for name in ("def preflight", "def rehearse"):
+        start = SOURCE.index(name)
+        rest = SOURCE[start + len(name):]
+        # The next line that starts at column zero with `def` or a decorator,
+        # which is where this function ends whatever is nested inside it.
+        offsets = [rest.index(mark) for mark in ("\ndef ", "\n@app.")
+                   if mark in rest]
+        out.append(rest[:min(offsets)] if offsets else rest)
+    return "".join(out)
+
+
 def test_neither_gate_can_reach_the_claims_table():
     """Neither gate writes, and the reason is structural rather than careful."""
-    start = SOURCE.index("def preflight")
-    end = SOURCE.index("def drain_forecast")
-    gates = SOURCE[start:end]
+    gates = gate_bodies()
+    assert "def preflight" not in gates          # the slice is a body, not a region
     for forbidden in ("insert into", "psycopg", "DATABASE_URL", "update "):
         assert forbidden not in gates.lower().replace("update the", ""), \
             f"a gate that can {forbidden!r} is not a gate"
+
+
+def test_the_gate_slice_is_the_gates_and_not_whatever_sits_beside_them():
+    """The regression test for this test, which is the one that actually failed.
+
+    `explicit_intake` sits between `preflight` and `drain_forecast` in the
+    module today, and its docstring says `insert into claims` because that is
+    what it exists to make reachable. A region-based slice sees it. A
+    body-based slice must not.
+    """
+    assert "insert into claims" in SOURCE            # the fixture is real
+    assert "explicit_intake" not in gate_bodies()
 
 
 def test_the_dry_run_cannot_call_a_model_even_by_mistake():
