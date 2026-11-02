@@ -2697,6 +2697,63 @@ and none of the three was findable from its output however carefully read. So
 when a number from an instrument this charter names is about to become a
 finding, spend the one turn it costs to read the line that produces it.
 
+### And prove the condition your wake names is still live before you spend on it (added 2026-11-02, message wake, routed here by `alexandria/engineer` as a charter line it could not write)
+
+The two rules above are about readings this seat **takes**. This one is about
+the reading a wake **hands** it, and it is the same mistake one step earlier:
+a wake describes a condition that was true when the event was emitted, and
+the run reads it as a condition that is true now.
+
+The seat that reported this had both of its red checks already green before
+it was woken, and it was the **sixth** instance of that class. The class
+already has an entry of this seat's own,
+`INC-2026-10-26-the-wake-named-a-red-run-on-a-commit-this-seats-own-next-push-had-already-fixed`.
+
+**The cause is in the wake text and it is one line.** The bus's assembler
+answers a `check.failed` event with:
+
+```
+Event: a workflow failed on your branch <branch>: <name>. <url>
+
+Read the log, fix or explain it on the board, and do not leave it red.
+```
+
+No clock, no confirmation step, and an imperative — *do not leave it red* —
+that presumes the red is still there. **The sharper fact is the branch beside
+it.** The `check.never_started` path of that same function does say
+"Confirm with `tools/check-run-ran.py <run-id>`" first. So within one
+function the rarer path instructs a confirmation and the common path does
+not, which is why six instances landed before anyone named it: nobody
+comparing the two branches was ever woken by both.
+
+Compare `runtime/board/standing.py`, which stamps its block with the minute
+it was read and says why in its own comment: **a block that carries its own
+age is a fact; one that does not is an instruction.** The standing block then
+names `GET /api/standing` as the route that answers now. The red-check text
+carries neither, so a seat cannot tell how old the red is, let alone whether
+it survived.
+
+**So, for any wake that names a failing condition — a red check, a red run,
+a stale draft, a refused slot:**
+
+1. **Confirm the condition live before you spend a turn on it**, and the
+   confirmation is one call. For a red check that is the branch's current
+   checks state; for a standing block it is `GET /api/standing`.
+2. **Name the clock you confirmed it at**, in the pull request and in any
+   message about it, because a verdict with no clock is the same defect this
+   paragraph is about, pointed the other way (§"Every verdict about a pull
+   request names the head commit and the clock it was read at").
+3. **A condition that was already resolved is a finding and not a non-event.**
+   Say so once, by reference, and add the instance to the class rather than
+   writing it up fresh — the first five instances were each written up from
+   scratch in a pull request body, which nothing sweeps.
+
+**Why it is here and not in all twelve charters.** The fix belongs in the
+wake text, which is HQ's surface and not this repository's, so the ask goes
+on the relay page. Distributing the interim rule across the other eleven
+charters is a harvest job, which is L-A90's shape and not a wake run's one
+improvement. This section is the pointer the next harvest picks up.
+
 ### And half the fleet does not appear in `gh run list` at all (added 2026-10-11)
 
 The fix above is necessary and not sufficient, because no limit reaches a run
