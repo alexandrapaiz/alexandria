@@ -183,3 +183,109 @@ def test_this_repository_has_no_merge_damage_in_its_registers():
 def test_every_register_this_tool_guards_is_a_real_file():
     missing = [n for n in checker.REGISTERS if not (REPO / n).exists()]
     assert missing == [], f"check_registers.py names files that are gone: {missing}"
+
+
+# ---------------- the file that conflicted before it was guarded ----------------
+
+def test_the_reading_queue_is_guarded():
+    """`docs/research/reading-queue.md` is append-only and three seats write it.
+
+    It conflicted for real on 2026-11-02 and was resolved by hand, wrongly on
+    the first attempt, because `tools/resolve_register_conflict.py` reads
+    `REGISTERS` to decide what it can be pointed at and this file was not in
+    it. The resolver's own arithmetic, run afterwards against the same three
+    trees, returned 2,723 findings for that first attempt and none for the
+    resolution that shipped. So the instrument existed and the list was what
+    kept it away from the one file that needed it. Filed as
+    `INC-2026-11-02-the-register-resolver-could-not-see-the-register-that-conflicted`.
+    """
+    assert "docs/research/reading-queue.md" in checker.REGISTERS
+
+
+def test_the_checker_and_the_register_map_name_the_same_files():
+    """The checker's list and docs/agents/registers.md must not drift on a path.
+
+    Ratcheted rather than absolute, which is the pattern `ledger_ratchet` in
+    the tool itself already uses: this blocks a NEW disagreement and records
+    the one that exists, so no seat is blocked on a backlog it did not make.
+
+    There is exactly one known exception. `docs/backlog.md` is guarded here
+    and has NO row in the map at all, found by this test on 2026-11-02. It is
+    `company.yaml`'s declared `pending` surface, so the gap is in the map
+    rather than in the list. Writing that row is the ExO seat's call, since
+    the map is its file, and it is filed in the ledger this run rather than
+    fixed here.
+
+    The first draft of this test also excused `docs/standards/lessons.md` as
+    vendored prose. The second assertion below refused that, because the map
+    does name it, which is the whole point of asserting a gap still exists
+    rather than only that it is tolerated.
+
+    The direction this does enforce is the one that bit on 2026-11-02:
+    `docs/research/reading-queue.md` sat in the map with a writer and a reader
+    that are different seats and was absent from the checker, so the resolver
+    that reads this list could not be pointed at it.
+    """
+    known_gaps = {"docs/backlog.md"}   # no row in the map at all; ExO's to add
+    table = (REPO / "docs/agents/registers.md").read_text()
+    missing = {n for n in checker.REGISTERS if f"`{n}`" not in table}
+    assert missing <= known_gaps, (
+        "a guarded register is not named in docs/agents/registers.md: "
+        f"{sorted(missing - known_gaps)}")
+    assert known_gaps - missing == set(), (
+        "a known gap has been closed, so remove it from `known_gaps` and let "
+        f"this test hold the line: {sorted(known_gaps - missing)}")
+
+
+# ---------------- the queue data gate, which no workflow could reach ----------------
+
+QUEUE = "docs/research/reading-queue.md"
+
+GOOD_LINE = (
+    "- [ ] arxiv:2606.08433 \u2014 why it is worth a read "
+    "\u2014 asked by the research seat's L-R1 check \u2014 2026-11-02\n")
+
+#: The same line in the plain ASCII `docs/voice/ban-list.md` entry 13 requires.
+#: This is what the research seat's sweep writes, and it is NOT a defect: the
+#: parser was widened on 2026-11-02 to accept it, because repairing the data
+#: loses against a law that keeps being correct.
+ASCII_LINE = (
+    "- [ ] arxiv:2606.08433 - why it is worth a read "
+    "- asked by the research seat's L-R1 check - 2026-11-02\n")
+
+#: The real defect, which survives the widening: no separator at all before the
+#: date, so the field runs to the end of the line. Three lines reached `main`
+#: on 2026-11-02 in this shape.
+BAD_LINE = (
+    "- [ ] arxiv:2606.08433 - why it is worth a read "
+    "- asked by the research seat's L-R1 check 2026-11-02\n")
+
+
+def test_it_finds_the_asker_that_swallowed_its_date(registers):
+    write(registers, QUEUE, "# Reading queue\n\n" + BAD_LINE)
+    findings = checker.unparseable_queue_askers(registers / QUEUE, registers)
+    assert len(findings) == 1, findings
+    assert "runs past its separator" in findings[0]
+    assert "2026-11-02" in findings[0]
+
+
+def test_it_passes_the_em_dash_the_format_documents(registers):
+    write(registers, QUEUE, "# Reading queue\n\n" + GOOD_LINE)
+    assert checker.unparseable_queue_askers(registers / QUEUE, registers) == []
+
+
+def test_it_passes_the_ascii_the_ban_list_requires(registers):
+    """The regression that cost a red `main`, asserted from the other side.
+
+    A gate that only accepted the em dash would report every line the voice
+    law mandates as damage, which is the same defect one level up.
+    """
+    write(registers, QUEUE, "# Reading queue\n\n" + ASCII_LINE)
+    assert checker.unparseable_queue_askers(registers / QUEUE, registers) == []
+
+
+def test_the_queue_check_is_blocking_not_a_warning(registers):
+    """A wrong attribution is damage, and the instances were real."""
+    write(registers, QUEUE, "# Reading queue\n\n" + BAD_LINE)
+    blocking, warnings = checker.check(registers)
+    assert any("runs past its separator" in b for b in blocking), blocking

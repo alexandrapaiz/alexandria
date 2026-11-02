@@ -852,6 +852,166 @@ def test_the_compute_surface_is_in_the_default_run():
           "all nine" in source, "the --surface help text is out of date")
 
 
+class _Receipt:
+    """A `deploy_runtime` cursor: `description` plus `fetchall`, like psycopg's.
+
+    Separate from `FakeConn` above on purpose. That one answers `fetchone` and
+    carries no column names, which is exactly the shape `deploy_facts` stopped
+    being able to use when it stopped naming its own columns.
+    """
+
+    def __init__(self, columns: list[str], rows: list[tuple]):
+        self.description = [(c,) for c in columns]
+        self.rows = rows
+
+    def fetchall(self):
+        return self.rows
+
+
+class _ReceiptConn:
+    """A connection that honours the column list its caller asked for.
+
+    Projecting rather than handing back every column no matter what was asked
+    is what makes the checks below say what they mean. A fake that ignores the
+    statement still fails a caller that names five columns, but it fails with
+    `ValueError: too many values to unpack` from inside the code under test,
+    which names no column and reads like a bug in the test. Rehearsed both
+    ways on 2026-11-02: with this projection the same break prints "entrypoint
+    is in deploy_runtime and no consumer can see it", which is the finding.
+    """
+
+    def __init__(self, cursor):
+        self.cursor = cursor
+        self.sql = None
+
+    def execute(self, sql, params=None):
+        self.sql = sql
+        if isinstance(self.cursor, Exception):
+            raise self.cursor
+        asked = re.search(r"select\s+(.*?)\s+from\s+deploy_runtime", sql, re.S)
+        wanted = (asked.group(1) if asked else "*").replace("\n", " ")
+        if wanted.strip() == "*":
+            return self.cursor
+        keep = [c.strip() for c in wanted.split(",")]
+        have = [d[0] for d in self.cursor.description]
+        missing = [c for c in keep if c not in have]
+        if missing:
+            raise RuntimeError(f'column "{missing[0]}" does not exist')
+        index = [have.index(c) for c in keep]
+        return _Receipt(keep, [tuple(row[i] for i in index)
+                               for row in self.cursor.rows])
+
+
+def _schema_columns() -> list[str]:
+    """`deploy_runtime`'s columns, read out of db/schema.sql.
+
+    Derived rather than copied, which is the whole point of the test below. A
+    copied list here would have to be edited by the same change that adds the
+    column, and a list that has to be edited by hand is the defect this is
+    guarding against one level up.
+    """
+    schema = (Path(__file__).resolve().parents[1] / "db" / "schema.sql").read_text()
+    body = re.search(r"create table if not exists deploy_runtime \((.*?)\n\);",
+                     schema, re.S).group(1)
+    names = []
+    for line in body.splitlines():
+        line = line.strip()
+        if not line or line.startswith("--"):
+            continue
+        names.append(line.split()[0])
+    return names
+
+
+def test_the_receipt_serves_every_column_the_table_has():
+    """The one reader of `deploy_runtime` outside the pipeline, widened.
+
+    The writer seat found this on 2026-11-02 while `invoked_by` was still only
+    a card: `deploy_facts` named five columns, so a migration adding one would
+    be written by every job and reach no consumer, and the miss is half a line
+    and silent. The gate is derived from `db/schema.sql` rather than from a
+    list here, so the day the column lands this test asks for it without
+    anybody editing this file.
+    """
+    columns = _schema_columns()
+    check("the schema still has the columns this is derived from",
+          "app" in columns and "runtime_sha" in columns, str(columns))
+    row = tuple(f"v:{c}" for c in columns)
+    conn = _ReceiptConn(_Receipt(columns, [("ingest",) + row[1:]]))
+    facts = dh.deploy_facts(conn)
+    check("the read is not a fixed column list any more",
+          "select *" in (conn.sql or ""), conn.sql or "no statement sent")
+    check("one entry per app, keyed by app", list(facts) == ["ingest"], str(facts))
+    served = set(facts.get("ingest", {}))
+    for column in columns:
+        if column == "app":
+            continue
+        check_quiet(f"the receipt serves {column}", column in served,
+                    f"{column} is in deploy_runtime and no consumer can see it")
+    check(f"all {len(columns) - 1} non-key columns reach the caller",
+          served == set(columns) - {"app"},
+          f"missing {sorted(set(columns) - {'app'} - served)}")
+
+
+def test_the_four_keys_the_drift_alarm_reads_by_name_still_arrive():
+    """The widening is additive, and these four are read by key elsewhere.
+
+    `judge_deploy` and `_notify_drift` index this dict with string literals, so
+    a widening that renamed or dropped one of them would be a silent change of
+    behaviour in the alarm rather than a type error anywhere.
+    """
+    columns = ["app", "runtime_sha", "entrypoint", "file_count",
+               "recorded_at", "first_seen_at", "notified_at", "invoked_by"]
+    conn = _ReceiptConn(_Receipt(
+        columns, [("weekly", "0cbc51a0e248", "pipeline/weekly.py", 9,
+                   "2026-10-17T00:00:00Z", "2026-10-17T00:00:00Z", None, "cron")]))
+    facts = dh.deploy_facts(conn)
+    row = facts["weekly"]
+    for key, value in (("runtime_sha", "0cbc51a0e248"),
+                       ("recorded_at", "2026-10-17T00:00:00Z"),
+                       ("first_seen_at", "2026-10-17T00:00:00Z"),
+                       ("notified_at", None)):
+        check_quiet(f"{key} still reads the same", row[key] == value, str(row))
+    check("the four names the alarm uses are unchanged",
+          all(k in row for k in ("runtime_sha", "recorded_at",
+                                 "first_seen_at", "notified_at")), str(row))
+    check("and a column the old select never named now arrives",
+          row.get("invoked_by") == "cron", str(row))
+
+
+def test_a_table_with_no_app_column_is_reported_and_not_keyed_none():
+    """The one thing `select *` can do that the fixed list could not.
+
+    Keying by a column the select named was guaranteed by the statement. Keying
+    by a column the table reports means the table could fail to report it, and
+    a dict keyed `None` would read downstream as an app named None with real
+    facts attached to it.
+    """
+    conn = _ReceiptConn(_Receipt(["runtime_sha", "recorded_at"],
+                                 [("abc123def456", "2026-11-02T00:00:00Z")]))
+    answer = dh.deploy_facts(conn)
+    check("a table with no app column answers with a reason",
+          isinstance(answer, str), str(answer))
+    check("and the reason names the columns it did find",
+          isinstance(answer, str) and "runtime_sha" in answer, str(answer))
+
+
+def test_a_read_that_raises_is_still_a_sentence_and_not_an_exception():
+    """Unchanged behaviour, pinned because the statement changed under it.
+
+    "no such table" is a state this surface really meets: the table lands in
+    db/schema.sql and `apply_schema` is a separate hand-run step.
+    """
+    conn = _ReceiptConn(RuntimeError('relation "deploy_runtime" does not exist'))
+    answer = dh.deploy_facts(conn)
+    check("a missing table is a sentence", isinstance(answer, str), str(answer))
+    check("and it says what could not be read",
+          isinstance(answer, str) and "deploy_runtime could not be read" in answer,
+          str(answer))
+    check("an unknown is what the caller makes of it, not a crash",
+          dh.judge_deploy(answer).state in (dh.UNKNOWN, dh.FAILING),
+          str(dh.judge_deploy(answer).state))
+
+
 def main() -> int:
     for fn in [
         test_unknown_is_never_green_and_never_red,
@@ -892,6 +1052,10 @@ def main() -> int:
         test_a_request_that_never_arrived_is_unknown_not_failing,
         test_fresh_rows_do_not_read_green_through_an_outage,
         test_the_compute_surface_is_in_the_default_run,
+        test_the_receipt_serves_every_column_the_table_has,
+        test_the_four_keys_the_drift_alarm_reads_by_name_still_arrive,
+        test_a_table_with_no_app_column_is_reported_and_not_keyed_none,
+        test_a_read_that_raises_is_still_a_sentence_and_not_an_exception,
     ]:
         print(f"\n{fn.__name__}")
         fn()

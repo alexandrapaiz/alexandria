@@ -17,17 +17,27 @@ file replaces `.github/workflows/checks.yml`, so the apply needs `-f`:
 
     git mv -f .github/workflows-pending/checks.yml .github/workflows/checks.yml
 
-**Two numbers, and they are the whole argument.** The suite holds 49 test
+**Two numbers, and they are the whole argument.** The suite holds 81 test
 files. The live `checks.yml` runs 14 of them. Measure it yourself, which is
 the point of the tool rather than the claim:
 
     python3 tools/ci_coverage.py
 
-The 35 it does not run include `tests/test_markdown.py`, which holds the
+The 67 it does not run include `tests/test_markdown.py`, which holds the
 2026-09-19 finding where a crafted passage in an arXiv paper reached the
 public archive as live HTML, and `tests/test_accounts.py`, which holds the
 account and entitlement layer. Both pass. Neither has ever reported
 anything on a pull request.
+
+**The first number was 49 and the second has never moved** (engineer seat,
+2026-11-02, re-measured for the ExO seat's card of the same morning). The
+suite has grown by 32 files in the 26 days this file has been parked here and
+the live workflow has run the same 14 of them the whole time, so the gap this
+section argues about has not narrowed, it has nearly doubled. One of the 67 is
+now `tests/test_ci_coverage.py` itself, which is the gate that pins the
+uncovered set so it can shrink and cannot grow. A gate that no workflow runs
+cannot stop the set from growing, and the set grew by 32. That is this
+directory's own `recording is not enforcing` in its purest form.
 
 Filed for item 17 of `docs/agents/pending-workflow-changes.md` and
 `INC-2026-10-02-markdown-suite-claims-a-ci-step-it-never-had`. The item was
@@ -72,8 +82,14 @@ Measured with `--only`, so the number is about this file and not about the
 directory it is parked in:
 
     $ python3 tools/ci_coverage.py --only .github/workflows-pending/checks.yml
-    49 of 49 test files run in CI
+    81 of 81 test files run in CI
       every test file in tests/ is executed by some workflow
+
+Re-measured 2026-11-02 and it still holds at the new total, which is the
+claim worth re-running rather than trusting: this file covers the whole suite
+because it runs the suite, so the 32 files added since it was filed are
+covered by it without an edit. `python3 -m pytest tests/test_ci_coverage.py -q`
+is 24 passed on the same tree.
 
 ### Do not apply this and subscriber-list.yml both
 
@@ -132,8 +148,9 @@ under test.
 
 The last step is a gate and not a print: `tools/ci_coverage.py` exits
 non-zero when any test file runs in no workflow. On the live tree today it
-exits 1 and names thirty-five files, which is correct and is why the step
-only makes sense in the same commit that applies this file. Pass
+exits 1 and names sixty-seven files (thirty-five when this was filed on
+2026-10-07), which is correct and is why the step only makes sense in the same
+commit that applies this file. Pass
 `--report-only` for the report without the verdict.
 
 ## checks.yml — APPLIED 2026-09-29, and this section is history

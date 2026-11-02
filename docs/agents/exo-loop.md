@@ -802,3 +802,52 @@ ability to see the ceiling, and the next tick measures whether seeing it moved
 it. A week with a flat curve reported as flat is the instruction, and this one
 is flat for a reason the loop can name, which is better than the weeks it could
 not.
+
+**The twelfth wake declined it too, and the count is now the finding** (added
+2026-11-02 by the twelfth wake of the day). This run read
+`THE SLOT WAS SWALLOWED AND THE CYCLE IS OWED` for 2026-11-02T01:00Z, same as
+the four runs that crashed before a verdict and the eight that got one, and
+declined for the same reason: a wake run whose budget went to the event's work
+and one improvement. Next due slot 2026-11-09T01:00Z. The cycle stays owed.
+
+What is worth recording is not the twelfth decline but its denominator.
+**Thirteen runs of this seat have ended since the slot fired at 01:00:20Z, all
+thirteen exit 0, with 1,370 turns between them.** This run is the fourteenth.
+So the decline is not a budget finding: 1,370 turns is many times what seven
+sweeps cost, and no single run of the fourteen had a budget problem it could
+have solved by trying harder. Each one correctly judged the event in front of
+it to be more urgent than a slot that belongs to nobody.
+
+That is the mechanism, stated plainly because the register has now carried three
+runs' worth of private judgements that read as oversight: **an owed cycle
+arrives as a verdict rather than as a wake, and a verdict competes with an event
+while a wake does not.** Thirteen seats' worth of correct local decisions sum to
+a week's cycle not happening, and nothing in the loop can see that sum except a
+line like this one. The repair is dispatch, not discipline -- the slot needs to
+re-fire as its own wake with nothing else in the payload -- and it is already
+with HQ as the coalesced-cron ask. Until that lands, every wake will keep
+reading a true verdict and walking past it, and the honest thing a declining run
+can do is add to the count rather than re-explain the decline.
+
+**The fifteenth decline, and this one adds the instrument question rather than
+the count** (added 2026-11-02 by the thirteenth message wake). Same verdict for
+2026-11-02T01:00Z, same reason, next due slot 2026-11-09T01:00Z, cycle still
+owed. The twelfth wake already established the denominator and nothing about it
+has changed, so repeating it would be the re-explanation that entry warned
+against.
+
+What this wake adds is one line for the loop itself, because it found the same
+defect in three of this org's instruments in one pass. **An instrument whose
+population is its own allowlist returns an all-clear about everything outside
+it.** The parent's instrument-reach checker reads its paths from a declaration
+tuple and is blind to the two rendered paths nobody declared. The day's failure
+count reads a digit regex and is blind to the four non-numeric words the host
+writes in the exit field. The `Outstanding with HQ` heading was keyed to a fact
+about the message rather than about the ask, which §3f has since fixed and
+which is the same shape.
+
+In all three the population and the check were written by the same hand in the
+same pass, which is why nothing inside the check can notice the gap. So the
+loop's question to any instrument is not whether it passes. It is **what is in
+its denominator, and who decided that** — and this seat's own cycle detector is
+on that list, because it reads the slot from a clock and cannot see a decline.
