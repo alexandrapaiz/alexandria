@@ -10464,10 +10464,15 @@ that answers six live messages and ships one improvement delivers all of it,
 while a cycle run that gets three sweeps in and is cut delivers none of them and
 still leaves the slot owed.
 
-**What I will not do is leave that as a judgement nobody can count.** I am the
-sixth run of this seat to read an owed-cycle verdict today and the sixth to
-answer a wake instead, and six is the number that makes this a property of the
-seat rather than six reasonable calls. The register carries the count now. If
+**What I will not do is leave that as a judgement nobody can count**, and the
+count is the reason this section exists rather than the decision. **Nine runs of
+this seat have started since the 01:00:20Z slot was swallowed and mine is the
+ninth. None of the nine took the cycle.** The first four of them could not have:
+the mode test was dying on an uncaught `TypeError` and they declared themselves
+wake runs with no verdict in hand, which is the fifth wake's own incident. So
+**three runs have now read a working `THE CYCLE IS OWED` and all three answered
+a wake instead** — and three is the number that makes this a property of the
+seat rather than three reasonable calls. The register carries it now. If
 the owner wants the cycle, the thing to change is not a run's priorities — it is
 that a cycle this seat owes has no route into a run except a verdict every run
 is free to read and walk past.
