@@ -6134,13 +6134,32 @@ def invocation_window(schedule, when, tolerance=SLOT_TOLERANCE_MINUTES):
     pipeline/weekly.py::weekly`, and `deploy_runtime`'s columns are app,
     runtime_sha, entrypoint, file_count and three timestamps, where
     `entrypoint` is the literal `APPS[app]` string and names no caller. So the
-    row's existence proves a run and the MINUTE is the only thing in it that
+    row's existence proves a run and the minute is the only thing in it that
     distinguishes the schedule from a hand.
 
     And the row is one per app, upserted, so a hand run after the slot
     overwrites the cron's own timestamp. The evidence is not merely ambiguous,
     it is erasable by any seat acting in good faith, which is why this prints
     rather than waits to be asked.
+
+    **The paragraph above is true on a date and this function must not assert
+    it on every date.** The engineer seat met the same confound from the ingest
+    side on 2026-11-02 and returned the half this gate could not see: the
+    column list is not a property of the press, it is a property of
+    `deploy_runtime`, and `ingest_ids` writes the `ingest` row on the same code
+    path the daily cron does. Any job with a second entry point has this, and
+    the repair is carded as one column, `invoked_by`, carrying `cron`, `manual`
+    or `task`. The day that column lands, "the minute is the only
+    discriminator" stops being true, and the sender named that expiry as the
+    test of whether the column was worth adding.
+
+    So `caller_field` below reads the row's own keys instead, and this
+    function's answer is demoted from the discriminator to corroboration the
+    moment the row can name its caller. That is the same discipline
+    `press_schedule` applies to the cron and `press_write_site` applies to the
+    line numbers, arriving one level up: not a hand-copied line but a
+    hand-copied SCHEMA, which rots the same way and more quietly, because
+    nothing in a test suite fails when a column is added somewhere else.
     """
     minute, hour, iso = schedule
     at = datetime.datetime(when.year, when.month, when.day, hour, minute,
@@ -6241,6 +6260,299 @@ def zones_cases():
             print(f"  CASE    {stamp} wanted {want} and got {got}")
     print(f"INVOCATION_CASES                           "
           f"{len(INVOCATION_CASES) - worse} of {len(INVOCATION_CASES)}")
+    return bad | worse | writers_cases()
+
+
+# ---------------------------------------------------------------------------
+# Who could have written the row, which is a question about ENTRY POINTS and
+# not about the press.
+#
+# Added 2026-11-02 from the engineer seat's note `2dc2bae5`, which met this
+# gate's confound from the other side. `ingest_ids` is the by-id backfill a
+# seat runs to answer a reading-queue line, and it reaches the `ingest` row of
+# `deploy_runtime` through the same `upsert_papers` the daily cron goes
+# through. So the ambiguity this gate reported as a fact about testing the
+# press by hand is a property of the table: any job with a second entry point
+# has it, and nothing in the row can tell the two apart.
+#
+# The three values a caller could honestly claim, from that note: `cron` from a
+# scheduled entry point, `manual` from a hand run, `task` from a by-id or
+# by-week function somebody asked for. This gate's own printed sentence named
+# TWO of them -- "a hand `modal run` writes it identically" -- and the press's
+# own signature is `weekly(week: str = "")`, so the third was already live in
+# the job this gate was written about.
+CALLER_CRON = "cron"
+CALLER_MANUAL = "manual"
+CALLER_TASK = "task"
+
+# Every key a receipt row might carry the answer under. The gate searches the
+# row's OWN keys for one of these rather than asserting that no such column
+# exists, because "there is no column naming the caller" is a statement about a
+# schema that is already carded to change, and a gate that hard-codes it prints
+# a falsehood on the day the column lands and keeps printing it. `invoked_by`
+# is the carded name; the two after it are the names the same column would
+# plausibly ship under, and searching three costs nothing.
+CALLER_KEYS = ("invoked_by", "invoked_as", "caller")
+
+
+def caller_field(row):
+    """The caller the row names, as `(key, value)`, or `(None, None)`.
+
+    Reads the row's keys. A row that cannot answer returns `(None, None)` and
+    the caller above falls back to the minute, which is the fallback with the
+    expiry date on it.
+    """
+    for key in CALLER_KEYS:
+        if isinstance(row, dict) and row.get(key):
+            return key, str(row[key])
+    return None, None
+
+
+def _decorators(fn):
+    """The decorator calls on `fn`, as `(attribute, keyword names)` pairs."""
+    import ast
+    out = []
+    for d in fn.decorator_list:
+        node = d.func if isinstance(d, ast.Call) else d
+        name = getattr(node, "attr", None) or getattr(node, "id", None)
+        kwds = {k.arg for k in (d.keywords if isinstance(d, ast.Call) else [])}
+        out.append((name, kwds))
+    return out
+
+
+def _entry_kind(fn):
+    """`("cron", ...)`, `("asked", ...)`, or `None` if `fn` is not an entry point.
+
+    An entry point is a function Modal can start: `@app.function(...)` or
+    `@app.local_entrypoint()`. Whether it is SCHEDULED is read from the
+    presence of a `schedule=` keyword on that decorator, not from a list kept
+    here, for the same reason `press_schedule` reads the cron out of the job.
+    """
+    for name, kwds in _decorators(fn):
+        if name in ("function", "local_entrypoint"):
+            return CALLER_CRON if "schedule" in kwds else "asked"
+    return None
+
+
+def _called_names(node):
+    """Every module-level name `node` calls, including through `.remote()`."""
+    import ast
+    out = set()
+    for n in ast.walk(node):
+        if not isinstance(n, ast.Call):
+            continue
+        f = n.func
+        if isinstance(f, ast.Name):
+            out.add(f.id)
+        elif isinstance(f, ast.Attribute) and isinstance(f.value, ast.Name):
+            # `weekly.remote()` and `ingest_ids.remote()`: the caller a
+            # `modal run` of the local entrypoint actually goes through.
+            out.add(f.value.id)
+    return out
+
+
+def row_writers(app, path):
+    """Every entry point that can reach this app's `deploy_runtime` write.
+
+    Returns `(writers, "")` or `(None, why)`. Each writer is
+    `{"name", "schedule", "params"}`, where `schedule` is `cron` or `asked`.
+
+    Derived from the module's own call graph rather than declared, because the
+    fact this replaces -- how many ways there are into one row -- is exactly
+    the kind a hand-kept list gets wrong on the day somebody adds a second
+    entry point, which is the day it matters.
+
+    The walk starts at the function CONTAINING the write, which is not always
+    an entry point: in `pipeline/ingest.py` the write sits in `upsert_papers`,
+    an ordinary helper, and the two entry points that reach it are the daily
+    cron and the by-id backfill. Then it closes over callers until the set
+    stops growing, so a local entrypoint that calls a scheduled function
+    counts as a way in.
+    """
+    import ast
+    path = pathlib.Path(path)
+    if not path.exists():
+        return None, f"{path} is not in this checkout"
+    try:
+        tree = ast.parse(path.read_text(encoding="utf-8"))
+    except SyntaxError as exc:
+        return None, f"{path} did not parse ({exc})"
+    funcs = {n.name: n for n in ast.walk(tree)
+             if isinstance(n, ast.FunctionDef)}
+    holders = set()
+    for fn in funcs.values():
+        for n in ast.walk(fn):
+            if (isinstance(n, ast.Call)
+                    and getattr(n.func, "attr", None) == "record_runtime"
+                    and any(isinstance(a, ast.Constant) and a.value == app
+                            for a in n.args)):
+                holders.add(fn.name)
+    if not holders:
+        return None, (f"{path} has no record_runtime write naming `{app}`, so "
+                      f"which entry points reach that row is not readable "
+                      f"from this file")
+    reach = set(holders)
+    while True:
+        grown = {name for name, fn in funcs.items()
+                 if name not in reach and _called_names(fn) & reach}
+        if not grown:
+            break
+        reach |= grown
+    writers = []
+    for name in sorted(reach):
+        kind = _entry_kind(funcs[name])
+        if kind is None:
+            continue
+        writers.append({"name": name, "schedule": kind,
+                        "params": [a.arg for a in funcs[name].args.args]})
+    if not writers:
+        return None, (f"{path} writes the `{app}` row from "
+                      f"{', '.join(sorted(holders))}, which no entry point in "
+                      f"this file reaches, so nothing here can start it")
+    return writers, ""
+
+
+def caller_values(writers):
+    """The values a row for these writers could honestly carry, derived.
+
+    `cron` when some entry point is scheduled. `task` when some entry point
+    runs only on request, or when a scheduled one takes an argument that
+    changes what it does -- the press's `weekly(week="")` is the second shape
+    and it is why this gate's old two-value sentence was wrong about the very
+    job it was written for. `manual` whenever there is any entry point at all,
+    because every one of them is reachable by `modal run`, which is the whole
+    reason the row is erasable.
+    """
+    out = []
+    if any(w["schedule"] == CALLER_CRON for w in writers):
+        out.append(CALLER_CRON)
+    if writers:
+        out.append(CALLER_MANUAL)
+    if any(w["schedule"] != CALLER_CRON or w["params"] for w in writers):
+        out.append(CALLER_TASK)
+    return tuple(out)
+
+
+# The two real shapes and three refusals. The first two cases are the live
+# ones, reduced to their skeletons: the press, where the write is inside the
+# scheduled function and a local entrypoint calls it, and ingest, where the
+# write is in a helper two entry points share. The refusals matter more than
+# the passes, because a gate that guesses an entry-point list when it cannot
+# read one puts the invented subject back.
+WRITERS_CASES = (
+    # The press. One scheduled writer that takes `week`, plus the local
+    # entrypoint a `modal run` of the module goes through. Three values, and
+    # `task` comes from the parameter rather than from a second function.
+    ("import modal\n"
+     "@app.function(schedule=modal.Cron('0 9 * * 1'))\n"
+     "def weekly(week: str = ''):\n"
+     "    try:\n"
+     "        print(runtime_guard().record_runtime(conn, 'weekly', __file__))\n"
+     "    except Exception:\n"
+     "        raise\n"
+     "@app.local_entrypoint()\n"
+     "def main():\n"
+     "    print(weekly.remote())\n",
+     "weekly",
+     ({"name": "main", "schedule": "asked", "params": []},
+      {"name": "weekly", "schedule": "cron", "params": ["week"]}),
+     ("cron", "manual", "task")),
+    # Ingest, the engineer seat's half. The write is in a helper neither cron
+    # nor backfill owns, and the two entry points are indistinguishable in the
+    # row they both produce.
+    ("import modal\n"
+     "def upsert_papers(rows):\n"
+     "    print(runtime_guard().record_runtime(conn, 'ingest', __file__))\n"
+     "@app.function(schedule=modal.Cron('0 11 * * *'))\n"
+     "def ingest():\n"
+     "    return upsert_papers(fetch())\n"
+     "@app.function()\n"
+     "def ingest_ids(ids, tier='b'):\n"
+     "    return upsert_papers(fetch_ids(ids))\n",
+     "ingest",
+     ({"name": "ingest", "schedule": "cron", "params": []},
+      {"name": "ingest_ids", "schedule": "asked", "params": ["ids", "tier"]}),
+     ("cron", "manual", "task")),
+    # One scheduled entry point, no argument, nothing else reaching it. This is
+    # the only shape where the minute is genuinely the whole question, and
+    # `task` is correctly absent. Without this case the function could return
+    # all three values always and still pass.
+    ("import modal\n"
+     "@app.function(schedule=modal.Cron('0 3 * * *'))\n"
+     "def triage():\n"
+     "    print(runtime_guard().record_runtime(conn, 'triage', __file__))\n",
+     "triage",
+     ({"name": "triage", "schedule": "cron", "params": []},),
+     ("cron", "manual")),
+    # The app is not written here. Refused, because an empty writer list reads
+    # as "nothing can write this row", which is the opposite of what an
+    # unreadable file means.
+    ("def weekly():\n    pass\n", "weekly", None, None),
+    # Written, but by nothing any entry point reaches. A helper nobody calls
+    # cannot produce the row, and saying so beats reporting zero ways in.
+    ("def orphan():\n"
+     "    print(runtime_guard().record_runtime(conn, 'weekly', __file__))\n",
+     "weekly", None, None),
+)
+
+# The receipt row, which is the other half and the half with the clock on it.
+# The first case is the row as it exists today and the second is the row the
+# carded column produces. Both are asserted now, so the day `invoked_by` lands
+# this gate reads it without an edit here and the sentence about the minute
+# retires itself.
+CALLER_FIELD_CASES = (
+    ({"app": "weekly", "recorded_at": "2026-10-19T09:01:21.333+00:00",
+      "runtime_sha": "2e313065f5c7", "entrypoint": "pipeline/weekly.py",
+      "file_count": 227}, (None, None)),
+    ({"app": "weekly", "invoked_by": "cron"}, ("invoked_by", "cron")),
+    ({"app": "ingest", "invoked_by": "task"}, ("invoked_by", "task")),
+    # An empty string is not an answer. A column that exists and was not
+    # written is the row saying nothing, and reading it as a caller named ""
+    # would print a blank where the fallback belongs.
+    ({"app": "weekly", "invoked_by": ""}, (None, None)),
+    ({}, (None, None)),
+    (None, (None, None)),
+)
+
+
+def writers_cases():
+    """The entry-point walk and the receipt field, before anything live."""
+    bad = 0
+    with tempfile.TemporaryDirectory() as tmp:
+        for i, (source, app, want, values) in enumerate(WRITERS_CASES):
+            f = pathlib.Path(tmp) / f"writer{i}.py"
+            f.write_text(source)
+            got, why = row_writers(app, f)
+            if want is None:
+                if got is not None:
+                    bad = 1
+                    print(f"  CASE    writers case {i} should have refused "
+                          f"and returned {got}")
+                elif not why:
+                    bad = 1
+                    print(f"  CASE    writers case {i} refused with no why")
+                continue
+            if tuple(got or ()) != want:
+                bad = 1
+                print(f"  CASE    writers case {i} wanted {want} and got "
+                      f"{got} ({why})")
+                continue
+            vals = caller_values(got)
+            if vals != values:
+                bad = 1
+                print(f"  CASE    writers case {i} wanted values {values} "
+                      f"and got {vals}")
+    print(f"WRITERS_CASES                              "
+          f"{len(WRITERS_CASES) - bad} of {len(WRITERS_CASES)}")
+    worse = 0
+    for row, want in CALLER_FIELD_CASES:
+        got = caller_field(row)
+        if got != want:
+            worse = 1
+            print(f"  CASE    caller_field({row!r}) wanted {want} and got "
+                  f"{got}")
+    print(f"CALLER_FIELD_CASES                         "
+          f"{len(CALLER_FIELD_CASES) - worse} of {len(CALLER_FIELD_CASES)}")
     return bad | worse
 
 
@@ -6314,6 +6626,35 @@ def cadence():
           f"{day}s at {hour:02d}:{minute:02d}Z")
     print(f"  read from                                "
           f"pipeline/weekly.py, its own modal.Cron")
+
+    # How many ways there are into this row, which decides how much any
+    # reading of it below can mean. Printed before the receipt is fetched,
+    # because it is a fact about the repository and holds whether or not the
+    # network answers.
+    writers, writers_why = row_writers(PRESS_APP, WEEKLY_JOB)
+    if writers is None:
+        print(f"  UNREACHED entry points: {writers_why}")
+        rc = 1
+    else:
+        values = caller_values(writers)
+        print(f"entry points that write this row           {len(writers)}")
+        for w in writers:
+            how = ("started by the schedule"
+                   if w["schedule"] == CALLER_CRON
+                   else "started only when a seat asks")
+            arg = (f", taking {', '.join(w['params'])}" if w["params"]
+                   else "")
+            print(f"    {w['name']}  {how}{arg}")
+        print(f"  so a caller could honestly claim          "
+              f"{', '.join(values)}")
+        if len(values) > 1:
+            print(f"  and the row names none of them, which is why the "
+                  f"reading below")
+            print(f"  turns on a minute. This is not a fact about testing the")
+            print(f"  press by hand: the engineer seat found the same two-way")
+            print(f"  write on `ingest`, where the daily cron and the by-id")
+            print(f"  backfill share one helper, so it is a property of")
+            print(f"  deploy_runtime and every job with a second door.")
 
     try:
         sys.path.insert(0, str(ROOT))
@@ -6390,13 +6731,41 @@ def cadence():
         print(f"  newer than the newest edition            "
               f"{'yes' if fresh else 'no'}")
         if fresh:
+            # The row's own answer first, the minute only if it has none.
+            # Which of these two branches runs is the test the engineer seat
+            # named for whether `invoked_by` was worth adding: the day this
+            # prints a caller, the sentence below retires itself.
+            key, who = caller_field(runs.get(PRESS_APP) or {})
             seen = invocation_window(sched, last)
-            print(f"  consistent with the cron's own slot      {seen}")
-            if seen == "off-slot":
-                print("  so a run wrote this row and the schedule did not. A")
-                print("  hand `modal run` writes it identically, the table is")
-                print("  one upserted row per app, and this one has already")
-                print("  overwritten whatever the last firing left.")
+            if key:
+                print(f"  the row names its caller                 "
+                      f"{who}, in `{key}`")
+                print(f"  consistent with the cron's own slot      {seen}"
+                      f"  (corroboration now, not the discriminator)")
+                if who != CALLER_CRON:
+                    print(f"  so a {who} run wrote this row and the schedule")
+                    print("  did not, and this gate can say so without")
+                    print("  inferring it from a clock.")
+                elif seen == "off-slot":
+                    print(f"  the row claims {CALLER_CRON} and its minute is "
+                          f"off-slot, which")
+                    print("  is the one disagreement worth a human: one of the")
+                    print("  two is wrong and this gate cannot say which.")
+            else:
+                print(f"  consistent with the cron's own slot      {seen}")
+                print("  the row names no caller, so this minute is the whole")
+                print("  discriminator. That is true until `invoked_by` lands")
+                print("  and not after: it is carded in docs/ideas.md by the")
+                print("  engineer seat, this gate already reads the column if")
+                print("  the receipt carries it, and the line above is the")
+                print("  fallback rather than the answer.")
+                if seen == "off-slot":
+                    print("  so a run wrote this row and the schedule did")
+                    print("  not. A hand `modal run` of the cron path and a")
+                    print("  `--week` rewrite both write it identically, the")
+                    print("  table is one upserted row per app, and this one")
+                    print("  has already overwritten whatever the last firing")
+                    print("  left.")
         # Is the row's image the image that printed the newest edition? The
         # row carries the digest and `first_seen_at`, so this is readable: the
         # recorded run is that edition's own run when its row landed shortly
