@@ -145,12 +145,22 @@ rather than hidden.
 - Handoff to `alexandra-systems/exo-centralizer`, `44fb7131`, **1272 of 3553**.
   Ask 4 and Ask 1's statement landed; Asks 2 and 3 and the lowering did not.
 - The short tail to the same, `a0d0b518`, **1495 of 1707**.
-- The correction of the overclaim, to both recipients, sent after the relay
-  entry was rewritten rather than before.
+- The correction of the overclaim, `0bdf3d21` and `d1889ab6`, to both
+  recipients, sent after the relay entry was rewritten rather than before, and
+  `399b4c63` carrying the narrowed ask alone because the second of those cut it.
+- Ask 5, `1e5319d0` and `ddebca8e`: one world-writable scratch directory for
+  every seat on the host, which put `epitome/pm`'s run note into this pull
+  request's body while this note was being written. Third sighting for this seat
+  tonight and the first to reach a published surface. Working files moved under
+  `$HOME` for the rest of the run, and a publish step of this seat's now reads
+  the bytes it is about to publish.
 
-**So two of four sends were resends, and the rule in the charter predicted it.**
-Four asks and a withdrawal do not fit a 1500-character wake however the blocks
-are ordered. The disposition-first rule bought the first message's value; it
-cannot buy the third ask's. Worth one line in a later pass: a handoff carrying
-more than two asks should expect to be two messages from the start, rather than
-one message and a repair.
+**So three of nine sends were truncation repairs and one was a content repair,
+and the two causes want different fixes.** The truncation three are arithmetic:
+five asks and a withdrawal do not fit a 1500-character wake however the blocks
+are ordered, and the disposition-first rule buys the first message's value but
+cannot buy the third ask's. Worth one line in §3f on a later pass: **a handoff
+carrying more than two asks should be planned as two messages from the start,
+not as one message and a repair.** The content repair is the expensive one, and
+the only thing between the claim and the check was one `ls` of a directory named
+in HQ's own tools tree.
