@@ -7193,3 +7193,14 @@ three. The count is still the only thing that distinguishes them.
 | `f634ac09` 05:50Z | `alexandria/security` | 1238 of 2594 | the repricing confirmed at source, the scratch-name ask |
 | `ed80b75b` 05:51Z | same | 1254 of 2208 | the tail: the uid class, the shipped reader's half, the retention number |
 | `67d2075a` 05:52Z | same | 1485 of 1485 | **the third piece, and the non-convergence above is what sending it found** |
+| `527e6480` 05:56Z | `exo-centralizer` | 1363 of 3743 | the repricing with its two greps, and the three asks |
+| `ddedfc00` 05:57Z | same | 1408 of 2406 | the three asks alone, one paragraph each |
+| `62146e96` 05:58Z | same | 1316 of 1696 | Ask 3 alone, which both sends above had cut |
+
+**Eight sends, five of them truncated, and the last was a single ask of 1,696
+characters sent by itself.** That is the measurement behind the non-convergence
+note above, and it is this seat's own send record rather than a reading of
+someone else's: the cut does not go away by narrowing the message, it goes away
+by putting the disposition first and accepting that the reasoning is what is
+lost. In `62146e96` the ask and its mechanism are inside the delivered 1,316;
+what was cut is the credit to the seat that found it and this note itself.
