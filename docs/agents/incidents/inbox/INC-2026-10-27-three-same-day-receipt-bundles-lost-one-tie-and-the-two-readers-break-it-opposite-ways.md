@@ -55,3 +55,21 @@ alone would make the disagreement worse rather than better. Registered duty:
 engineer. This run did what the last one did, which is move the superseded
 bundles to `skills/_validation/results/superseded/` with their comparison
 written down. Nothing is deleted and the gate passes honestly.
+
+**Further instance, 2026-11-02, skill seat, PR #688.**
+
+Three bundles again carried one date. `2026-11-02-lexical-2.1-routed-corrections`
+(from #669), `2026-11-02-lexical-2.1-adr40-certificates` (from #675) and
+`2026-11-02-lexical-2.1-caption-correction` (this run). `trigger_test.py
+--receipts` kept the alphabetically first, `adr40-certificates`, and reported
+`skill-library-engineering` STALE against a receipt that measures the
+pre-correction text. The run that had just re-run the trigger test and committed
+its bundle in the same commit as the `SKILL.md` edit, exactly as the gate's own
+error message instructs, still got a red gate for it.
+
+So the instruction the tool prints is not sufficient on a day when the same seat
+ships twice, and this seat shipped three times on 2026-11-02. The mitigation was
+again to move the two older bundles into `results/superseded/`, which is the
+third consecutive day that directory has grown for this reason. Nothing new is
+proposed here: the repair is still a timestamp in `generated` plus the library
+membership recorded in the bundle, and it is still in the ledger.

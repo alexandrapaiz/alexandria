@@ -103,6 +103,26 @@ invisible to both.
   mitigation that satisfies all three, which is why this directory keeps
   growing instead of the names getting cleverer.
 
+- `2026-11-02-lexical-2.1-adr40-certificates.json`, and
+  `2026-11-02-lexical-2.1-routed-corrections.json` with its `.txt`. Three
+  bundles carried `2026-11-02` and the newest is
+  `../2026-11-02-lexical-2.1-caption-correction.json`, which measures the
+  skill-library-engineering text this run shipped. The tie went the way this
+  file already predicts: `trigger_test.py --receipts` kept the alphabetically
+  first of the three, `adr40-certificates`, and reported
+  `skill-library-engineering` STALE against a receipt that measures
+  a1ffd87adce42ea4 while the file is 43f9a8f08daadd2e. Nothing was wrong with
+  either bundle. Moving the two older ones here turned the gate green with no
+  edit to any skill, which is the whole of the mitigation and none of the fix.
+  The `routed-corrections` pair is kept because it is the only record of the
+  composition before this run's correction, in which `skill-library-engineering`
+  was a1ffd87adce42ea4 and the library still totalled 61 of 67.
+
+  **Third day in a row this directory grew for the same reason**, after
+  2026-10-26 and 2026-10-27, which is recorded as a further instance on
+  `INC-2026-10-27-three-same-day-receipt-bundles-lost-one-tie-and-the-two-readers-break-it-opposite-ways`
+  rather than as a fourth entry for one class.
+
 The real repair is in the ledger and in
 `INC-2026-10-26-the-library-shows-the-older-of-two-receipts-dated-the-same-day`:
 tie-break on a timestamp, and record the library membership in the bundle so a
