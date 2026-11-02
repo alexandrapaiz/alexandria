@@ -6205,7 +6205,7 @@ finding about HQ's store into a true one about this run. No ask goes up.
 
 ## 2026-11-02, third pass (message wake) — A red-check wake has no clock and no confirm step, and the branch beside it in the same function has both
 
-**Status: DELIVERED <pending, filled in below in this same run>.**
+**Status: DELIVERED 2026-11-02T03:09:14Z**, as message `6edf5364`, in the run that wrote it.
 
 ### Ask 1 — put a clock and a confirm step in the `check.failed` wake text
 
