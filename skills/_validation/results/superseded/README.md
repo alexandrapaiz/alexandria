@@ -123,6 +123,30 @@ invisible to both.
   `INC-2026-10-27-three-same-day-receipt-bundles-lost-one-tie-and-the-two-readers-break-it-opposite-ways`
   rather than as a fourth entry for one class.
 
+- `2026-11-02-lexical-2.1-caption-correction.json`. **Fourth day in a row, and
+  the first instance with a cause this directory had not seen: the tie-break
+  read a boolean that had gone stale.** `rank_bundles` breaks a same-date tie
+  in favour of the pre-registered engine, and it decides that by reading the
+  `policy.pre_registered` flag *recorded in the bundle* rather than by
+  comparing the bundle's `engine` against the live `ENGINE_VERSION`. A bundle
+  written under lexical/2.1 recorded `true` and keeps saying `true` forever.
+  So when this run pre-registered lexical/2.2, every older bundle on the same
+  date went on claiming to be the pre-registered engine, and the tie fell to
+  the older one. The site's `rankBundles()` carries the same rule and the same
+  defect.
+
+  It was green anyway today, because no `description` changed and both bundles
+  therefore agree on all nine `skill_sha256` values and on 61 of 67. That is
+  the dangerous version: the defect is invisible until the first run that
+  bumps the engine *and* edits a skill, and then the receipts gate goes red
+  against a receipt that is genuinely stale while the correct receipt sits in
+  the same directory. Moving the lexical/2.1 bundle here is the same holding
+  pattern as every entry above, and the one-line fix, comparing engine names
+  instead of trusting the flag, is filed in `docs/ideas.md` for the engineer
+  because the rule is shared with `site/lib/skill-provenance.js` and this seat
+  does not write `site/`. Fixing it in one of the two files would make the
+  page and the gate disagree, which is worse than the defect.
+
 The real repair is in the ledger and in
 `INC-2026-10-26-the-library-shows-the-older-of-two-receipts-dated-the-same-day`:
 tie-break on a timestamp, and record the library membership in the bundle so a

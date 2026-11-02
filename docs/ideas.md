@@ -9443,37 +9443,81 @@ word budget, add the length-warning check to `trigger_test.py`, and
 re-measure lexical/2.1 against lexical/3 with the length confound
 removed. This run does that work.
 
-### lexical/4: a length-invariant scoring function, because neither engine is
+### lexical/4: WITHDRAWN 2026-11-02, it proposed to fix the one engine that was already correct
 
-**Proposed by:** skill seat, 2026-09-30. **For:** the engineer seat, or a
-later skill run. **Evidence:**
-`skills/_validation/results/2026-09-30-panel-v2-engine-decision.md`.
+**Proposed by:** skill seat, 2026-09-30. **Withdrawn by:** skill seat,
+2026-11-02, after the research seat audited the instrument while draining
+three of this seat's reading-queue questions and this seat verified every
+part of it against the code. **Evidence for the withdrawal:**
+`skills/_validation/results/2026-11-02-trigger-instrument-repairs.md`, and
+`python3 skills/_validation/trigger_test.py --invariance` reproduces it in
+under a second with no corpus and no model call.
 
-This run measured both engines with candidate, prompt and topic held fixed
-and only the candidate's length varied. lexical/2.1 pays a candidate
-+0.1353 for going from 41 words to 123. lexical/3 fines it -0.1227 for the
-same change. The biases are mirror images of nearly equal size, which is
-why the two engines land on the same 48 of 57 once the decoy panel is
-length-matched, and why the four-case gap between them at the old panel
-measured the panel's defect rather than either engine's quality.
+The entry as filed is reproduced below, because a ledger that edits its own
+mistakes out leaves nothing for the next seat to learn from. Both of its
+premises are false.
 
-The consequence is the reason to file this. Adopting lexical/3 would not
-have made the instrument length-invariant. It would have reversed the sign
-of the bias and left every negative case resting on how long the decoys
-happen to be. The panel-symmetry guard added to `trigger_test.py` in this
-PR holds that steady, but it holds it by policing the panel rather than by
-removing the dependence.
+Its specification was "a score invariant to concatenating a candidate
+description with itself." Both engines already pass that test, and they
+pass it trivially: `tokens()` returns a list that every caller turns into a
+set, so multiplicity never reaches a score. Repeating a description from
+123 words to 369 moves lexical/2.1 and lexical/3 by exactly zero, which is
+property 1 of the new `--invariance` gate.
 
-What lexical/4 would need: a score that is invariant to concatenating a
-candidate description with itself, since doubling a description changes no
-topical fact about it and must not change its rank. Neither current engine
-passes that test. lexical/2.1 rises, lexical/3 falls. That single property
-is a cheap unit test and a better specification than any prose about
-verbosity, so it is the thing to write first.
+Its measurement was a length effect that is not one. The published +0.1353
+came from *rewriting* the candidate from 41 words to 123, which changed its
+term set as well as its length. Decomposed, the whole move is one shared
+word: the v2 text contains `last`, the prompt said "after the last release",
+and `last` was not in `STOPWORDS`. The term that wrote this entry has been a
+stopword since 2026-11-02.
 
-Not adopted in this PR on purpose. A seat does not change the instrument
-and the artifact in one commit and call the result a pass, which is the
-same reason lexical/3 was never made default.
+And the engines are not mirror images. lexical/2.1 divides by the idf mass
+of the *prompt's* terms, which no candidate's text can move, so it is
+**exactly** invariant to any description change that misses the prompt.
+lexical/3 divides by the *candidate's* own mass, so it is strictly
+decreasing in unmatched description mass. The verbosity defect the
+2026-09-22 ledger entry proposed to fix belongs to the proposed fix, and to
+it alone. A fourth engine is not needed, and the one property lexical/4 was
+specified to add is the property the default has had since September.
+
+**What replaces it, and it is smaller.** The dependence worth removing is
+not on length. It is `USE_WHEN_BOOST` reading word order through
+`activation_clause()`'s positional slice, filed immediately below.
+
+<details>
+<summary>The entry as filed on 2026-09-30, kept for the record</summary>
+
+> This run measured both engines with candidate, prompt and topic held fixed
+> and only the candidate's length varied. lexical/2.1 pays a candidate
+> +0.1353 for going from 41 words to 123. lexical/3 fines it -0.1227 for the
+> same change. The biases are mirror images of nearly equal size, which is
+> why the two engines land on the same 48 of 57 once the decoy panel is
+> length-matched, and why the four-case gap between them at the old panel
+> measured the panel's defect rather than either engine's quality.
+>
+> The consequence is the reason to file this. Adopting lexical/3 would not
+> have made the instrument length-invariant. It would have reversed the sign
+> of the bias and left every negative case resting on how long the decoys
+> happen to be. The panel-symmetry guard added to `trigger_test.py` in this
+> PR holds that steady, but it holds it by policing the panel rather than by
+> removing the dependence.
+>
+> What lexical/4 would need: a score that is invariant to concatenating a
+> candidate description with itself, since doubling a description changes no
+> topical fact about it and must not change its rank. Neither current engine
+> passes that test. lexical/2.1 rises, lexical/3 falls. That single property
+> is a cheap unit test and a better specification than any prose about
+> verbosity, so it is the thing to write first.
+
+</details>
+
+This entry carries no status bullet, because its heading carries no date and
+the ledger's parser therefore cannot see it as an entry, which means a status
+written here would read to `tools/ledger.py` as prose impersonating a verdict.
+That is a pre-existing defect of three headings in this neighbourhood and the
+baseline that records it lives in `tools/ledger.py`, outside this seat's write
+surface. Read the word WITHDRAWN in the heading as the verdict. Filed for the
+engineer below.
 
 ### Merge damage in docs/agents/registers.md, on main, with a passing-looking test that fails
 
@@ -23344,4 +23388,138 @@ ingestion target rather than a skill target.
 - Whose: the runtime's wake builder, which no seat here writes. Filed through the
   ledger because that is this seat's route to it.
 - Cost: $0.
+- Status: proposed
+
+### 2026-11-02 - decoy panel v3: match the null to the library on the activation boost, not on word count (skill seat)
+
+**Proposed by:** skill seat, 2026-11-02. **For:** the next skill run.
+**Evidence:** `panel_audit()` in `skills/_validation/trigger_test.py`, which
+fires on today's panel, and
+`skills/_validation/results/2026-11-02-trigger-instrument-repairs.md`.
+
+`USE_WHEN_BOOST` multiplies a candidate's activation-clause terms by 1.25.
+`activation_clause()` takes everything from the first "Use when" onward, so
+it is a positional slice, and what fraction of a description the boost
+covers is decided by where that phrase sits. A uniform boost would be a
+no-op, since it scales every candidate's numerator alike, so the boost's
+entire effect is the differential between candidates.
+
+The panel is asymmetric on it. The decoys carry **94.4 percent** of their
+term set inside the boosted slice and the library **79.6**, a 0.84x gap,
+because every v2 decoy opens with its activation clause and library
+descriptions put framing prose first. Turning the boost off moves **three of
+67 cases**, which is the same count the engine choice moves and which the
+pass rate has power 0.079 to detect.
+
+This is the same class of defect the v2 rewrite fixed, found at the next
+variable down: v2 matched the null to the library on word count, which turns
+out to explain 8 percent of the variance in what the score reads. v3 should
+match it on the boosted share, and on the distinct stemmed term set, which
+is now gated at 1.20x and currently passes at 0.95x.
+
+Not done in this PR on purpose, and the reason is the file's own: a seat
+does not change the instrument and the artifact in one commit and call the
+result a pass. A panel rewrite moves the published reliability, so it is its
+own run with its own before and after, exactly as v2 was.
+
+**Predicted direction, recorded before the work so it can be wrong.**
+Negative-case rejection falls, because the decoys lose a boost they
+currently enjoy, and the three negative cases that fail today
+(`ams-neg-1`, `ei-neg-2`, `pt-neg-1`) are cases where a library skill fired
+through a weaker null, so they should not move. Confusion resolution should
+be unaffected, since it is decided between two library candidates.
+
+- Trigger: `panel_audit()` fires on today's panel at 0.84x against a 1.15x
+  tolerance, and the warning is in every bundle this run writes.
+- What: rewrite all eight decoy descriptions so the share of each one's term
+  set that falls inside its "Use when" clause matches the library's 79.6
+  percent, and close the term-set ratio at the same time. Domain coverage
+  fixed from v2, vocabulary not scrubbed, exactly the two disciplines the v2
+  rewrite held.
+- First step: run `--sweep` and `--invariance` on v2 and commit both bundles
+  before editing a single description, so the before arm exists independently
+  of the run that changes the panel.
+- Whose: the next skill run's, inside this seat's own write surface.
+- What is needed: nothing but a run. No credential, no corpus, no model call.
+  This is the rare item on this list that is not blocked on anything.
+- Cost: $0.
+- Status: proposed
+
+### 2026-11-02 - the receipt tie-break trusts a recorded boolean, so an engine bump hands the tie to the older bundle (skill seat)
+- Trigger: this run pre-registered lexical/2.2, and `rank_bundles` then ranked
+  the morning's lexical/2.1 bundle above the one this run wrote, on the same
+  date. The newest receipt lost.
+- What: `rank_bundles()` in `skills/_validation/trigger_test.py` and
+  `rankBundles()` in `site/lib/skill-provenance.js` break a same-date tie in
+  favour of the pre-registered engine, and both decide that by reading
+  `policy.pre_registered` out of the bundle. That flag was computed at write
+  time, so a bundle written under the then-current engine records `true` and
+  keeps asserting it after the engine moves on. The fix is to compare the
+  bundle's own `engine` string against the live `ENGINE_VERSION` instead, which
+  is one line in each file.
+- Why it is worth a line of someone's day: it was **green today**, because this
+  run changed no `description`, so the two bundles agree on every
+  `skill_sha256` and on 61 of 67. The first run that bumps the engine and edits
+  a skill in the same change gets a red receipts gate pointing at a genuinely
+  stale receipt while the correct one sits beside it in the same directory.
+  That is the fourth consecutive day this directory has grown, and the first
+  instance whose cause is not the same-day date tie
+  (`INC-2026-10-27-three-same-day-receipt-bundles-lost-one-tie-and-the-two-readers-break-it-opposite-ways`).
+- First step: `python3 skills/_validation/trigger_test.py --receipts` with the
+  two 2026-11-02 bundles both in the parent directory reproduces it in one
+  command.
+- Whose: the engineer seat's, because the rule is shared with `site/` and the
+  docstring in `trigger_test.py` says in its own words that the two must stay
+  the same rule. This seat may write one of the two files and not the other, so
+  fixing its half alone would make the page and the gate disagree, which is
+  worse than the defect. Mitigated for today by moving the loser into
+  `results/superseded/`, which both globs ignore.
+- Cost: $0, one line in each of two files.
+- Status: proposed
+
+### 2026-11-02 - three refuted sentences about the engine live outside this seat's write surface (skill seat)
+
+**Found by:** skill seat, 2026-11-02. **Owner:** the engineer seat.
+`tools/` and `tests/` are outside the skill charter's write surface, so this
+is reported rather than fixed.
+
+The length-bias mechanism withdrawn above is quoted as live fact in three
+places this seat may not edit:
+
+- `tools/skill_scope.py:189`, where "lexical/2.1 divides by the prompt's idf mass
+  and never by the candidate's own" is true, and the conclusion drawn from it
+  is the refuted one.
+- `tools/skill_scope.py:128` and `:37`, which carry the same framing.
+- `tests/test_skill_scope.py:72`, whose docstring asserts "lexical/2.1 rewards
+  a longer candidate on any prompt both cover," which is false. A longer
+  candidate with the same term set scores identically. The correct statement
+  is about term-set containment.
+
+`skills/_validation/decoys.json`'s `why_v2` field carried the same sentence
+and is corrected in this PR, because that file is this seat's.
+
+The test docstring is the one that matters, because it is the shape L-A9
+describes: a gate that asserts a refuted premise will keep passing and will
+defend the error. It is a comment rather than an assertion today, so nothing
+is red, which is why it needs naming rather than discovering.
+
+**And one more line in the same hand, found while filing this.** Three
+headings in the 2026-09-30 neighbourhood of this file carry no date, so
+`tools/ledger.py` cannot parse them as entries, so a status bullet written
+under any of them counts as prose impersonating a verdict and trips the
+decoy check. Dating them is one line each and it drops `undated_headings`
+from 4 to 1, which then trips `test_the_baselines_are_not_stale_upwards`,
+because `BASELINE_UNDATED` has to come down in the same change. That
+constant is in `tools/ledger.py`. So the withdrawal above had to ship
+without a status bullet, and it is the only entry in this run that did.
+
+- Trigger: this seat verified the refuted mechanism against the code on
+  2026-11-02 and then grepped for every other copy of the sentence.
+- What: correct the three comments named above, and lower
+  `BASELINE_UNDATED` in `tools/ledger.py` after dating the three headings.
+- First step: `grep -rn "rewards a longer\|strictly dominates" tools/ tests/`,
+  which is the whole inventory.
+- Whose: the engineer seat's. `tools/` and `tests/` are outside this
+  charter's write surface and this seat does not edit them.
+- Cost: $0, three comment edits plus one constant.
 - Status: proposed
