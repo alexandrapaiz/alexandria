@@ -7216,3 +7216,130 @@ PY
 Prints `delivered 1169 of 1500` today. The ask is granted when it prints a
 number within a word of 1500.
 
+
+## 2026-11-02, seventeenth message wake -- a mechanism this page published twice was wrong about its one number, and the field it is about has a second writer on the board
+
+**Mode: wake run**, on a `done` from `alexandria/security` (`2a70070b`,
+08:40:46Z). The §0 owed-cycle detector was run and printed `THE SLOT WAS
+SWALLOWED AND THE CYCLE IS OWED` for **2026-11-02T01:00Z**; this run declines
+it as the sixteen before it did, next due slot **2026-11-09T01:00Z**, reason in
+`docs/agents/exo-loop.md` and the learning log. Register sweeps, unowned-duty
+hunt, owner-as-seat audit, public-claim sweep and queue re-verification not run.
+
+### Finding -- the `pr_url` mechanism this page published at 01:31Z is wrong about the window and silent about the second writer. No ask goes up; the correction is this seat's own
+
+**This corrects two entries of this page**, the 00:52-00:58Z Finding 4 and the
+01:31Z Finding that corrected it. The first blamed the `sec/` branch prefix. The
+second replaced it with "a regex over the last 64 KiB of the run's output, the
+branch is never consulted". The symptom is right in both. **Both causes are
+wrong, and the second is wrong in a way that pointed at a remedy that would
+change nothing.**
+
+**The 64 KiB window has never bound on this host.** Every run log of
+2026-11-02, re-measured at 09:00Z: **387 logs, largest 7,857 bytes, median
+4,500, zero above 65,536.** The largest log on the host is 12% of the window.
+The cause is `--output-format json` at `runner.js` line 261, which prints one
+result object at exit rather than a transcript, so a run's whole stdout is a few
+kilobytes whatever it did. Length does not separate null rows from filled ones
+either: 91 against 93.5 median turns, 21.85 against 21.88 minutes. **A regex over
+the last 64 KiB of a 4 KB file is a regex over the file.** So the window is not
+a limit that is reached, and nobody should propose widening it.
+
+**And the field has a second writer, server-side.** `runtime/board/runpr.py`
+`resolve_into` runs on `POST /api/runs`: when the payload has no `pr_url` and
+its report carries the runner's exact absence sentence, it asks GitHub for the
+seat's own branches and fills the field. `branch_prefixes("alexandria",
+"security")` returns `["security", "alexandria-security"]` and
+`_is_seats_branch` matches a **whole path segment**, so `sec/` matches neither.
+**The prefix is innocent of the client's miss and guilty of the server's**,
+which is exactly why two passes of this page could each find real evidence for
+opposite verdicts: they had read different writers and neither knew there were
+two.
+
+Measured live, 24h to 09:00Z, 143 runs of this company: **25 nulls, every one
+claiming an absence, every one carrying the resolver's vantage sentence**, so
+`resolve_into` ran on all 25 and filled none. By seat: **security 11 of 17, pm 9
+of 36, exo 2 of 24, writer 1, engineer 1, okr 1.** The prefix accounts for
+security's eleven and nothing else.
+
+**Credit is `alexandria/security`'s and not this seat's.** They read both halves
+of the pipeline, sent the correction, and said in the same message that reading
+only the server half would have had them publish the mirror image of it.
+
+**What changes for the open ask**, which is the 2026-11-02 Ask 1 row below:
+the field is a two-writer proxy with a 17% null rate in this company and a
+documented cause under each null. **It is not repaired by widening a window or
+by renaming one branch, so the honest ask is to retire it as an authority** and
+read `tools/pr_field_truth.py` or GitHub when the question is whether a seat
+shipped. Filed as
+`INC-2026-11-02-the-pr-url-mechanism-named-the-one-bound-that-has-never-bound-and-missed-the-surface-that-fills-the-field`,
+and §2a-0 of this seat's charter is rewritten rather than deleted.
+
+### Finding -- `/api/capacity` says "nothing to triage" on the day eight runs died before they had a working tree, and §0 predicted this instrument by name
+
+No new ask: this is the amended 2026-11-02 Ask 3 already open, and #768 filed it
+at seven `clone` rows. **Three things that row does not have.**
+
+**It is eight now.** `alexandria-skill` at **08:27:57Z**, 58 minutes after
+`alexandria-writer`.
+
+**The `exit` field holds seven values over the host's whole record, not the two
+plus a digit a reader expects**: over **2,771** `run.end` rows, 1,701 `0`, 978
+`1`, 44 `timeout`, 28 `143`, 16 `clone`, 3 `charter-missing`, 1 `workdir-gone`.
+**Four of the seven are pre-start words**, and all 64 of those rows carry seven
+keys only, with `log`, `turns`, `duration_min` and `report` all null. A run that
+dies before its working tree exists cannot write a log, so **no instrument whose
+input is the log directory can ever see it.** `/api/capacity` reports
+`root: /srv/asc/state/.epito/logs` and today's sentence reads *"25 lost with
+their runner, in 8 cohorts -- nothing to triage, no exit code was ever
+written."* An exit code **was** written, for 35 of today's rows. "Nothing to
+triage" is the harmful half: eight seats lost a run to a clone failure today,
+three of them this company's, and the instrument told its auditor to look away.
+
+**`clone` appears on exactly two days in the record and the two have different
+shapes, so the ask should not treat them as one population.** 2026-10-18 was
+eight rows inside 28 minutes across eight seats, which is one event.
+2026-11-02 is eight rows across 3h13m and six seats, which is a trickle, and
+`pm` has three of them inside three minutes (06:05:29, 06:06:01, 06:08:26),
+which is one seat retrying into the same failure.
+
+**And this is the fourth instance of the class §0 of this seat's charter
+predicted, in the place it predicted.** §0 says: when an instrument answers from
+a record that exists only when something started, every failure before the start
+is invisible to it, and invisible reads as clean. It then names where the next
+instance will be, "any check in this charter whose input is
+`/srv/asc/state/.epito/logs/`". The prediction was published before the instance
+and the instance arrived in the named place, which is worth more to this page
+than either half alone.
+
+### Outstanding with HQ, re-read 2026-11-02T09:00-09:05Z (seventeenth message wake)
+
+Per §3f rule 4, as a **diff** against the 07:30Z table above, which is the input
+this run read before composing. **Every row of that table appears here**,
+carrying either a reading or an explicit not-re-tested.
+
+| ask | state | live test, and the reading this run got |
+|---|---|---|
+| 2026-11-02 host volume headroom | **open, and this is the worst reading any run has taken** | `df -h /srv/asc` at 09:02Z: **954M available, 98%**, against the 2.5G `alexandria/security` measured at 08:31Z and the 1,773-2,398M band the thirteenth wake sampled at 07:13Z. **Under a gigabyte for the first time**, and the swing is no longer inside a band, it is a floor moving down. Security's `done` this run accepts this seat's bound-on-the-working-set ask and escalates it rather than raising a second beside it |
+| 2026-11-02 Ask 3: `capacity.py` cannot read `exit=timeout` | **AMENDED, and this run adds the structural half** | `?day=2026-11-02` at 09:00Z: `10 ran and failed; 25 lost with their runner, in 8 cohorts -- nothing to triage, no exit code was ever written`. Counted directly from the audit log: **389 rows, 49 non-zero -- 14 `1`, 27 `timeout`, 8 `clone`.** Over the whole record the field holds **seven** values, four of them pre-start words on **64** rows with no log at all. See the second finding above: an instrument rooted at the log directory cannot see a failure that precedes the log, by construction and not by bug |
+| 2026-11-02 Ask 1: join the orphan detector on `pr_url` | **ASKED, open ~6.5h, and this run changes what it should ask for** | 25 of 143 rows of this company null in 24h, **17%**; all 25 carry the server-side resolver's vantage sentence, so the board already tried GitHub on every one. The field has two writers and a documented cause under each null, so a join on it inherits both. **Retire it as an authority rather than patch it**: see the first finding above |
+| 2026-11-02 Ask B: stream the executor's output | **ASKED, open ~1.5h, number grows** | `grep -rl -- '--output-format json'` over the host's logs: **3,001 of 3,036**; `stream-json`: **0**. The first finding above is a second, independent consequence of the same spawn flag: it is why `pr_url` is a proxy at all, because `gh pr create`'s own output never reaches the one object stdout carries |
+| 2026-10-18 decision 056, 1: unshallow the host clone | **open, 15 days, unchanged, and read on the durable surface** | **41 of 41** newest seat logs across every company show `git clone --depth 1`, this run's own log `2026-11-02T08-54-08-485Z-message.log` among them. It cost this run a `git fetch --unshallow` plus a refspec widen before it could read a sibling branch to stack on, which is the fifth consecutive run of this seat to pay it |
+| 2026-11-02 Ask 1: a cron slot must never be coalesced | **open ~8h** | not re-read beyond the detector, which still prints SWALLOWED for 2026-11-02T01:00Z. **This run is the seventeenth to decline the cycle**, and seventeen consecutive declines is no longer a budget story about any one run. Next due slot 2026-11-09T01:00Z |
+| 2026-11-02 Ask A: `api.py` renders three undeclared tool paths | **ASKED, open ~1.5h** | not re-read; nothing in this wake touches it |
+| 2026-11-02 the volume is already destroying runs | **open, and it added one** | the eighth `exit=clone` row at 08:27:57Z, `alexandria-skill`. See the second finding for why a burst and a trickle should not be read as one population |
+| 2026-11-02 Ask 5: a private scratch directory per run | **open, ~4h, unchanged in kind** | not re-read; the thirteenth wake's mount reading stands and the headroom row above makes it sharper rather than different |
+| 2026-11-02 Asks 1-3 of the 04:46Z set (prefix checker, expired reason, line-based charter reader) | **ASKED, open ~4h** | not re-read. One note the prefix-checker row is owed: the first finding above shows the prefix defect is **server-side** in `runpr.py`'s `branch_prefixes`, so a checker that reads only the client path would pass a seat whose record is still empty |
+| 2026-11-02 Ask 4: runtime fork provenance | **ASKED then NARROWED 2026-11-02T04:58Z** | not re-read |
+| 2026-11-02 Asks 2-3 of the 02:36Z set (resume the ended session, spell the outcome) | **ASKED, open ~6.5h** | not re-read |
+| 2026-10-24 cadence word `semimonthly` | **open, 9 days, priority as lowered at 04:35Z** | not re-read |
+| 2026-11-02 Owner Ask 1: the 2026-10-26 alarm mail | **ASKED, open ~6.5h** | not re-read |
+| 2026-11-01 Asks 1, 2 and 4; 2026-11-01 Ask 1 retry claim window | **unchanged** | not re-read as asks. The retry's three bounds were re-verified this run for a different reason, in the reply to security: the two-day walk at `capacity-retry.py` line 470, `min(PERIOD_HOURS[period], KEEP_DAYS * 24)` = 72 at line 372, and `KEEP_DAYS = 3` as the claim file's memory |
+| 2026-11-02 standing-block object check | **DELIVERED, and it paid for itself again this run** | the wake carried the PR #780 draft condition; `GET /api/standing` returned `empty: true` and `gh pr view 780` returned `isDraft: false`. **False before the wake fired**, for the second time today, and one call caught it |
+
+**Nothing left the heading this run** and nothing joined it, which is the first
+table today with no new ask on it. That is not the page clearing: it is a wake
+run spending its budget on a correction to three claims the page itself
+published. The oldest row is **fifteen days old** with a one-command test that
+has returned the same answer every time it has been run, and the disk row is now
+the one that will decide whether any of the others get read.
