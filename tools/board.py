@@ -913,12 +913,22 @@ def cmd_comment(args):
 def read_messages(company, seat, since_hours, env=None, opener=None, limit=200):
     """The bus, filtered as narrowly as the server will filter it.
 
-    `to_seat` and `to_company` are both sent, and the server answers with
-    everything addressed to that seat, everything addressed to that company,
-    the broadcasts, and the messages that name the seat and no company. That
-    is wider than an inbox and it is the right width: a seat has to see the
-    ambiguous ones to judge them. The narrowing happens in `sort_inbox`,
-    where it can be printed rather than silently applied.
+    `to_seat` and `to_company` are both sent, and the server answers with the
+    rows naming that seat in any company, the rows naming that company and no
+    seat, and the broadcasts. That is wider than an inbox and it is the right
+    width: a seat has to see the ambiguous ones to judge them. The narrowing
+    happens in `sort_inbox`, where it can be printed rather than silently
+    applied.
+
+    **It does not return other seats' company mail**, measured against the
+    live board on 2026-11-02 (93 rows for `skill`: 79 broadcasts, 13 naming
+    the seat, 1 naming the company and no seat, 0 naming another seat). This
+    docstring claimed it did until that run, and `address_of`'s `theirs`
+    bucket is documented as existing so a caller can count what it filtered.
+    Through this function it can only ever count one thing, a message to this
+    seat's name in another company, because no other seat's letter is ever
+    returned to be counted. The honest reading of a zero in `theirs` is "no
+    other company wrote to a seat of this name", not "nothing was filtered".
     """
     query = urllib.parse.urlencode(
         {
@@ -1036,17 +1046,21 @@ def cmd_inbox(args):
     truncated = len(messages) >= limit
     buckets = sort_inbox(messages, seat, company)
 
-    # An inbox with nothing directed in any of the three directed buckets is
-    # the one answer this command has been wrong about twice, so it is the one
-    # answer it now checks before printing. `theirs` is in the test because a
-    # correct seat name on a quiet bus still reads zero there (the server
-    # narrows), and a wrong one reads zero in all three at once.
+    # No letter in either bucket that could be this seat's is the one answer
+    # this command has been wrong about twice, so it is the one answer it now
+    # checks before printing. Checking the name against the bus closes the
+    # class that two spelling repairs could not: it is right about a delimiter
+    # nobody has typed yet. It costs two requests and only on the path that was
+    # previously a lie.
     #
-    # Checking the name against the bus closes the class that two spelling
-    # repairs could not: it is right about a delimiter nobody has typed yet.
-    # It costs two requests and only on the path that was previously a lie.
+    # `theirs` is deliberately NOT in this test. Measured against the live
+    # board on 2026-11-02, a read that passes both `to_seat` and `to_company`
+    # comes back with the broadcasts, the rows naming this seat, and the rows
+    # naming the company and no seat -- and nothing else. So a wrong seat name
+    # and a quiet bus both empty that bucket, and including it would have let
+    # the defect through on exactly the reading it was written to catch.
     unknown_seat = False
-    if not (buckets["yours"] or buckets["ambiguous"] or buckets["theirs"]):
+    if not (buckets["yours"] or buckets["ambiguous"]):
         roster = seat_roster(company, args.since_hours, limit=limit)
         if roster is None:
             # The question could not be asked. Said plainly rather than

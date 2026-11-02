@@ -107,12 +107,27 @@ class Handler(BaseHTTPRequestHandler):
             # is exactly the row the client has to judge for itself.
             seat = (args.get("to_seat") or [None])[0]
             company = (args.get("to_company") or [None])[0]
-            rows = [
-                m for m in self.state["messages"]
-                if (m["to_seat"] is None and m["to_company"] is None)
-                or (seat and m["to_seat"] == seat)
-                or (company and m["to_company"] == company)
-            ]
+            if not seat and not company:
+                # Unfiltered means the whole bus, which is how the live board
+                # answers it: the skill seat found its lost message on
+                # 2026-11-02 with exactly this query. The fake returned only
+                # the broadcasts here until that run, so a reader of this fake
+                # could not have written the roster check that needs it.
+                rows = list(self.state["messages"])
+            else:
+                # Measured against the live board on 2026-11-02: a read with
+                # both filters returns the broadcasts, the rows naming the
+                # seat in ANY company, and the rows naming the company and no
+                # seat. It does NOT return another seat's company mail. The
+                # fake ORed on company until that run, which is wider than the
+                # server and is why a wrong seat name still produced a
+                # non-empty `theirs` here and an empty one in production.
+                rows = [
+                    m for m in self.state["messages"]
+                    if (m["to_seat"] is None and m["to_company"] is None)
+                    or (seat and m["to_seat"] == seat)
+                    or (company and m["to_company"] == company and m["to_seat"] is None)
+                ]
             limit = int((args.get("limit") or ["500"])[0])
             return self._send(200, {"messages": rows[:limit]})
         if path.startswith("/api/items/"):
@@ -1024,3 +1039,207 @@ def test_a_write_takes_the_qualified_form_too(live_board, capsys):
                 "--id", "i-1", "--body", "read"])
     sent = [c for c in live_board["calls"] if "/comment" in c[1]][-1]
     assert sent[-1]["seat"] == "engineer"
+
+
+# --------------------------------------------------------------------------
+# The other delimiter, and the zero that stopped being trusted
+# --------------------------------------------------------------------------
+#
+# `INC-2026-11-02-the-inbox-repaired-for-one-delimiter-answered-a-confident-zero-for-the-other`.
+# The repair above taught `seat_of` the form this file PRINTS,
+# `alexandria/skill`. The host hands every seat the form it does not print,
+# `alexandria-skill`, which has no slash and so fell through untouched into a
+# query no row on the bus answers. The skill seat ran it at 24, 48, 72 and 168
+# hours, got zero in every directed bucket and exit 0 each time, and lost the
+# opening of a run.
+#
+# The first block asserts the spelling. The second asserts the thing a spelling
+# rule cannot give you, which is that a zero this command cannot stand behind
+# no longer reads like an empty inbox.
+
+
+def test_the_hyphenated_form_the_host_hands_the_seat_resolves_to_the_bare_seat():
+    assert board.seat_of(Args(seat="alexandria-skill"), env={}) == "skill"
+    assert board.seat_of(Args(seat="alexandria-engineer"), env={},
+                         company="alexandria") == "engineer"
+
+
+def test_a_bare_seat_name_with_a_hyphen_in_it_is_left_whole():
+    # `exo-centralizer` is a real seat on this bus. Splitting on the first
+    # hyphen would make it the seat `centralizer` in a company `exo` that does
+    # not exist, which is the same confident zero facing the other way.
+    assert board.seat_of(Args(seat="exo-centralizer"), env={}) == "exo-centralizer"
+    assert board.seat_of(Args(seat="exo-centralizer"), env={},
+                         company="alexandria") == "exo-centralizer"
+
+
+def test_the_longest_company_name_wins_when_one_company_prefixes_another(monkeypatch):
+    # Rehearsed against a shortest-first sort and it stayed green, because no
+    # two companies on the real list prefix each other: `alexandra-systems` and
+    # `alexandria` diverge at the eighth character. So the ordering rule is
+    # unreachable through `KNOWN_COMPANIES` as it stands today, and a gate that
+    # asserts it through the real list measures nothing.
+    #
+    # The list is the thing that changes. `docs/standards/pm.md` §14 says a
+    # company is a repository name, and the day somebody adds a repository whose
+    # name extends an existing one, this rule is what keeps that company's
+    # seats readable. So the gate supplies the collision instead of waiting for
+    # it.
+    monkeypatch.setattr(board, "KNOWN_COMPANIES", ("acme", "acme-labs"))
+    assert board.seat_of(Args(seat="acme-labs-pm"), env={}) == "pm"
+    assert board.seat_of(Args(seat="acme-pm"), env={}) == "pm"
+    # And the company half it reports is the long one, so a disagreement is
+    # caught against the right name rather than against `acme`.
+    with pytest.raises(board.BoardError) as exc:
+        board.seat_of(Args(seat="acme-labs-pm"), env={}, company="acme")
+    assert "acme-labs" in str(exc.value)
+
+
+def test_the_real_company_list_resolves_its_own_hyphenated_name():
+    # The live instance of the rule above, asserted separately so the two
+    # cannot be confused: this one passes under either sort order.
+    assert board.seat_of(Args(seat="alexandra-systems-pm"), env={}) == "pm"
+
+
+def test_a_disagreeing_company_half_is_refused_in_the_hyphenated_form_too():
+    with pytest.raises(board.BoardError) as exc:
+        board.seat_of(Args(seat="Ursa-engineer"), env={}, company="alexandria")
+    assert "Ursa" in str(exc.value) and "alexandria" in str(exc.value)
+
+
+def test_the_hyphenated_company_half_is_matched_without_regard_to_case():
+    assert board.seat_of(Args(seat="Alexandria-pm"), env={},
+                         company="alexandria") == "pm"
+
+
+def test_a_company_name_and_a_bare_hyphen_is_not_split_into_an_empty_seat():
+    # The trailing-slash lesson, in the other delimiter: stripping the prefix
+    # here would leave an empty seat name.
+    assert board.seat_of(Args(seat="alexandria-"), env={}) == "alexandria-"
+
+
+def test_the_hyphenated_form_is_accepted_from_the_environment_too():
+    # This is the path that actually failed. `ASC_SEAT` is the host's own name
+    # for the seat and the host spells it with a hyphen.
+    assert board.seat_of(Args(seat=None), env={"ASC_SEAT": "alexandria-skill"},
+                         company="alexandria") == "skill"
+
+
+def test_the_hyphenated_form_asks_the_bus_the_same_question_as_the_bare_one(live_board, capsys):
+    board.main(["inbox", "--company", "alexandria", "--seat", "engineer", "--json"])
+    bare = json.loads(capsys.readouterr().out)
+    board.main(["inbox", "--company", "alexandria", "--seat", "alexandria-engineer", "--json"])
+    hyphenated = json.loads(capsys.readouterr().out)
+    assert bare == hyphenated
+    assert [m["id"] for m in hyphenated["yours"]] == ["m-1"]
+
+
+def test_the_hyphenated_header_no_longer_doubles_the_company(live_board, capsys):
+    board.main(["inbox", "--company", "alexandria", "--seat", "alexandria-engineer"])
+    out = capsys.readouterr().out
+    assert "inbox for alexandria/engineer" in out
+    assert "alexandria/alexandria" not in out
+
+
+# -- the roster check, which is right about delimiters nobody has typed yet --
+
+
+def test_a_seat_name_nothing_on_the_bus_carries_does_not_read_as_an_empty_inbox(
+        live_board, capsys):
+    code = board.main(["inbox", "--company", "alexandria", "--seat", "enginer"])
+    out = capsys.readouterr().out
+    assert code == board.EXIT_UNKNOWN_SEAT
+    assert "this zero is not trustworthy" in out
+
+
+def test_an_unrecognized_spelling_is_told_how_the_bus_spells_it(live_board, capsys):
+    # No rule in this file knows about underscores. The roster check does not
+    # need one, which is the whole reason it is here and not another delimiter.
+    code = board.main(["inbox", "--company", "alexandria", "--seat", "alexandria_engineer"])
+    out = capsys.readouterr().out
+    assert code == board.EXIT_UNKNOWN_SEAT
+    assert "the bus spells it 'engineer'" in out
+    assert "--seat engineer" in out
+
+
+def test_a_name_resembling_nothing_says_so_rather_than_guessing(live_board, capsys):
+    board.main(["inbox", "--company", "alexandria", "--seat", "enginer"])
+    out = capsys.readouterr().out
+    assert "no name on the bus resembles it" in out
+    assert "the bus spells it" not in out
+
+
+def test_a_real_seat_with_a_genuinely_empty_inbox_is_still_a_clean_zero(
+        live_board, capsys):
+    # The false alarm that would make this check worse than the defect. The
+    # bus carries nothing directed at anybody; `frontend` is a real seat
+    # because it holds a card, so the zero is real and says nothing extra.
+    live_board["messages"] = [m for m in live_board["messages"] if m["to_seat"] is None]
+    code = board.main(["inbox", "--company", "alexandria", "--seat", "frontend"])
+    out = capsys.readouterr().out
+    assert code == 0
+    assert "not trustworthy" not in out
+
+
+def test_the_check_does_not_run_at_all_when_there_is_mail(live_board, capsys):
+    before = len(live_board["calls"])
+    assert board.main(["inbox", "--company", "alexandria", "--seat", "engineer"]) == 3
+    # One request, not three: the roster costs nothing on the path that was
+    # never wrong.
+    assert len(live_board["calls"]) - before == 1
+    assert "not trustworthy" not in capsys.readouterr().out
+
+
+def test_the_json_form_carries_the_verdict_so_a_script_can_read_it(live_board, capsys):
+    board.main(["inbox", "--company", "alexandria", "--seat", "enginer", "--json"])
+    answer = json.loads(capsys.readouterr().out)
+    assert answer["seat"] == "enginer"
+    assert answer["seat_on_bus"] is False
+    board.main(["inbox", "--company", "alexandria", "--seat", "engineer", "--json"])
+    assert json.loads(capsys.readouterr().out)["seat_on_bus"] is True
+
+
+def test_a_roster_that_cannot_be_read_is_reported_as_unasked_not_as_an_answer(
+        live_board, capsys, monkeypatch):
+    # The honest third state. The command does not know, so it says it does not
+    # know and leaves the exit status alone rather than failing a run on a
+    # board hiccup.
+    real = board.api
+
+    def refuse_the_unfiltered_read(path, *a, **kw):
+        if path.startswith("/api/messages?") and "to_seat" not in path:
+            raise board.BoardError("board unreachable", code=None)
+        return real(path, *a, **kw)
+
+    monkeypatch.setattr(board, "api", refuse_the_unfiltered_read)
+    code = board.main(["inbox", "--company", "alexandria", "--seat", "enginer"])
+    captured = capsys.readouterr()
+    assert code == 0
+    assert "could not check" in captured.err
+    assert "unverified" in captured.err
+    assert "not trustworthy" not in captured.out
+
+
+def test_the_roster_reads_both_surfaces_because_each_has_a_blind_spot(live_board):
+    roster = board.seat_roster("alexandria", 24)
+    # From the bus, and specifically from a DIRECTED row. `chair:asc-host`
+    # would prove less than it looks: it sends the broadcast, and the fake
+    # returned the broadcasts even when it was answering an unfiltered read
+    # with nothing else. `pm` appears only as the sender of a directed message
+    # and holds no card, so it is reachable only if the unfiltered read really
+    # returns the whole bus.
+    assert "pm" in roster
+    assert "chair:asc-host" in roster
+    # From the board: a seat holding a card that has sent and received nothing.
+    live_board["messages"] = []
+    assert "frontend" in board.seat_roster("alexandria", 24)
+
+
+def test_normalize_seat_only_ever_suggests_and_never_resolves():
+    assert board.normalize_seat("alexandria-skill") == "alexandriaskill"
+    assert board.normalize_seat("Alexandria/Skill") == "alexandriaskill"
+    assert board.normalize_seat("") == ""
+    # The suggestion runs "the typed name ends with a real seat name", because
+    # the extra characters are always on the side the reader typed.
+    assert "exo-centralizer" in board.render_unknown_seat(
+        "alexandria.exo-centralizer", "alexandria", {"exo", "exo-centralizer"})
