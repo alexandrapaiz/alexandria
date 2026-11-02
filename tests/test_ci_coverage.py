@@ -762,6 +762,28 @@ UNCOVERED = {
     # which is the shape of the two incidents this file's set exists to name.
     # Counted at the same standing finding as the line above.
     "tests/test_resolve_target.py",
+    # Added 2026-11-02 with `tools/target_census.py`, pinned for the same
+    # structural reason as every line above, and this pin is the sharpest
+    # argument in the set because of what the file is.
+    #
+    # The line above guards three tools by name. This one guards the domain:
+    # it derives every `(file, flag)` pair under `tools/` with `ast` and fails
+    # when one of them is classified by nobody. That is the repair for the
+    # reason the line above was not enough, recorded as
+    # `INC-2026-11-02-the-confident-zero-class-repeated-in-two-adr-13-reviewers-because-the-probe-for-it-was-a-hand-list`:
+    # a hand list cannot tell a tool that refuses from a tool nobody has looked
+    # at, and the probe behind the previous repair was a hand list of three,
+    # which is how instances six, seven and eight survived a sweep aimed at
+    # them four hours earlier. Two of those three were reviewers whose verdicts
+    # gate knowledge promotion under ADR-13.
+    #
+    # So pinning it means the ninth instance lands silently on a pull request
+    # until a seat runs the suite by hand, which is precisely the failure the
+    # file itself was built to end. The step that would fix it goes in
+    # `.github/workflows/checks.yml`, which no seat's token may write, and the
+    # staged replacement runs the whole suite and therefore runs this. Counted
+    # at the same standing finding as the two lines above.
+    "tests/test_target_census.py",
     # Added 2026-11-02 with `tools/check_pr_green.py`, by this seat's previous
     # run, which opened a draft and never reached `gh pr ready`, so this gate
     # went red on its branch and the pin was never written. Pinned here for
