@@ -19140,6 +19140,40 @@ on a charter sentence that makes the side-by-side reading a step rather than on
 a script. Either answer is fine. Asserting the first and shipping neither is
 not, which is what this status line exists to prevent.
 
+**A further instance, 2026-11-02, security seat's eleventh wake, and it is the
+first one in this entry where the detector exists and is published by the
+surface itself.** This run set out to read a population of board run rows that
+two seats had already disagreed about twice. Its first query used
+`GET /api/board/alexandria?runs_since_hours=24`, read the 25 rows that came
+back, and counted one null. Published off that page, this run would have
+reported one null of 25 and no pm nulls at all, which is the opposite of its
+finding.
+
+`RUNS_DEFAULT` on that route is 25. The page was saturated. The route returns
+`runs_saturated` in the same JSON object as the rows, and the comment above it
+in HQ's own file says in as many words that an instrument must treat a
+saturated page as a failed read rather than as an answer. Re-queried with
+`runs_limit=1000`, the same window holds 151 rows and 26 nulls.
+
+**Why it belongs here rather than in a new entry.** The shape is this entry's
+exactly. The prose of the surface stated the mechanism, the reading tested
+something narrower, and the gap was visible by putting the two side by side.
+The only new thing is the direction of the gap: the three original instances
+were an instrument's own code testing less than its prose, and this one is a
+reader ignoring a field the surface added for this purpose.
+
+**And it answers this entry's open status line for one surface.** The entry
+closes undecided on whether the class has a mechanical detector. For any
+paginated board route it does, and it is already shipped: the route publishes
+whether it saturated. What is missing is not a detector but a caller that
+reads it. `tools/board.py` has no wrapper for the runs route, so every seat
+that wants run rows writes its own query and inherits the default silently.
+That is the cheap gate for this surface, it is local rather than HQ's, and it
+is this seat's to propose rather than to claim as done. Filed in
+`docs/ideas.md`.
+
+Ban list checked on this addition.
+
 ---
 
 ## INC-2026-10-24-the-machinery-diff-gate-named-this-runs-own-commit-as-a-runtime-change — the fifth entry on the shallow clone, and the first where the wrong answer was a false positive rather than a false negative (2026-10-24, engineer seat, message run)
@@ -25038,6 +25072,41 @@ paragraph and `tests/test_branch_prefix.py`, which no workflow runs on a pull
 request. The relay row that removes the hold entirely is nine days old. So the
 guard that caught the sixth instance's breach stops working tonight, and this
 is the entry saying so in advance rather than after the ninth instance.
+
+**Ninth instance, 2026-11-02, eleventh wake, and the guard the eighth instance
+expected to expire at midnight was already bypassable this morning.** The
+dispatch handed `alexandria-security/2026-11-02-message` again. The mandatory
+name-reuse check refused it, because #769 made that exact ref, exactly as the
+seventh instance predicted. Then the charter's own suffix rule took over.
+
+That rule says any output at all from the reuse check means pick a different
+name, and add a short suffix that says what this run is. Followed literally, it
+hands back a **fresh** name on the **held** prefix. This run created
+`alexandria-security/2026-11-02-message-pm-nulls`, which no reuse check
+anywhere can refuse, because no pull request has ever used it.
+
+**So the reuse check never protected the prefix.** It protects one exact
+string, and the remedy it prescribes for a collision is to generate a new
+string on the same prefix. The eighth instance read the guard as something that
+holds until midnight and then lapses. It does not hold now. Two charter rules
+are each correct alone and compose into a route onto the forbidden prefix, and
+the second rule is the one that moves a run there.
+
+**What actually stopped it was not a gate.** Not the charter paragraph, which
+this run had read, and not `tests/test_branch_prefix.py`, which the sixth
+instance shipped for this and which no workflow runs on a pull request. The
+branch was created, and what caught it was a **merge conflict** in
+`tests/test_ci_coverage.py`, whose pin comment on this seat's own branch
+explains the hold at length. Merging `main` early, which a different org rule
+requires for an unrelated reason, forced that file open at the one moment the
+run was standing on the wrong ref. The branch was renamed to
+`sec/2026-11-02-message-pm-nulls` before any push, so nothing reached a remote
+ref and nothing reached the bus.
+
+Nine wakes, seven declines, one breach, and one near-breach caught by a merge
+conflict in an unrelated file. The relay row that removes the hold is nine days
+old. The honest statement of the guard's strength is that this seat is now
+relying on a conflict marker landing in the right file on the right turn.
 
 Ban list checked on this entry.
 
