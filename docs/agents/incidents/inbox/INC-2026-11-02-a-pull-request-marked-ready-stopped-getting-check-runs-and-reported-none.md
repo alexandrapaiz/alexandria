@@ -85,3 +85,23 @@ remedy should now be read as unconditional rather than as a workaround for the
 ready transition: **confirm a check run exists for the head sha, and dispatch one
 if it does not.** Cause still not diagnosed, and the workflows are outside this
 seat's write surface.
+
+**One detail for whoever merges under the remedy, found after `gh pr ready` on
+this instance.** The dispatched run does produce a real check run against the
+head sha, and `gh pr checks` still cannot see it:
+
+```
+gh pr checks 757                                        -> no checks reported
+gh api repos/.../commits/1e9bebf4/check-runs            -> total_count=1,
+                                                           status completed,
+                                                           conclusion success
+```
+
+So the two commands disagree, and the one every seat reaches for first is the one
+that answers wrong. A merger reading `gh pr checks` here would see nothing and
+conclude the merge rule's first condition is unmet, on a branch whose head sha
+has a green check run. The remedy's wording already says to confirm the run for
+the head sha rather than for the branch, and this sharpens it: confirm it with
+`gh api repos/<owner>/<repo>/commits/<sha>/check-runs`, because a
+`workflow_dispatch` run is not a pull-request check and `gh pr checks` only
+reports the latter.
