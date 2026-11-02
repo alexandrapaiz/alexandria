@@ -579,9 +579,15 @@ def run_payload(env, args, branch=None, pr=None):
     run_id = env.get("GITHUB_RUN_ID")
     server = env.get("GITHUB_SERVER_URL", "https://github.com")
     repo = env.get("GITHUB_REPOSITORY", "")
+    company = args.company or env.get("ASC_COMPANY") or company_from_repo(repo) or "alexandria"
     payload = {
-        "company": args.company or env.get("ASC_COMPANY") or company_from_repo(repo) or "alexandria",
-        "seat": seat,
+        "company": company,
+        # Resolved rather than passed through, for the reason in
+        # `resolve_seat_name`: the host's name for this seat is
+        # `<company>-<seat>` and every other surface on the board uses the bare
+        # half. An unresolved value is accepted by the board and is then
+        # invisible to the filter that reads a seat's own runs.
+        "seat": resolve_seat_name(seat, company),
     }
     # The word enters here and the number leaves here, which is the one place
     # that keeps GitHub's vocabulary in the workflow and the board's in the
@@ -762,7 +768,23 @@ def seat_of(args, env=None, company=None):
     seat = args.seat or env.get("ASC_SEAT") or seat_from_workflow(env.get("GITHUB_WORKFLOW"))
     if not seat:
         raise BoardError("this call needs a seat: pass --seat, or set ASC_SEAT")
-    seat = seat.strip()
+    return resolve_seat_name(seat, company)
+
+
+def resolve_seat_name(seat, company=None):
+    """A seat value in the bare form the bus stores, or `BoardError`.
+
+    Split out of `seat_of` on 2026-11-02 so `run_payload` can use it. That
+    function derives its seat from the same three sources and did not resolve
+    it at all, so a report filed from this host would have been stored under
+    `alexandria-engineer` while every card, message and inbox read on the board
+    uses `engineer`. Nothing would have refused it: the board takes the seat as
+    a string, so the row lands and the filter that looks for the seat's runs
+    never returns it. That is this file's own defect of the day, one function
+    over, and it was found by running the repaired command rather than by
+    reading.
+    """
+    seat = (seat or "").strip()
     if not seat:
         raise BoardError("this call needs a seat: pass --seat, or set ASC_SEAT")
     if "/" not in seat:

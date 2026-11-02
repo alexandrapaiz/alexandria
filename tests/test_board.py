@@ -1243,3 +1243,44 @@ def test_normalize_seat_only_ever_suggests_and_never_resolves():
     # the extra characters are always on the side the reader typed.
     assert "exo-centralizer" in board.render_unknown_seat(
         "alexandria.exo-centralizer", "alexandria", {"exo", "exo-centralizer"})
+
+
+# -- the same defect one function over, found by running the repaired command --
+
+
+def test_a_run_report_resolves_the_hosts_name_for_the_seat():
+    # `run_payload` derived its seat from the same three sources as `seat_of`
+    # and resolved none of them. On this host `ASC_SEAT` is `alexandria-engineer`
+    # and every card, message and inbox read on the board uses `engineer`, so an
+    # unresolved report lands under a seat name nothing else on the board shares.
+    # The board accepts it, which is why nothing would have refused it.
+    payload = board.run_payload(
+        {"ASC_COMPANY": "alexandria"},
+        Args(seat="alexandria-engineer", status="success"),
+    )
+    assert payload["seat"] == "engineer"
+    assert payload["company"] == "alexandria"
+
+
+def test_a_run_report_takes_the_slashed_form_too():
+    payload = board.run_payload({}, Args(seat="alexandria/pm", status="success"))
+    assert payload["seat"] == "pm"
+
+
+def test_a_run_report_leaves_a_bare_seat_alone():
+    # The path twelve workflows took, which must not move.
+    payload = board.run_payload({"GITHUB_WORKFLOW": "engineer-agent"},
+                                Args(seat=None, status="success"))
+    assert payload["seat"] == "engineer"
+    payload = board.run_payload({}, Args(seat="exo-centralizer", status="success"))
+    assert payload["seat"] == "exo-centralizer"
+
+
+def test_a_run_report_refuses_a_company_half_that_disagrees():
+    # Filing another company's run under this one's name is worse than
+    # refusing, and the refusal is free because the company is already known
+    # here.
+    with pytest.raises(board.BoardError) as exc:
+        board.run_payload({"ASC_COMPANY": "alexandria"},
+                          Args(seat="Ursa-engineer", status="success"))
+    assert "Ursa" in str(exc.value)
