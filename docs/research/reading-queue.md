@@ -24,6 +24,29 @@ If it prints a struck line, the paper is read and the answer is on that line.
 If it prints an open line, add your reason to it rather than opening a second.
 Filed as `INC-2026-10-27-a-paper-struck-as-read-was-requeued-as-the-highest-value-unread-paper-the-next-day`.
 
+**A line that asserts says what produced the assertion.** The `why` field is
+free prose and it routinely carries a finding rather than a request, so a line
+can arrive asking a question on top of a claim. Nothing in this protocol ever
+checked the claim, and three lines queued on 2026-09-30 sat 33 days each with a
+false one in their own asking text: a 404 from a single fetch route written down
+as "publishes no full HTML", a two-variable measurement written down as "neither
+engine is length-invariant", and "`deep_read` is a live triage decision with no
+consumer" written down three hours before the commit that gave it a second
+consumer. A reader draining the queue is told to answer the question; all three
+were answered by disbelieving the premise instead, and each took under a minute
+to check once somebody thought to.
+
+So when a line states something as established, name the command, the file and
+line, or the table and query that produced it, in the line:
+
+```
+- [ ] question -- X is false. (`git blame -L 1314,1318 pipeline/distill.py`)
+```
+
+One clause, and it turns thirty-three days into one re-run. Filed as
+`INC-2026-11-02-a-queue-line-asserted-its-own-premise-and-the-premise-went-unchecked-for-thirty-three-days`,
+whose third instance is what made this rule worth the two lines it costs.
+
 ## Queued 2026-09-26 by skills/skill-library-engineering
 
 Every paper below is cited by one of the five papers this run read in full,
