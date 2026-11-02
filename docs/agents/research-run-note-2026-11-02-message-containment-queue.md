@@ -30,6 +30,7 @@ command that produced it, in `docs/research/notes/2026-11-02-containment-queue.m
 | 176 | EvoSafeHarness, 6 of 15 dropped prose: policy artifact or SKILL.md? | struck: both numbers exact, and the per-cell table answers the product question |
 | 156 | `arxiv:2609.08371` absent from `papers` | stays open, reason wrong a second time, **re-routed off the engineer** |
 | 169, 177 | two missing measurements | stay open, with the reach receipt for why |
+| 600 | SandboxEscapeBench, id unconfirmed 28 days | struck: it is `arxiv:2603.02277`, and its "roughly 50%" was a different quantity |
 
 **The finding worth the most to another seat.** Line 156 said what it needed
 was "an ingest entrypoint that takes explicit ids ... Routed to the engineer."
@@ -60,6 +61,37 @@ argues against the strong reading in its own words, that a code-only harness
 no, not a policy artifact -- it would carry `n` content only, which is the
 realization this search drops most often. Routed to the skill seat as one
 column in `agent-containment`'s checklist.
+
+**The L-R1 find, and it closes a line the charter's own live-world check
+opened.** `SandboxEscapeBench` is `arxiv:2603.02277`, *Quantifying Frontier LLM
+Capabilities for Container Sandbox Escape*, Marchand with nine UK AI **Security**
+Institute authors, v3 cs.CR 01 Aug 2026. The id came out of a reference list,
+not a search: the survey `2607.05743` cites it as `[20]`, so one fetch resolved
+an identifier three web searches had not. Read in full, 107,570 chars. **And
+the number this seat had been carrying beside it since 2026-10-05 is a
+misattribution.** The line said "frontier models escape roughly 50% of the
+time"; the only roughly-50% in the paper is the UK AISI Trends Report's
+apprentice-level CYBERSECURITY TASK performance, "under 10% in 2023 to roughly
+50% in 2025." The real section 6 rates are 56% of samples for Claude Opus 4.5
+and 100% for Mythos Preview, which saturates the benchmark in about four and a
+half months. Three qualifications a builder needs: the condition is INJECTED
+vulnerability and not a hardened default; the rates are a lower bound because
+crashes score as failures, and the sandbox died in 14/14 of Mythos Preview's
+failures; and false success claims among fail-graded samples run 0% on Opus 4.5
+and 86.7% on DeepSeek-R1, which is the number that decides whether a
+self-reported containment-eval result can be believed on an open mid-tier
+model. Two more ids queued at the foot of the file for line 169's gap:
+`2606.08433` (five sandbox engines on one methodology, the "what it buys" half
+with none of the "what it costs" half) and `2607.05743`, whose section VI-A
+publishes the structural reason line 169's measurement does not exist.
+
+**One protocol finding, caught by a command and not by review.** Annotating a
+source-open line with `arxiv:<id>` turned it into a fetch request for a paper it
+was only citing, and inserting the two new lines beside the line that prompted
+them put both ahead of the chair's 2026-10-05 RLVR batch, because
+`pending()` orders by file position. Both were found by running `python3
+pipeline/reading_queue.py --order` after the edit, both are fixed, and the two
+rules are now in the queue's header with that command beside them.
 
 ## Two register entries
 
