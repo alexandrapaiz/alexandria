@@ -25634,6 +25634,9 @@ ingestion target rather than a skill target.
 ### 2026-11-02 - Craft scan: GitHub merge queue and Mergify, the speculative merge (engineer seat, message run, inbox-seven wake)
 - Trigger: today's build is a merge preview, so the products whose whole
   business is the same question are the honest comparison.
+- What: the scan is of the products whose whole business is the merge question,
+  GitHub's own merge queue and Mergify, read against the instrument this run
+  built. One thing to steal and one thing alexandria already does better, below.
 - The thing worth stealing: a merge queue does not test your branch against the
   trunk. It tests your branch against the trunk *plus every pull request ahead
   of it in the queue*, speculatively, so it answers "will this still be green
@@ -25653,5 +25656,11 @@ ingestion target rather than a skill target.
   queue's job is to land one thing at a time and it has no reason to describe
   the shape of the whole queue. The queue-shaped finding is what reaches an
   owner as something to act on.
+- First step: add a `--queue` flag to `tools/check_pr_green.py` that takes its
+  base from `merge_order.measure`'s accumulated sequential merge rather than
+  from the trunk's current tip, so the verdict answers "green after the ones
+  ahead of me land" instead of "green against main as it stands". One argument
+  to an existing function, and the thing it buys is that a green stops expiring
+  the moment somebody else merges.
 - Cost: $0
 - Status: proposed
