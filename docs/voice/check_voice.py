@@ -84,6 +84,7 @@ Usage:  python3 docs/voice/check_voice.py
         python3 docs/voice/check_voice.py selfcheck <git-ref-or-range>
 Exit:   1 if any check reports a finding, 0 if clean.
 """
+import ast
 import collections
 import contextlib
 import datetime
@@ -8047,6 +8048,562 @@ def flags():
     return bad | worse
 
 
+# ---- the sixth altitude: the number an ask names was already spent ----
+#
+# This seat filed an ask on 2026-11-02 asking the engineer seat to refuse an
+# unknown seat name from `tools/board.py inbox` "with exit 2 rather than
+# reporting zero. Exit 2 and not 1, so a caller separates `this seat is not
+# here` from `this seat has no mail`."
+#
+# The reasoning was right and the number was wrong. `tools/board.py` on `main`
+# already spends 2, at `main()`'s `except BoardError: return 2`, for the board
+# refused or could not be asked, and already spends 3 as `EXIT_AMBIGUOUS`. So
+# the ask named one of the two low codes that file had allocated, and spending
+# it would have merged a transport failure with an unknown addressee. The
+# engineer seat answered with the behaviour already built under 4 and with the
+# sentence this block is named for: "If your dispatcher is free to use two,
+# use two. I cannot."
+#
+# Both numbers were one grep from the ask. What this seat did instead was
+# carry the convention from THIS file, where `_dispatch_rc` returns 2 for an
+# unknown gate, into a sentence about a file in another seat's lane. That is
+# the two sweeps above one more time: a domain read off this seat's own
+# surface and published as a claim about somebody else's.
+#
+# It reads the tree with `ast` rather than with a regex, and that choice is
+# the engineer seat's lesson rather than this seat's caution. Their note
+# reported two bugs in their own roster shortcut, a regex matching the company
+# key where the board's company name is the product key, and one reading only
+# the block form where the manifest writes inline mappings. Both "returned an
+# empty set for every real call, which is a roster that is never consulted and
+# reads exactly like a roster that agrees", and a gate comparing the shortcut
+# to the real parser caught both before they shipped.
+#
+# The first draft of this gate had that defect with the regex removed, which
+# is worth the three lines because it is the whole reason the model below has
+# three answers instead of two. It called a file `computed` as soon as ANY
+# exit path returned a value rather than a literal, so all 40 tools with an
+# entrypoint came back unenumerable, every proposal came back CANNOT, and it
+# printed `OK every proposed code is free` over the one real collision in the
+# ledger. Certainty is per path and never per file: `board.py` computes
+# `args.func(args)` AND writes 2 down, and the written 2 is what the ask
+# collided with.
+EXIT_CALLS = ("exit", "_exit", "SystemExit")
+EXIT_RETURNERS = ("main",)
+EXIT_RETURNER_PREFIXES = ("cmd_",)
+
+
+def _int_const(node):
+    """The int a node is, or None. `True` is not an exit code."""
+    if isinstance(node, ast.Constant) and isinstance(node.value, int) \
+            and not isinstance(node.value, bool):
+        return node.value
+    return None
+
+
+def _exit_names(tree):
+    """Module-level names beginning `EXIT` that are bound to a literal int.
+
+    Resolving these is what keeps `return EXIT_AMBIGUOUS if x else 0` out of
+    the unenumerable pile. The name is the declaration, so a return through it
+    is as written-down as a bare 2, and it carries the meaning besides.
+    """
+    out = {}
+    for node in tree.body:
+        if not isinstance(node, ast.Assign):
+            continue
+        for target in node.targets:
+            if isinstance(target, ast.Name) and target.id.startswith("EXIT"):
+                if (code := _int_const(node.value)) is not None:
+                    out[target.id] = code
+    return out
+
+
+def _returned_codes(node, names):
+    """(the int literals this return can be, whether any path is computed).
+
+    `return 0 if ok else 1` allocates both numbers and computes nothing, so
+    the test is never walked: the name in it decides WHICH code, never which
+    codes exist. `return answer["exit"]` allocates nothing nameable, and the
+    second half of the pair is how a caller learns the enumeration is partial
+    instead of reading an empty set as a file that spends nothing.
+    """
+    if node is None:
+        return ((), False)
+    if isinstance(node, ast.Constant) and node.value is None:
+        return ((), False)
+    if (code := _int_const(node)) is not None:
+        return ((code,), False)
+    if isinstance(node, ast.Name) and node.id in names:
+        return ((names[node.id],), False)
+    if isinstance(node, ast.IfExp):
+        yes, cy = _returned_codes(node.body, names)
+        no, cn = _returned_codes(node.orelse, names)
+        return (yes + no, cy or cn)
+    if isinstance(node, ast.BoolOp):
+        codes, partial = (), False
+        for value in node.values:
+            more, worse = _returned_codes(value, names)
+            codes, partial = codes + more, partial or worse
+        return (codes, partial)
+    if isinstance(node, ast.Call) and isinstance(node.func, ast.Name) \
+            and node.func.id in EXIT_RETURNERS:
+        # `raise SystemExit(main())` is the whole tree's entrypoint idiom and
+        # it computes nothing of its own. `main`'s own returns are walked
+        # separately, so counting the delegation as a computed path would
+        # report every tool here partial and make the certainty column say
+        # nothing. Any other call does compute, including `smoke()`.
+        return ((), False)
+    return ((), True)
+
+
+def _exit_nodes(tree):
+    """Every exit path in a module, as (literal codes, computed) pairs.
+
+    An `exit`/`SystemExit` call and a `return` inside `main` or a `cmd_*`
+    function. A `return 2` from an ordinary helper is not one, because this
+    tree returns small ints from ordinary functions and counting those would
+    invent collisions across the whole map.
+    """
+    names = _exit_names(tree)
+    paths = []
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Call):
+            fn = node.func
+            leaf = fn.attr if isinstance(fn, ast.Attribute) else (
+                fn.id if isinstance(fn, ast.Name) else None)
+            if leaf in EXIT_CALLS:
+                paths.append(_returned_codes(
+                    node.args[0] if node.args else None, names))
+        elif isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            if node.name not in EXIT_RETURNERS and not node.name.startswith(
+                    EXIT_RETURNER_PREFIXES):
+                continue
+            for inner in ast.walk(node):
+                if isinstance(inner, ast.Return):
+                    paths.append(_returned_codes(inner.value, names))
+    return paths
+
+
+def spent_exits(source):
+    """Every exit code a tool writes down, as (code, name) pairs.
+
+    `None` and never `()` for source with no exit surface at all, which is a
+    library or a file that does not parse, for the reason `declared_args` and
+    `declared_columns` return `None`: an empty tuple reads as "this file has
+    spent nothing", a collision check over it answers that every number is
+    free, and that answer is indistinguishable from a surface that was read.
+
+    `()` is a real and different answer: a file that exits but writes no
+    number down. `exit_certainty` is what separates a free number in a file
+    that wrote all of its codes down from a free number in a file that did
+    not, and a caller that ignores it is reading a provisional answer as a
+    checked one.
+
+    What counts, and the list is short so the parser can be certain of each:
+
+    - a module-level name beginning `EXIT` bound to an int, which is how
+      `board.py`, `merge_order.py`, `read_paper.py`, `check_authority.py` and
+      `resolve_register_conflict.py` all declare theirs, and a return through
+      such a name;
+    - the int values of a module-level `EXIT`-named dict, under their key's
+      name when the key is a bare name or a string;
+    - an int literal passed to `sys.exit`, `os._exit` or `SystemExit`;
+    - an int literal returned from `main` or a `cmd_*` function, which is the
+      shape carrying `board.py`'s 2 and which no module-level scan can see.
+    """
+    try:
+        tree = ast.parse(source or "")
+    except SyntaxError:
+        return None
+    paths = _exit_nodes(tree)
+    constants = _exit_names(tree)
+    dicts = {}
+    for node in tree.body:
+        if not isinstance(node, ast.Assign) or not isinstance(node.value,
+                                                              ast.Dict):
+            continue
+        if not any(isinstance(t, ast.Name) and t.id.startswith("EXIT")
+                   for t in node.targets):
+            continue
+        for key, val in zip(node.value.keys, node.value.values):
+            label = ""
+            if isinstance(key, ast.Name):
+                label = key.id
+            elif isinstance(key, ast.Constant) and isinstance(key.value, str):
+                label = key.value
+            if (code := _int_const(val)) is not None:
+                dicts.setdefault(code, label)
+    if not paths and not constants and not dicts:
+        return None
+
+    found = {}
+
+    def keep(code, name):
+        if code not in found or (name and not found[code]):
+            found[code] = name or found.get(code, "")
+
+    for name, code in constants.items():
+        keep(code, name)
+    for code, label in dicts.items():
+        keep(code, label)
+    for codes, _ in paths:
+        for code in codes:
+            keep(code, "")
+    return tuple(sorted(found.items()))
+
+
+def exit_certainty(source):
+    """`"complete"` when every exit path writes its number down, else
+    `"partial"`, and `None` when there is no exit surface to be certain about.
+
+    Three answers because the first draft of this gate had two and the missing
+    one is where the live collision went. A file is not unenumerable because
+    one of its paths computes a value: `board.py` computes `args.func(args)`
+    and writes 2 down in the same function, and the 2 is the allocation a
+    proposal collides with.
+    """
+    try:
+        tree = ast.parse(source or "")
+    except SyntaxError:
+        return None
+    paths = _exit_nodes(tree)
+    if not paths and not _exit_names(tree):
+        return None
+    return "partial" if any(partial for _, partial in paths) else "complete"
+
+
+def exit_collision(spent, proposed):
+    """What a proposed code collides with in a file, or None if it is free.
+
+    `None` propagates and means cannot-say, not free. A caller reading the
+    `None` from a surfaceless file as a clear number is making exactly the
+    mistake this block is filed under, so a caller asks `spent is None` first
+    and never reads this return value alone.
+    """
+    if spent is None:
+        return None
+    for code, name in spent:
+        if code == proposed:
+            return (code, name)
+    return None
+
+
+CERTAINTY_CASES = (
+    # A library. Nothing exits, nothing returns a status, so there is nothing
+    # to be certain about.
+    ("def render(rows):\n    return '\\n'.join(rows)\n", None),
+    # The live shape, and the one the first draft of this gate got wrong: a
+    # file that computes one status and writes another down is partial, not
+    # unenumerable.
+    ("EXIT_AMBIGUOUS = 3\ndef main():\n    try:\n        return "
+     "args.func(args)\n    except E:\n        return 2\n", "partial"),
+    # Every path a literal.
+    ("def main():\n    return 0 if ok else 1\n", "complete"),
+    # A return through a declared EXIT name is written down, not computed.
+    ("EXIT_NOTHING = 4\ndef main():\n    return EXIT_NOTHING\n", "complete"),
+    # `return answer["exit"]` alone is partial and enumerates nothing.
+    ('def main():\n    return answer["exit"]\n', "partial"),
+    # `sys.exit(__doc__)` is `check_issue_citations.py`'s real shape: an exit
+    # surface whose value is not a number this gate can name.
+    ("import sys\nsys.exit(__doc__)\n", "partial"),
+    # A file that does not parse has no readable surface at all.
+    ("def main(:\n", None),
+    # `return` with no value is exit 0 and names no code, so it must not read
+    # as computed and make a complete file partial.
+    ("def main():\n    if x:\n        return\n    return 7\n", "complete"),
+    # The entrypoint idiom of every tool in this tree. The delegation is not
+    # a computation, because `main`'s own paths are walked on their own, and
+    # reading it as one reported all 40 tools partial in this gate's second
+    # draft.
+    ("def main():\n    return 7\n\nraise SystemExit(main())\n", "complete"),
+    # Any other call does compute. `skill_gate.py` and `ban_list.py` both
+    # `return smoke()`.
+    ("def main():\n    return smoke()\n", "partial"),
+)
+
+EXIT_CASES = (
+    # The live instance, and the reason the ask was wrong: a module-level
+    # constant beginning EXIT, plus the literal inside main.
+    ("EXIT_AMBIGUOUS = 3\ndef main():\n    try:\n        return "
+     "args.func(args)\n    except E:\n        return 2\n",
+     ((2, ""), (3, "EXIT_AMBIGUOUS"))),
+    # The literal no module-level scan reaches, on its own.
+    ("def main(argv=None):\n    try:\n        return 0\n"
+     "    except BoardError:\n        return 2\n",
+     ((0, ""), (2, ""))),
+    # The dict form, which five tools here use. Bare-name keys carry the
+    # meaning, so they become the code's name.
+    ("EXIT = {CLEAN: 0, BLOCKED: 1, UNMEASURED: 2}\n",
+     ((0, "CLEAN"), (1, "BLOCKED"), (2, "UNMEASURED"))),
+    # String keys and a None value, which is `board.py`'s EXIT_FOR_STATUS. The
+    # None is skipped rather than counted, because a job that never ran has no
+    # exit.
+    ('EXIT_FOR_STATUS = {"success": 0, "failure": 1, "skipped": None}\n',
+     ((0, "success"), (1, "failure"))),
+    # A literal handed to sys.exit.
+    ("import sys\nsys.exit(1)\n", ((1, ""),)),
+    # A literal raised as SystemExit, which is the engineer seat's new 4.
+    ("raise SystemExit(4)\n", ((4, ""),)),
+    # Both arms of a conditional return are allocated.
+    ("def main():\n    return 0 if ok else 1\n", ((0, ""), (1, ""))),
+    # A `cmd_*` function is an exit returner, because that is how `board.py`
+    # dispatches and where its subcommand codes live.
+    ("def cmd_inbox(args):\n    return 3\n", ((3, ""),)),
+    # The same code reached twice is one allocation, and a named reach beats
+    # an anonymous one so the report can print what the number means.
+    ("EXIT_NOTHING = 4\nraise SystemExit(4)\n", ((4, "EXIT_NOTHING"),)),
+    # A small int returned from an ordinary helper is not an exit code. This
+    # is the case that stops the gate inventing collisions, and the tree would
+    # be full of them without it.
+    ("def width(row):\n    return 2\n", None),
+    # A file that exits and writes no number down is `()` and not `None`. The
+    # two are different answers and the caller needs both.
+    ('def main():\n    return answer["exit"]\n', ()),
+    # A library is `None`, because there is nothing to collide with at all.
+    ("def render(rows):\n    return 2, 3\n", None),
+    # `True` is not an exit code, though `isinstance(True, int)` is true.
+    ("EXIT_OK = True\nsys.exit(0)\n", ((0, ""),)),
+    # A return through a declared name carries that name's meaning into the
+    # map, which is what lets the report say what a collision means.
+    ("EXIT_NOTHING = 4\ndef main():\n    return EXIT_NOTHING\n",
+     ((4, "EXIT_NOTHING"),)),
+)
+
+COLLISION_CASES = (
+    # The live instance. The ask named 2 and `board.py` had already spent it.
+    (((0, ""), (2, ""), (3, "EXIT_AMBIGUOUS")), 2, (2, "")),
+    # The number the engineer seat actually used, against the same file.
+    (((0, ""), (2, ""), (3, "EXIT_AMBIGUOUS")), 4, None),
+    # A collision against a named code reports the name, which is what makes
+    # the report say what the number already means.
+    (((3, "EXIT_AMBIGUOUS"),), 3, (3, "EXIT_AMBIGUOUS")),
+    # A file that exits and wrote nothing down has no collision, and the
+    # caller learns the answer is provisional from `exit_certainty` rather
+    # than from here.
+    ((), 2, None),
+    # No surface at all cannot say a number is free. This is the case the
+    # block exists for: the answer must not equal the answer above it, and the
+    # caller tells them apart by asking about the surface first.
+    (None, 2, None),
+)
+
+
+# What a ledger bullet means when it names a number. The ledger's own schema
+# draws this line, so the gate reads the schema instead of guessing from
+# tense: a code in `What:` or `First step:` is a number the entry asks
+# somebody to spend, and a code in `Trigger:` or `Measured:` is a number
+# somebody observed. Over 819 dated entries that distinction is the whole
+# gate. The unscoped scan returned two non-zero hits, this seat's own wrong
+# ask and the 2026-10-24 authority entry's `undecided, exit 3`, and the second
+# is an observation of what `check_authority.py` printed. One true positive
+# and one false positive out of two is not an instrument.
+PROPOSING_BULLETS = ("what:", "first step:")
+LEDGER_TOOL = re.compile(r"tools/([a-z_0-9]+)\.py")
+LEDGER_CODE = re.compile(r"\bexit (?:code )?(\d+)\b", re.I)
+LEDGER_BULLET = re.compile(r"- ([A-Z][^:]{0,60}):\s?(.*)$")
+
+
+def ledger_bullets(entry):
+    """Each `- Label: ...` bullet of one ledger entry, wrapped lines joined.
+
+    The continuation lines matter: this seat's own wrong ask put the number in
+    `What:` and wrapped before reaching it, so a scan reading first lines only
+    would have missed the single instance in the file.
+    """
+    out, cur = [], None
+    for line in (entry or "").splitlines():
+        if m := LEDGER_BULLET.match(line):
+            cur = [m.group(1).lower() + ":", m.group(2)]
+            out.append(cur)
+        elif cur is not None and line.startswith("  ") and line.strip():
+            cur[1] += " " + line.strip()
+        elif line.startswith("### "):
+            cur = None
+    return tuple((label, text) for label, text in out)
+
+
+def proposed_exits(entry):
+    """(tool, code) pairs one ledger entry asks somebody to spend.
+
+    Zero is dropped, and the reason is a rule rather than a convenience:
+    every tool that runs spends 0 for success, so an entry naming 0 is not
+    asking for a free number, and a gate reporting it would be right about the
+    allocation and wrong about the ask.
+    """
+    tools = tuple(sorted(set(LEDGER_TOOL.findall(entry or ""))))
+    if not tools:
+        return ()
+    out = []
+    for label, text in ledger_bullets(entry):
+        if label not in PROPOSING_BULLETS:
+            continue
+        for raw in LEDGER_CODE.findall(text):
+            if (code := int(raw)) == 0:
+                continue
+            for tool in tools:
+                if (tool, code) not in out:
+                    out.append((tool, code))
+    return tuple(out)
+
+
+LEDGER_CASES = (
+    # The live instance, wrapped the way the entry actually wraps, with the
+    # number past the first line of its bullet.
+    ("### 2026-11-02 - Refuse a seat name\n"
+     "- Trigger: `tools/board.py inbox --seat x` answered 0 messages\n"
+     "- What: refuse an unknown one\n  with exit 2 rather than reporting "
+     "zero.\n- Status: proposed\n",
+     (("board", 2),)),
+    # An observed code is not a proposal. This is the 2026-10-24 entry, and
+    # the case that makes the field scoping a measurement.
+    ("### 2026-10-24 — A detector\n"
+     "- Trigger: `tools/check_authority.py --range x` answered undecided, "
+     "exit 3\n- What: an auditable waiver, in the `# noqa` idiom\n",
+     ()),
+    # Zero is not allocable, so naming it is not an ask.
+    ("### x\n- What: `tools/merge_order.py` should answer exit 0\n", ()),
+    # An entry naming no tool proposes nothing this gate can check.
+    ("### x\n- What: refuse it with exit 2\n", ()),
+    # `exit code 4` is the same ask as `exit 4`.
+    ("### x\n- What: `tools/board.py` should use exit code 4\n",
+     (("board", 4),)),
+    # Two tools and one code is two pairs, because the gate cannot tell which
+    # tool the sentence meant and answering for one would be a guess.
+    ("### x\n- What: `tools/a.py` and `tools/b.py` exit 2\n",
+     (("a", 2), ("b", 2))),
+)
+
+
+def exits():
+    """The exit codes `tools/` has already spent, so an ask can name a free one.
+
+    This gate grades a measurement and not an edition. It is in `all` because
+    what it protects is a sentence this seat writes into `docs/ideas.md`,
+    which is this seat's own surface, and because the one instance in the file
+    was this seat's and was answered by the seat that could not honour it.
+
+    It fails on an entry asking a tool to spend a code that tool already
+    writes down. It does not fail on a proposal against a file with no exit
+    surface, because `tools/noship.py` is named in a 2026-09-26 entry and does
+    not exist yet, and holding the ledger red over a file whose absence is the
+    point of the entry would be this seat failing on another seat's unwritten
+    work. That prints CANNOT, which is a third answer and never a pass.
+
+    A free number in a file whose enumeration is partial prints as free and
+    says so, because a provisional answer read as a checked one is the defect
+    directly above this gate in the file.
+    """
+    tools = ROOT / "tools"
+    files = sorted(tools.glob("*.py"))
+    if not files:
+        print("  FAIL    tools/ holds no python files, so every number below")
+        print("          would read as free and this map would be a clean")
+        print("          answer about nothing")
+        return 1
+
+    bad = 0
+    for label, cases, fn in (("CERTAINTY_CASES", CERTAINTY_CASES,
+                              exit_certainty),
+                             ("EXIT_CASES", EXIT_CASES, spent_exits),
+                             ("LEDGER_CASES", LEDGER_CASES, proposed_exits)):
+        wrong = 0
+        for i, (text, want) in enumerate(cases):
+            if (got := fn(text)) != want:
+                wrong = 1
+                bad = 1
+                print(f"  CASE    {fn.__name__} case {i} wanted {want!r} and "
+                      f"got {got!r}")
+        print(f"{label:<42} {len(cases) - wrong} of {len(cases)}")
+    wrong = 0
+    for spent, proposed, want in COLLISION_CASES:
+        if (got := exit_collision(spent, proposed)) != want:
+            wrong = 1
+            bad = 1
+            print(f"  CASE    exit_collision({spent!r}, {proposed}) wanted "
+                  f"{want!r} and got {got!r}")
+    print(f"{'COLLISION_CASES':<42} "
+          f"{len(COLLISION_CASES) - wrong} of {len(COLLISION_CASES)}")
+    print()
+
+    spent, certainty = {}, {}
+    for path in files:
+        source = path.read_text(encoding="utf-8")
+        certainty[path.name] = exit_certainty(source)
+        if (codes := spent_exits(source)) is not None:
+            spent[path.name] = codes
+
+    counted = collections.Counter(certainty.values())
+    allocated = collections.Counter()
+    for codes in spent.values():
+        for code, _ in codes:
+            allocated[code] += 1
+    print(f"files under tools/                         {len(files)}")
+    print(f"  every exit path written down             "
+          f"{counted['complete']}")
+    print(f"  some path computes its status            {counted['partial']}")
+    print(f"  no exit surface at all, a library        {counted[None]}")
+    print("codes written down, and in how many files  "
+          + "  ".join(f"{c} in {n}" for c, n in sorted(allocated.items())))
+    print()
+    named = {name: codes for name, codes in spent.items()
+             if any(n for _, n in codes)}
+    print("the files that name their codes, which is what makes a")
+    print("collision legible to a seat proposing one:")
+    for name in sorted(named):
+        pairs = ", ".join(f"{c} {n}" for c, n in named[name] if n)
+        print(f"    {name:<32} {pairs}")
+    print()
+
+    entries = re.split(r"\n(?=### )",
+                       (ROOT / "docs/ideas.md").read_text(encoding="utf-8"))
+    asks = answered = clean = 0
+    for entry in entries:
+        for tool, code in proposed_exits(entry):
+            asks += 1
+            head = entry.split("\n", 1)[0].lstrip("# ").strip()[:64]
+            codes = spent.get(f"{tool}.py")
+            if codes is None:
+                why = ("is not in the tree yet"
+                       if not (tools / f"{tool}.py").exists()
+                       else "has no exit surface to collide with")
+                print(f"  CANNOT  tools/{tool}.py {why}, so exit {code} is "
+                      f"unanswered rather than free")
+                print(f"          {head}")
+                continue
+            answered += 1
+            if (hit := exit_collision(codes, code)) is not None:
+                bad = 1
+                means = hit[1] or "an unnamed return in that same file"
+                free = " ".join(str(c) for c in range(1, 12)
+                                if exit_collision(codes, c) is None)
+                print(f"  FAIL    an entry asks tools/{tool}.py for exit "
+                      f"{code}, which it already spends as {means}")
+                print(f"          {head}")
+                print(f"          free in that file: {free}")
+            elif certainty.get(f"{tool}.py") == "partial":
+                clean += 1
+                print(f"  FREE    exit {code} is in none of tools/{tool}.py's "
+                      f"written codes, and one of its paths computes a "
+                      f"status, so this is provisional")
+                print(f"          {head}")
+            else:
+                clean += 1
+                print(f"  OK      exit {code} is free in tools/{tool}.py, "
+                      f"every exit path of which is written down")
+                print(f"          {head}")
+    print(f"ledger entries proposing an exit code      {asks}")
+    print(f"  answered against the file's allocation   {answered}")
+    print(f"  of those, free                           {clean}")
+    print()
+    print("The reading, which is not the check: 2 is the code this file's")
+    print("own dispatcher returns for an unknown gate, and carrying that")
+    print("convention into a sentence about another seat's tool is how the")
+    print("instance above happened. The number was a grep away in the file")
+    print("the ask names.")
+    return bad
+
+
 def main():
     which = sys.argv[1] if len(sys.argv) > 1 else "all"
     # Paths after the subcommand go to `measure`. Without this, the arguments
@@ -8122,6 +8679,7 @@ def main():
                 ("dispatch", dispatch),
                 ("columns", columns),
                 ("flags", flags),
+                ("exits", exits),
                 ("compare", compare), ("selfcheck", selfcheck))
     # An unknown name is a usage failure and never a pass. Exit 2 rather than
     # 1, so a caller can tell "this gate is not here" from "this gate ran and
