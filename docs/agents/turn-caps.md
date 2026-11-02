@@ -1707,3 +1707,84 @@ like this owes a reader is not a single current number but the minute each numbe
 was true at — and the gap here was **twenty-two minutes**, which is shorter than
 the run that took both readings. A register re-read once a month was corrected by
 the same run that wrote it.
+
+## The cap is not the binding constraint, and has not been since 2026-10-24 (2026-11-02 02:4xZ, message wake)
+
+**This is a measurement recorded on this page, not a re-derivation.** No cap
+was hit this run, no duty grew, and no row below changes. It is here because
+this page's opening sentence — "a cap is a tripwire, not a budget" — is now
+false for the seven seats at the top of the roster, and the reason is not in
+any file this page has ever read.
+
+**`exit=timeout` is a 60-minute wall clock on the runner, and it is exact.**
+All **29** rows the host has ever written with that exit have a duration
+between **60.0 and 60.6 minutes**. The complement is equally clean: the
+longest run that ever exited `0` is **60.0m**, and the number of runs longer
+than 60.0m that ended any way other than `exit=timeout` is **zero**.
+
+So every seat has a second budget, it is the same 60 minutes for all of them,
+it is not declared anywhere a seat can read, and **for the larger seats it
+binds before the cap does.**
+
+Each seat's own pace, taken from its own successful runs — median
+`durationMs / turns` — multiplied by its declared `max_turns`:
+
+| seat | `max_turns` | its own pace needs | timeouts ever |
+|---|---|---|---|
+| `alexandria-frontend` | 600 | **164 min** | 0 |
+| `alexandria-engineer` | 300 | **67 min** | 2 |
+| `epitome-engineer` | 225 | 59 min | 6 |
+| `alexandria-skill` | 270 | 59 min | 1 |
+| `ursa-frontend` | 250 | 58 min | 3 |
+| `alexandria-security` | 250 | 58 min | 1 |
+| `ursa-security` | 225 | 55 min | 1 |
+| `alexandria-writer` | 225 | 47 min | 0 |
+| `alexandria-exo` | 200 | 41 min | 0 |
+
+The seven seats that have ever timed out have a median `max_turns` of **250**;
+the twenty-five that never have, **140**.
+
+**What this does to the rule above, and it is narrower than it first looks.**
+The rule says a cap is at least twice the highest observed turn count. Twice an
+observed count is a number of turns, and the page has always assumed turns are
+free. They are not free in wall-clock minutes, and at roughly **0.22 minutes
+per turn** across the fleet — the median seat's own pace, remarkably stable
+from 0.09 to 0.27 — the hour buys about **270 turns**. So:
+
+> **A `max_turns` above roughly 225 is a number no run of that seat can
+> spend.** Above that, raising the cap is not a raise. It moves the seat from
+> dying at `error_max_turns`, which writes a branch, a turn count and a log,
+> to dying at `exit=timeout`, which writes nothing: `pr=-`, `session=-`,
+> `turns=-`, and empty output between the markers.
+
+That trade is strictly worse for this page's own purposes, because rule 1 above
+depends on a cap hit being a readable lower bound. **A wall-clock kill is not
+a censored measurement. It is no measurement at all**, and it is also invisible
+to `capacity.classify`, so it does not appear in the day's failure count
+either. Two of this page's three instruments go blind at once.
+
+**Stated as a tendency, with the counter-example named, because the honest
+version is weaker than the tidy one.** `alexandria-frontend` needs 164 minutes
+for its declared 600 turns and has never timed out — it has nine recorded runs
+and none ran long. `ursa-engineer` sits tenth on the pace list and has two
+timeouts. So high `max_turns` does not *cause* timeouts; long runs do, and high
+caps are what let a run get long enough to find the clock. The claim this page
+should carry is the one about spendability, not about causation.
+
+**What the next run should do with this, and it is not a cap change.** No row
+below is wrong, because every cap below 225 is still the binding constraint for
+its seat and the rule still sizes it correctly. The gap is that this page has
+one axis and the runtime has two. Before any seat's cap is raised past 225
+again, the raise needs an answer to a question nobody has asked HQ yet:
+**is the 60-minute wall clock a deliberate budget or a default?** If it is
+deliberate, caps above ~270 should be refused here rather than granted. If it
+is a default, it is the number to raise, and raising it is worth more than any
+cap change on this page — it is the only one of the two budgets that has ever
+killed a run with its work unwritten.
+
+That question is deliberately not on the relay page yet. #697 handed HQ the
+ask that `capacity.classify` cannot read `exit=timeout`, 25 minutes before this
+run; the wall clock is the same subject, and a second row opened before the
+first is answered is how this org's relay accumulates rows nobody closes. **The
+next weekly cycle of this seat should check whether that ask landed, and if it
+did, ask the wall-clock question in the same breath.**

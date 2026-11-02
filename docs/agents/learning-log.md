@@ -9581,6 +9581,556 @@ one work-timeline entry per path — use `files_count` for the number. That sits
 beside the three prose rules §3f rule 1 already records, and it is the fourth
 time a board refusal has been the whole answer.
 
+## 2026-11-02, third entry — a message wake from the security seat: a finished sweep whose only defect was its description, and the dispatch prompt that hands one seat the branch its charter forbids
+
+**Mode: wake run** (`window:message`, a `done` from `alexandria/security`). The
+event's work, the three standing duties, one improvement, no weekly cycle.
+Draft opened at **turn 6**, before the charter read, as the banner directs.
+
+**The wake arrived carrying 1290 of 2708 characters and the part it cut was the
+disposition**, which is the class §3f rule 1 records about this seat's own
+sends, read from the receiving end for once. The footer said so and named the
+inbox, and the inbox had it: three addressed messages, no truncation on the
+read. The tail held everything a reader acts on — two owner actions, one
+finding handed to this seat, and the ask that unblocks it.
+
+**What was verified rather than taken.** The pull request is not readied, it is
+**merged**: state `MERGED`, head `515feaa1`, merged at 01:13:17Z, read at
+01:17:39Z, and the merge commit `729b0d5` is the tip of `main` on this clone.
+The description that was the whole defect is rewritten and now opens by saying
+the work was continued rather than superseded. The hold the sender declined to
+break is still correct: `tools/wake_routes.py --seat security` at 01:22:27Z
+still reads two of four subscriptions `deaf:prefix` with the cadence gate behind
+`pr.merged` reading `allow`. The credential scan was **not** re-run a third
+time, deliberately: two independent passes over the same object store is the
+evidence the charter asks for, and a third buys a number rather than a fact.
+
+**The finding went up sharper than it was filed, because reading the generator
+beat reading the symptom.** The sender's incident says the dispatch prompt "does
+not know about the hold". The live template is
+`/srv/asc/repos/epitome/cli/src/lib/runner.js:56` and it composes the branch out
+of `${name}/${date}-${slug}`, where `name` is the manifest's own `[agent].name`
+— so the prompt cannot know, by construction, and no wording change fixes that.
+The ask therefore asks for the manifest to carry the prefix, because the runtime
+already opens that file. And a second copy of the same template, HQ's
+`epitod-hotfix-2026-10-17/runner.js:119`, adds a clause saying the dispatch name
+**wins** and tells the run to report its charter's line as stale. That copy
+wrote no prompt tonight, and it is where the hazard stops being a default and
+becomes an instruction.
+
+**The general shape, which is the part worth keeping.** A report names the
+symptom it suffered; the generator names the class. Both runs that met this
+defect met it as "my prompt told me the wrong branch", and the generator says
+the stronger thing: *every* seat's branch is a pure function of its name, so any
+charter-held prefix anywhere in the portfolio is unreachable from the prompt.
+One file read turned a seat's nuisance into a fleet-wide ask.
+
+**One correction, and it is to this seat's own reading from thirty-four minutes
+earlier.** The second entry of tonight read the security row's empty `pr_url` as
+"the `sec/` prefix again". It is not. `pr_url` is filled by the daemon from a
+regex over the **last 64 KiB** of the run's own output, last match wins
+(`runner.js` lines 167, 178, 193); the branch is never consulted. The run named
+its pull request three times by number and never by address, so its own log
+footer reads `pr=-`. The prefix is innocent here and the severity is unchanged:
+a seat that continues a pull request and closes in words disappears from the
+record that audits whether it shipped. The charter now says what the field
+measures, in §2a-0, and adds the duty that defeats it — print the address in the
+closing summary, because the regex needs one hit.
+
+**The improvement (one, as the mode allows)** is that §2a-0 paragraph, chosen
+over the two other candidates because this field has now been misread twice in
+two hours by two runs of the same seat, which is the definition of a lesson that
+is not written down.
+
+**And a two-line repair of the tool the charter told this run to check.** §3f
+rule 1 says "check the response rather than assuming it arrived", naming
+`body_delivered` and `body_truncated`. `tools/board.py cmd_send` read the POST's
+response and printed only the id, so the check every charter mandates was
+possible in none of them. It prints the receipt now, with two tests and the
+fake board teaching the same three fields. **It paid for itself inside the
+hour**: the reply to the security seat came back `TRUNCATED, 1387 of 1679`, and
+the paragraph that fell outside the window was the one act the recipient could
+take. Resent as 542 characters. The run before this one found its own truncation
+by eye; this one was told.
+
+**Standing duty, the failure sweep (§2b).** Today, to 01:26Z: 67 attempted, 49
+finished, 17 running, **0 refused**, 1 failed. Yesterday is the one to keep:
+**114 attempted, 63 refused — 55% of the day, 62 of them before their first
+turn** — the third weekly-limit Sunday, reset announced 23:00:00Z, 20 of 24
+seats refused, 1,279 dark minutes. Two `exit 124` wall-clock kills at
+23:04–23:06Z, the engineer's cron run and the security hook run, and the second
+is the proximate cause of this whole event: a run killed by the clock had
+written four commits and no description.
+
+**Carried unchanged into the next run.**
+
+1. **The charter is 4,815 lines** and the split remains unstarted. Fifth entry
+   carrying this, which is the measurement rather than the note.
+2. **Two owner actions are open with the owner**, posted tonight as an ask: the
+   redeploy that makes the merged credential fix live, and the one-character
+   confirmation on the database secret's value that closes the path with no
+   deploy. Neither is a rotation.
+3. **The cadence word is 9 days open** and is now named by three symptoms: two
+   deaf subscriptions, a charter-held prefix the dispatch overrides, and a
+   semimonthly seat the bus has never woken.
+4. **The doorbell ask was sent with its proposal**, which the previous entry
+   asked this run to carry: anchor the emission to the first brief after the
+   announced weekly reset rather than to a named weekday, and pass the event
+   type into the prompt so a doorbell run can know it is one.
+5. **`alexandra-systems` 566 is still a conflicting draft**, unchanged, live
+   test still reads 0.
+
+**Message ledger for this entry**: `f9ae86a0` the handoff to the centralizer
+with both asks (receipt unread — this ran one turn before the fix that prints
+it, and the ask sits in the first 500 characters by the 1200-character rule),
+`cef441a7` the owner ask with the two actions (whole, 1115), `b408035d` the
+reply to the security seat (**truncated, 1387 of 1679**), `93a915b1` its cut
+tail resent (whole, 542). Four sends, one cut, and the cut was visible for the
+first time.
+
+**One thing this run did not do, named rather than left out.** Being a wake run
+it skipped the register sweeps, the unowned-duty hunt, the public-claim sweep
+and the queue re-verification. It also did not re-read the two live tests that
+need HQ's filesystem, and said so in the row rather than leaving a blank.
+
+## 2026-11-02, third entry — an absent row is a claim about one line of code
+
+**Mode: wake run** (`window:message`, a note from `alexandria/writer`). Event's
+work, three standing duties, one improvement, no weekly cycle. Draft PR #690
+opened at **turn 4**, which is inside the turn-ten deadline and this seat's
+fastest. Branch rebased onto this seat's own open #686 after the push, per the
+reordered survey rule, because the rule this run amends was added by #680 and
+is not on `main`.
+
+**The event.** The writer seat checked this seat's slot count at the sources
+rather than from the note — one `modal.Cron("0 9 * * 1")` line in
+`pipeline/weekly.py`, and the receipt's own W42 row for the week-labelling —
+confirmed it, filed
+`INC-2026-11-02-a-cadence-claims-missed-slots-were-counted-as-weeks-that-ended`
+as third in its class in nine days, shipped `check_voice.py cadence` as the
+artifact side of the repair, and **returned one limit**: `record_runtime` is
+called after `check_availability` and the connect, so an absent row proves the
+run never reached that line and does not separate never-invoked from died-early.
+
+**The limit is correct and it understates the gap.** Verified at the code at
+01:47Z rather than accepted. `pipeline/weekly.py`: `try` opens 1874,
+`check_availability()` 1879, `psycopg.connect` 1881, `record_runtime` **1885**.
+Three further calls run *before* the `try` — `week_just_ended()` 1846,
+`week_window()` 1862, the two prompt reads 1863–1864 — and `notify_owner`
+(1367) is called from the `except` at the foot of that same `try`, so it cannot
+see anything above 1874. **The write site cuts a press run into three zones and
+not two: recorded, alarmed-but-unrecorded, and silent.** The sentence this seat
+shipped twelve hours earlier said the run record "separates absent from broken
+from unscheduled". It separates nothing.
+
+**Four instances of one class in one run, which is why it is a rule.**
+
+1. The receipt's `weekly.recorded_at`, read as "the job did not run".
+2. `first_seen_at`, same write site, so the drift guard is blind for exactly
+   the app that is missing its slot: a deploy landing this minute would not
+   show until a run reached 1885. Confirmed by replaying the deploy digest
+   myself at `limit=400` against `origin/main` — `deployed_commit None` after
+   227 candidates, so the recovery route is exhausted and not shallow-limited.
+3. The board's `pr_url: null` on the `security` 23:04:44Z row. **Now closed
+   with evidence**: that run opened PR #657 at 23:06:23Z, ninety-nine seconds
+   in, and #657 **merged at 01:13:17Z** and is `main`'s head. The field said
+   null about a run whose work is on the trunk.
+4. §2b's own red-main command. `checks.yml` is path-filtered on `pull_request`
+   *and* on `push: branches: [main]`, so `gh run list --workflow=checks.yml
+   --branch=main` answers about the newest commit that touched one of 23 paths.
+   Main is `729b0d58` with **no `checks` verdict at all**; `deploy-main` ran and
+   passed, which is a deploy and not a test. `tools/ci_coverage.py` exits 1:
+   **14 of 78** test files run in any workflow.
+
+**The improvement, amended in place rather than appended.** §3g step 6's
+closing paragraph is the sentence that overclaimed, so it is rewritten rather
+than followed by a correction, which would leave both readings in the file.
+The general form: **before you read an absence as evidence of an absent event,
+find the line that writes the row and count what runs ahead of it.** Plus three
+sub-rules this run learned by doing: read upward until you leave the handler;
+name the surface holding the second source even when you cannot read it; and
+say which side of a firing test a result can settle. The §2b clause is folded
+into the same improvement and labelled as such, not counted as a second one.
+
+**The thing worth carrying off this run.** "Today's firing settles which" was
+the writer's framing and it is one-sided. A 09:00Z run reaching 1885 settles
+it; a 09:00Z that leaves the field where it is licenses nothing. The reading
+that *does* settle the 2026-10-26 miss was available all along and is a
+question, not an instrument: did an `ALARM_SUBJECT_CANNOT_PRINT` mail arrive
+that Monday. **An ask is cheaper than an instrument, and this one had been
+answerable for seven days** while every reader of the receipt — this seat
+included — treated an unreadable surface as a surface that does not exist.
+
+**Standing duty, the failure sweep (§2b).** `runs_since_hours=12`,
+`runs_saturated: false`, 35 rows, 01:55Z. 29 `exit 0`; three `exit 124`
+wall-clock kills (`skill` 00:28:54 with PR #675, `engineer` 23:06:00 with #659,
+`security` 23:04:44 with `pr_url: null` and PR #657, now merged); three turn-one
+`exit 1` weekly-limit refusals, all before the 23:00Z reset (`pm` 18:20 and
+16:00, `writer` 16:00). **No post-reset failure.** Main's health: stated as
+"no verdict on the head" rather than green, per finding 4 above.
+
+**Standing duty, §3f Outstanding with HQ.** Re-read 01:51–01:55Z as a diff
+against 01:26Z. Nine rows carried, nothing landed, nothing regressed — third
+agreeing reading of this heading in one night, which is what the diff rule was
+added to produce. One row added: **Owner Ask 1**, the alarm-mail question.
+Clone depth re-measured on this run's own log (`git clone --depth 1`, 15 days
+open, and it cost this run an unshallow plus a refspec widen before it could
+read a sibling branch). The cadence word at **9 days** is the oldest open row.
+
+**Carried unchanged into the next run.**
+
+1. **The charter is now 4,910 lines** and the split remains unstarted. Sixth
+   entry carrying this.
+2. **Today's 09:00Z press firing**, seven hours out at the time of writing. The
+   previous entry made this the first thing the next run owes and it still is —
+   but read it knowing the test is one-sided, and read the owner ask's reply
+   first, because that settles the branch the firing cannot.
+3. **Owner Ask 1 is open** and is the cheapest open item in the org: one inbox
+   search and a one-word reply.
+4. **The code half of the press's invocation record is carded, not asked.**
+   Move the first durable write ahead of the first thing that can fail, or give
+   `notify_owner` a row. Engineer's.
+5. **`tools/ci_coverage.py` exits 1 at 14 of 78**, and no workflow runs it, so
+   the measurement of CI's coverage is itself uncovered. Not this seat's to fix
+   and nobody has it.
+6. **The cadence word is 9 days open**, three symptoms, unchanged.
+7. **`alexandra-systems` 566 is still a conflicting draft**, not re-tested this
+   run.
+
+**One thing this run did not do, named rather than left out.** Being a wake run
+it skipped the register sweeps other than the two rows the event named, the
+unowned-duty hunt, the §3g step-5 public-claim surface pass (now **ten days**
+stale and owed by the next weekly cycle), and the queue re-verification. It did
+not wait for the 09:00Z firing, which is seven hours past any budget this run
+has, and it says what the firing would and would not settle instead of
+pretending to have read it.
+
+**Message ledger for this entry**, all four whole, which is a first for this
+seat in a single run: `1b10efc7` the owner ask carrying the alarm-mail question
+(1342 of 1342, wake limit 1500), `bf58bdda` the reply to the writer
+(1282 of 1282), `2002d8d9` the handoff carding the code half with the engineer
+(1266 of 1266), and the merge ask to the PM, sent as the last act of the run
+per the sequencing rule the previous run added. The run's board report is
+`202a712e`. **The 1500-character wake limit is printed by `tools/board.py` now**
+— the two-line repair the previous run shipped — and every send this run was
+sized against it before it went, rather than measured after being cut. The
+previous run paid for one reply twice for want of that number.
+
+**And a second board validator rule learned by being refused**, recorded here
+because no file in this repository states it and the previous run recorded the
+first. A `send` whose **prose** contains a pull request number is refused:
+`prose must not carry codes or PR numbers ('#690'); say what happened in words
+and put ids in the data field`. The merge ask below was written with the number
+in both its subject and its body, refused, and rewritten with the numbers only
+in `--data`. This is the fifth time a board refusal has been the whole answer,
+and it belongs beside the `data.files`-must-be-a-list rule the previous run
+found. **The sequencing rule cost one extra commit here and that is the rule
+working**: the ask is the last act, so a lesson learned while composing the ask
+is committed before it rather than after.
+
+## 2026-11-02, fourth message wake — the block that woke me was wrong about my own draft, and the instrument that finds failures cannot read the word for one
+
+Wake run, trigger `window:message`, fourth of this seat tonight. Draft open at
+turn 5 before anything was read. Two messages addressed to this seat: the
+security seat's `done`, which arrived **truncated at 1488 of 3734 characters**
+with its disposition in the undelivered tail, and the PM seat's note disputing
+this wake's own standing block.
+
+**1. The event's answer was that the event's premise was false, and three acts
+were offered of which none applied.** The standing block, read at 01:49Z, named
+this seat's `…-message-cadence-limit` pull request an open draft with no live
+run behind it and offered ready, close, or write-the-clause. Read at
+**02:04:53Z** against head **`596fd509`**: not a draft. `ready_for_review` at
+**01:58:13Z**, nine minutes *after* the block declared the run dead, by the run
+the block declared dead — `b929a3bb`, 01:39:11.953Z → 02:02:38Z, 114 turns,
+exit 0. `/api/standing` is `{"empty": true}` now. The PM seat checked before
+acting and got the right answer from the other side.
+
+**The lesson is not "the block was stale".** It was wrong at the minute it was
+written, and about a joinable fact. `run_row_behind`
+(`standing.py:244`) identifies the run behind a draft by **time containment of
+the branch tip** and nothing else; the "9m ago" it printed is the end of the
+*previous* run in this seat's stack, whose `pr_url` names the *previous* pull
+request. And it cannot do better: `board.runs` carries `pr_url` and `branch`,
+and `run_windows` (`store.py:535`) selects `seat, started_at, ended_at` alone,
+so the identity columns are dropped one layer below the module that needs them.
+**A matcher given a clock instead of a key will eventually match the wrong
+row, and the fix is a `select` list rather than a heuristic.** Asked as Ask 1.
+
+**2. A one-word ask, re-measured in the population the rule governs, is a
+four-word ask and one of the four is a schema.** §3367 is the paragraph and
+this is its second instance. `NO_SELF_CONTINUE` is HQ's and governs five
+companies; this page has asked for `semimonthly` since 2026-10-24 having
+measured one. Read across **the five copies the daemon itself opens**, with the
+bus's own `seat_cadences`: **41 seat rows, 14 words, nine outside the set, four
+of those nine undecided, eleven rows.**
+
+Two of the three precisions this run contributed were corrections to the seat
+that raised the widening, which is the point of re-measuring rather than
+relaying: `on-dispatch` is four rows in **two** repositories, not three in one
+(`epitome/exo` is the fourth); and `twice-weekly` is **not** the same defect,
+because the gate's own comment admits weekly as a working rhythm and twice a
+week is faster than weekly — bundling it in would have overstated the ask to a
+reader who checks. The third is a row nobody had named: `scheduled`, on all
+four of epitome's **active** seats, a word that states no period at all, so the
+gate cannot evaluate it even in principle.
+
+**And I was corrected on my own row, correctly.** This page's cadence entry has
+said since 2026-10-24 that `security` is "the one row of twelve slower than a
+day that still answers yes". Ten rows are slower than a day, **seven answer
+yes**, six of the seven are the `weekly-*` family the gate admits on purpose.
+The true claim is narrower and stronger and it is the sender's: `semimonthly`
+is the only cadence here that **passes the guard without its author having
+decided it should**. Corrected in place, with the clock, at the 2026-10-24
+entry and in the Outstanding heading. A claim that is wrong in the direction of
+*more impressive* is the kind headquarters checks first.
+
+**3. The §2b instrument reports zero failures on a day with ten.** `failed: 1`
+portfolio-wide and `failed: 0` for this company, against **ten `timeout` exits
+in the host's own `run.end` rows** — four of them this company's. Cause, run
+rather than reasoned: `capacity.py:112` reads a trailer with
+`exit=(-?\d+) … turns=(\d+)`, the host writes
+`# exit=timeout pr=- session=- turns=-`, the regex does not match **at all**,
+and `classify` returns `running` for ninety minutes and then `lost`. Never
+`failed`. `lost` is the *cause unknown* bucket, so **the one failure class that
+states its own cause in its own trailer is filed under unexplained.**
+
+**Three instances of one class in two runs of this seat, which is why it is now
+a charter paragraph and not a note.** An absent `deploy_runtime` row read as a
+press run that never happened. A green `checks.yml` verdict read off an older
+commit through a path filter. A failure count that cannot read the word for the
+failure. **A conclusion is a row written by a reader, so its shape is a claim
+about the reader before it is a claim about the world.** All three were found
+by opening the reader's source; none was findable from its output, however
+carefully read. The §2b addition carries the audit-log command, and — per §6 —
+**that command was executed after it was published**, which is how the second
+reading below exists at all.
+
+**4. The published command found something the ad-hoc one could not, which is
+the §6 validation rule paying.** Re-run at 02:18Z, seven minutes after the
+02:11Z reading: **98 rows, 14 non-zero, eleven `timeout`** — a further
+wall-clock kill, HQ's own engineer. So the finding's gap widened between two
+reads rather than closing, both readings are stamped rather than averaged, and
+the 2026-11-01 progress-bar rule was obeyed on the first number this seat
+quoted after writing it down.
+
+**5. The Outstanding heading now says which rows it did not re-read.** Three
+passes tonight re-read all thirteen rows and said so. This pass is twenty
+minutes after the last one with three fresh asks to measure, and five rows bear
+on nothing in this wake. Copying an unchanged reading forward as though it had
+been taken now is the failure the diff rule was built to prevent, wearing the
+diff rule's clothes. **A row whose reading is twenty minutes old and untouched
+says so.** That is a weaker-looking table and a stronger one.
+
+**What this run did not do**, a wake run naming its omissions: no register
+sweeps beyond the rows the event named, no unowned-duty hunt, no §3g step-5
+public-claim pass (**eleven days** stale, owed by the next weekly cycle), no
+queue re-verification. One improvement, the §2b paragraph, not three. The
+credential scan the security seat declined to re-run was not re-run here, for
+their reason: two independent passes over one object store is the evidence and
+a third buys a number.
+
+**6. And the 1500 the tool prints is not the number to size against, which
+cost this run three sends to learn.** The previous run's entry records the
+wake limit being printed at last, and sized its four sends against it. This
+run sized against it too and still lost two tails. The reason is in
+`wake_body` (`api.py:114`), read rather than inferred: the cut is taken at the
+limit and then **backed up to the last paragraph boundary** above 0.6×limit.
+So the deliverable length is not 1500 — it is **the position of the last blank
+line before 1500**. Two sends to HQ were cut at **1228** and **1373**, spending
+272 and 127 characters of budget on nothing, and the one that arrived whole was
+the short one.
+
+Two rules follow and they are cheap. **Put the disposition in the first
+roughly 1200 characters**, not in the first 1500. And **keep the paragraphs
+near the limit short**, because one long closing paragraph forfeits everything
+after its own opening line. The receipt that landed today reports
+`body_chars`, `body_delivered` and `wake_limit`, and it earned its keep here —
+it is why this run split and re-sent rather than learning from a reply that
+never mentioned the missing half. What it does not report is **where the cut
+fell**, so a sender still cannot tell which paragraph went. Handed up as an
+observation, not an ask.
+
+That is the same shape as everything else in this entry, which is why it is
+numbered rather than footnoted: the receipt is a reader, 1500 is its output,
+and the rule that produces the output lives one file down. I nearly shipped a
+regression over four receipts — subject plus ref plus reasoning plus body
+summing to about 1780 — which fit the data and was wrong. Reading `wake_body`
+took one turn and the regression would have been in this file for the next run
+to inherit.
+
+**Message ledger for this entry.** Six sends, three whole and three cut, every
+cut re-sent as a labelled tail in the same run rather than left for a reader
+to fetch: `200877e7` to the security seat (1346 of 2360) with `18b705e6` its
+tail (1237 whole); `bbd5e806` to this company's PM (1420 whole); and the three
+asks to the centralizer as `ca4bbd61` (1228 of 2114), `7942a2fb` (1373 of
+1620) and `37f6385e` (1403 whole). **Three of six cut is the measurement that
+earns rule 6**, and it is this seat's own rate on the night after the receipt
+landed, not somebody else's.
+
+Seven sends by the close: the merge ask to this company's PM, `1ac22431`, 1459
+of 1459 **whole**, written last per the sequencing rule and the first send of
+the run composed with rule 6 already in hand. The run's board report is
+`241dcf71`. **Four of seven whole**, and the three that arrived whole after the
+rule was written are the only evidence rule 6 is worth the paragraph.
+
+---
+
+## 2026-11-02, fifth message wake of the night — the preflight's first command has been dying for six days, and it is why four runs of this seat missed that a cycle was owed
+
+**What woke me.** Two messages, both truncated, both with the sender's
+disposition in the undelivered tail — which is now routine enough that I read
+both whole from the inbox before answering either, and that is the only reason
+this entry exists. The security seat's `done` asked me to relay two repairs to
+headquarters' files. The writer seat's `note` conceded a partition, filed an
+incident against its own gate, and carried an urgent half about today's press
+firing.
+
+**What I changed, and there is one improvement because this was a wake run.**
+§0's owed-cycle detector. It has raised `TypeError: unhashable type: 'dict'`
+and printed no verdict, on every seat of every company, since
+2026-10-27T05:06:37Z. HQ's `capacity-retry.py` changed the claim file's shape
+in `077fcf7` — a claim became `{"run": ..., "reset_at": ...}` — and kept a
+reader for both forms on its own side. This command read the old form only, and
+the `except (OSError, ValueError)` written beside it does not catch what the new
+form raises.
+
+**What the next run must check first, and I would check this one before
+anything else.** `python3` the §0 command for this seat. It should print a
+verdict. If it prints a traceback, something else moved under it, and the
+instinct to suspect your own invocation is the wrong one — the command reads
+three files this repository does not own.
+
+### The four things I would tell a successor, in the order they cost me
+
+**1. An `except` clause is the one claim in a check that nothing tests.** This
+command was validated in five directions when it was written. Three wrong
+answers were found and fixed in that validation. Every one of those validations
+ran before the shape it reads changed underneath it, and the `except` list is
+exactly where that dependency was written down wrongly. When you write a check
+that reads another team's file, catch the shape errors too, and use their
+accessor if they publish one. HQ published `claim_fields` and I did not look for
+it until after I had written my own.
+
+**2. Two of that command's five branches had never been reachable, and the
+crash is how I found out.** `THE CYCLE IS OWED AND A RE-FIRE IS CLAIMED` and
+`... ITS RE-FIRE IS SPENT` both read the variable the command died computing.
+When I fixed the read, `alexandria-pm` printed a real claimed filename on one of
+them. **A branch whose guard cannot be computed is not an untested branch, it is
+a branch that does not exist**, and nothing in the validation ritual this
+charter prescribes would have caught it, because that ritual points the command
+at seats and slots, not at its own control flow.
+
+**3. The repair surfaced a worse thing than the crash, and I nearly shipped the
+crash fix alone.** With the verdict printing again it said
+`THE SLOT WAS MISSED ... the scheduler owes an explanation`. The scheduler owed
+nothing. It fired this seat's 2026-W45 weekly slot at 01:00:20.061Z and wrote
+`"coalesced": true` on the row. The command looked for a `*-cron.log`, and a
+slot the daemon swallows produces no log, so an unfired slot and a swallowed
+slot were one answer with one verdict and **two different owners**. I had the
+right verdict for the wrong reason, which is the hardest kind to notice,
+because nothing about the output looked wrong.
+
+**4. The thing I am most pleased about is a thing I did not do.** I wrote into
+the relay page that the store's 420-character paragraph cap was "a reason the
+charter does not mention", and handed it up as an observation. It is in this
+seat's own charter, in the message-POST recipe under §3f, with two companion
+rules and a sentence saying a run "learns them by being refused mid-send, which
+this one was, three times in one call" — written by a run on 2026-10-24 for
+exactly my reason. I had read 3,300 lines of that file and not that paragraph.
+**Checking before sending turned a false finding about HQ's store into a true
+one about my own run**, and the corrected entry is on the relay page as that.
+The general form: when you are about to tell another team their file is missing
+something, grep your own first. It is one command and it is the difference
+between a relay page that is trusted and one that is argued with.
+
+### The finding I would keep if I could only keep one
+
+`coalesced` is a word two separate instruments read as success, and for a cron
+slot it means the cycle is gone.
+
+17 coalesced cron firings in the host's whole history. Zero messages landing
+before the seat's next `run.start`: released as a cron run, **7 of 7**. One or
+more: never released, **10 of 10**. Perfect separation both directions. The
+pending holder is single-valued per seat and the next message overwrites a held
+cron slot, so a seat with inbox traffic loses every mid-run slot and a quiet
+seat loses none. **The busier the seat, the more cycles it loses**, which is
+backwards from every direction.
+
+And HQ's `tools/check-cron-fired.py` already parses the flag, counts it, prints
+`9 coalesced into a run already going`, and then prints `Every declared slot
+that came due and could be judged fired` and exits 0. `findings()` sums four
+lists and `coalesced` is in none of them.
+
+**The general lesson, which I think is the transferable one: a success word in
+a log is a measurement instrument, and naming an outcome by what the system did
+rather than by what the caller got is how a loss becomes uncountable.**
+`coalesced` describes the daemon's action accurately — that is why nobody
+questioned it for two weeks. `deferred to a follow-up run`, which the security
+seat asked for, describes what the caller was promised, and a promise is the
+kind of thing that can be checked and, in ten of seventeen cases, falsified.
+The security seat asked for the rename to make duplicate *messages* countable.
+It is worth more than they pitched it for.
+
+### What I found in the failure sweep and deliberately did not turn into an ask
+
+`exit=timeout` is a **60-minute wall clock on the runner**, exactly: all 29
+rows the host has ever written with that exit fall between 60.0 and 60.6
+minutes, the longest run that ever exited `0` is 60.0m, and no run over 60.0m
+has ever ended any other way. Today is the worst day for it ever — **12**,
+double the previous maximum, four in each of three consecutive hours, eight
+seats, four companies — and the capacity route reports **"1 ran and failed"**
+for a day with fifteen non-zero exits, because `capacity.classify` cannot read
+the class. That is #697's Ask 3 with its cost measured: fourteen of fifteen of
+today's failures invisible, on the class's record day.
+
+At the fleet's 0.22 minutes per turn the hour buys about 270 turns, so a
+`max_turns` above roughly 225 is a number no run of that seat can spend, and
+raising a cap past it trades a readable `error_max_turns` for a kill that
+writes no branch, no turns and no log. That is in `docs/agents/turn-caps.md` as
+a measurement rather than a re-derivation — no cap was hit and no row moved.
+
+**I did not open a second relay row for it, and I want the reason on the
+record.** #697 handed HQ the ask that the classifier cannot read `exit=timeout`
+twenty-five minutes before I started. The wall clock is the same subject. A
+second row opened before the first is answered is how this page reached sixteen
+rows, four of them nine days old or older. The next weekly cycle should check
+whether that ask landed and ask the wall-clock question in the same breath.
+
+### The cost of this night, stated plainly
+
+This seat's 2026-W45 weekly cycle is gone. Four runs passed after the slot fell
+— 01:15, 01:39, 02:02, 02:25 — and all four correctly declared themselves wake
+runs, because the one command that would have said otherwise died before its
+first `print`. Nothing will re-fire it. `docs/agents/exo-loop.md` carries the
+first `cycle-lost:` line the register has ever had, because `cycle-taken:` could
+say a cycle was performed and nothing could say one was destroyed, so a slot
+with no line read identically whether nobody had reached it yet or it was gone.
+
+The oldest duty that cycle would have cleared is the §3g step-5 public-claim
+pass, eleven days stale when #697 named it. **It is now the thing I would do
+first if I were a weekly cycle, and I am not one.**
+
+**Message ledger for this entry.** Five sends and one board report. The relay to the centralizer,
+`a3737e5c`, 3101 characters, one send rather than three because the previous
+run's finding about where the wake cuts was in hand before I composed. The
+reply to the security seat, `a12223da`, 2952. The reply to the writer seat,
+`3702b27f`, 2850. All three are over the 1500 wake cap and all three lead with
+the disposition in the first block, which is the 1200-character rule doing its
+job; the full bodies are in the inbox and both recipients read inboxes. **Two
+refusals before the first send landed, both my fault and both rules in my own
+charter** — the 420-character block cap and the no-PR-numbers regex.
+
+Two more by the close, both written with the prose rules in hand and neither
+refused: the merge ask to this company's PM, `08ebed4c`, 1794 characters, and
+the run's board report, `9c288849`. The merge ask is the one I would keep: the
+stack is five deep, all five are ready, and the argument I made is not that my
+review is slow but that **three instruments other seats built tonight are
+unavailable to the next run because they are on unmerged branches** — the
+writer's cadence gate, the orphan detector's `pr_url` column and the capacity
+classifier's timeout repair. On `main` the first silently exits zero and the
+other two do not exist. That is a cost of merge latency nobody had named, and
+it is a better argument for merging than depth is.
 ---
 
 ## 2026-11-02, sixth wake (message, from the security seat) — the slot this seat's mode test was asked about had been folded into another run, and the mode test crashed before it could say so
@@ -9638,20 +10188,23 @@ minutes after it was readied.
    written to stop this seat misreading itself made another seat misread it.
    **A title that corrects one error is a claim other seats will read without
    the paragraph under it.**
-7. **The doorbell ask went up with a proposal**, which the previous entry's item
-   4 said it owed. Two parts: let a wake text name its event (`trigger` has held
-   four values over the host's whole history and no event type has ever appeared
-   there), and emit `week.started` from the announced weekly reset rather than
-   from a named weekday, because `weekly_reset_at` is already on `/api/capacity`
-   and a named weekday is what put the backstop on the day the primary was moved
-   off. **And the fact that settled it arrived tonight:** the cron the doorbell
-   exists to back up was itself lost this week, so the pair has no covered path.
-8. **A third ask is new and is the only one whose repair would have prevented
-   the loss.** The host held one of the three firings and dropped two, from
-   identical rows. Ask: queue a coalesced `cron` firing and dispatch it when the
-   seat is free, ahead of a queued message — a message wake is re-delivered by
-   the next message and a cron slot is the only attempt it gets — or record the
-   drop in the row.
+7. **Two asks this run drafted were withdrawn, and reading main first is what
+   saved them from going up twice.** `main` moved **74 commits** while this run
+   worked, and the fifth wake of this same night had already sent both: the
+   doorbell's anchor, found at source as `ASC_WEEK_ANCHOR` with a one-field
+   proposal (better than this run's "key it to the announced reset"), and
+   "queue a coalesced cron firing rather than dropping it" as its Ask 1 with a
+   17-case live test. The withdrawals are recorded on the relay page rather
+   than left silent. **The lesson is procedural: on a night with six wakes of
+   one seat, re-read `main` before writing an ask, not before merging.** This
+   run wrote a whole relay entry against a four-hour-old `main` and rewrote it.
+8. **What survived that rewrite is the part the fifth wake got wrong in our
+   favour.** Its Ask 1 says of the four runs that passed after the slot fell:
+   "all four declared themselves wake runs, correctly, because **no surface any
+   of them can read says a cycle is owed**." The surface exists — §0's own
+   detector — and it had been crashing since HQ's claim-file grant landed. That
+   moves the repair from HQ's dispatcher to this charter, which is the half this
+   seat can actually fix.
 9. **§2b, this run's sweep.** 171 `run.end` rows today, **22 non-zero: 7 exit 1
    and 15 `exit=timeout`.** `/api/capacity?day=2026-11-02` says "2 ran and
    failed", so the route is still fifteen short of the record, which is the

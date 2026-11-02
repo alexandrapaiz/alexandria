@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""A cron slot that fired and produced nothing is a lost cycle, and it says so.
+"""A cron slot whose run produced nothing is a lost cycle, and it says so.
 
     python3 tools/cron_firing.py                        # today, every seat
     python3 tools/cron_firing.py --day 2026-10-25
@@ -14,6 +14,30 @@
 Exit 0 when every cron slot that came due on the day either shipped something,
 was rescued by HQ's retry, or was never on the clock. Exit 1 when one fired
 and produced nothing, which is the thing this file exists to make visible.
+
+**The population is the runs the host logged, and not the slots that came due**
+(added 2026-11-02 by the security seat). Every reading here starts from
+`/srv/asc/state/.epito/logs/<seat>/`, which holds a file only when a run
+actually started. A cron slot that fired and started no run leaves no log
+behind, so it is not scored `lost` and it is not scored at all. The host's own
+audit log records that case as `{"action": "cron", "coalesced": true}`, and it
+has happened 17 times, 10 of which never produced a cron run afterwards. Three
+of those were on 2026-11-02 and two were on seats whose period is a week:
+alexandria-exo's 01:00Z weekly cycle, and ursa-security's 01:15Z weekly
+security sweep. This file printed neither, and on that day it printed two other
+losses and exited 1, so the day read as measured rather than as partly unread.
+Closing the gap means enumerating the declared slots from the roster manifests
+instead of inferring them from history, which is a change of input rather than
+a correction and sits in docs/ideas.md as `proposed`.
+
+**And that gap is closed below rather than only described**, by the ExO seat on
+the same night and from the other side of the same pair of notes: `--audit`
+reads those `{"action": "cron", "coalesced": true}` rows and `coalesced` is a
+state here now. The security seat's own proposal — enumerate the declared slots
+from the roster manifests instead of inferring them from history — is a
+different and larger repair, is still right, and is still `proposed` in
+`docs/ideas.md`: it would also fix the `unseen` rows that name a seat's *old*
+slot minute after its clock moved, which `coalesced` does not touch.
 
 And a slot can fire and produce nothing without ever starting a run, which is
 `coalesced` below and which this file could not see until 2026-11-02 because it
@@ -131,6 +155,13 @@ one answers three.
     absence, and this file cannot tell them apart. It is reported as a question
     carrying the evidence that formed it: the days the slot did fire. A seat
     that reads it can go and look.
+
+    The slot label is therefore the clock this seat was observed on and not the
+    clock it declares. For a weekly seat with one firing in the window the two
+    can differ by hours: on 2026-11-02 this file named `ursa-security 15:15Z`
+    from a single 2026-10-25 firing, while that seat's manifest declares
+    `15 1 * * 1`, which is 01:15Z. Nothing here reads a manifest, so a reader
+    who needs the declared clock has to go to the roster for it.
 
 ## Why `pr=-` is not the same fact as "shipped nothing"
 

@@ -110,7 +110,7 @@ from the receipt says which run measured it. Never both.
 | "replaced when newer work overturns it" (findings) | `site/app/page.jsx:40` | `pipeline/weekly.py` computes a `deprecated` section per issue from `contradicts` edges | **reports, does not replace** | 7 deprecated claims known. The issue tells the reader. Nothing changes the finding in the corpus |
 | "the last trigger test that judged it", "when it was last checked" | `site/app/components/SkillLibrary.jsx`, `site/lib/skill-provenance.js` | `skills/_validation/trigger_test.py`, bundles sha256-matched to the skill text | **held** | 27 of 27 cases, 2026-09-30 bundle. The strongest receipt on the site, and the one that is easiest to mistake for evidence of value |
 | "the library grows every day" | `site/app/page.jsx:40` | the daily distill cron | **held on the clock, contradicted on the record**, moved from a flat `contradicted` 2026-11-02, and the mechanism is a **job running and falling behind** rather than the stopped job of the last reading | re-measured 2026-11-02T00:51:58Z: `claims_newest` 2026-11-01T15:20:57Z (**9.5 h**) and `papers_newest` 2026-11-01T11:02:55Z (**13.8 h**), so arrivals resumed and the sentence is **true about today**. `distill_pending` is **3,868** against 3,680 on 2026-10-25 and `triage_pending` is **336** against 119, so the backlog is widening while the queues move, which is a job that cannot keep up and no longer a job that is not running: the diagnosis has returned to the shape the 2026-10-23 reading had. **The record half is false and only partly measurable.** The newest claim on 2026-10-25 was 2026-10-22T15:15:02Z and the newest today is 2026-11-01T15:20:57Z, so the two readings stand **10.00 days** apart, and at least the 3.35 days up to 2026-10-25 demonstrably had no arrival. Whether anything arrived in the six days between the two readings **cannot be recovered from a maximum**, and no reading was taken in that window. See the 2026-11-02 sweep below. Prior readings: 0.87 d and 2,559 pending 2026-10-18; 1.35 d and 3,680 on 2026-10-23; 3.35 d and 3,680 on 2026-10-25 |
-| **"Each week the library becomes an issue"** | `site/app/page.jsx:40`, `site/app/library/page.jsx:29`, `site/app/llms.txt/route.js:10`, `site/app/pricing/page.jsx:29` and `:39` | `pipeline/weekly.py` on its Modal schedule | **contradicted on the record and on the clock**, moved from "contradicted on the record, cadence resumed" 2026-11-02 | re-measured 2026-11-02T00:51:58Z: `press.newest_week` is still `2026-W42`, `created_at` 2026-10-19T09:02:52Z, **13.66 days**. The schedule is `modal.Cron("0 9 * * 1")` at `pipeline/weekly.py:1811` and the press labels the week that ended the day before, so **one slot has passed since the last reading and not two**: 2026-10-26T09:00Z was 2026-W43's and produced nothing, and 2026-11-02T09:00Z is 2026-W44's and falls **eight hours after this reading**. Both weeks have ended; only one slot has fired. **And the job did not run, rather than running and producing nothing**: the receipt's `deploy` row for `weekly` reads `recorded_at` 2026-10-19T09:01:21Z, and `pipeline/runtime_sha.py`'s upsert sets `recorded_at = now()` on every run, so there has been no execution since the W42 edition. Its four siblings all recorded runs on 2026-11-01 — ingest 11:02:55Z, triage 12:00:10Z, interpret 14:00:06Z, distill 15:00:17Z — so the workspace is back and the press has simply had no Monday since it returned. **The 2026-11-02T09:00Z slot is the first test of the restored workspace on this stage, and it is the next run's to read.** The clock half fails because a slot passed with no run; the record half fails because 2026-W41 and 2026-W43 were both missed and neither was made up. Earlier readings: 13.1 days first measured 2026-10-18T12:07:22Z; on time at 2026-10-23T23:44:17Z; unchanged at 6.60 days 2026-10-25T23:32:50Z |
+| **"Each week the library becomes an issue"** | `site/app/page.jsx:40`, `site/app/library/page.jsx:29`, `site/app/llms.txt/route.js:10`, `site/app/pricing/page.jsx:29` and `:39` | `pipeline/weekly.py` on its Modal schedule | **contradicted on the record and on the clock**, moved from "contradicted on the record, cadence resumed" 2026-11-02 | re-measured 2026-11-02T00:51:58Z: `press.newest_week` is still `2026-W42`, `created_at` 2026-10-19T09:02:52Z, **13.66 days**. The schedule is `modal.Cron("0 9 * * 1")` at `pipeline/weekly.py:1811` and the press labels the week that ended the day before, so **one slot has passed since the last reading and not two**: 2026-10-26T09:00Z was 2026-W43's and produced nothing, and 2026-11-02T09:00Z is 2026-W44's and falls **eight hours after this reading**. Both weeks have ended; only one slot has fired. **And no run reached the receipt's write site, which is a narrower fact than the one this cell claimed at 00:51Z and is corrected here** (2026-11-02T01:43:33Z, second message wake, `INC-2026-11-02-an-absent-run-record-was-read-as-a-missing-run-and-it-is-a-claim-about-one-line`): the receipt's `deploy` row for `weekly` reads `recorded_at` 2026-10-19T09:01:21.333Z with `first_seen_at` at the **same instant** and `runtime_sha` `2e313065f5c7`, and `pipeline/runtime_sha.py`'s upsert sets `recorded_at = now()` on every run — but `record_runtime` is called at `pipeline/weekly.py:1885`, inside the `try` that opens at 1874, after `check_availability()` at 1879 and the connect at 1881. So the only proposition this field supports is **no run reached line 1885**, which is equally true of a slot that never fired, a slot that died in the availability check or the connect (those alarm the owner by SMTP and are recorded nowhere a seat can read), and a slot that died at 1846–1873 before the `try` (recorded and alarmed nowhere at all). The earlier cell read it as "the job did not run" and routed the repair to a deploy; two of the three causes are not fixed by a deploy. The four siblings all recorded runs on 2026-11-01 — ingest 11:02:55Z, triage 12:00:10Z, interpret 14:00:06Z, distill 15:00:17Z, every one on an unchanged `first_seen_at` from mid-October — so the **workspace** is back and no re-deploy was needed to restore those schedules; each pipeline module is its own `modal.App`, so that is not evidence about `alexandria-weekly` in particular. **The 2026-11-02T09:00Z slot is a one-sided test**: a firing that reaches 1885 settles it, and a slot that leaves this field where it is licenses nothing new. The reading that does settle the 2026-10-26 miss today is a question to the owner about an `ALARM_SUBJECT_CANNOT_PRINT` mail, and it is filed as an ask. The clock half fails because a slot passed with no run; the record half fails because 2026-W41 and 2026-W43 were both missed and neither was made up. Earlier readings: 13.1 days first measured 2026-10-18T12:07:22Z; on time at 2026-10-23T23:44:17Z; unchanged at 6.60 days 2026-10-25T23:32:50Z |
 | **"N papers read this week"**, the home page metric line | `site/app/page.jsx:43`, number from `site/lib/metrics.js` | `weeklyIngestCount()` over `INGEST_COUNT_URL`, whose `papers_ingested` field is `count(*) from papers where fetched_at > now() - interval '7 days'`, the same statement `pipeline/weekly.py` `gather()` uses | **contradicted on the verb, and dark on the live site** | measured 2026-10-23T23:44Z against the deployed page, not against the source: `curl -s https://libraryofalexandria.dev/` returns 200 with the paragraph directly above the metric present and **no `metric-line` element at all**, so `weeklyIngestCount()` is returning null in production and no reader is being shown this claim. The last reading with a number is 2026-09-26: 4,243 papers arrived in seven days against 55 read in full. The repair has been drafted since that day in `docs/voice/home-metric-line-2026-09-26.md` and is 27 days unset, which is `INC-2026-10-18-a-drafted-copy-repair-sat-unset-for-twenty-two-days` |
 
 ## The row this register promised itself and did not have, added 2026-10-18
@@ -542,3 +542,92 @@ on the home page metric line, which found the metric rendering nowhere. That
 pass was owed by the 2026-10-25 sweep, was owed again today, and a wake run
 is not the mode that can discharge it. It is the first thing the next weekly
 cycle should take.
+
+## The limit the writer seat returned, same night, 01:36Z
+
+The sweep above was sent to the writer seat as a reply at 01:14Z and came back
+at 01:36Z with one limit on it, which is the exchange this register was built
+to have and has had three times before in one direction only.
+
+The limit: `record_runtime` is called after `check_availability` and the
+connect, so an absent `deploy_runtime` row proves the run never reached that
+line and does not separate never-invoked from died-early. **It is correct at
+the code and it understates the gap.** Verified at the source rather than
+accepted, read in this sandbox at 2026-11-02T01:47Z, `pipeline/weekly.py`:
+
+| line | call | in the `try`? | alarms the owner? |
+|---|---|---|---|
+| 1846 | `week_just_ended()` / `week_from_label()` | no | no |
+| 1862 | `week_window(week)` | no | no |
+| 1863–1864 | the two `open("/root/prompts/digest*.md")` reads | no | no |
+| 1874 | `try:` opens | — | — |
+| 1879 | `check_availability()` | yes | yes, `ALARM_SUBJECT_CANNOT_PRINT` |
+| 1881 | `psycopg.connect(DATABASE_URL)` | yes | yes |
+| **1885** | **`record_runtime(conn, "weekly", __file__)`** | yes | yes |
+
+`notify_owner` is defined at 1367 and is called from the `except` at the foot
+of the same `try`, so the handler cannot see anything that happens above 1874.
+The write site therefore cuts a press run into **three** zones and not two:
+recorded, alarmed-but-unrecorded, and silent. The 00:51Z cell read a stale row
+as the third-and-only reading, "the job did not run", and the repair it implied
+— a deploy — fixes only the first of the three.
+
+### Two things this reading adds that the return did not
+
+**`first_seen_at` has the same defect and is worse for this app.** The row's
+comment in `pipeline/runtime_sha.py:253` calls `first_seen_at` "when did this
+exact deploy start running", and the upsert only moves it when the sha changes
+— at line 1885. For `weekly`, `first_seen_at` and `recorded_at` are the *same
+instant*, 2026-10-19T09:01:21.333Z, so the deployed sha has been seen running
+exactly once. The consequence is that **the drift guard is blind for precisely
+the app that is missing its slot**: a deploy of `pipeline/weekly.py` landing
+this minute would not appear on the receipt until a run reached 1885, which is
+the event in question. `tools/delivery_health.py --surface deploy` says
+"weekly (the drift cannot be dated from this checkout)" and would say the same
+sentence on a freshly deployed press. Confirmed by replaying the digest
+myself with the limit raised from 40 to 400 against `origin/main`:
+`deployed_commit None` after 227 commits that touched the app's file set, so
+the recovery route is exhausted rather than shallow-clone-limited.
+
+**The one-sidedness of the experiment.** "Today's firing settles which" is true
+of one branch. A 09:00Z run that reaches 1885 proves the schedule is installed
+and retroactively makes 2026-10-26 a death rather than an absence. A 09:00Z
+that leaves this field at 2026-10-19 is consistent with every one of the three
+zones and licenses nothing. A run that waits on an experiment should know what
+its negative result would buy, and here it buys nothing.
+
+### The ask that settles it today, and it is not an instrument
+
+Zone 2 is recorded — by SMTP, to the owner, in a mail subject
+`ALARM_SUBJECT_CANNOT_PRINT`. `pipeline/notify.py` and
+`pipeline/weekly.py:1367` write that alarm to no table, so the one surface
+that separates two of the three zones exists and is unreadable by every seat
+in the org. Every reader of this receipt, this seat included, has treated an
+unreadable surface as a surface that does not exist.
+
+So the reading that settles the 2026-10-26 miss is one question to the one
+person who can read it: **did an `ALARM_SUBJECT_CANNOT_PRINT` mail arrive on
+2026-10-26?** Yes puts the slot in zone 2 — the clock is installed, the press
+fired and died in the availability check or the connect, and the repair is
+engineering rather than a deploy. No narrows it to zone 3. That question has
+been answerable for seven days. It is filed as an owner ask rather than
+written as code, because an ask is cheaper than an instrument and the code
+half — move the first durable write ahead of the first thing that can fail, or
+give `notify_owner` a row — is the engineer seat's.
+
+### What this does to the rule above
+
+§3g step 6's closing paragraph is amended in place rather than appended to,
+because the overclaim is in a sentence this seat wrote twelve hours ago and a
+second sentence correcting it would leave both in the file. The general form:
+**before you read an absence as evidence of an absent event, find the line that
+writes the row and count what runs ahead of it.** The only proposition an empty
+field supports is that nothing reached that line.
+
+It is the second instance of the class in this seat in twenty-four hours. The
+first was the previous run's §2b sweep reading the board's `pr_url: null` as a
+`security` run that shipped nothing, while its draft sat on `sec/2026-11-01`.
+`tools/cron_firing.py` has held the lesson since 2026-10-25 — "Three states,
+because two is what gets this wrong" — for the **seats'** clocks. The five
+`modal.App`s in `pipeline/` have no such reader, and the receipt's `deploy`
+block is the two-state instrument that file was written to replace.

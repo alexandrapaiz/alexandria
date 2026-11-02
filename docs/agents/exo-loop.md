@@ -58,23 +58,41 @@ Two rules for a run that writes a line here.
 
 cycle-taken: 2026-10-25T14:00Z, taken on a `message` wake by PR #521, merged 2026-10-25T23:45Z. The cron fired at 14:00:11 and the provider refused it with a weekly-limit 429.
 
-**No line for 2026-11-02T01:00Z, and that absence is deliberate** (written
-2026-11-02T04:0xZ, message wake, the sixth of the day, PR #716). The slot fired
-at 2026-11-02T01:00:20.061Z and the host folded it into a message run of this
-seat that had started at 00:49:18 — `coalesced: true` on the firing's own row in
-`/srv/asc/state/.epito/audit.jsonl`. No run was ever started for the slot, no
-`cron` run of this seat followed to carry it late, and the detector in §0 of
-`prompts/exo-agent.md` now says `THE CYCLE IS OWED AND NO RUN WAS EVER STARTED
-FOR IT`. **This run did not take it**, because it was a wake run with the event's
-work and one improvement in it, and it names the gap here instead, which is the
-alternative that verdict offers. So the 2026-W45 cycle is owed and is the next
-run's to take — and it is the second week running, after 2026-10-25T14:00Z was
-refused by the provider.
+**The register needs a second line shape, and this is the first entry for it**
+(added 2026-11-02). A `cycle-taken:` line says a cycle was performed. Nothing
+here could say a cycle was *lost*, and a slot with no line against it reads
+identically whether nobody has reached it yet or it was destroyed. So:
+`cycle-lost:` then the slot in the same fixed form, then prose. The owed-cycle
+detector in §0 does not parse this token and should not — a lost cycle is still
+owed, and a line claiming otherwise would discharge a slot nobody worked. It is
+here for the human and for the next run's reading, not for the gate.
 
-A run that takes it writes its line here. A run that cannot should say so here
-rather than leaving the register silent, because silence in this file reads
-identically to a cycle nobody has got to yet and a cycle nobody knows was
-lost.
+cycle-lost: 2026-11-02T01:00Z, the first slot of the moved Monday clock, fired by the scheduler at 01:00:20.061Z and marked `coalesced: true` into a message run of this seat that was live from 00:49:18 to 01:15:24. No cron run of this seat has started since; a message at 01:10:29 displaced the held slot. 10 of the 17 coalesced cron firings in the host's whole history were lost this way, separated perfectly by whether any message landed before the next run. Relayed to HQ as Ask 1 of the 2026-11-02 fifth-wake entry in `docs/agents/hq-relay.md`. **Not taken by any run: 2026-W45's seven sweeps for this seat did not happen.** The §3g step-5 public-claim pass, 11 days stale when #697 named it, is the oldest thing this slot would have cleared.
+
+**Confirmed by the detector, which could not say it when that line was
+written** (added 2026-11-02 by the sixth wake of the day). The `cycle-lost:`
+shape above is right and this entry is adopted rather than rewritten; two
+things are added to it.
+
+§0's owed-cycle detector did not merely fail to parse this token — it
+**crashed**, `TypeError: unhashable type: 'dict'`, on the capacity-retry claim
+file whose entries HQ's granted narrowing had turned into objects, so it printed
+no verdict at all on the very slot this line is about. Repaired, and it now
+reads the audit log's coalesced rows directly and says
+`THE CYCLE IS OWED AND NO RUN WAS EVER STARTED FOR IT`. So the gate and this
+line now agree, which they could not before.
+
+And the discriminator is narrower than "any message landed before the next
+run". `ursa-exo` coalesced at 01:30:23.908Z and a `cron` run of that seat
+started at 01:40:48.770Z, three thousandths of a second after the run it was
+waiting on ended — **deferred ten minutes, not lost**. The three audit rows of
+that half hour are identical; what separates them is whether a later `cron` run
+of the seat starts at all. A `cycle-lost:` line should not be written for a slot
+that was merely held.
+
+**The sixth wake did not take the cycle either**, and says so here rather than
+leaving the absence to be read as oversight: it was a wake run whose budget went
+to the event's work and one improvement.
 
 ---
 
