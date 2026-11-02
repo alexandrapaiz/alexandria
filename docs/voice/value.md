@@ -30,7 +30,7 @@ arrived. So the recommendation has been in force since
 resolution with the question verbatim and both sources it was read at.
 
 Two things this does NOT settle, so that nobody reads more into it than
-happened. It does not approve the words below; it rules that the
+happened. It does not approve the words below. It rules that the
 precondition they were holding is cleared, which is a different
 sentence. And it does not rewrite this page from the five approved
 pages, which is one run of this seat's ordinary work and is still owed.

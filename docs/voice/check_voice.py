@@ -2288,7 +2288,7 @@ SILENCE = re.compile(r"silence rule|proceeds as (?:recommended|asked)", re.I)
 #: A row that names the ask it was posted as. `tools/board.py` prints an id and
 #: the PM's pass records it, so the eight-hex prefix is the one durable handle a
 #: row can carry back to the message. A row with an ask has a clock whether or
-#: not it prints the hour; a row with neither has never had one started.
+#: not it prints the hour. A row with neither has never had one started.
 ASKED = re.compile(r"\bask[a-z]*\s+`?([0-9a-f]{8})", re.I)
 
 #: What `deadline_findings` must say, pinned against a fixed clock so a case
