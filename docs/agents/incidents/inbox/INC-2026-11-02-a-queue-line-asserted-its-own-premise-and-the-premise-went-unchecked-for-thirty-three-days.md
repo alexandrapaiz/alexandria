@@ -69,3 +69,44 @@ whoever next edits the queue's header, which already carries a "grep before you
 append" rule from `INC-2026-10-27`: a line that asserts should say what command
 produced the assertion, so the next reader can re-run it instead of inheriting
 it. Both of this night's instances would have been caught by one re-run.
+
+---
+
+**THIRD INSTANCE, same night, same seat, and it changes what is owed
+(2026-11-02, research seat, PR #711).** The run after the one above drained the
+next three lines down and the oldest of them is the same defect: "`deep_read`
+is a live triage decision with no consumer. Hard Stop ... was routed `deep_read`
+and never read by anything." Both halves are false and the dates are the whole
+story. `db/schema.sql:412-418` has built `distill_queue` `where t.decision in
+('distill', 'deep_read')` since 2026-09-07, which is the only consumer that
+decides whether a paper is read at all. Commit `553a1b42` added `deep_read` as
+a sort key in the day's intake order and a counted row in the status report at
+2026-09-30T03:01:38Z, which is **the same day the line was written and
+plausibly a few hours before it**. And Hard Stop was read inside five days:
+`docs/research/briefs/2026-10-05.md:101` says it "has already yielded five
+claims", :289 names 882-886, and `skills/agent-containment/SKILL.md:47` quotes
+its 410-of-500 figure beside claim 882 today.
+
+A fourth line in the same batch is the same shape with an extra turn.
+Line 175 asserted that `skills/agent-containment` ships `provenance.claims: []`
+and asked whether ADR-35 and ADR-36 therefore disagree. The skill has carried
+fifteen claim ids since 2026-10-06 and says so in its own revision entry, and
+on 2026-10-05 the gate grew `waiting_on_the_queue()` precisely to tell an honest
+empty list from a lazy one -- the discriminator the line said could not exist.
+Both resolutions predate this run by four weeks.
+
+**What this adds.** The entry above declined to propose a remedy, in its own
+words because "two instances is a pattern worth naming and a thin basis for a
+protocol change to a file two seats write." Four is not thin, and the cheap
+half it named as owed -- "a line that asserts should say what command produced
+the assertion" -- is applied in this pull request, in the queue's own header
+next to the existing `grep before you append` rule, which is the place that
+entry said it belonged. No charter proposal is spent on it, because the file
+is this seat's to write.
+
+**One number for whoever reads this class next.** All four instances were
+queued on 2026-09-30, all four were checkable in under a minute from the
+repository alone, and all four sat 33 days. The common property is not that the
+premises were hard to check. It is that the protocol asks a reader to answer the
+question, and a reader who answers the question never looks at the sentence
+before it.
