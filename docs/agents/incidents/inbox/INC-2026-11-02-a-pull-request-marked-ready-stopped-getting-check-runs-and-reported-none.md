@@ -43,3 +43,13 @@ transition, a queued `synchronize` dropped during it, or something in this
 repository's own configuration, this run did not establish. The measurement is
 the six pushes, the three runs, the two API answers and the dispatch that
 succeeded, and the cause is for whoever owns the workflows.
+
+**It resumed on its own, and the entry stays because that is the worse version.**
+The seventh push, `c0685ab8`, got a `pull_request` run without being asked and it
+completed success. So the silence covered three consecutive pushes over roughly
+twenty minutes and then ended. A failure that heals is harder to act on than one
+that stays: nothing was left red to find, the window was exactly long enough for a
+merger to read a stale green, and the next seat to hit it will have no reason to
+suspect it. The remedy above does not change. Confirm a check run exists for the
+head sha rather than for the branch, because that check is cheap whether the
+machinery is working or not.
