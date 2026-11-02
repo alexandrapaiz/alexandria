@@ -243,9 +243,26 @@ def live():
 def test_the_suite_is_the_published_one_and_not_a_new_exam(live):
     """The cases come from skills/*/triggers.json, the same file the trigger
     receipts in skills/_validation/results/ are scored on. A measurement that
-    writes its own query set can pass by writing easy queries."""
-    assert live["cases"]["total"] == 67
-    assert live["cases"]["golden"] + live["cases"]["silent"] == 67
+    writes its own query set can pass by writing easy queries.
+
+    The count is read back from those files rather than pinned to a literal.
+    It was pinned at 67 until 2026-11-02, when `agent-containment` gained a
+    legitimate case for its new delta and this assertion went red on a suite
+    that had just got bigger. That is the same shape as the tripwire described
+    in `test_the_live_queue_serves_a_blocked_skills_papers_on_the_next_run`:
+    a literal that has to be edited by hand every time the library improves
+    will eventually be edited without being thought about, which is the one
+    failure mode this assertion exists to prevent. Deriving it keeps the real
+    guarantee, which is that the measurement scores the published cases and
+    not a set it wrote itself, and drops the part that only tracked the date.
+    """
+    published = sum(
+        len(json.loads(f.read_text()).get("cases", []))
+        for f in sorted((REPO / "skills").glob("*/triggers.json"))
+    )
+    assert published, "no published trigger cases were found to compare against"
+    assert live["cases"]["total"] == published
+    assert live["cases"]["golden"] + live["cases"]["silent"] == published
 
 
 def test_the_distractors_are_real_skills_from_this_checkout(live):

@@ -1,0 +1,88 @@
+USE_WHEN_BOOST against the literature  (lexical/2.2, 68 cases)
+========================================================================
+
+What the two papers say
+  arXiv:2510.22670: keeps the when-to-use field, drops example-usage. Having the clause is supported.
+  arXiv:2602.05366: the field's learned weight runs 0.269x to 1.363x of the description's,
+    median 0.695x, below the description in 5 of 6 cells.
+    That row is Table 5's `examples`, which this paper calls its usage-scenario
+    field and which shares a name with the field the other paper's ablation
+    DROPS. The identification is the step the comparison rests on, and neither
+    paper settles it.
+  ours: 1.25x, which is ABOVE the description and inside the published range.
+    So the clause is supported, a constant is ruled out in either
+    direction, and central tendency runs the opposite way.
+
+The asymmetry the boost is actually applied through
+  stem_count_as_shipped  library 0.8019, panel 0.9441, ratio 0.8494x, trips True
+  idf_mass_as_scored     library 0.8104, panel 0.9426, ratio 0.8598x, trips True
+  tolerance 1.15x. The gate checks the stem count and the engine multiplies
+  idf mass, so the gate watches a different number from the one the boost moves.
+  Both trip, so the finding stands either way, and the gap is worth one line
+  rather than a repair.
+
+Three arms, on every field the verdict reads
+  arm               fired  passed  narrow  <floor
+  boost_off            53      61       7       1
+  boost_live           51      62       6       1
+  boost_uniform        53      61       6       1
+
+What moves between arms
+  boost_off_vs_boost_live
+    fired moved:  ['cwe-neg-1', 'he-conf-2', 'rhsi-conf-1']
+    passed moved: cwe-neg-1 fail -> pass
+    passed moved: he-conf-2 pass -> fail
+    passed moved: rhsi-conf-1 fail -> pass
+    narrow flag moved: ei-neg-1 -0.0127 -> -0.0358
+    under floor moved: none
+  boost_off_vs_boost_uniform
+    fired moved:  none
+    passed moved: none
+    narrow flag moved: he-conf-2 +0.0179 -> +0.0224
+    under floor moved: none
+  boost_uniform_vs_boost_live
+    fired moved:  ['cwe-neg-1', 'he-conf-2', 'rhsi-conf-1']
+    passed moved: cwe-neg-1 fail -> pass
+    passed moved: he-conf-2 pass -> fail
+    passed moved: rhsi-conf-1 fail -> pass
+    narrow flag moved: ei-neg-1 -0.0158 -> -0.0358
+    narrow flag moved: he-conf-2 +0.0224 -> -0.0034
+    under floor moved: none
+
+The floor, and whether it binds on anything
+  sle-neg-1: score 0.0492, margin -0.0629; ranking silences it first: True
+  So the floor is UNTESTED rather than satisfied: the one case
+  under it also trails its decoy, so the ranking clause decides
+  it before the floor is consulted.
+
+The three lexical/2.2 stopwords, decomposed
+  arm                               41w     123w    delta
+  none_of_three_lexical_2.1      0.4466   0.5777  +0.1311
+  all_three_lexical_2.2          0.6850   0.6850  +0.0000
+  last_only                      0.5052   0.5052  +0.0000
+  got_only                       0.5052   0.6553  +0.1501
+  think_only                     0.5052   0.6553  +0.1501
+  Only 'last' is load-bearing. Stripping either other one alone
+  GROWS the delta, because both sit in the prompt and in neither
+  description, so removing one shrinks the denominator and leaves
+  the numerator alone.
+
+The coefficient, swept over the range the literature publishes
+  live = through activation_clause()'s positional slice, as shipped.
+  uniform = applied to every candidate's whole term set, as a unified schema would.
+    boost  in range  live pass  live <fl  unif pass  unif <fl
+    0.269      True         49        11         59        23
+      0.5      True         57         1         61        10
+    0.695      True         60         1         61         6
+      1.0      True         61         1         61         1
+     1.25      True         62         1         61         1
+    1.363      True         62         0         61         0
+      1.5     False         62         0         61         0
+  live span 49 to 62 of 68; uniform span 59 to 61.
+  This is the measurement that decides what the coefficient is worth. The
+  suite's pass rate responds to the coefficient only through the positional
+  slice. Applied uniformly, every arm at 0.5x and above scores [61], which is
+  exactly flat, and the only movement below that is the floor collapsing rather
+  than the clause earning anything. So what 1.25 buys this suite is the
+  asymmetry and not the clause, and tuning the coefficient on the pass rate
+  would be tuning on a confound.

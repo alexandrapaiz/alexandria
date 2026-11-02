@@ -1,0 +1,53 @@
+EvoSafeHarness Table A6, re-parsed per column  (arxiv.org/abs/2609.05903)
+================================================================
+
+15 searched harnesses, one per (domain, victim model) cell.
+
+cell                       mechs  code  judge  prose
+os-filesystem/S                4     1      2      1
+os-filesystem/G                7     5      1      1
+os-filesystem/K                5     2      2      1
+os-filesystem/Q                2     1      1      0
+os-filesystem/D                4     3      0      1
+finance/S                      7     5      1      1
+finance/G                      5     4      1      0
+finance/K                      3     2      1      0
+finance/Q                      4     4      0      0
+finance/D                      7     6      1      0
+telecom/S                      6     4      1      1
+telecom/G                      4     3      0      1
+telecom/K                      3     3      0      0
+telecom/Q                      4     2      1      1
+telecom/D                      5     3      1      1
+
+cells carrying natural-language policy : 9 of 15
+harnesses shipping NO prose            : 6 of 15
+harnesses making NO runtime model call : 4 of 15
+harnesses that are PURE deterministic  : 2 of 15   <- the two sets barely overlap
+harnesses shipping deterministic code  : 15 of 15
+
+no prose, by domain: finance 4, os-filesystem 1, telecom 1
+  the dropped-prose cells cluster by DOMAIN, not by model, and the paper
+  explains the model axis and never the domain one.
+
+no prose : os-filesystem/Q, finance/G, finance/K, finance/Q, finance/D, telecom/K
+no judge : os-filesystem/D, finance/Q, telecom/G, telecom/K
+pure code: finance/Q, telecom/K
+
+How deployment-dependent is the LABEL? 1 of 16 mechanism families are realized more than one way:
+  action-nature gate: d/s across 5 cells
+      d: os-filesystem/G, os-filesystem/D
+      s: os-filesystem/S, os-filesystem/K, os-filesystem/Q
+  Every other family is realized the SAME way wherever it appears, so the
+  label is mostly a property of the mechanism and not of the deployment.
+  What varies strongly across cells is which mechanisms are PRESENT.
+
+Why this answers the policy-artifact question NO. A packaged policy
+artifact would carry only `n`, the realization this search drops most
+often, and the paper's own method section rules out the mirror image too:
+"Optimizing P alone leaves enforcement probabilistic ... Optimizing only a
+fixed enforcement program, in contrast, restricts the harness to
+predefined security concepts and decision rules." Both components are
+necessary in its words, so neither prose nor code is the sellable unit
+alone. What the table does support is a per-item LABEL, because the
+realization of one mechanism family varies across cells.
