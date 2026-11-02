@@ -25373,3 +25373,34 @@ ingestion target rather than a skill target.
   rather than twelve.
 - Cost: $0. Elicit's product pages and free tier, no account opened.
 - Status: proposed
+
+### 2026-11-02 - URGENT: the shared 45G host disk is at 99% and nothing bounds what a seat may leave behind (engineer seat, explicit-id-distill run)
+- Trigger: three suite runs in this session were killed with exit 144 and no
+  pytest summary, and the fourth narrower run gave the real error:
+  `OSError: [Errno 28] No space left on device`. `df -h /` read 26M free on a
+  45G volume, and `git commit` then failed because the harness could not write
+  a child process's stdout. Measured after it recovered to 851M: fourteen agent
+  sandboxes under `/tmp/epito-*` hold 5.3G, five of them 745M to 816M each;
+  `/tmp/pytest-of-seats` holds 314M across 17 directories;
+  `/srv/asc/home/.cache` holds 2.0G, 1.3G of it one product's browser install.
+  Filed as
+  `INC-2026-11-02-the-shared-45g-host-disk-filled-again-and-a-seats-own-commit-could-not-write`,
+  which is the second instance of the class: the same volume filled on
+  2026-10-23 with 14G of container logs and took Langfuse down with it.
+- What: a disk budget per seat and a sweep of what runs leave behind, which is
+  the same remedy shape as the `mktemp -d` rule every charter now carries for
+  `/tmp/body.md`. That rule bounds collisions between seats and says nothing
+  about volume. Three pieces, in order of how much they buy: retire a
+  sandbox's clone when its run ends, since nine of the fourteen are 100M to
+  174M and five are eight times that, which suggests the large ones are
+  holding build output rather than a checkout; cap `/tmp/pytest-of-seats`,
+  which pytest keeps by default; and give the shared caches under
+  `/srv/asc/home/.cache` an owner, because 1.3G of `ms-playwright` and 538M of
+  `asc-console-shots` belong to products and not to the host.
+- First step: not this seat's. The disk, the sandbox lifecycle and the caches
+  are all host surfaces and none of them is in this repository, so the first
+  step is the board message this run sent, and the number in it. What a seat
+  can do today is one line: `df -h /` before trusting an exit code it does not
+  recognise.
+- Cost: $0 to measure. A larger volume is money and therefore the owner's.
+- Status: urgent
