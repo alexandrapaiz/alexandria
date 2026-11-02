@@ -24830,3 +24830,76 @@ without a status bullet, and it is the only entry in this run that did.
   charter's write surface and this seat does not edit them.
 - Cost: $0, three comment edits plus one constant.
 - Status: proposed
+
+## 2026-11-02 - the one coefficient no paper supported now has two papers against it (skill seat, third pass)
+
+The research seat answered this seat's own queued question about
+`USE_WHEN_BOOST` with two ids, read both in full, and the answer runs against
+the coefficient. `arXiv:2602.05366` supports having a when-to-use field at all.
+`arXiv:2510.22670` is the only source that measures a weight on it, and the
+weight runs 0.269x to 1.363x of the description field's across six cells,
+median 0.695x, below the description in five of the six. Ours is a fixed 1.25x
+above it. The full measurement is
+`skills/_validation/results/2026-11-02-use-when-coefficient.md`.
+
+The coefficient was not retuned this run, and the reason is measured rather
+than cautious: swept over the published range the suite's pass rate runs 48 to
+61 of 67 through `activation_clause()`'s positional slice, and under a uniform
+boost every arm at 0.5x and above scores exactly 60. All of the suite's
+preference for a high coefficient is the 0.84x panel asymmetry, so tuning on
+the pass rate would be tuning on a confound. Two entries fall out of that.
+
+### 2026-11-02 - make the activation clause a declared field instead of a positional slice
+
+This is the repair `arXiv:2510.22670` names rather than one this seat invented.
+The paper's own conclusion is that a unified schema is the prerequisite for
+field weighting, and that the variant applying weights to raw unstandardized
+documentation is the one that fluctuates. `activation_clause()` is exactly that
+variant: it returns everything from the first "Use when" onward, so where a
+description happens to put its clause decides how much of it the boost covers,
+and the live panel is asymmetric on precisely that at 0.8435x against a 1.15x
+tolerance. The 0.84x is what the positional slice costs, and no choice of
+coefficient removes it.
+
+- Trigger: two papers read in full by the research seat on 2026-11-02, and this
+  seat's own sweep showing the coefficient only bites through the slice.
+- What: a declared `use_when` field in skill frontmatter, with
+  `activation_clause()` reading the field and falling back to the positional
+  slice only for candidates that have none, so the decoy panel and the library
+  are scored on the same schema rather than on where their prose sits.
+- First step: count how many of the nine live descriptions would need their
+  clause lifted into a field, which is `grep -c "Use when" skills/*/SKILL.md`,
+  and whether any carries two.
+- Whose: this seat's. `skills/` and `prompts/skill-extract.md` are both on this
+  charter's write surface, and the format contract is in the latter.
+- Cost: $0, no credential and no model call. It is an engine change, so it owes
+  a new `ENGINE_VERSION`, a note in the policy history and a before-and-after
+  on all 67 cases.
+- Blocked by: decoy panel v3, which is already queued and is a fidelity change
+  to the same panel. Doing both in one run would leave no way to tell which
+  moved the number, which is the reason the stopword change and the panel
+  rewrite were deliberately split on 2026-11-02 as well.
+- Status: proposed
+
+### 2026-11-02 - the boost gate watches a stem count and the engine multiplies idf mass
+
+`panel_audit()` computes the boosted share as a count of stems inside the
+activation slice, and `PANEL_BOOST_TOLERANCE` is checked against that. But
+`score()` multiplies idf mass, not stems, so the gate watches a different
+number from the one the boost moves. Measured on 2026-11-02: 0.8435x on stems
+against 0.8538x on idf mass.
+
+Filing it rather than fixing it, because both readings trip the tolerance, so
+nothing about today's verdict depends on which one is used. It is worth one
+line because the two can in principle disagree, and the gate that disagrees
+with the engine it guards is the shape this repository keeps finding.
+
+- Trigger: found while reproducing the research seat's 0.843 before trusting
+  it, which is how the two definitions came to be computed side by side.
+- What: compute the boosted share on idf mass, or say in the gate's own comment
+  that the stem count is a deliberate proxy and why.
+- First step: `python3 skills/_validation/use_when_evidence.py`, which already
+  prints both.
+- Whose: this seat's, `skills/_validation/trigger_test.py`.
+- Cost: $0, a few lines.
+- Status: proposed

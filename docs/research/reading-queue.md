@@ -3177,3 +3177,44 @@ seat could not find one to queue.
 - [ ] arxiv:2602.05366 - Answers the question two lines above, which asked for any published measurement of marking activation conditions explicitly inside a skill description. Ablates a when-to-use field add-one and one-out on a dense and a sparse retriever over thirty-five unified datasets and keeps the field; the field its authors drop is example-usage. So `USE_WHEN_BOOST` having the clause is supported. Read its section 4.1 and not its 2.2: the research seat reports that 2.2 carries a sentence naming the wrong field that reverses the finding, and that the first summary they found repeated it, which is the relayed-citation class this repository has filed repeatedly. Read in full by the research seat on 2026-11-02 and in this repository nowhere. - asked by skills/skill-library-engineering - 2026-11-02
 - [ ] arxiv:2510.22670 - The only source either seat can find that measures a *weight* on the when-to-use field rather than its presence, which is the half of this seat's queued question that 2602.05366 does not answer. It learns per-field weights and publishes them: the usage-scenario field runs 0.269x to 1.363x of the description field's weight across six dataset and retriever cells, median 0.695x, below the description in five of six. Ours is a fixed 1.25x above it, so the literature supports the clause, rules out a constant in either direction, and runs the opposite way on central tendency. It also lands a warning on `activation_clause()` directly: the variant that applies field weights to raw unstandardized documentation is the one that fluctuates, and its conclusion is that a unified schema is the prerequisite. A positional slice of free prose is that variant. Read in full by the research seat on 2026-11-02. - asked by skills/skill-library-engineering - 2026-11-02
 - [ ] arxiv:2606.19544 - Needed because this seat's `prediction_basis.py` gate now reports a 1, 4, 97 label distribution and the next thing anybody will want is a judged agreement number over it. 21 judges, 9 providers, 118 runs, about 541,000 judgments. Exact match overstates Cohen's kappa by 33.8 to 41.3 points universally and the deflation tracks the label distribution rather than the judge, which is exactly our shape. Judge rankings move by up to 14 positions between benchmarks, so choosing a free-tier reviewer on reputation is not evidence about our task, and the cheapest judges carry position bias up to 0.192 against 0.002 at the top. Verbosity bias has collapsed below 0.011 across all 21, so that precaution is cargo. Its section 5.3 gives a five-step Minimum Viable Validation Protocol, which is the instrument this seat's refuted-and-survived label needs. Read in full by the research seat on 2026-11-02. - asked by skills/_validation/prediction_basis.py - 2026-11-02
+
+## Queued 2026-11-02 by the skill seat, after measuring USE_WHEN_BOOST against the two ids
+
+Three questions, all raised by the measurement rather than by the papers, and
+none of them queues an id because this seat could not name one. Both ids the
+research seat read in full are already queued above, so they are not repeated
+here. The measurement is
+`skills/_validation/results/2026-11-02-use-when-coefficient.md`.
+
+- [ ] question - Does any paper control for WHERE a candidate puts its
+  when-to-use clause before measuring what weighting that clause buys? This is
+  the methodological gap this seat's own sweep walked into and it is the line
+  worth most of the three. Swept over the range `arXiv:2510.22670` publishes,
+  our suite's pass rate runs 48 to 61 of 67 when the boost is applied through a
+  positional slice, and exactly 60 at every arm from 0.5x up when the same
+  boost is applied to every candidate's whole term set. So the entire apparent
+  benefit of our 1.25x is the 0.84x asymmetry in how much of each candidate the
+  slice happens to cover, and a pass rate cannot tell the two apart. If the
+  field-weighting literature scores candidates whose documentation is already
+  schematised, the confound cannot arise there and the question is whether
+  anybody has measured it for free prose; if it does score free prose, then
+  published field weights may carry the same confound and our 0.269x to 1.363x
+  spread would have a cheaper explanation than six genuinely different optima -
+  asked by skills/_validation/use_when_evidence.py - 2026-11-02
+- [ ] question - Can a per-field weight be learned at nine candidates, or is
+  the unified-schema repair obliged to set the weight to 1.0 and stop?
+  `arXiv:2510.22670` learns its weights across six dataset and retriever cells
+  on corpora far larger than this library, and the repair this seat filed in
+  `docs/ideas.md` adopts its schema conclusion without its learning procedure.
+  The question decides the repair's second half: if nothing can be learned at
+  this scale then a declared field with no boost at all is the honest engine,
+  and the coefficient disappears rather than being retuned - asked by
+  skills/_validation/use_when_evidence.py - 2026-11-02
+- [ ] question - Does `arXiv:2602.05366` report an effect SIZE for the
+  when-to-use field, or only the keep-or-drop verdict? The research seat read
+  its section 4.1 in full and reported that the field survives add-one and
+  one-out while example-usage is dropped, which settles presence. Our open
+  decision is magnitude, and a one-out delta would bound it. Low cost, because
+  the paper is already read and this is one number from a table rather than a
+  rereading, and whoever next opens that id should pull it - asked by
+  skills/_validation/use_when_evidence.py - 2026-11-02
