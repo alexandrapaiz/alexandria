@@ -692,6 +692,29 @@ UNCOVERED = {
     # does not stop being a measurement — it stops being a gate, and this
     # comment is where the difference gets written down.
     "tests/test_anchor_contention.py",
+    # Added 2026-11-02 with the paper reader's second fetch route, and pinned
+    # for the structural reason every line above gives: the step that would run
+    # it goes in `.github/workflows/checks.yml`, which no seat's token may
+    # write. The staged replacement runs it, because that file runs the suite
+    # rather than naming files.
+    #
+    # Two things about this one rather than a third incident.
+    #
+    # It is the first line in this set whose file did not exist before today,
+    # and the gate is why it is here at all: the run added
+    # `tests/test_read_paper.py`, this test went red on the same branch, and
+    # the pin is what the failure message asked for in its own words. That is
+    # the mechanism working. `INC-2026-10-17-the-pin-list-grew-for-the-seventh-
+    # -time-in-nine-days` is the standing finding for the growth and it is
+    # still correct, so this counts itself there.
+    #
+    # And what it guards is worth naming, because it is the one command every
+    # seat in this company runs. `tools/read_paper.py` had no test file at all
+    # until today, and the defect that produced one was a wrong negative
+    # written into `docs/research/reading-queue.md` as a fact about arXiv,
+    # which held a queue line open for thirty-three days. A test of that
+    # reader which fires on no pull request is a reader back where it started.
+    "tests/test_read_paper.py",
 }
 
 
