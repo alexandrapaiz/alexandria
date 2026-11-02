@@ -184,6 +184,47 @@ phrase decides how much of it the boost covers. A uniform boost would be a
 no-op on rankings, since it scales every candidate's numerator alike, so the
 boost's entire effect is this differential.
 
+**Corrected 2026-11-02 by the next skill run, and the sentence above is one
+field short.** The research seat read `route()` against this claim and found
+it (PR #702). The ranking clause is invariant to a uniform scale exactly as
+written, and the verdict is not only a ranking. `route()` tests three things,
+and two of them read an absolute number: `library_score >= FLOOR` and
+`abs(null_margin) < NARROW_MARGIN`. A uniform boost scales both. So "the
+boost's entire effect is this differential" is false, and the differential is
+its entire effect **on the fired decision alone**.
+
+Measured here across all 67 cases, with the boost off, live, and applied
+uniformly over the whole description:
+
+| | fired decisions | narrow flags | cases under the floor |
+|---|---|---|---|
+| boost off | baseline | 7 | 1 |
+| boost 1.25, live | 3 move | 6 | 1 |
+| boost 1.25 uniform | identical to off | 6 | 1 |
+
+The off and uniform arms agree on all 67 fired decisions, which is the
+invariance the sentence above was reaching for. They disagree on one narrow
+flag: `he-conf-2` goes from margin +0.0179 to +0.0224 and stops being
+reported as narrow, because 0.0224 is over `NARROW_MARGIN` and 0.0179 is
+under it. Those are the research seat's two numbers and they reproduce to the
+digit. The table further down this section says the two arms are "identical,
+as it must be", and that is true of every column it prints and false of the
+narrow flag it does not print.
+
+The floor binds on nothing in any arm, and it is worth saying why rather than
+counting it as safe. One case scores under it, `sle-neg-1` at 0.0492 against
+the floor's 0.05, and it also trails its closest decoy by 0.0629, so the
+ranking clause silences it before the floor is ever consulted. The floor is
+untested by this panel rather than satisfied by it.
+
+One number this run adds that the correction did not carry. Comparing **live**
+to uniform rather than off to uniform flips two narrow flags, not one:
+`he-conf-2` from true to false, and `ei-neg-1` from false to true at margin
+-0.0358 to -0.0158. Both comparisons are real and they answer different
+questions. Off against uniform isolates what uniformity costs. Live against
+uniform is what removing the positional artifact would actually do, and it is
+the arm a panel v3 decision should read.
+
 **The panel is asymmetric on it, and nothing was gating that either.**
 
 | | mean share of term set inside the boosted slice |
@@ -209,6 +250,17 @@ positional artifact of where an author put four words is as load-bearing as
 the choice of scoring function, and until today no guard watched it and no
 rule mentioned it.
 
+**And one of today's six failures is that artifact rather than a library
+defect**, which the research seat pointed out on PR #702 and this run
+confirmed in the scores. `he-conf-2` expects `recursive-harness-self-improvement`
+and fires nothing, because the intended skill scores 0.1032 against a decoy's
+0.1066 and loses by **0.0034**. That gap is inside the 79.6 against 94.4
+percent asymmetry measured just above, and in both the boost-off and the
+uniform arms the case fires the right skill. So the honest reading of 61 of 67
+today is **five library failures and one instrument artifact**, and the
+artifact is already filed as panel v3. A failure list that does not separate
+the two invites a seat to go rewrite a skill description that was never wrong.
+
 `panel_audit()` now gates the boosted-share ratio at 1.15x. **Today's panel
 fails it, at 0.84x, and the warning is in every bundle this run wrote.** It is
 left failing on purpose. The repair is a decoy rewrite, filed as panel v3, and
@@ -216,6 +268,40 @@ the file's own policy history says a seat does not change the instrument and
 the artifact in one commit and call the result a pass. A panel rewrite moves
 the published reliability, so it is its own run with its own before and after,
 exactly as v2 was. The before arm is the two bundles this run committed.
+
+### The panel v3 prediction, pre-registered per kind
+
+Added 2026-11-02 by the next skill run, at the research seat's request on PR
+#702. The prediction this document originally carried was a direction on the
+total, and the research seat measured the limiting case and showed why a
+total is the wrong unit for it. Reproduced here independently, as the
+limiting case where the decoys lose the boost entirely and the library keeps
+it, nothing else changed:
+
+| arm | total | positive | negative | confusion |
+|---|---|---|---|---|
+| live, panel v2 | 61/67 | 29/29 | 15/18 | 17/20 |
+| the v3 limit | 60/67 | 29/29 | **13/18** | **18/20** |
+
+Three cases move and they move in both directions: `he-conf-2` is gained,
+`cwe-neg-1` and `sle-neg-2` are lost. So the total moves by one while the
+composition moves by three, and **a reader holding only the total would read
+a cancellation as a small effect.** That is the same error this document's own
+sweep rationale warns about one section above, which makes it worth
+pre-registering rather than discovering.
+
+**So the prediction for the panel v3 run is per kind, and it is written
+before the work: positives unchanged, negatives down, confusion up.** The
+direction on the confusion arm is the part the original prediction did not
+name, and a v3 run that reports a flat total has not measured what it thinks
+it has.
+
+The negative arm is where the cost lands, and the reason is structural rather
+than incidental. Today's decoys lead their negative cases partly by carrying
+their activation clauses in front, so a rewrite that removes that advantage
+removes some correct silences with it. A v3 decoy set therefore has to earn
+its negative cases on vocabulary rather than on position, and the two cases
+named above are the test of whether it did.
 
 ## The engine is lexical/2.2
 
