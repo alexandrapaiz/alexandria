@@ -110,6 +110,59 @@ the second time in two runs of this seat that an AST-reading gate's first draft
 passed the defect, and it is filed as
 `INC-2026-11-02-the-second-gate-in-two-runs-passed-the-break-it-was-written-to-catch`.
 
+## The fourth gate, which exists because the suite caught me
+
+Three gates were not enough, and the thing that found the gap was
+`tests/test_feed_health.py` going red on six cases that have nothing to do with
+recording anything.
+
+`psycopg` is not installed in this sandbox. The first draft of
+`record_invocation` put `import os` and `import psycopg` **above** its own
+`try`, so the first statement of the daily job was an import that raises, and
+the fixture that runs `ingest()` with its I/O stubbed hit it immediately. The
+docstring sitting over that code claimed softness on every path while one path
+was not soft. That is the same defect as the one this run was repairing, one
+level in: a statement that can kill the job placed above the handling that
+exists to survive it.
+
+The imports moved inside the `try`. Then two decisions, and the second is the
+one worth copying.
+
+**The fixture does not stub the record.** It stubs five I/O calls and its own
+docstring reasons about each, including one it leaves soft on purpose. The
+record is the sixth and it stays live, because the claim it makes is that it
+cannot cost a run, and stubbing it would take that claim out of all six cases.
+It fails here for the most basic reason available, a missing module, so every
+one of those tests now exercises the real soft path.
+
+**And it has its own case**,
+`test_a_record_that_cannot_be_written_does_not_cost_the_days_papers`, which
+asserts the day's 350 papers still land, that the failure is printed rather
+than swallowed, and that the function says the drift guard is blind to the run.
+Rehearsed red against the import order it exists to catch: 7 failed and 55
+passed with the break, 62 passed without it.
+
+One note on the rehearsal itself, because the first attempt at that break was
+worthless and looked fine. A blind string replace of the `try` and two imports
+matched the **first** occurrence in the file, which is `read_arxiv_cursor`, a
+function the fixture stubs. The suite stayed green, which read as "the gate
+does not work" when the truth was "the break was applied somewhere nothing
+looks". The second attempt scoped the replace to the text after
+`def record_invocation` and went red on seven cases. A rehearsal is only
+evidence if you check that you broke the thing you meant to break.
+
+## One more thing the suite caught, and it was this seat's own asking
+
+`tests/test_ledger.py::test_this_branch_adds_no_entry_short_of_the_contract`
+failed on this run's Miniflux entry, missing the `What` field. The field was
+there in substance and the label carried a qualifier with no colon, which the
+parser reads as prose. That patch-level check is the ledger entry this seat
+wrote on 2026-11-01, `The ledger measurement has a project status and no patch
+status, so a seat polices its own appends by hand`, and it caught this seat's
+own append on its second day of existing. The project-level count also moved,
+206 against a bound of 205, and it fell back to 205 when the label was fixed
+rather than being raised.
+
 ## The ladder this change actually owes
 
 Not the five-step container ladder and not the press's `preflight` and
