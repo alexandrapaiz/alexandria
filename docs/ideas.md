@@ -22995,3 +22995,52 @@ has nothing to go red against.
   was the case's own defect, since compaction is a mechanism the neighbour owns.
 - Cost: $0.
 - Status: proposed
+
+### 2026-11-02 — the gate that catches an invalid shipped SKILL.md exists, reports correctly, and no workflow runs it (skill seat)
+- Trigger: `skills/_validation/trigger_test.py --receipts` on `origin/main` printed
+  "1 of 9 skills have frontmatter a YAML consumer cannot load: harness-engineering"
+  and exited 1, while `checks` was green on main across two merges.
+  Filed as `INC-2026-11-02-a-skill-frontmatter-stopped-loading-under-yaml-again-and-the-cause-was-a-dropped-newline`.
+- What: `INC-2026-10-26-two-of-nine-shipped-skills-cannot-be-loaded-by-a-yaml-parser`
+  ended by asking for a gate that uses the parser the consumer uses. That gate was
+  built and it is the `frontmatter:` block of `--receipts`. The workflow runs
+  `tests/test_skill_receipts.py` instead, which asserts that the receipt is current
+  and never that the frontmatter parses, so the two shipped defects of this class
+  were both found by a seat reading output by hand rather than by anything that
+  blocks a merge. The second one was shipped by this seat and lived on main through
+  two merges.
+- First step: one assertion in `tests/test_skill_receipts.py`, which `checks.yml`
+  already runs, loading each `SKILL.md` frontmatter with `yaml.safe_load` and
+  failing on the exception. Both halves are already written: `_frontmatter_loads`
+  in `skills/_validation/trigger_test.py` is the check, and the test file already
+  enumerates the skills. Nothing new has to be decided, and this seat did not make
+  the edit because `tests/` is outside its write surface.
+- Cost: $0.
+- Status: proposed
+
+### 2026-11-02 — ADR-40 item 5 is now a gate in all nine suites, and item 6 is the half no key reaches (skill seat)
+- Trigger: this run completed ADR-40 item 5 across the library, 190 of 279 rubric
+  criteria tied to a certificate to **279 of 279**, and 24 rubric tasks with no
+  exploit answer to **zero**. `policy.require_certificates` is now set in all nine
+  suites, which makes both checks errors rather than findings: removing one
+  certificate takes `--check` from `9 of 9` and exit 0 to `8 of 9` and exit 1,
+  measured.
+- What: the flag could have been set a week ago. Two suites carried notes saying
+  `require_certificates` was deliberately off because `normalize()` dropped
+  `check.criteria[].certificate` before `certificate_problems()` looked for it, and
+  both said to turn it on in the change that fixed `normalize`. The engineer fixed
+  it on 2026-10-26 (`criterion()` now carries every key the author wrote) and
+  nothing closed the loop, because the note that named the condition lived in a
+  JSON file nobody greps and the fix landed in a tool. **A precondition recorded in
+  the artifact that is waiting on it is a precondition nobody is watching.** The
+  generalisable ask is small: when a seat writes "turn this on in the change that
+  does X", the same run files it here, where `tools/ledger.py` can list it.
+- First step: ADR-40 item 6's audit is the remaining half and this seat cannot run
+  it. `run_audit()` takes a judge, so all 102 tasks across nine suites read
+  "never audited for ambiguity, gameability and realism" and will keep reading it
+  until `GROQ_API_KEY` reaches this seat. That is already queued in
+  `docs/agents/pending-workflow-changes.md` and this entry only records that item 6
+  is the whole of what is left of ADR-40's authored surface, so the next skill run
+  with a key should spend it on `--audit` before anything else.
+- Cost: $0 for the flag, one judge call per task for the audit.
+- Status: proposed
