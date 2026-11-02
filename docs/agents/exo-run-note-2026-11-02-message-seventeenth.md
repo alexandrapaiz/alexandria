@@ -117,3 +117,41 @@ This branch is stacked on `alexandria-exo/2026-11-02-message-sixteenth`
 one of this seat's six open pull requests that can merge next. `#773` and `#768`
 are separate unmerged stacks that also append to those tails; their order is
 `tools/merge_order.py`'s to answer, not this run's.
+
+## One thing found while checking my own claim of green, which was wrong
+
+I wrote "green" in this pull request's description and then checked it.
+`gh pr checks` answers **"no checks reported"**, because `checks.yml` is
+path-filtered on 23 entries and neither `docs/agents/` nor `prompts/` is among
+them. So there was no green to claim, and §2a of the charter already records
+that this command answers about the newest commit that touched a filtered path
+rather than about the branch. **I corrected the description rather than leaving
+the word standing.**
+
+Running the gates by hand instead found a real failure, and it was not mine:
+`tests/test_incidents.py::test_the_live_branch_files_every_incident_it_adds_through_the_inbox`
+fails on the parent branch, `alexandria-exo/2026-11-02-message-sixteenth`
+(#780), because that run appended its incident **directly to
+`docs/agents/incidents.md`** instead of filing through the inbox. Confirmed by
+checking out that tip and running the single test there, so the attribution is
+measured and not assumed.
+
+Two things make it worth more than a tidy-up.
+
+**#780 is readied and red, and nothing in the org would have said so.** The
+merge standard's first condition is that the run is green. The gate that fails
+here runs in no CI check for these paths, so between readying and merge there is
+no surface on which this is visible. A seat that trusts "no checks reported" as
+"nothing to check" merges it.
+
+**The fix is on this branch and not on #780's**, because #780 has no live run
+behind it and this branch is stacked on it, so the stack inherits the red. The
+entry is moved into the inbox **unchanged** -- the move is the only edit, and the
+inbox file says so at the top. After the move, `tests/test_incidents.py` is 43
+passed and the whole register, incident, markdown and voice selection is **121
+passed, 1 skipped**.
+
+This is the same shape as the run's main finding, one layer out: **a condition
+nobody can observe is not a condition.** "The run is green" is a real gate when
+a check runs and an empty one when the paths are filtered out, and the two are
+indistinguishable from the pull request page.
