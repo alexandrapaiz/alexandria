@@ -114,6 +114,22 @@ DEFAULT_TIMEOUT = 2400
 #: hold pytest's failure summary, which is what a merger reads.
 TAIL_LINES = 40
 
+#: What a full shared volume says, in the words the kernel and git use for it.
+#: This matters here more than in most tools: the merged worktree is a second
+#: checkout of the whole repository, which on this repository is roughly 430 MB,
+#: and the host's measured free space swings between 4 MB and 3.6 GB on a
+#: sixty-second period (ExO measurement, 2026-11-02, 26 samples). So a run of
+#: this tool can be the write that fills the disk.
+#:
+#: A pre-flight `df` is not the remedy and this does not do one. That reading
+#: expires before it can be used, and it expires in the comfortable direction.
+#: The only instrument that cannot go stale is the write's own exit status at
+#: the write, so this classifies the failure after it happens and reports it as
+#: `unmeasured` with the disk named, rather than letting a full volume reach a
+#: merger as a red suite or an inscrutable checkout error.
+ENOSPC_MARKERS = ("no space left on device", "disk quota exceeded",
+                  "write error", "enospc")
+
 
 def shallow_state(repo=ROOT) -> bool | None:
     """True shallow, False complete, None when git could not answer.
@@ -226,6 +242,12 @@ def dirty_paths(repo=ROOT) -> list[str]:
     return sorted({line[3:].strip() for line in done.stdout.splitlines() if line[3:].strip()})
 
 
+def out_of_space(text: str) -> bool:
+    """Does this output say the volume filled, in any of the words used for it."""
+    low = (text or "").lower()
+    return any(marker in low for marker in ENOSPC_MARKERS)
+
+
 def run_suite(worktree: Path, command: list[str], timeout: int) -> dict:
     """Run one command in the merged worktree and report what it did.
 
@@ -245,6 +267,14 @@ def run_suite(worktree: Path, command: list[str], timeout: int) -> dict:
                 "reason": f"the suites outran --timeout {timeout}s"}
     output = (done.stdout or "") + (done.stderr or "")
     lines = [line for line in output.splitlines() if line.strip()]
+    if done.returncode != 0 and out_of_space(output):
+        # A suite that died because the volume filled has said nothing about the
+        # merge, and calling it red would bill the branch for the host.
+        return {"ran": False, "seconds": round(time.monotonic() - started, 1),
+                "reason": ("the shared volume filled while the suites ran, so "
+                           "this is a fact about the host and not about the "
+                           "merge. Re-run when there is room"),
+                "tail": lines[-TAIL_LINES:]}
     return {"ran": True, "returncode": done.returncode,
             "seconds": round(time.monotonic() - started, 1),
             "tail": lines[-TAIL_LINES:]}
@@ -292,8 +322,12 @@ def preview(base: str, head_ref: str, command: list[str], timeout: int,
         added = git("worktree", "add", "--detach", str(worktree), merged,
                     repo=repo, check=False)
         if added.returncode != 0:
+            why = added.stderr.strip()
+            if out_of_space(why):
+                why = ("the shared volume had no room for a second checkout of "
+                       f"this repository: {why}")
             return {**report, "state": UNMEASURED,
-                    "reason": f"the merged tree would not check out: {added.stderr.strip()}"}
+                    "reason": f"the merged tree would not check out: {why}"}
         suite = runner(worktree, command, timeout)
     finally:
         git("worktree", "remove", "--force", str(worktree), repo=repo, check=False)

@@ -390,3 +390,76 @@ def test_the_default_suite_names_the_tests_directory_the_conftest_lives_in():
 def test_the_timeout_default_is_longer_than_this_repositorys_own_suite():
     """Measured, not guessed: the full suite is over ten minutes on a seat host."""
     assert cpg.DEFAULT_TIMEOUT >= 1200
+
+
+# --------------------------------------------------------------------------
+# 5. A full shared volume is a fact about the host, never a verdict on the merge
+#
+# This half is load-bearing rather than defensive. The merged worktree is a
+# second checkout of the whole repository, which here is roughly 430 MB, and the
+# ExO seat measured this host's free space swinging between 4 MB and 3.6 GB on a
+# sixty-second period. A run of this tool can be the write that fills the disk,
+# and the run that wrote these tests lost a command's whole output to ENOSPC.
+#
+# Deliberately not a pre-flight `df`. That reading expires before it can be
+# acted on, and it expires in the comfortable direction. The classification
+# happens at the write, which is the only instrument that cannot go stale.
+
+
+def test_every_word_the_kernel_uses_for_a_full_volume_is_recognised():
+    for said in ("No space left on device",
+                 "fatal: unable to write file: No space left on device",
+                 "Disk quota exceeded",
+                 "write error: ENOSPC"):
+        assert cpg.out_of_space(said), said
+
+
+def test_an_ordinary_test_failure_is_not_mistaken_for_a_full_volume():
+    for said in ("1 failed, 2585 passed", "AssertionError: expected 4, got 2",
+                 "", None):
+        assert not cpg.out_of_space(said)
+
+
+def test_a_suite_killed_by_a_full_volume_is_unmeasured_rather_than_red(repo):
+    """Calling this red would bill the branch for the host."""
+    branch(repo, "a", {"app.py": "def main():\n    return 2\n"})
+
+    def disk_fills(worktree, command, timeout):
+        return {"ran": False, "seconds": 1.0,
+                "reason": "the shared volume filled while the suites ran",
+                "tail": ["OSError: [Errno 28] No space left on device"]}
+
+    report = cpg.preview("main", "a", ["true"], 60, repo=repo, runner=disk_fills)
+    assert report["state"] == cpg.UNMEASURED
+    assert report["state"] != cpg.RED
+    assert "volume" in report["reason"]
+
+
+def test_run_suite_itself_classifies_the_full_volume_at_the_write(tmp_path):
+    """Not the caller's job to notice. The function that ran the command does it."""
+    script = tmp_path / "fills.py"
+    script.write_text(
+        "import sys\n"
+        "sys.stderr.write('OSError: [Errno 28] No space left on device\\n')\n"
+        "sys.exit(1)\n")
+    out = cpg.run_suite(tmp_path, ["python3", str(script)], 60)
+    assert out["ran"] is False
+    assert "volume filled" in out["reason"]
+    # The suite's own words are kept, because a merger re-performing the command
+    # needs to see what it said.
+    assert any("No space left" in line for line in out["tail"])
+
+
+def test_an_ordinary_nonzero_suite_still_reports_its_exit_code(tmp_path):
+    script = tmp_path / "fails.py"
+    script.write_text("print('1 failed, 2585 passed')\nraise SystemExit(1)\n")
+    out = cpg.run_suite(tmp_path, ["python3", str(script)], 60)
+    assert out["ran"] is True
+    assert out["returncode"] == 1
+
+
+def test_nothing_in_this_tool_takes_a_pre_flight_disk_reading():
+    """The reading expires before it can be used, and in the comfortable direction."""
+    source = (ROOT / "tools" / "check_pr_green.py").read_text()
+    for stale in ("shutil.disk_usage", "statvfs", '"df"', "'df'"):
+        assert stale not in source, stale
