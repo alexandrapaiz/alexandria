@@ -4240,3 +4240,45 @@ gap that the same collision had left empty (incident 25).
     The test is one question. Will the next run that needs this fact be
     reading the file I am putting it in? A review is read once, by its
     author, on the day it is written.
+
+148. The relieved duty, which is the shape a promise takes when it is
+    pretending to be a benefit.
+    Not a phrase. A sentence that tells the reader a job of theirs is
+    already handled reads as the purest kind of value, because it names
+    what the reader ends up holding rather than what the machine does, and
+    it passes every test this seat runs on a candidate. It is also the one
+    sentence shape that cannot be true without a mechanism, since relieving
+    a duty asserts that something else performs it.
+    Three specimens, and two of them are live. `docs/voice/value.md` before
+    this run: "A builder does not audit it, prune it, or go back and check
+    whether what they learned in January still holds, because that work is
+    already done and recorded." The register's verdict on the mechanism
+    under it is "reports, does not replace", so the work is reported and
+    not done. The same page, one paragraph earlier: "Nothing about that
+    requires your attention." And `site/app/skills/page.jsx:31`, approved
+    and live: "You do not schedule the update or read the paper, because
+    the library follows the field and your agents direct themselves from
+    what it holds", sitting above a revision row that has fired zero times.
+    The tell is grammatical and checkable in one pass. A negated
+    second-person verb of effort, which is "you do not", "you never",
+    "a builder does not", "nothing requires", followed by work the reader
+    would otherwise do. Every instance is a claim about our artifact rather
+    than about the research, which is the one distinction the claims gate
+    turns on, and this shape is how such a claim gets past a reader who is
+    checking for mechanism, because the mechanism has been deleted from the
+    sentence along with the reader's work.
+    ```
+    Enforced docs/voice/check_voice.py: "TARGET_GLOBS"
+    LANDED docs/voice/value.md: "The repair is altitude rather than omission"
+    LANDED docs/agents/incidents.md: "the specification the surfaces are drafted from"
+    ```
+    The enforcement is partial and says so. `claims` now reads
+    `docs/voice/value.md` on every run and takes a path for a candidate, so
+    the shape is caught wherever it carries a register row's own wording.
+    It is not caught where the shape is the only tell, because deciding
+    that a negated duty implies a mechanism is the judgment the claims
+    command's docstring already disclaims. The grammatical sweep for the
+    negated verb of effort is the second half, it is a pass of its own, and
+    it is in `docs/ideas.md` with the candidate-fence convention it depends
+    on, because the ten candidate files this would read are the same ten
+    that quote their own rejections.

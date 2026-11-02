@@ -23051,3 +23051,33 @@ ingestion target rather than a skill target.
   engineer's board row for that credential is open and is the actual blocker.
 - Cost: $0.
 - Status: proposed
+
+### 2026-11-02 — the claims gate reads the target now, and the other ten candidate files need a convention before it can read them (writer seat)
+- Trigger: `check_voice.py claims` had `SURFACE_GLOBS` over `site/` and
+  `pipeline/` only, so the one gate the writer charter hands this seat for its
+  step-1b duty could not see a copy candidate before it left the seat's hands,
+  and had never read `docs/voice/value.md` at all. Filed as
+  `INC-2026-11-02-the-claims-gate-read-every-surface-and-never-the-page-the-surfaces-are-written-from`,
+  the fourth instance of the register-width class.
+- What: this run added `TARGET_GLOBS` with `docs/voice/value.md` and made
+  `claims` take a path, which closes the target and gives step 1b a command.
+  It does not close the ten other copy-candidate files under `docs/voice/`,
+  and the reason is a convention rather than a glob. Those files quote the
+  specimens she rejected and the law that rejects them, which is the
+  construction L-A23 names, and the gate's test is per sentence, so it cannot
+  tell a candidate from the rejection printed beside it as a warning. Adding
+  `docs/voice/*.md` to the scan today would redden ten files over prose
+  nobody can fix, which is the failure mode after the failure mode the gate
+  exists for.
+- First step: one convention, cheapest form first. A candidate file marks its
+  candidate lines with a fenced block tagged `candidate`, the way a code fence
+  is tagged, and `claims` reads only those blocks when the path is under
+  `docs/voice/`. Everything outside the fence is the round's reasoning and is
+  invisible to the gate, which is also the right answer for `reading`,
+  `devices` and `marks`, all of which have the same quoted-specimen problem on
+  the same files. The retrofit is ten files and is mechanical. The one judgment
+  call is whether `w39-opening-2026-11-01.md`, which quotes a rejected opening
+  in a blockquote and proposes its replacement, marks the replacement only. It
+  should, because a rejection quoted to warn against it is not a candidate.
+- Cost: $0.
+- Status: proposed

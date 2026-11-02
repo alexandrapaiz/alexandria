@@ -6,190 +6,233 @@ the owner to rule on.
 
 This page is the target every line of site copy converges on. It is not
 copy. No line here is meant to be set on a page as written, and a
-candidate is judged by whether it lands what is below, not by whether it
-borrows the words.
+candidate is judged by whether it lands what is below rather than by
+whether it borrows the words.
 
-**Status: the precondition is cleared, on the clock, since
-2026-10-28T06:19Z.** The status line above this one read "awaiting her
-approval" for thirty-seven days and said that until she ruled no site
-copy is drafted. That sentence is the charter's copy-round precondition
-and it is no longer in force, for a reason that is neither her word nor
-this seat's reading.
+## Status
 
-The PM posted the question to her on the board as ask `db6d191e` at
-2026-10-26T06:19:51Z, recommending in the body that her approval of the
-five pages on 2026-09-29 be treated as having cleared this page and the
-gate be opened, with the forty-eight-hour line named.
-`docs/standards/pm.md` section 22 is law since 2026-10-16: a reservation
-a charter makes for the owner proceeds as the PM recommended after
-forty-eight hours of her silence, and the four things that never
-proceed on silence are money, accounts, secrets and widening a seat's
-own authority. Approving a value statement is none of them. No reply
-arrived. So the recommendation has been in force since
-2026-10-28T06:19Z, and `docs/voice/awaiting-her-word.md` carries the
-resolution with the question verbatim and both sources it was read at.
+The precondition is cleared, on the clock, since 2026-10-28T06:19Z. The
+PM posted the question to the owner as ask `db6d191e` at
+2026-10-26T06:19:51Z, recommending that her approval of the five pages
+on 2026-09-29 be treated as having cleared this page, and
+`docs/standards/pm.md` section 22 makes that recommendation law after
+forty-eight hours of her silence. No reply arrived. The resolution,
+with the question verbatim and both sources it was read at, is in
+[awaiting-her-word.md](awaiting-her-word.md).
 
-Two things this does NOT settle, so that nobody reads more into it than
-happened. It does not approve the words below. It rules that the
-precondition they were holding is cleared, which is a different
-sentence. And it does not rewrite this page from the five approved
-pages, which is one run of this seat's ordinary work and is still owed.
-Her verdict on any candidate still goes verbatim into the current file
-under `docs/voice/preferences/`.
+This page was rewritten from the five approved pages on 2026-11-02,
+which is the work that clearing owed and the second of the two readings
+the 2026-09-30 note left open. The words below are not approved. The
+clearing settled that the gate those words were holding is open, which
+is a different sentence, and her verdict on any candidate still goes
+verbatim into the current file under
+[preferences/](preferences/).
 
-The note below is the question that ask carried, kept as it was written.
-Its "that status" is the "awaiting her approval" line, which the
-paragraphs above replaced rather than deleted.
+**Why the rewrite was owed, and it is not bookkeeping.** This page was
+first written on 2026-09-24 (`f69d9f5c`). The only approving session
+the company has ever had on site copy is 2026-09-29, five days later,
+and until this rewrite not one line of that session was in this file.
+Every approved line the page carried came from the session that failed.
+A positive specification whose only exemplars are from the rejected
+round is the defect company standard L-A7 names, where the owner has
+shown what she wants and the artifact still teaches from what she
+refused.
 
-**Noted 2026-09-30, writer seat, and not resolved here.** That status is
-now contradicted by events. On 2026-09-29 the owner approved site copy on
-home, library, skills, graph and mission, in her words "good. i like
-this.", recorded in docs/voice/taste.md. So copy converged while this
-page sat unruled, and the gate above did not hold and was not needed.
-Two readings are possible and the choice is hers rather than this seat's.
-Either this page is stale and the approved pages are the positive
-specification the eight rounds were missing, in which case the status
-line should say so and the page should be rewritten from them. Or the
-page is still the target and its approval is still owed. What is not
-defensible is leaving a sentence here saying no site copy is drafted on a
-day when five approved pages are live, so the contradiction is recorded
-rather than quietly left. Nothing in this page's substance is changed by
-this note and no approval is assumed.
+## What a builder has
 
-## Why this page exists
+Knowing which techniques currently work is part of a builder's job, and
+noticing when that stops being true is the part nobody has time for.
+The library does the noticing, and what a builder ends up holding is
+the library rather than any issue of it. The library
+holds what the research has established, with the paper behind each
+finding and the later work that bore on it, and new findings arrive
+every day.
 
-Eight rounds of site copy were written and all eight were rejected
-(`docs/voice/preferences/site-copy-2026-09-20.md`). The chair's own
-reading of those rounds found the pattern, and it is worth repeating in
-full because it is the reason this page was commissioned.
+The weekly issue is how a builder reads the newest part of the library,
+which makes the issue a surface and not the product. Copy that
+describes the issue has described the window and not the room, and that
+is what all eight rejected rounds did.
 
-> Every rejected candidate is about the ISSUE or the MECHANISM. None is
-> about the LIBRARY: the corpus that grows every day, keeps itself
-> correct, and compounds.
+## What having it changes
 
-Eight rounds converged on nothing because there was nothing to converge
-on. Every round had the list of things she had rejected and no statement
-of what she wanted. This page is that statement.
+A builder working from the library builds on what currently holds,
+which is a different position from the one most builders are in. The
+frontier normally arrives late and out of order, through a talk or a
+colleague or a thread or a model that was trained before the finding
+existed, and some of what arrives has already been moved past by the
+time it lands. Months of work go into the old answer before the new one
+shows up.
 
-## The value, in one paragraph
+The library closes that distance, and closing it is the mission stated
+as a benefit rather than as a purpose. The mission is to accelerate
+every builder to frontier speed (`docs/vision.md`, section 0), and
+frontier speed means a builder's working knowledge and the frontier are
+the same thing.
 
-**You have the frontier of AI research as a working library, and the
-library keeps itself correct.**
+## The compounding
 
-Every finding in it is one you can act on, with its evidence beside it
-and its current standing on the record. New work lands in the library
-every day. Work that later gets overturned is marked as overturned.
-Nothing about that requires your attention, so what you know about the
-field is current and stays current.
+A record that keeps its own order is worth more next month than it is
+this month, and a folder of saved papers is worth the same the day it
+was made and less every day after, because the field keeps moving and
+the folder does not. Where the links between findings are in, the
+record answers where the field stands on a question rather than only
+what one paper said, and that is the property that appreciates. The
+distance between a builder and the frontier compounds in the other
+direction at the same rate, which is why closing it is worth paying
+for. A record that reorders itself as the work lands moves at the only
+pace that keeps up with an exponential, and that is the property a
+builder is paying for rather than the volume of what arrives.
 
-## 1. What a builder has
+This is the part no competitor has and the part that justifies paying
+for something whose issue is free. What a builder buys is not more news
+but a holding that gains value. The test on any candidate is whether
+the sentence would still be true if alexandria threw away everything
+older than a week, because a sentence that survives that test is a
+sentence about the issue.
 
-The library. Not the issue, not the email, not today's summary.
+## The agents
 
-The thing a builder ends up holding is a growing, self-maintaining
-library of what the AI research frontier has established. It has two
-properties and both of them are the product.
+A builder's agents work from the same library as files, so what they
+act on is the record rather than what they were trained on. This is the
+only part of the product with no human-facing competitor, and it is
+last here on purpose, because it is the strongest claim and the easiest
+one to make sound technical, and a candidate that leads with it ends up
+explaining a mechanism.
 
-**It grows.** Every day adds findings, so the library a builder has in
-March is not the library they had in January.
+Two shapes are closed here and a later round should not reopen either.
+"One library, two readers." was approved on 2026-09-19 and then
+rejected on 2026-09-20 as the skills heading, so the idea under it is
+right and that phrasing of it is spent. And the forward promise about
+what a builder's agents will still be working from next month is not
+available to a candidate at all, for the reason in the next section.
 
-**It maintains itself.** When new research overturns something the
-library holds, the library changes. A builder does not audit it, prune
-it, or go back and check whether what they learned in January still
-holds, because that work is already done and recorded.
+## What holds and what does not
 
-The daily issue is how a builder reads the newest part of the library.
-It is a surface, not the product. Copy that describes the issue has
-described the window and not the room.
+Added 2026-11-02. Every sentence above is a claim a reader could answer
+with "how do you know that", and
+[docs/agents/quality-claims.md](../agents/quality-claims.md) is where
+that question is answered. The charter makes this seat the
+artifact-side gate on that register, and until this section existed the
+gate was pointed at candidates and never at the page candidates are
+written against. So a candidate could hit this target exactly and carry
+a promise with no machine under it, which is the ADR-36 failure aimed
+one step upstream. The 2026-09-29 preference file had already found the
+same thing on the skills page intro and written down that a positive
+example failing the claims test "should not be imitated quietly", and
+this page is the larger positive example that nobody checked.
 
-## 2. What having it changes
+What the register says, as it bears on the sections above. The ExO seat
+owns the rows and this seat does not move them.
 
-A builder working from the library builds on what currently holds.
+- **A finding carries the paper it came from.** `held`. Every claim row
+  has a paper. Say this plainly and without hedging, because it is the
+  soundest thing the product can say about itself.
+- **New findings arrive every day.** The row reads `contradicted` from
+  a 2026-10-25 reading taken while the compute workspace was off. The
+  public receipt at 2026-11-02T00:23:00Z reads `claims_newest`
+  2026-11-01T15:20:57Z and `papers_newest` 2026-11-01T11:02:55Z, so
+  arrivals are about nine hours old and the growth sentence is true
+  today. The row is the ExO seat's to move and the reading is reported
+  rather than applied.
+- **An issue every week.** `contradicted on the record`. The same
+  receipt reads `press.newest_week` 2026-W42 created
+  2026-10-19T09:02:52Z, which is 14.0 days, so 2026-W43 and 2026-W44
+  were both missed. No candidate says a cadence it does not have.
+- **What happens to overturned work.** The row's verdict is "reports,
+  does not replace", so the replacement a reader would assume has never
+  been built. The weekly issue computes a deprecated section from the
+  contradiction edges and tells the reader, and nothing changes the
+  finding in the corpus. So the honest sentence is that the
+  record says what has been overturned, never that the library has
+  already pruned it, and "a builder does not go back and check" is the
+  version of this that cannot be said.
+- **The links between findings.** The row is `contradicted` on the word
+  every, because the mechanism is real and has never reached more than
+  a minority of the record, which is why the compounding section above
+  says "where the links between findings are in".
+- **The skill library's currency.** The freshness row is `not built`
+  and the revision job is `queued` with no revision yet fired, so a
+  candidate about skills either hedges the way
+  `site/app/routines/page.jsx` hedges a routine that is not built yet,
+  which is the future tense named plainly, or leaves the promise out.
 
-Today the frontier reaches a builder late and out of order. It arrives
-through a talk, a colleague, a thread, or a model that was trained
-before the finding existed, and by the time it arrives some of it has
-already been overturned. The gap is months, and everything built during
-those months is built on the old answer.
+Her ruling that the library's growing, self-maintaining character must
+be present is not weakened by any of this and it is not optional. "no
+mention of a growing self mantaining corpus, nothing. thats my point."
+The repair is altitude rather than omission. State the property at the
+level the machine supports, and let the sentence that outruns the
+machine wait for the machine.
 
-The library closes that gap. That is the mission stated as a benefit,
-because the mission is to accelerate every builder to frontier speed
-(`docs/vision.md`, section 0), and frontier speed means a builder's working
-knowledge and the frontier are the same thing.
+## The lines she has approved
 
-## 3. Why the compounding is the argument
+An approved line is worth more than any rule about lines, and a round
+starts from these rather than from the rejections (company standard
+L-A7). Four are from 2026-09-20 and three are from 2026-09-29, the
+session that landed.
 
-A library that corrects itself is worth more next month than it is
-today. A collection of saved papers is worth the same the day it was
-made and less every day after, because the field keeps moving and the
-collection does not.
+- "What changed in AI research today, written for people who build things."
+- "A new issue every day."
+- "Your agents can read this catalogue on their own, at /llms.txt."
+- "Every issue", "Skill library" and "Claim graph", the three bare-noun
+  headings named in her ruling of 2026-09-29.
 
-This is the part no competitor has, and it is the part that justifies
-paying for something whose daily issue is free. What a builder buys is
-not more news. It is a holding that appreciates.
+One correction rides with them. On the skills heading "Research your
+agents can use." she said "not just research. its the literal
+frontier." The word frontier is hers and it is load-bearing.
 
-Any candidate that could describe a good newsletter has missed this.
-The test is whether the sentence would still be true if alexandria
-threw away everything older than a week. If it would, the sentence is
-about the issue.
-
-## 4. What their agents have
-
-The same library, loadable.
-
-A builder's agents read the same findings as files, so they work from
-what currently holds instead of from what they were trained on. A
-correction reaches the builder and the agents on the same day.
-
-One shape is closed here and a later round should not reopen it. "One
-library, two readers." was approved on 2026-09-19 and then rejected on
-2026-09-20 as the skills heading. The idea below it is right and that
-phrasing of it is spent.
-
-This is the only part of the product with no human-facing competitor,
-and it is last here on purpose. It is the strongest claim and the
-easiest one to make sound technical, and copy that leads with it ends
-up explaining a mechanism.
+Two of those lines have drifted on the live site and a round should
+know which. The home statement now reads "this week" where she approved
+"today", and the cadence lines were written for a daily. The shipped
+page is therefore not a witness to what she approved, which is the
+finding in
+[preferences/2026-09-29-site-copy.md](preferences/2026-09-29-site-copy.md),
+and no long-form paragraph on the site is quotable here as approved
+text. The approved pages are the exemplar for cadence and shape. They
+are not a record of approved sentences.
 
 ## What a candidate must not do
 
-Every ruling in `docs/voice/taste.md` binds. Four of them bind hardest
-here, because they are the four the eight rounds kept breaking, and
-each one carries the specimen she rejected.
+Every ruling in [taste.md](taste.md) binds, and the list below is the
+subset that has cost rounds. The specimens are hers.
 
-**Value, never mechanism.** State what a builder ends up holding, never
-what the system does to produce it. Rejected: "Every day it reads the
-new papers, extracts the findings, and checks them against everything it
-has read before."
+**Longer, undecorated sentences.** Her ruling of 2026-09-29, and the
+one that turned eight failures into an approval. "all the subtitles are
+too choppy. prefer longer undecorated sentences." No fragments, no
+staccato, no colon-led devices, no bold inside body copy, no "For you,
+..." rhythm. A paragraph is two to four long plain sentences. The
+value, agents and compounding sections above are written in this
+register on purpose, so that a round can read the target in the voice
+the target is written for. The constraint sections are a working
+checklist and their bold labels are not a model for a page.
+
+**Value, never mechanism.** State what a builder ends up holding,
+never what the system does to produce it. Rejected: "Every day it reads
+the new papers, extracts the findings, and checks them against
+everything it has read before."
 
 **"It" is not the subject.** Her ruling on round eight names the word.
 A sentence whose subject is the machine is a sentence about the
 machine. The subject is the builder, or the library, or what the
 builder now knows.
 
-**The library is present or the candidate is wrong.** Her words: "no
-mention of a growing self mantaining corpus, nothing. thats my point."
-A page about this product that never says the library grows and keeps
-itself correct has missed what the product is.
+**The library is present or the candidate is wrong.** Her words again,
+because this is the one she had to say twice. A page about this product
+that never says the library grows and keeps its own record has missed
+what the product is.
 
-**Plain, short, serious.** Her register, in her words: describe it
-plainly and without much emotion, the way an engineer would. No
-marketing rhythm, no ad cadence, nothing cute, nothing defensive.
-Short sentences over comma chains. No colon-led constructions, which
-she reads as unserious. Rejected for tone: "The frontier moves every
-day." Rejected as defensive: "This is how a literature should be
-tracked, and nobody else does it."
+**The builder's situation first.** Definitional copy was rejected twice
+for the skills page. What sold was the builder's situation, then what
+the library does about it, then what the builder keeps.
 
-## The three lines she has already approved
+**The compounding is stated, not borrowed.** She asked for the
+"self-recursive or exponential aspect" and named Moore's law and
+S-curves as the shapes she had in mind. Neither is ever named in copy.
+The compounding is said in the product's own terms.
 
-Kept here because an approved line is worth more than any rule about
-lines, and because a later round should start from these rather than
-from the rejections (company standard L-A7, exemplar first).
+**Plain, short, serious.** Her register, in her words, is to describe
+it plainly and without much emotion, the way an engineer would. No
+marketing rhythm, nothing cute, nothing defensive. Rejected for tone:
+"The frontier moves every day." Rejected as defensive: "This is how a
+literature should be tracked, and nobody else does it."
 
-- "What changed in AI research today, written for people who build things."
-- "A new issue every day."
-- "Your agents can read this catalogue on their own, at /llms.txt."
-
-One correction rides with them. On the skills heading "Research your
-agents can use." she said: "not just research. its the literal
-frontier." The word frontier is hers and it is load-bearing.
+**Never "read" for ingested**, on the site as in the issue.
