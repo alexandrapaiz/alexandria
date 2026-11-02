@@ -683,9 +683,31 @@ def ingest_ids(ids: list[str], tier: str = "b"):
 def main(ids: str = ""):
     """`modal run pipeline/ingest.py` for the day's window.
 
-    `--ids 2610.02858,2606.29537` for a backfill instead, which is the entry
-    point the reading queue needs when a line names a paper the window cannot
-    reach.
+    `--ids 2610.02858,2606.29537` for a backfill instead, when a seat names a
+    paper the window cannot reach.
+
+    **It is not the reading queue's entry point, and this docstring said it was
+    until 2026-11-02.** That sentence sent a handoff at the one route that
+    cannot be taken without a credential. The reading queue's entry point is
+    `pipeline/distill.py`, which resolves every unchecked line of
+    `docs/research/reading-queue.md` against `papers` and ingests what the
+    corpus has never seen, at tier `b` with a `deep_read` triage row, ahead of
+    the day's intake. Appending to that file needs nothing, and
+    `python3 pipeline/reading_queue.py --add` is the command for it.
+
+    So the difference worth knowing before choosing between them:
+
+    - This path is a hand run. It needs a Modal credential, which has been
+      absent from every agent sandbox in this company for twelve consecutive
+      runs of the engineer seat. It inserts a paper row and no triage row, so
+      the paper waits for a triage run before anything reads it.
+    - The queue path is drained by a scheduled job and written by a commit. Its
+      own condition is that the queue's content is baked into distill's image,
+      so a line appended today reaches the cron on the next `modal deploy`.
+
+    Neither is reachable while the Modal workspace is off, which it has been
+    since 2026-10-23. The difference is what each one is waiting for, and a
+    commit outlives a wake where a request for a hand run does not.
     """
     if ids:
         named = [i for i in (part.strip() for part in ids.split(",")) if i]

@@ -67,27 +67,46 @@ def check(name: str, cond: bool, detail: str = "") -> None:
 
 # --------------------------------------------------------------- fake database
 
+# The columns `row_for` below produces, in order. A cursor carries its own
+# column names and this fake did not, which is why nothing here could see the
+# column list `deploy_facts` asked for: every row arrived as an anonymous tuple
+# and was unpacked positionally, so a reader that named five columns and a
+# reader that named all seven were indistinguishable from in here. Added
+# 2026-11-02 with the widening that made the names load-bearing.
+RECEIPT_COLUMNS = ("app", "runtime_sha", "recorded_at", "first_seen_at",
+                   "notified_at")
+
+
 class FakeConn:
     """Enough psycopg for this guard: one table, one savepoint, no server."""
 
-    def __init__(self, rows: list[tuple] | None = None, fail: str | None = None):
+    def __init__(self, rows: list[tuple] | None = None, fail: str | None = None,
+                 columns: tuple[str, ...] = RECEIPT_COLUMNS):
         self.rows = rows if rows is not None else []
         self.fail = fail
+        self.columns = columns
         self.statements: list[str] = []
+        for row in self.rows:
+            assert len(row) == len(columns), (
+                f"a fake row of {len(row)} values against {len(columns)} column "
+                f"names is a fake that cannot answer a reader by name: {row}")
 
     def execute(self, sql, params=None):
         self.statements.append(sql)
         if self.fail:
             raise RuntimeError(self.fail)
-        return _Result(self.rows)
+        return _Result(self.rows, self.columns)
 
     def transaction(self):
         return _NullTransaction()
 
 
 class _Result:
-    def __init__(self, rows):
+    def __init__(self, rows, columns: tuple[str, ...] = RECEIPT_COLUMNS):
         self.rows = rows
+        # psycopg's shape: one 7-tuple per column, name first. Only the name is
+        # read anywhere, here or in the code under test.
+        self.description = [(c,) for c in columns]
 
     def fetchall(self):
         return self.rows
