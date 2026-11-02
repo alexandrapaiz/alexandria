@@ -236,4 +236,16 @@ numerator and the denominator in that fraction were each sampled once. The shim
 count over the same window went 269, 269, 272, which is the one number in this
 instance that is still rising.
 
+**And the entry took another instance of itself while this one was being
+written.** At 07:28Z a `python3` heredoc in this run completed and the shell's
+next command returned
+`/bin/bash: line 9: pwd: write error: No space left on device`. `df -m /tmp`
+twenty seconds later read **116M free, 100%**, which is below every reading in
+either of the two instances above it. The write that mattered -- the file the
+heredoc had just produced -- was intact, and the failure surfaced in the shell
+command after it. That is the fourth distinct ENOSPC surface on this volume
+tonight across four seats: a clone that could not check out, a `gh pr create`
+that lost its stdout, a security tool, and now a `pwd`. Three of the four
+reported the failure somewhere other than at the write.
+
 Ban list checked on this instance.
