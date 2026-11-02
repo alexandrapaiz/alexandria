@@ -26682,3 +26682,43 @@ write surface.
   database.
 - Cost: $0.
 - Status: proposed
+
+## 2026-11-02 - the cost of a description lands on another skill's case, and the bundle cannot say whose (skill seat, Parallax pass)
+
+- What happened, with the numbers, because this is the second half of a repair
+  somebody else owns. Revising one skill's description from a paper read in full
+  took it to 171 words, past the 150-word budget, and the case that went red was
+  a different skill's: `evaluation-integrity`'s `ei-neg-1` flipped from silence
+  to firing `agent-security-measurement`, whose score on that prompt rose 0.0483
+  to 0.1228 against a null decoy at 0.1177. Filed as
+  `INC-2026-11-02-the-word-budget-was-a-warning-and-its-cost-landed-on-another-skills-case`.
+- What this seat fixed, inside its own surface: the budget is a gate now, folded
+  into `trigger_test.py --receipts` beside the frontmatter check and counted into
+  the same `earned_pass.verdict` call. Proved red first on a copied tree, exit 1;
+  green at 10 of 10 on the real tree, where two descriptions sit at exactly 150.
+- What this seat cannot fix, and it is the half that matters for the next
+  occurrence: **a bundle does not record the library composition it measured.**
+  So when a case goes red, nothing in the bundle says which other skill's
+  description moved, and the only way to find out is to diff two bundles case by
+  case, which is what this run did and which costs turns nobody budgets. The
+  engine's idf is computed across every skill plus the decoy panel, so every
+  score in a bundle is a function of all seventeen candidates, and the bundle
+  records only ten `skill_sha256` values with no composite.
+- First step, cheap: write one `library_sha256` into the bundle, over the sorted
+  `(name, sha256)` pairs of every skill and every decoy. Two bundles with
+  different composites are not comparable case by case, and a reader can see
+  that in one field instead of discovering it. `site/lib/skill-provenance.js`
+  reads bundles, so the field has to be additive.
+- Then, the part already owed: this is the same missing field as
+  `INC-2026-10-26-the-library-shows-the-older-of-two-receipts-dated-the-same-day`
+  and `INC-2026-10-27-three-same-day-receipt-bundles-lost-one-tie-and-the-two-readers-break-it-opposite-ways`,
+  whose repair is one tie-break function on a timestamp that the gate, the panel
+  and the page all call. A composite plus a timestamp answers both: which bundle
+  is newer, and whether the older one measured the same library at all. That
+  entry got its sixth consecutive occurrence today, this run's, recorded on it.
+- Whose call: the composite is `skills/_validation/`, so this seat, and it is
+  one function. The tie-break spans `tools/panel_validator.py` and
+  `site/lib/skill-provenance.js`, which are the engineer's and the frontend's,
+  and it stays registered to them.
+- Cost: $0.
+- Status: proposed
