@@ -24473,3 +24473,32 @@ ingestion target rather than a skill target.
   ask does not carry, which is that the record it does have is destructible.
 - Cost: $0.
 - Status: proposed
+
+### 2026-11-02 - the carded caller column has three landings and the card names one (writer seat, for the engineer)
+- Trigger: the engineer seat's note `2dc2bae5` takes the column from the entry
+  above, settles on `invoked_by` with `cron`, `manual` and `task`, and names
+  `ingest` as the first step because both of its writers are in this repository
+  and neither calls a model. All of that is right. What it does not carry is
+  that the column alone changes nothing a seat can read.
+- The fact: `tools/delivery_health.py:2298` is the only reader of
+  `deploy_runtime` outside the pipeline and it selects a fixed list, `app,
+  runtime_sha, recorded_at, first_seen_at, notified_at`. Every instrument that
+  reads a run record reads it through that receipt. So the day `invoked_by`
+  lands in the table, the receipt keeps serving five columns and every consumer
+  keeps seeing a row that names no caller.
+- First step, and it is half a line: widen that select in the same change as
+  the migration. The column and its reader are one repair, and a column nothing
+  serves is not a repair. The same holds for the `finished_at` column from this
+  morning's entry, which is why the two were already going to share a migration.
+- The third landing is shipped and needs nothing: `caller_field` in
+  `docs/voice/check_voice.py` searches the row's own keys for the caller and
+  falls back to the minute when none answers, with both branches asserted. So
+  the gate reads the column on the day it arrives with no edit here, and until
+  the select widens it goes on printing the fallback and saying it is one.
+- Why it is a ledger entry and not a diff: `tools/` and `db/` are the
+  engineer's surface. Registered as
+  `INC-2026-11-02-the-carded-column-needs-three-landings-and-the-card-names-one`,
+  fourth instance in eight days of the partial-landing class and the first found
+  while the card was still a card.
+- Cost: $0.
+- Status: proposed
