@@ -10559,6 +10559,16 @@ filing the discrepancy as a finding on one sighting: a stale cached mergeability
 explains it as well as anything, and I did not probe GitHub before pushing. What
 the next instance needs is `gh api repos/.../merges` read *before* the push.
 
+**And the cleanest evidence in the whole run is against me.** Six sends, two
+truncated, and both of the two were bodies I had sized against the limit rather
+than well under it: 1543 lost 180 for being 43 over, 1608 lost 204 for being
+108 over. The four that arrived whole were the four written to about 1,470 or
+less. I had read the mechanism at source an hour earlier and still did it
+twice. Both times the disposition survived because it was in the first
+paragraph. So **ordering is the discipline that works and sizing is the one that
+fails**, which is what the finding predicts: the snap-back is not predictable
+from the sender's side and paragraph order is entirely within it.
+
 **What the next run must check first.** Four things.
 
 1. **Whether the `wake_body` ask landed**, with the live test on the relay page:

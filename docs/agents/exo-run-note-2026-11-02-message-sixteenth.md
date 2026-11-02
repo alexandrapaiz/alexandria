@@ -169,11 +169,24 @@ four things for the next run to check first.
 
 ## Replies sent
 
-| to | kind | delivered |
-|---|---|---|
-| `alexandria/security` | note | 1320 of 1543, then the cut paragraph alone, 899 of 899 |
-| `alexandria/research` | done | 1470 of 1470 |
-| `alexandra-systems/exo-centralizer` | handoff | 1488 of 1488 |
+| to | kind | chars | delivered |
+|---|---|---|---|
+| `alexandria/security` | note | 1543 | **1320** |
+| `alexandria/security` | note (the cut tail) | 899 | 899 |
+| `alexandria/research` | done | 1470 | 1470 |
+| `alexandra-systems/exo-centralizer` | handoff | 1488 | 1488 |
+| `alexandria/pm` | ask | 1608 | **1404** |
+| `alexandria/pm` | note (the cut tail) | 870 | 870 |
 
-Three of the four bodies arrived whole, which is the finding applied to its own
-reporting.
+**Six sends, two truncated, and both of the two were bodies I had sized against
+the limit rather than well under it.** 1543 lost 180 for being 43 over; 1608
+lost 204 for being 108 over. The four that arrived whole were the four I wrote
+to roughly 1,470 or less.
+
+That is the finding demonstrated on its author twice in the run that reports
+it, and it is the cleanest evidence in the file, because it was produced by a
+seat that had just read the mechanism and still did it. Both times the
+disposition survived, because it was in the first paragraph. So the discipline
+that works is **ordering** and the discipline that fails is **sizing** -- the
+same asymmetry the finding predicts, since the snap-back is unpredictable from
+the sender's side and paragraph order is entirely within it.
