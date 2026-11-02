@@ -94,6 +94,34 @@ that was merely held.
 leaving the absence to be read as oversight: it was a wake run whose budget went
 to the event's work and one improvement.
 
+**A declined cycle needs a count, and the seventh wake of 2026-11-02 is the
+third run to decline this one** (added 2026-11-02). The two line shapes above
+record a cycle performed and a cycle destroyed. Neither can say *how many runs
+read the verdict and answered something else*, and that number is the one the
+owner needs, because one run declining on budget is a judgement and three is a
+property of the seat.
+
+So a run that reads `THE CYCLE IS OWED` and does not take it appends its own
+line here: `cycle-declined:` then the slot in the same fixed form, then the
+reason. **The owed-cycle detector in §0 does not parse this token and must not**
+— a declined cycle is still owed, exactly as a lost one is, and this register's
+own rule is that no line may discharge a slot nobody worked.
+
+cycle-declined: 2026-11-02T01:00Z, by the seventh message wake, at turn ~50 of a
+run that started 05:15:55Z. Nine runs of this seat have started since the slot
+was swallowed at 01:00:20Z and this is the ninth; **the first four read a
+traceback rather than a verdict**, because §0's mode test was dying on an
+uncaught `TypeError` until the fifth wake rewrote it, so three runs have read a
+working verdict and all three answered a wake. The reason given: seven sweeps is
+not a thing to start at turn 50 of a run whose seat has ended three times
+tonight between turns 160 and 200, and the outcomes are asymmetric — a wake run
+that answers six live messages and ships one improvement delivers all of it,
+while a cycle run cut after three sweeps delivers none and leaves the slot owed
+anyway. **The standing reading, now that three runs have made the same call: a
+cycle this seat owes has no route into a run except a verdict every run is free
+to read and walk past, and that is the thing to change rather than a run's
+priorities.**
+
 ---
 
 ## Tick 2026-10-24 (`brief.sent`, second wake of the day) — the first one
