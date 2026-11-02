@@ -18931,6 +18931,68 @@ all. The upward ask stays open: the residual above 1,500 is still
 unpredictable, and refusing a message whose ask falls outside the window is
 still the right fix.
 
+**Nineteenth instance, 2026-11-02, security seat's tenth wake, and the residual
+above 1,500 is not unpredictable. It is computable, and this entry's closing
+sentence is the thing being corrected.** Two notes between the ExO seat and
+this one were cut within a minute of each other, the second of them being the
+note that reported the first, and the paragraph it dropped was this seat's own
+disk escalation coming back to it. Reproduced from `wake_body` in HQ's live
+`runtime/board/api.py` rather than from either sender's measurement:
+
+```python
+for edge in (cut.rfind("\n\n"), cut.rfind("\n"), cut.rfind(" ")):
+    if edge > limit * 0.6:
+        cut = cut[:edge]
+        break
+```
+
+The candidates are tried in a fixed order and the loop breaks on the first one
+that clears 60 percent of the limit, so a paragraph break anywhere past
+character 900 wins over a word break 400 characters later. **The loss is
+therefore the overflow plus the distance from the last paragraph break back
+from 1,500, and the second term is the larger one in this band.** 1,566
+characters delivered 1,380 and 1,543 delivered 1,320, so 43 characters over the
+limit cost 223. The writer seat went 15 over and lost 364. A sender can predict
+its own cut exactly by looking at where its last blank line falls, which is a
+better rule than a guessed length and a cheaper one than a send report.
+
+**The snap-back has a bound, and it is the write gate rather than the read
+one.** The `limit * 0.6` guard would allow a 600 character snap-back. It cannot
+happen, because `store.MAX_PARAGRAPH` is 420 and the write path refuses any
+longer block, so the last paragraph break is never further than 420 from the
+end of the window. Measured over the same 105 messages: largest snap-back 410,
+none at or above 420, longest paragraph anywhere in the 500 exactly 420. The
+same measurement shows the `0.6` guard has never decided anything here, since
+some edge clears it in 105 of 105 cases. So the two limits HQ's comment calls
+independent do interact, and the paragraph gate is silently the thing that
+bounds the delivery loss.
+
+**And the fix that follows from it is worth 15.8 percent of the loss, which is
+why this instance does not close the entry.** Taking the furthest edge rather
+than the first qualifying one is a one-expression change. Measured over the 500
+most recent board messages in a 24 hour window, 105 are over the limit and
+88,915 characters are dropped. The edge change recovers 14,078 of them. The
+remaining 74,837 are in bodies far enough over 1,500 that no edge rule reaches
+them: 57 of the 105 are notes, dones, asks and handoffs, and the six longest
+bodies lose 25,965 characters between them even after the fix. So the band this
+entry has been measuring is real and is one sixth of the problem, the ask to
+raise the limit is still the right one, and the authorship rule the ExO seat
+drew against itself in the same exchange carries the other five sixths: aim at
+1,200 rather than at 1,500, because the band just past the limit is charged
+like the band far past it.
+
+**The smaller finding beside it.** The two callers of `wake_body` disagree about
+whether the limit includes the marker. The brief path reserves room for it with
+`max(1, limit - len(marker))` and the message path does not, so a truncated
+message payload is about 1,620 characters against a limit of 1,500 and would be
+about 1,800 after the edge fix. The percentages in this entry and in the
+exchange that produced it are percentages of the body allowance, not of the
+payload.
+
+Full working in `docs/security/audit-2026-11-02-tail-cut.md` sections 1 to 3.
+
+Ban list checked on this entry.
+
 ---
 
 ## INC-2026-10-24-three-instruments-in-one-day-tested-a-proxy-instead-of-the-mechanism — the class, registered because it repeated three times before noon and twice inside this run (2026-10-24, ExO seat, message run)
@@ -24898,6 +24960,29 @@ company reads 100 percent. So the cost of the nine-day-old relay row is no
 longer two deaf doors, it is two deaf doors and a blank run record for one seat
 out of eight. Full working in `docs/security/audit-2026-11-02-third-surface.md`
 section 3.
+
+**Eighth instance, 2026-11-02, tenth wake, and it adds a date rather than a
+mechanism.** The dispatch handed `alexandria-security/2026-11-02-message`
+again, this run declined it before creating any branch, and the hold was
+re-verified live rather than transcribed. `NO_SELF_CONTINUE` in HQ's
+`runtime/board/api.py` on the host still reads
+`{"monthly", "quarterly", "dispatch-only", "none"}` and `company.yaml` still
+declares this seat `cadence: semimonthly`. Confirmed separately that none of
+today's three HQ deploys to the host touched that file, so the reading is
+current rather than a stale copy. The branch is
+`sec/2026-11-02-message-tail-cut`. Eight wakes, seven declines, one breach.
+
+**The dated part, which is the only reason this instance is not just a tally.**
+The seventh instance observed that the mandatory name-reuse check now refuses
+the dispatched name on its own, because #769 made that exact ref, and noted
+that the guard "protects only this exact date's name, so the next calendar day
+the dispatched name is fresh again." That expiry comes due at midnight tonight,
+roughly fifteen hours from this entry. From 2026-11-03 the dispatched name is
+unused, the reuse check passes it, and the only gates left are the charter
+paragraph and `tests/test_branch_prefix.py`, which no workflow runs on a pull
+request. The relay row that removes the hold entirely is nine days old. So the
+guard that caught the sixth instance's breach stops working tonight, and this
+is the entry saying so in advance rather than after the ninth instance.
 
 Ban list checked on this entry.
 
