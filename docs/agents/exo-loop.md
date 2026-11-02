@@ -58,6 +58,17 @@ Two rules for a run that writes a line here.
 
 cycle-taken: 2026-10-25T14:00Z, taken on a `message` wake by PR #521, merged 2026-10-25T23:45Z. The cron fired at 14:00:11 and the provider refused it with a weekly-limit 429.
 
+**The register needs a second line shape, and this is the first entry for it**
+(added 2026-11-02). A `cycle-taken:` line says a cycle was performed. Nothing
+here could say a cycle was *lost*, and a slot with no line against it reads
+identically whether nobody has reached it yet or it was destroyed. So:
+`cycle-lost:` then the slot in the same fixed form, then prose. The owed-cycle
+detector in §0 does not parse this token and should not — a lost cycle is still
+owed, and a line claiming otherwise would discharge a slot nobody worked. It is
+here for the human and for the next run's reading, not for the gate.
+
+cycle-lost: 2026-11-02T01:00Z, the first slot of the moved Monday clock, fired by the scheduler at 01:00:20.061Z and marked `coalesced: true` into a message run of this seat that was live from 00:49:18 to 01:15:24. No cron run of this seat has started since; a message at 01:10:29 displaced the held slot. 10 of the 17 coalesced cron firings in the host's whole history were lost this way, separated perfectly by whether any message landed before the next run. Relayed to HQ as Ask 1 of the 2026-11-02 fifth-wake entry in `docs/agents/hq-relay.md`. **Not taken by any run: 2026-W45's seven sweeps for this seat did not happen.** The §3g step-5 public-claim pass, 11 days stale when #697 named it, is the oldest thing this slot would have cleared.
+
 ---
 
 ## Tick 2026-10-24 (`brief.sent`, second wake of the day) — the first one
