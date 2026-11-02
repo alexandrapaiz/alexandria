@@ -2540,6 +2540,71 @@ count off a file the host writes, say what made it final** — the same
 obligation §"Your own last run may still be open" puts on a pull-request
 verdict, applied to host state.
 
+### And the `failed` count it prints cannot see a timeout, so read the exits yourself (added 2026-11-02, message wake, `INC-2026-11-02-the-day-s-failure-count-cannot-read-the-word-the-host-writes-for-a-timeout`)
+
+The two rules above are about a zero from an instrument that cannot see its
+subject, and a total from a file still being written. This one is the third
+shape and the only one of the three that is a **wrong non-zero**: the
+instrument sees its subject, has finished, is correct about everything it
+counts, and silently excludes the failure class that costs the most.
+
+**The measurement, and it took one command.** `/api/capacity?day=2026-11-02`
+at 02:11Z printed `failed: 1` for the portfolio and `failed: 0` for this
+company. The host's own `run.end` rows for the same day held **94 rows, 13 of
+them non-zero — ten `timeout` and three `1`** — four of the ten this company's.
+Every timeout at almost exactly 3,600,000 ms, which is the sixty-minute wall
+clock.
+
+**The cause is one regex and it is worth knowing by heart**, because this
+surface is the first thing §2b sends you to. `tools/capacity.py:112` reads a
+log's trailer with `^# exit=(-?\d+) pr=(\S*) session=(\S*) turns=(\d+)`, and
+a timed-out run's trailer is `# exit=timeout pr=- session=- turns=-`. Neither
+`exit=timeout` nor `turns=-` is a digit, so **the trailer does not match at
+all**, and `classify` falls to its trailerless branch: `running` for ninety
+minutes, then `lost`. Never `failed`. `lost` is the bucket for a log that
+simply stopped — the *we cannot say what happened* class — so the one failure
+class that states its own cause in its own trailer is filed under unexplained.
+
+So on every §2b sweep, read the exits directly and say which source answered:
+
+```bash
+# the host's own ledger, which is where a timeout is legible
+python3 - <<'PY_EXITS'
+import json, collections
+day = "2026-11-02"          # NAME THE DAY, and read yesterday too
+ends = []
+for line in open('/srv/asc/state/.epito/audit.jsonl'):
+    try: r = json.loads(line)
+    except Exception: continue
+    if r.get('action') == 'run.end' and str(r.get('ts','')).startswith(day):
+        ends.append(r)
+print(day, 'run.end rows', len(ends), collections.Counter(r.get('exit') for r in ends))
+for r in ends:
+    if r.get('exit') != 0:
+        print(' ', r['ts'], r.get('agent'), 'exit', r.get('exit'), 'turns', r.get('turns'))
+PY_EXITS
+```
+
+Two cross-checks keep the finding honest. The board's own `board.runs` rows
+carry these runs as **`exit: 124`**, numeric and correct, so HQ's
+`MACHINERY_EXITS = {124, 137, 143}` matches and the engineer's wake does fire
+— the information is missing from one *reading*, not from the record, and a
+report that says otherwise is wrong. And `capacity`'s buckets are keyed on the
+day a run **started**, so a timeout that began yesterday and died today is
+yesterday's row; reconcile before you subtract, or the audit's end-dated rows
+and the capacity route's start-dated ones will differ for a reason that is not
+a defect.
+
+**The general rule, and it is the third instance in two runs of this seat.** An
+absent `deploy_runtime` row read as a press run that never happened; a green
+`checks.yml` verdict read off an older commit through a path filter; a failure
+count that cannot read the word for the failure. **A conclusion is a row
+written by a reader, so its shape is a claim about the reader before it is a
+claim about the world.** All three were found by opening the reader's source,
+and none of the three was findable from its output however carefully read. So
+when a number from an instrument this charter names is about to become a
+finding, spend the one turn it costs to read the line that produces it.
+
 ### And half the fleet does not appear in `gh run list` at all (added 2026-10-11)
 
 The fix above is necessary and not sufficient, because no limit reaches a run
