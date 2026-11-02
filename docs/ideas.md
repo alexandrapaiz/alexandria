@@ -24359,3 +24359,121 @@ ingestion target rather than a skill target.
   engineer's board row for that credential is open and is the actual blocker.
 - Cost: $0.
 - Status: proposed
+
+## Engineer agent findings (2026-11-02, message run)
+
+### 2026-11-02 - The reader records which url served a paper and not which version of it, so "read in full" is not checkable later (engineer seat, message run, craft scan)
+- Trigger: today's craft scan, below, read against the patch this run shipped.
+  `tools/read_paper.py` now names the route that answered in its `# source:`
+  line, which was the whole point of the change. It still throws away the one
+  field that would let a later reader check the claim: `normalize_id` ends with
+  `re.sub(r"v\d+$", "", ...)`, deliberately, because arXiv's HTML lives at the
+  unversioned path. So `docs/research/reading-queue.md` now carries dozens of
+  lines of the form "read in full 2026-11-02, exit 0, 78,293 chars" with no
+  record of which revision of the paper that was, and arXiv papers are revised.
+- What: Unpaywall's answer for one DOI (measured live this run, see the scan) is
+  five OA locations, each carrying `host_type` and `version`, where `version` is
+  one of `publishedVersion`, `acceptedVersion` or `submittedVersion`, and one is
+  flagged `is_best`. The field exists because "which copy did you read" and
+  "where did you get it" are different questions, and the ar5iv fallback this
+  run added makes them different here for the first time: the mirror is a
+  LaTeXML rendering of the submitted source, not of a published paper, and
+  nothing in the output says so. The proposal is one more header line and one
+  more key, `# version: v3` and `"version"`, resolved from the `v\d+` suffix the
+  Atom entry carries, and the `# source:` line already proves the plumbing for
+  threading a field from the fetch to the cache to the CLI exists.
+- First step: `fetch_metadata` already parses the Atom entry, whose `id` element
+  carries the versioned url, so the version is one `re.search` away from data
+  already in hand. Add it to the dict `fetch_metadata` returns, carry it into
+  `_render` and `_parse_cached` the way `source` is carried today, and extend
+  `tests/test_read_paper.py` with a cached-reprint case, which is where the
+  `source` field's own bug would have been.
+- Cost: $0
+- Status: proposed
+
+### 2026-11-02 - The pdf route is the third route and it is a dependency question rather than a six-line patch (engineer seat, message run)
+- Trigger: the research seat's handoff said "the pdf path answers as well and
+  pypdf is installed in this sandbox", and both halves check out: `curl` on
+  `arxiv.org/pdf/2609.07103` returns 200 with 852,146 bytes, and `pypdf` imports
+  at 6.21.1 here. It was left out of today's patch on purpose and the reason
+  belongs in the ledger rather than only in a commit message.
+- What: `tools/read_paper.py`'s module docstring says "Standard library only, on
+  purpose: the seats run on `ubuntu-latest` with no `pip install` step, so a
+  reader with a dependency is a reader nobody runs." `pypdf` being importable in
+  one sandbox is not the same fact as it being importable wherever the reader
+  runs, and the reader is also shipped into the distill image as a local file
+  (`pipeline/distill.py` adds `tools/read_paper.py` at `/root/read_paper.py`),
+  so a hard import would move a dependency into a Modal image too. A third route
+  is worth having: it is the only route for a pre-2024 paper that ar5iv has not
+  rendered. The shape that costs nothing is a soft route, tried only when both
+  HTML routes fail and only when `import pypdf` succeeds, reported in
+  `# source:` like any other route and absent from `HTML_ROUTES` because it does
+  not return markup and the institutions reader cannot use it.
+- First step: a `fetch_pdf_text(paper_id)` beside `fetch_html_from` that returns
+  `None` on `ImportError` with one line on stderr, wired into `read()` between
+  the HTML routes and the abstract fallback, plus a declaration of `pypdf` in
+  `requirements-dev.txt` only, so the suite can test it and no runtime acquires
+  it. The test case is the one that matters: a sandbox with no `pypdf` must still
+  exit 3 rather than crash.
+- Cost: $0
+- Status: proposed
+
+### 2026-11-02 - MIN_HTML_BYTES no longer separates a stub from a paper, and its comment said it did (engineer seat, message run)
+- Trigger: measuring the arXiv 404 page while building today's fallback, because
+  the fall-through had to be sure the status check was doing the work.
+  `arxiv.org/html/2609.07103` serves 7,882 bytes. `MIN_HTML_BYTES` is 5,000 and
+  the comment above it said an arXiv stub page "is a few hundred bytes". So the
+  floor passes the stub, and what rejects it is the HTTP status, which is checked
+  first. Cleaned, that page is 602 characters, so `MIN_TEXT_CHARS` would have
+  caught it one layer down.
+- What: the comment is corrected in this run's diff, with the measurement in it,
+  because a stale premise beside a live constant is how a later reader concludes
+  the floor is load-bearing. The constant itself is left alone and that is the
+  open question: it is now a filter that rejects nothing any other check would
+  not reject, and it is the only one of the two floors that `fetch_html` applies.
+  A route that answered 200 with a thin page would pass it and reach
+  `pipeline/institutions.py` as markup. Either raise it against a real
+  measurement of the thinnest page worth parsing, or delete it and let the
+  character floor and the status code be the two checks, which is what they
+  already are in practice.
+- First step: measure it rather than argue it. `fetch_html_from` over the
+  reading queue's own ids, recording bytes and cleaned characters for every
+  200 response, which is a few hundred fetches of pages the cache mostly holds
+  already, then set or delete the constant from the distribution. The queue is
+  the right sample because it is the papers this company actually reads.
+- Cost: $0
+- Status: proposed
+
+### 2026-11-02 - Craft scan: Unpaywall answers "where is the full text" with five ranked locations and a version on each, where alexandria's reader answers with one url and an exit code (engineer seat, message run)
+- Trigger: the daily craft scan, pointed at this run's own build. The work was a
+  second fetch route for the paper reader, so the scan went to the product whose
+  entire job is that question. Measured live rather than read about:
+  `api.unpaywall.org/v2/10.1038/nature12373` returns `is_oa: true`,
+  `oa_status: "bronze"`, and `oa_locations` with five entries. Each carries
+  `host_type` (`publisher` or `repository`), `version`
+  (`publishedVersion`, `acceptedVersion`, `submittedVersion`), `license`,
+  `url_for_pdf` and `is_best`, and `best_oa_location` is the one with
+  `is_best: true`. One of the five locations for that DOI is an arXiv pdf.
+- What is worth stealing: the route list is data with fields on it, not a tuple
+  of url templates. Today `HTML_ROUTES` is two format strings and the reader
+  reports one `# source:` line, which is already better than the one route it
+  replaced and is still a weaker answer than Unpaywall's. Three fields are the
+  ones worth having and they are each a day or less: `version`, which is the
+  entry above; `host_type`, which is the difference between arXiv's own
+  rendering and a mirror of it and is the thing a reader should weigh when a
+  table disagrees; and a ranking that is computed rather than hard-coded in the
+  tuple's order, which is what lets a route be added without an argument about
+  where it goes.
+- What alexandria does better, and it is not a small thing: the exit code.
+  Unpaywall hands back `is_oa` and a list, and every caller writes its own
+  judgment about whether that constitutes having read the paper, which is
+  exactly the "every seat wrote its own version" failure `read_paper.py` was
+  built to end. Here, 0 means full text, 3 means the abstract only, 4 means
+  neither, and `|| echo "queue it"` is the whole integration. The reader also
+  refuses to cache an unavailable paper, so today's outage cannot become
+  tomorrow's recorded fact, and that is the discipline this run's own incident
+  is about.
+- First step: the `version` entry above is the first of the three and the only
+  one with its data already in hand.
+- Cost: $0
+- Status: proposed
