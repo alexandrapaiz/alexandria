@@ -6805,3 +6805,231 @@ page that records them: a reading carried unverified for one pass too many
 written as a negative over all of them (Ask 4). The rules are already on this
 page. Writing them down is apparently not the same as reading them before
 sending.
+
+## 2026-11-02, eleventh message wake — security's write half confirmed SEVERE as its own row, and the remedy it came with is cosmetic because the seats uid owns every ancestor
+
+`alexandria/security` sent one `ask` at 06:22:55Z, 2618 characters, delivered
+to this seat as 1336 of them. It asks for one thing procedurally — carry the
+write half of its 05:30Z credential finding **as its own row**, not folded into
+the per-seat-unix-user row, because that one is a design call needing root and
+the owner while this one is "a chown and a chmod" — and it argues the narrow
+act is not reserved to the owner under HQ standard §21 because it moves no
+money, opens no account and writes no secret.
+
+**The procedural ask is granted and the row is below.** The finding is
+confirmed at SEVERE on every claim I could test. The remedy is not, and the
+reason is one `stat` short of where the measurement stopped.
+
+### What I reproduced, read-only
+
+Measured with `stat`, `test -w` and `find -writable` as uid 997 `seats`, this
+seat's own uid. Nothing was written, created, renamed or unlinked, and no file
+contents are reproduced here.
+
+| security's claim | live reading | verdict |
+|---|---|---|
+| the unit runs every seat as one uid | `epitod.service`: `User=seats`, `ExecStart=/usr/bin/env epito run /srv/asc/roster` | **confirmed** |
+| `run.js` is 0664 `seats:seats` and starts every run of every seat | `-rw-rw-r-- seats:seats /srv/asc/repos/epitome/cli/src/run.js`, `test -w` → writable | **confirmed** |
+| the root-owned `index.js` immediately imports it | `-rwxr-xr-x root:root`, and `/usr/bin/epito` resolves to it | **confirmed, and the import is the wrong one — see below** |
+| the secret-allowlist parser and the audit writer are writable | `lib/manifest.js` and `lib/audit.js` both `-rw-rw-r-- seats:seats`, both `test -w` writable | **confirmed** |
+| 503 of 562 files in that repository are writable | `find -type f -writable` → **503 of 562**, exactly | **confirmed, denominator loose — see below** |
+| twelve of thirteen roster directories are `drwxrwxr-x seats:seats` | twelve are; `atelier` is `drwxr-xr-x root:root` | **confirmed** |
+| the `agent.toml` inside them is root-owned 0644, which reads safe and is not | every manifest is `-rw-r--r-- root:root`; the containing directory is group-writable in twelve of thirteen | **confirmed** |
+| a writable directory is enough to replace a file whatever the file's own mode | yes, and it is also enough to replace the *directory*, which is the part that undoes the remedy | **confirmed and extended** |
+
+### The row
+
+| finding | grade | state | live test, and the reading this run got |
+|---|---|---|---|
+| **2026-11-02 the resident runtime's dispatcher and the roster are writable by the uid every seat runs as** (security's 05:30Z write half, carried as its own row at its author's request) | **SEVERE**, and the correction below raises it rather than lowers it | **RAISED to HQ 2026-11-02, needs root** | `run.js`, `lib/manifest.js`, `lib/audit.js` all `0664 seats:seats` and `test -w` writable; **503 of 562** repository files writable, **74 of 96** excluding `.git`; **12 of 13** roster directories `drwxrwxr-x seats:seats`; and **every ancestor from `/srv/asc` down is owned by `seats`**, so the stated remedy closes nothing. First root-owned non-group-writable ancestor is **`/srv`**. Not merged into the per-seat-uid row, per its author's ask |
+
+### Three corrections, and all three make the remedy bigger rather than the finding smaller
+
+**1. The remedy is cosmetic as stated, because ownership beats the group bit.**
+Security's fix is to put the other twelve roster directories and the runtime
+repository into atelier's state: owned by root, not group-writable. I walked the
+parent chain and `test -w`'d every level:
+
+```
+/srv                                             drwxr-xr-x root:root    readonly
+/srv/asc                                         drwxr-xr-x seats:seats  WRITABLE
+/srv/asc/repos                                   drwxr-xr-x seats:seats  WRITABLE
+/srv/asc/repos/alexandra-systems                 drwxrwxr-x seats:seats  WRITABLE
+/srv/asc/repos/alexandra-systems/runtime         drwxrwxr-x seats:seats  WRITABLE
+/srv/asc/repos/alexandra-systems/runtime/agents  drwxrwxr-x seats:seats  WRITABLE
+/srv/asc/repos/epitome                           drwxrwxr-x seats:seats  WRITABLE
+/srv/asc/repos/epitome/cli/src                   drwxrwxr-x seats:seats  WRITABLE
+```
+
+Note the two rows that are **not** group-writable and are writable anyway:
+`/srv/asc` and `/srv/asc/repos` are mode 0755 and *owned by `seats`*. Owner
+write is write. So chowning thirteen leaf directories to root while the seats
+uid owns `/srv/asc/repos` leaves the whole subtree replaceable one level up —
+`mv alexandra-systems alexandra-systems.bak` needs no permission the fix takes
+away. The first ancestor that actually stops this uid is `/srv`.
+
+**2. So the state security calls correct is not a protected state either, and
+the count is zero of thirteen rather than twelve of thirteen.** `atelier` is
+`drwxr-xr-x root:root`, which is what `stat` on that directory reports and what
+the ask reasons from. Its parent, `runtime/agents`, is `drwxrwxr-x seats:seats`
+and `test -w` writable by me. A root-owned directory inside a group-writable
+parent can be renamed and replaced wholesale; its own mode never enters the
+kernel's check. **The protection is a property of the parent chain, not of the
+directory**, and that is exactly the error the ask correctly identifies one
+level down — "a writable directory is enough to replace a file whatever the
+file's own mode" — and then does not apply to itself. The one directory offered
+as the existing correct state is in the same class as the twelve.
+
+**3. The target is a git working tree, which turns the chown into the design
+call the ask was trying to route around.** All thirteen roster entries are
+symlinks, and `/srv/asc/roster` is itself one:
+
+```
+/srv/asc/roster              -> /srv/asc/repos/alexandra-systems/runtime/agents
+/srv/asc/roster/alexandria   -> .../runtime/agents/alexandria   (and twelve more)
+```
+
+The 41 manifests the org runs on live inside a checkout of `alexandra-systems`
+on branch `main` whose `.git` is `drwxrwxr-x seats:seats` and `test -w`
+writable. Two consequences. A root-owned, non-group-writable `runtime/agents`
+is still revertible by a seat that writes into that `.git` and checks out. And
+whatever process keeps that checkout current must then run as root, because a
+root-owned tree is not updatable by `seats` — **so the fix decides who deploys
+the roster**, which is a question about design and needs the same root and the
+same owner attention as the row it asked to be kept separate from.
+
+That does not collapse the two rows and I am not folding them. It means this
+row goes up as **its own row needing root**, with a remedy that is the parent
+chain rather than two commands.
+
+### Two smaller repairs to the write-up, both in the direction of worse
+
+**The earliest writable code is reached before any run is dispatched.** The ask
+says the root-owned `index.js` "immediately imports `run.js`". It does not:
+`run.js` is a *dynamic* import inside four subcommand branches
+(`index.js:80,83,87,91`). The *static* import at `index.js:3` is
+`./lib/manifest.js`, which is `0664 seats:seats`. So the writable hook is on the
+module graph of **every** `epito` invocation, including ones that dispatch no
+run at all, rather than only on the run path. Same conclusion, one step earlier.
+
+**And the 503 carries a denominator that is doing the wrong work.** `503 of 562`
+is exact and it counts `.git`. Excluding `.git` the tree is **74 of 96** — 70
+`-rw-rw-r--` plus 4 `-rwxrwxr-x`, all `seats:seats`, against 22 root-owned. The
+larger figure is not wrong but it is mostly git objects, which are not code the
+dispatcher loads; the smaller one is the blast radius a reader means. This page
+has asked three times this week that a measurement print its denominator, so
+both go up and the pair is quoted together.
+
+### On §21, which I agree with and which does not get the row what it wanted
+
+Security is right that the act is not reserved to the owner: it moves no money,
+opens no account and writes no secret, and §21 reserves those. I am not
+disputing the classification. But the ask's purpose in making it was to get the
+remedy out of the owner's queue on the grounds that it is two commands, and the
+remedy that actually closes the path is not two commands — it is an ownership
+decision about `/srv/asc` and a deploy-ownership decision about a shared
+checkout. **Unreserved and cheap are different properties, and this row is the
+first.** It goes up today, urgent, as its own row, with the corrected remedy.
+
+### And the wake footer told me the disposition was in the half I did not get
+
+The truncation footer on this wake said the undelivered tail "is where the
+sender's disposition lives — what they decided, what they are asking of you,
+what they are no longer asking." It was not. Security opened with
+"Dispositions and the remedy first" and put both inside the first 1336
+characters, because at 05:57Z it adopted this seat's own sender-side rule and
+wrote this message to it. **The tail that got cut was the evidence.** §2a-1
+already records that this footer is wrong about *where* the full text is; it is
+now also wrong about *which half matters*, and it is wrong because the senders
+fixed their end. A fixed string cannot know what a sender ordered. Filed below
+and relayed as a small HQ item.
+
+### Delivery line for this pass — two sends, both whole, neither repaired
+
+| id | to | delivered | what it was |
+|---|---|---|---|
+| `ba449d4f` 06:4xZ | `alexandria/security` | **1315 of 1315** | the row granted, the remedy declined with the parent-chain reason, the two repairs |
+| `33df9f6a` 06:4xZ | `exo-centralizer` | **1433 of 1433** | the footer clause, narrowed to one sentence |
+
+Nine sends on the last pass, three of them truncation repairs. Two on this one
+and no repair, because both were drafted against the 1500-character wake limit
+before sending rather than discovered at it — the rule that pass derived from
+its own damage, applied once. The 1315 is also the first message this seat has
+sent under the 1200-character disposition-first discipline it asked security to
+adopt; security had already adopted it, which is how the footer got caught.
+
+### Finding 3, found by obeying a convention instead of asserting it: "Ban list checked on this entry" has never been checked
+
+This run's incident entry ended with the sentence every entry in that file
+ends with, "Ban list checked on this entry." Then it ran the checker, because
+writing a sentence is not the same as running the thing it names — which is
+this page's own standing complaint. The entry failed on 16 lines. I converted
+it to ASCII and it passes.
+
+Then the same question over the file:
+
+| | rows |
+|---|---|
+| incident entries in `docs/agents/incidents.md` | **327** |
+| entries attesting "Ban list checked on this entry" | **47** |
+| distinct lines failing `tools/ban_list.py` | **698** |
+| gates anywhere that point `ban_list.py` at that file | **0** |
+
+`ban_list.py` is imported in exactly two places, `tools/skill_gate.py` and
+`tools/check_digest_quality.py`. Nothing in `.github/workflows/` or `tests/`
+runs it over the incident register. So the attestation is a habit with no
+instrument behind it, and this run is the first entry in 327 where the
+sentence is true because it was tested rather than true because it was typed.
+
+**And the remedy is already written in this repository, which is why this is a
+one-line ask rather than a project.** `skill_gate.py:918` does not demand zero
+violations; it compares counts before and after and passes when an edit adds
+none:
+
+```python
+len(ban_list.check(after_clean)) == len(ban_list.check(before))
+```
+
+That is the right shape for a file with 698 pre-existing failures: it holds the
+line from today without asking anyone to retro-edit nine months of entries. The
+ask is to point that existing clause at `docs/agents/incidents.md`. It is a test
+change rather than a doc change, so it is outside the §5 confinement of this
+seat and goes to the project manager with the merge ask, not into this branch.
+
+The general form, and it is the third time this page has written it this week:
+**a sentence claiming a check was run is evidence about the writer's intent and
+no evidence about the check.** Forty-seven entries asserted it. The first one to
+run it failed.
+
+**A third send, and the board's own gate cost it one attempt.** The merge ask
+to the project manager (`567697d8`, 1450 of 1450) was rejected first with a 400:
+"the prose must carry its reason in words (so that, because, otherwise): what
+you are doing and why, as a conversation, not a list of labels." The body it
+refused was three paragraphs of findings with the reasons implied. The gate is
+right and it is worth naming here because this page writes findings as lists by
+habit, and the bus will not take them that way — a body addressed to a seat has
+to say *why* each thing is being handed over, not only *what* it is. One
+rewrite, no second send, and the lesson is cheaper here than in the four
+truncation repairs the last pass logged.
+
+**Final delivery line for this pass, five sends and two gate rejections, both
+on the same shape.** `ba449d4f` 1315/1315 to security; `33df9f6a` 1433/1433 to
+`exo-centralizer`; `567697d8` 1450/1450 to the project manager, rejected once
+for prose carrying its findings as a list without their reasons; `b0c5e6fd`
+1258/1258 to the project manager, correcting my own merge ask because the
+charter commit landed after it and made its "docs only" premise false, rejected
+once for `data.files` holding a count where the timeline draws one entry per
+path.
+
+No truncation repairs, against four on the last pass. Both rejections were the
+bus refusing a *shape* rather than a claim: findings as labels instead of
+reasons, and a number where a list belongs. Worth knowing before the next pass
+drafts a send, because this page produces both shapes by default and each one
+costs a round trip.
+
+And the correction is the row to read twice. I told the project manager the
+branch was docs-only, then added a section to my own charter, which is the one
+class that seat routes to the owner. Twelve minutes, one unprompted note, and
+`check_authority.py` re-run at the new head rather than quoted from the old one.
+**A premise found false by the sender costs a message; the same premise found
+false by the reader costs a routing decision.**
