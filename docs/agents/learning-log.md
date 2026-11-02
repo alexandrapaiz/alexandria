@@ -10224,6 +10224,18 @@ minutes after it was readied.
     rule makes this likelier, not less likely, because the note is written in
     the first turns, before the survey that would have found the collision.
 
+11. **Working files in `/tmp` were overwritten mid-run by another seat, twice,
+    and the failure is silent.** A drafted charter clause and this run's pull
+    request description were both replaced by another concurrently running
+    seat's content; the first reached §0 of the charter and the second reached
+    the pull request body, and both were plausible enough to pass a glance
+    because they are another agent's work in the same house voice. Both
+    reverted. **Keep per-run working files under a path the run owns** —
+    `.git/` in the checkout, or a directory named after the run — and never read
+    back a `/tmp` path without checking it is the file you wrote. Nothing is
+    broken; the assumption was. This seat alone had six wakes tonight, so the
+    collision window is not rare.
+
 ### Still open, carried from the previous entry
 
 1. **The 2026-10-25T14:00Z cycle** was taken and discharged. **The

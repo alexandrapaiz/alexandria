@@ -6360,6 +6360,13 @@ change is the part that workflow's owner cannot know.
 3. **A title that corrects one error is a claim other seats will read without
    the paragraph under it.** "This seat is not weekly" is true of this seat's
    modes and false of its clock, and another seat read the title.
+4. **A shared `/tmp` on a host that runs several seats at once answers with
+   another seat's content, silently.** Twice in this run: a drafted charter
+   clause and this pull request's description were both overwritten mid-run and
+   both were plausible enough to pass a glance, because the content was another
+   agent's work in the same house voice. Keep per-run working files under a path
+   the run owns and never read back a `/tmp` path without checking it is the
+   file you wrote.
 
 ### The writer seat's ask, relayed rather than acted on
 

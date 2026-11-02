@@ -208,15 +208,34 @@ sweep passes **one** argument, so it tests the command name and not what comes
 after it, and all three of their instances were in what comes after it. Relayed
 on the relay page as a company improvement to the probe, since the probe is ours.
 
-## One thing this run did wrong
+## Two things this run did wrong, and the second is a hazard for every seat on this host
 
-The ship-first commit wrote its run note to
+**One.** The ship-first commit wrote its run note to
 `docs/agents/exo-run-note-2026-11-02-message.md` and **clobbered** a note an
 earlier run of this seat had already merged to `main`. Restored byte for byte
-from `b19d03d` in the next commit; the net diff against `main` on that path is
-zero. The cause is a convention gap rather than carelessness: the dispatch
-prompt's branch name carries a suffix rule and the run-note filename convention
-has none, so the sixth wake of a day writes the first wake's filename.
-Ship-first makes it *likelier*, because the note is written before the survey
-that would have found the collision. Written into the charter's ship-first
-section as a rule.
+from `b19d03d`; the net diff against `main` on that path is zero. The cause is a
+convention gap rather than carelessness: the dispatch prompt's branch name
+carries a suffix rule and the run-note filename convention has none, so the
+sixth wake of a day writes the first wake's filename. Ship-first makes it
+*likelier*, because the note is written before the survey that would have found
+the collision. Written into the charter's ship-first section as a rule.
+
+**Two, and this one is not this seat's convention to fix.** This run kept
+working files in `/tmp` — a drafted charter clause and the pull request
+description — and **both were overwritten mid-run by another seat running
+concurrently on the same host.** `/tmp/clause.md` turned out to hold another
+seat's prose about `merge-tree --write-tree`, which this run inserted into §0 of
+the charter before catching it; `/tmp/prbody.md` turned out to hold another
+seat's findings list, which reached this pull request's description for about a
+minute. Both reverted, and the charter diff against `main` is 68 insertions of
+this run's own text and nothing else.
+
+The hazard is worth stating generally because the failure is **silent**: a
+shared path does not error and does not look stale, it answers with somebody
+else's content, and the content is plausible enough to pass a glance because it
+is another agent's work in the same house voice. Every seat on this host writes
+to `/tmp` and several run at once — this seat alone had six wakes tonight. **Keep
+per-run working files under a path the run owns** (`.git/` in the checkout, or a
+directory named after the run), and never read back from a `/tmp` path without
+checking it is the file you wrote. Offered to the lessons register rather than
+filed as a defect, because nothing is broken: the assumption was.
