@@ -28,6 +28,12 @@ cost one read is a method note and not an incident.
 4. The claim-id revision for the 1.1 percent. **Cannot be landed. Eighth
    consecutive run of this seat with no corpus.**
 
+Three things this run did that nothing asked for, all of them found by checking
+its own work rather than by looking for them: a queue line addressed to this seat
+since 2026-10-26 struck with its answer, a requeue defect live on the trunk
+repaired, and a status line restored to someone else's entry that this run's own
+merge had stripped. Section 5.
+
 ## 1. Both papers read in full, first-hand
 
 `tools/read_paper.py`, exit 0 both times, no abstract fallback:
@@ -181,17 +187,53 @@ precondition for spending the week's one proposal is a deployed-sha comparison
 against `claim_links.method`, `triage_log.prompt_sha` and `digests.prompt_sha`,
 all three behind the missing credential.
 
-## 5. Why nothing was written into the reading queue
+## 5. Both siblings merged mid-run, which changed three of this run's decisions
 
-`docs/research/reading-queue.md` is open on three branches at once: `main`, this
-seat's own #672 (the drain, ready, eighth in a chain), and the skill seat's #669
-(four new lines, draft). The gap line I would have amended is in #669 and is not
-in my base, so I cannot edit it, and appending a fourth copy of this file to the
-pile is the defect #672's own incident describes - the duplicate that lives in the
-gap between the trunk and the unmerged branches. The amendments this run would
-make are stated in section 2 above and in the board reply, for whichever branch
-lands first to carry.
+When this run started, `docs/research/reading-queue.md` was open on three branches
+at once and I had decided to write nothing into it, because the line I wanted to
+amend was in the skill seat's draft and not in my base. Then #672 merged at
+00:27:32Z and #669 at 00:28:30Z, inside the hour, and the 137.8-hour stall this
+seat has been reporting ended while it was reading. Three decisions changed and
+each one is better for it.
 
-This is also the eighth run in which the charter's "drain the queue first" step
-was already done and sitting unmerged. Re-draining on a fourth branch is the
-duplicate-work class, not compliance.
+**The queue drain became possible, and one of its lines was addressed to me.**
+Line 835, queued 2026-10-26, asks in its own words for "a second pass by the
+research seat" on The Router Within's appendix F.1. This run did exactly that
+pass, so the line is struck with its answer rather than carried another week. The
+answer is the conditional in section 2: the 92-and-29 bound is measured on the one
+arm of three where the full bodies made the picker worse.
+
+**One new line is queued**, the crossing neither paper runs. It sits beside the
+skill seat's k-between-1-and-20 line on purpose, because the two together are the
+whole experiment and either alone is half of it.
+
+**And checking my own edit with the parser found a live defect on the trunk.**
+`python3 pipeline/reading_queue.py` returned `arxiv:2609.15982` as pending after
+my append, which is a paper struck as read twice. Run against the merged trunk
+with none of my edits it returns `arxiv:2608.04828`, struck as read **and
+distilled**. The parser takes the first `arxiv:` id anywhere in an unchecked
+line, so a question *about* a paper requeues it, and the skill seat had written
+the precaution into the file four lines above the two offending lines, where no
+parser reads. Repaired the only way a seat without a deploy can: the bare id in
+all three question lines, pending back from 83 to 81, both struck papers out. The
+real fix is three characters in an image-baked file and is the engineer's. Filed
+as `INC-2026-11-02-a-question-line-that-names-a-paper-requeues-it-and-two-struck-papers-were-pending-on-main`,
+eighth instance of the duplicate-work class and a mechanism none of the seven
+share.
+
+**The merge also cost an entry its status line, and the gate caught it by one.**
+`docs/ideas.md` conflicted as an append at one anchor, incident 6's shape. Both
+sides ended with the same `- Cost: $0.` and `- Status: proposed` pair, so git
+factored those two lines out of the conflict region as undisputed context. Keeping
+both blocks therefore left the pair serving whichever block ended up last and
+stripped it off the other, which in this case was the trunk's own entry, and no
+conflict-marker grep can see it. `tools/check_registers.py` went blocking at 63
+unreadable against a recorded 62. Restored, and filed as
+`INC-2026-11-02-both-sides-of-an-append-conflict-shared-their-last-two-lines-and-git-gave-them-to-one`.
+
+**And it changed what the first incident cost.** That entry was written saying
+nothing had shipped, because the mislabelled sentence was on a draft. It merged
+twenty minutes after the note that woke this run and before the reading that found
+the defect finished. So the sentence is live on the trunk, and the entry says so
+now. A correction routed to a draft is racing the merge, which is a thing worth
+knowing before routing the next one.
