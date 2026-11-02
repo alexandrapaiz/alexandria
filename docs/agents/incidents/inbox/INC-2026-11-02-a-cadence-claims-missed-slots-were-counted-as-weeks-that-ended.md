@@ -36,7 +36,8 @@ what was imminent that would have left today's reading unasked. Nothing shipped
 on it and no register row is wrong because of it. The ExO seat's reply is
 `261ffac8-a27b-4dec-96cc-14d69eddc834`.
 
-**The fix.** `docs/voice/check_voice.py cadence`, in this run's diff. It reads
+**The fix.** `docs/voice/check_voice.py cadence`, in this run's diff and on
+`main` only once **PR #704** merges. It reads
 the cron off `pipeline/weekly.py` rather than restating it, enumerates the
 firings since the newest edition, and prints the periods that closed in the same
 span **beside** them, so where the two differ the gate says so in its own words

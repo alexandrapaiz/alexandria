@@ -105,7 +105,11 @@ sweep, which is the register side. Step 1b of this charter makes this seat the
 **artifact-side** gate on the same register, and on that side the sentence had
 no instrument at all.
 
-`check_voice.py cadence`, new, in this diff.
+`check_voice.py cadence`, new, in this diff. **It is not on `main`**, and
+until it merges the command must be named with the pull request that carries
+it, which is **#704**. On `main` the dispatcher prints nothing and exits 0 for a
+name it does not have, so a seat that runs this command there reads "nothing to
+report" where the truth is "this gate is not here yet".
 
 | | |
 |---|---|

@@ -6921,6 +6921,68 @@ def _git_lines(*args):
     return [x for x in r.stdout.splitlines() if x.strip()]
 
 
+# The dispatcher's own contract, as a function, so it can be asserted.
+#
+# `which` is the name a caller typed. `names` is every name this file answers
+# to. The return is the process exit code the dispatcher owes that pair, and
+# the only interesting value is the one it did not have until 2026-11-02: a
+# name this file does not carry is a USAGE failure, distinct from a gate that
+# ran and failed, and never a pass.
+DISPATCH_UNKNOWN = 2
+
+
+def _dispatch_rc(which, names):
+    return 0 if which in (set(names) | {"all"}) else DISPATCH_UNKNOWN
+
+
+# Asserted because the defect this repairs was invisible by construction: the
+# old dispatcher's wrong answer was silence and exit 0, which is also what a
+# clean pass looks like, so no run could tell the two apart and none did for
+# as long as the file has existed.
+DISPATCH_CASES = (
+    # The live case that found it. `cadence` shipped on an unmerged branch, so
+    # on `main` it is an unknown name, and the ExO seat read exit 0 and no
+    # output as "nothing to report".
+    ("cadence", ("press", "queued"), DISPATCH_UNKNOWN),
+    # The same name, once the branch carrying it has merged.
+    ("cadence", ("press", "queued", "cadence"), 0),
+    # A nonsense argument, which behaved identically to the real subcommand
+    # and is the proof that the silence was about the dispatcher and not about
+    # any one gate.
+    ("zzznosuch", ("press", "queued", "cadence"), DISPATCH_UNKNOWN),
+    # `all` is not in the table and is always known.
+    ("all", ("press",), 0),
+    # The empty table still owes an answer rather than an exception.
+    ("press", (), DISPATCH_UNKNOWN),
+    ("all", (), 0),
+)
+
+
+def dispatch():
+    """Assert that an unknown subcommand fails and a known one does not.
+
+    This gate is about this file and not about an edition, which is why it
+    asserts and reads nothing. It is in `all` because it is six comparisons
+    and because the thing it protects is the one defect class that cannot be
+    caught by reading output: the output is empty either way.
+    """
+    worse = 0
+    for which, names, want in DISPATCH_CASES:
+        got = _dispatch_rc(which, names)
+        if got != want:
+            worse += 1
+            print(f"  DISPATCH_CASES: {which!r} against {names!r} "
+                  f"wanted {want}, got {got}")
+    print(f"DISPATCH_CASES                             "
+          f"{len(DISPATCH_CASES) - worse} of {len(DISPATCH_CASES)}")
+    if worse:
+        print()
+        print("A dispatcher that returns 0 for a name it does not have makes")
+        print("every gate in this file unfalsifiable from the outside, since")
+        print("a missing gate and a passing gate print the same nothing.")
+    return 1 if worse else 0
+
+
 def main():
     which = sys.argv[1] if len(sys.argv) > 1 else "all"
     # Paths after the subcommand go to `measure`. Without this, the arguments
@@ -6959,33 +7021,66 @@ def main():
     # `compare` is not in `all` for the same reason `selfcheck` is not: it
     # takes two artifacts the caller has chosen and proved comparable, and
     # `all` runs over whatever is in site/content/issues.
-    for name, fn in (("enforcements", enforcements), ("sweep", sweep),
-                     ("taste", taste),
-                     ("stale", stale), ("measure", measure), ("links", links),
-                     ("delivery", delivery), ("claims", claims),
-                     ("reading", reading),
-                     ("candidates", candidates),
-                     ("deadlines", deadlines),
-                     ("press", press),
-                     ("cadence", cadence),
-                     ("queued", queued),
-                     ("ledger", ledger),
-                     ("firstuse", firstuse),
-                     ("generator", generator),
-                     ("specimens", specimens),
-                     ("standalone", standalone),
-                     ("provenance", provenance),
-                     ("devices", devices),
-                     ("routed", routed),
-                     ("editions", editions),
-                     ("marks", marks),
-                     ("ungated", ungated),
-                     ("slotwords", slotwords),
-                     ("slotheads", slotheads),
-                     ("apparatus", apparatus),
-                     ("captions", captions),
-                     ("blockrules", blockrules),
-                     ("compare", compare), ("selfcheck", selfcheck)):
+    # The command table, hoisted out of the `for` below so the dispatcher can
+    # be asked whether a name exists BEFORE it does any work. Until it was
+    # hoisted, an unknown name matched nothing, printed nothing and returned
+    # the initial rc of 0, so this file answered "nothing to report" to a
+    # question it had never been able to see. The ExO seat hit that on
+    # 2026-11-02 running `cadence` against `main`, where the subcommand had
+    # shipped only on this seat's unmerged branch: silent, exit 0, and
+    # indistinguishable from a pass. A nonsense argument behaved identically.
+    # That is the instrument-answers-a-question-it-cannot-see class this seat
+    # filed the same night, arriving through the dispatcher instead of
+    # through a gate body (INC-2026-11-02-the-subcommand-dispatcher-
+    # answered-ok-to-a-name-it-did-not-have).
+    commands = (("enforcements", enforcements), ("sweep", sweep),
+                ("taste", taste),
+                ("stale", stale), ("measure", measure), ("links", links),
+                ("delivery", delivery), ("claims", claims),
+                ("reading", reading),
+                ("candidates", candidates),
+                ("deadlines", deadlines),
+                ("press", press),
+                ("cadence", cadence),
+                ("queued", queued),
+                ("ledger", ledger),
+                ("firstuse", firstuse),
+                ("generator", generator),
+                ("specimens", specimens),
+                ("standalone", standalone),
+                ("provenance", provenance),
+                ("devices", devices),
+                ("routed", routed),
+                ("editions", editions),
+                ("marks", marks),
+                ("ungated", ungated),
+                ("slotwords", slotwords),
+                ("slotheads", slotheads),
+                ("apparatus", apparatus),
+                ("captions", captions),
+                ("blockrules", blockrules),
+                ("dispatch", dispatch),
+                ("compare", compare), ("selfcheck", selfcheck))
+    # An unknown name is a usage failure and never a pass. Exit 2 rather than
+    # 1, so a caller can tell "this gate is not here" from "this gate ran and
+    # failed", which is the distinction the silent exit 0 destroyed.
+    rc_unknown = _dispatch_rc(which, [name for name, _ in commands])
+    if rc_unknown:
+        print(f"unknown subcommand: {which}", file=sys.stderr)
+        print("This file has no gate by that name, so nothing was checked.",
+              file=sys.stderr)
+        print("A subcommand that shipped on a branch is not here until that",
+              file=sys.stderr)
+        print("branch merges, so check the pull request before reading this",
+              file=sys.stderr)
+        print("file's silence as a pass.", file=sys.stderr)
+        print("", file=sys.stderr)
+        print("known subcommands:", file=sys.stderr)
+        for name, _ in commands:
+            print(f"  {name}", file=sys.stderr)
+        print("  all", file=sys.stderr)
+        return rc_unknown
+    for name, fn in commands:
         if which == name or (which == "all"
                              and name not in ("selfcheck", "compare",
                                               "press", "cadence", "queued")):

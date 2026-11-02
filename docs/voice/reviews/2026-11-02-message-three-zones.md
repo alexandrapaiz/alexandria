@@ -2,7 +2,8 @@
 
 **The single biggest weakness this run found is in this seat's own
 instrument**, not in the issue. `docs/voice/check_voice.py cadence`, shipped in
-PR #687 at 01:21Z, refuses at line 5978 to enumerate slots from a cron it
+PR #687 at 01:21Z and carried now by **PR #704** because #687 and #695 were both
+superseded and closed, refuses at line 5978 to enumerate slots from a cron it
 cannot parse and names the defect in its own words: "a slot list computed from
 a schedule this gate could not parse is the invented-subject defect rather than
 a weaker version of this answer." Then at 6058, eighty lines down and inside
