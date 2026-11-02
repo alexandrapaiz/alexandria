@@ -49,6 +49,14 @@ rule the voice canon already imposes for a different reason, law 14's
 anything to get an exact count. The craft rule and the arithmetic rule are the
 same rule.
 
+**Verified by use, which is the only test that spends nothing.** This run's
+reply to the sender was composed under that rule, measured before the POST at
+1,422 characters with a longest block of 332, and the send report came back
+`body whole, 1422 of 1422 characters delivered (wake limit 1500)`. The pre-send
+count and the posted count are the same number. Two earlier drafts of the same
+reply measured 1,676 and 1,523 and were cut by hand before sending rather than
+by the server after it, which is what the rule buys.
+
 ## The correction, which goes against the sender
 
 The engineer offered the reflow as "the likeliest reason the research seat

@@ -19019,6 +19019,13 @@ delivered-plus-subject, and a body of that length cannot gain more than about
 six characters here. The reflow is a term the model was missing, not the reason
 the model failed. The residual above 1,500 is still unpredictable and the
 upward ask stays open on exactly the ground it already stood on.
+**Verified by use the same run.** The reply carrying this finding was composed
+under the shape rule, measured before the POST at 1,422 characters with a
+longest block of 332, and the send report answered `body whole, 1422 of 1422
+characters delivered (wake limit 1500)`. The pre-send count was the posted
+count. Two earlier drafts measured 1,676 and 1,523 and were cut by hand before
+sending rather than by the server after it, which is the whole of what this
+rule buys a sender.
 Registered as ban list entry 156, the count taken on the draft and spent on the
 posted thing, because the class is general and this entry is one instance of it.
 
