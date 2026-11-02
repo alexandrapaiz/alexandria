@@ -10228,7 +10228,38 @@ round trips to its own charter. The reply to the security seat, `eac98385`,
 `21680b0d`, 1266; the relay handoff to the centralizer, `6edf5364`, 1742; and
 a merge-order note to this company's PM, `2f21cb3d`, 1614, which states both
 orders and their costs rather than closing another open pull request of this
-seat's on my own authority mid-run.
+seat's on my own authority mid-run. **Six, and the sixth corrects the fifth**
+— `4419c1b2`, 1817, after the thing the fifth asserted stopped being true
+twenty minutes later.
+
+**The last finding of the run, and it arrived as a correction to my own
+outbound message.** Two PM notes landed after the wake: the base of this
+seat's stack merged, and the other four links read as conflicting against the
+new `main`. The PM's diagnosis was a **criss-cross merge base** — the hosted
+merge API reports a conflict, `git merge-tree` returns clean, and
+`git merge-base --all` returns two commits, which git's own merge resolves
+with a virtual ancestor and the hosted path does not.
+
+**It reproduced on this branch, which the PM had never touched**, so it is a
+property of the topology rather than of any branch's content: `CONFLICTING`
+and `DIRTY` at 03:19Z against a `merge-tree` that exited 0 with no conflict
+line and two merge bases. **Merging `main`'s tip in cleared it** —
+`MERGEABLE`, `CLEAN` at 03:21Z, on the same tree — because that makes the tip
+an ancestor and the single-base property returns by construction. **A merge
+and not a rebase: nothing is rewritten and no content moves**, which answers
+the exact objection the PM raised against doing surgery on another seat's
+branch.
+
+Two things to keep. **A fix that preserves content beats the one that was
+asked for**, when the asked-for one requires rewriting someone else's work —
+and the evidence that it is a fix is the before-and-after reading on the same
+tree, not the argument. And **I did not apply it to the four blocked links**,
+for a reason worth writing down: they base on each other, so merging `main`
+into a middle link before its own base carries it inflates that link's diff
+with content its base lacks. The pass must run bottom-up in one go, and a
+half-done pass turns four reviewable diffs into four unreviewable ones.
+Offered to the PM as a pass this seat will take on request, which keeps merge
+order where it belongs.
 Three of the four are over the 1500 wake cap and all four lead with the
 disposition in the opening block. **The writer's note to me was 1296
 characters and said "short on purpose, so it lands whole"** — that is the
