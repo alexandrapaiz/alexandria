@@ -4,7 +4,7 @@ panel:   term sets 59.9 library vs 62.1 decoy = 0.96x (gate, tolerance 1.2x)
          boosted share 80.2% vs 94.4% = 0.85x (gate, tolerance 1.15x)
          words 139 vs 122 = 1.13x (editorial, not load-bearing)
 
-  warning: decoy panel: the decoy panel gets more of its vocabulary inside the 1.25x activation boost, 80.2% of the library's term set against 94.4% of the panel's, a 0.85x gap past the 1.15x tolerance; activation_clause() is a positional slice, so this is word order deciding cases. Measured at 3 of 67 today. The repair is a panel rewrite that matches the library's boosted share, and it is deliberately NOT done in the same commit that reports a pass rate
+  warning: decoy panel: the decoy panel gets more of its vocabulary inside the 1.25x activation boost, 80.2% of the library's term set against 94.4% of the panel's, a 0.85x gap past the 1.15x tolerance; activation_clause() is a positional slice, so this is word order deciding cases. Measured at 3 cases on 2026-11-02, when the suite held 67; the figure is dated rather than live because nothing in this function recomputes it, and it read '3 of 67 today' until the suite reached 68. The repair is a panel rewrite that matches the library's boosted share, and it is deliberately NOT done in the same commit that reports a pass rate
 
 ## agent-containment  (skills/agent-containment/triggers.json)
   [PASS] ac-pos-1     positive  expect agent-containment -> agent-containment

@@ -668,7 +668,10 @@ def panel_audit(skills: dict, decoys: dict) -> dict:
             f"library's term set against {dec_boost:.1%} of the panel's, a "
             f"{boost_ratio:.2f}x gap past the {PANEL_BOOST_TOLERANCE}x "
             f"tolerance; activation_clause() is a positional slice, so this "
-            f"is word order deciding cases. Measured at 3 of 67 today. The "
+            f"is word order deciding cases. Measured at 3 cases on 2026-11-02, "
+            f"when the suite held 67; the figure is dated rather than live "
+            f"because nothing in this function recomputes it, and it read "
+            f"'3 of 67 today' until the suite reached 68. The "
             f"repair is a panel rewrite that matches the library's boosted "
             f"share, and it is deliberately NOT done in the same commit that "
             f"reports a pass rate")
