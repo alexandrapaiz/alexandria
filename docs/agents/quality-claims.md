@@ -553,7 +553,7 @@ The limit: `record_runtime` is called after `check_availability` and the
 connect, so an absent `deploy_runtime` row proves the run never reached that
 line and does not separate never-invoked from died-early. **It is correct at
 the code and it understates the gap.** Verified at the source rather than
-accepted, 2026-11-02T01:4xZ, `pipeline/weekly.py`:
+accepted, read in this sandbox at 2026-11-02T01:47Z, `pipeline/weekly.py`:
 
 | line | call | in the `try`? | alarms the owner? |
 |---|---|---|---|
