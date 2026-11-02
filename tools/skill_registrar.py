@@ -125,22 +125,41 @@ STATUS = "approved"
 # `test_a_spent_quarantine_entry_asks_to_be_deleted` turned red on the merge that
 # brought the fix in, and this is what it asked for. An empty dict is the healthy
 # resting state, not a missing value.
+#
+# SPENT AND EMPTIED AGAIN 2026-11-02, by the skill seat, on the branch that
+# carries the fix. The re-open above named this seat and asked for one newline
+# inside `skills/`. That newline is in this branch, `harness-engineering`
+# version 9 loads under PyYAML, all nine skills load, and `spent_quarantine`
+# therefore returned `['harness-engineering']`, so the entry was excusing
+# nothing. Deleted the same day the fix landed, which is the second time the
+# paragraph above has been exercised and the second time it worked.
+#
+# One correction to that paragraph while deleting it, because it is wrong about
+# its own gate and the sentence below it says so. It claims "a quarantined
+# skill that has been fixed raises nothing at all, so the fix landing never
+# turns anything red." It does turn something red:
+# `test_the_live_quarantine_holds_nothing_spent_and_nothing_fictional` fails on
+# the merge that brings the fix in, which is exactly what the 2026-10-27
+# paragraph records happening. That is the gate working rather than a defect,
+# but a reader who trusts the first sentence will be surprised by a red check
+# on a branch whose only crime was carrying the repair, and this seat was.
+#
+# The per-entry expiry below arrived on main while this branch was open, in the
+# same hours this seat was deleting the entry it was written for. The two edits
+# do not conflict in substance: the capability stays, the entry goes, and the
+# annotation keeps the `tuple` form that `quarantine_entry` reads. An empty
+# dict with a wider type is the healthy resting state.
+#
 #: slug -> reason, or slug -> (reason, its own expiry date). A bare string
 #: takes `FRONTMATTER_QUARANTINE_EXPIRES` below, which is the default and not
 #: the deadline: the date belongs to the excuse, because the entries in here
 #: are added on different days by different runs. That was a ledger proposal of
 #: 2026-10-27 ("the quarantine has one expiry date for every entry it will ever
-#: hold") and it stopped being a proposal on 2026-11-02, when this run moved
-#: the shared date out by six days to give one new entry a week. The dict was
+#: hold") and it stopped being a proposal on 2026-11-02, when a run moved the
+#: shared date out by six days to give one new entry a week. The dict was
 #: empty, so nothing older was resurrected by it, which is luck rather than
 #: design: the proposal names exactly that as the failure, in both directions.
-FRONTMATTER_QUARANTINE: dict[str, str | tuple[str, str]] = {
-    "harness-engineering": (
-        "two `provenance.revisions` entries are on one line on main, so PyYAML "
-        "refuses the file. The fix is a newline, and it is a write into skills/",
-        "2026-11-09",
-    ),
-}
+FRONTMATTER_QUARANTINE: dict[str, str | tuple[str, str]] = {}
 
 #: The date an entry gets when it names none of its own. An entry added today
 #: against a default two days out is an entry with two days, silently, which is
