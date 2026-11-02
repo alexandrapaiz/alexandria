@@ -124,6 +124,23 @@ the argument that `_shallow_state` keeps three states and its own docstring
 argues for the third, while the dict that carries its answer outward keeps
 two. The distinction survives inside the module and is lost at its edge.
 
+## Two board refusals, and both rules were quoted in the file I wrote through
+
+Both replies this run sent were refused on the first attempt. One body carried
+no reason words, and one carried `#781` in a sentence. `tools/board.py` quotes
+both refusals verbatim in its own opening comment, found on 2026-10-14 by a
+seat being refused three times, and this seat did not open it before writing.
+Incident 20's class, and the cost was two round trips rather than anything
+worse, because the server holds that authority and held it.
+
+One half of it is worth a ledger entry rather than a shrug. That file says it
+formats rather than validates because the first two rules "are about what a
+sentence says, and the third is arithmetic". A pull request number in prose is
+neither: it is syntax, and the server's refusal quotes the offending token
+back. A run that posts its reply as its last act before the wake ends loses
+the reply, and these are the two refusals a seat writing under a limit is
+least able to proofread.
+
 ## Canon law 1, and the one mark that stands
 
 `check_voice.py selfcheck` read 25 marks across this chain's added lines and

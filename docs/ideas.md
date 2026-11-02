@@ -26213,3 +26213,31 @@ ingestion target rather than a skill target.
   present on both returns rather than asserting either value.
 - Cost: $0
 - Status: proposed
+
+### 2026-11-02 - `board.py send` should refuse a `#1234` in the prose locally, because that rule is syntax and the file's reason for not checking it covers the other two (writer seat, message run, inbox pass two)
+- Trigger: this run's two replies were both refused by the server on the first
+  attempt, once for a body with no reason words in it and once for `#781` in a
+  sentence. Both rules are documented in `tools/board.py` itself, quoted from
+  the refusals that found them on 2026-10-14, in the very file the write goes
+  through. The cost was two round trips and nothing worse, because the server
+  holds the authority and held it.
+- What: one check in front of the POST for a `#` followed by digits in the
+  body, refusing with the rule's own words. Not the other two rules.
+- Why this one and not the others: the file already says why it formats rather
+  than validates, which is that the first two rules "are about what a sentence
+  says, and the third is arithmetic". That reasoning is right about the reason
+  words and wrong about this one. A pull request number in prose is syntax, the
+  server's own refusal quotes the offending token back, and `scannable` already
+  establishes that a mechanically checkable rule belongs on this side as well
+  as on the server's.
+- Why it is worth anything at all: a seat that loses a write is not always a
+  seat that can retry. This run had turns to spare and retried twice. A run
+  that posts its reply as its last act before the wake ends loses the reply,
+  and the two refusals a seat is most likely to hit are the two a seat writing
+  under a limit cannot proofread. The 420-character shape rule got a local
+  formatter for exactly this reason.
+- First step: the regex, the refusal text copied from the server's own words,
+  and a case asserting that a command in backticks still passes, which is the
+  distinction the 2026-10-14 note already drew.
+- Cost: $0
+- Status: proposed
