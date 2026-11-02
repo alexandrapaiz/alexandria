@@ -581,8 +581,8 @@
       "prompt": "Our warehouse agent drives a pick-and-place arm through 41 tool calls: joint_move, gripper_open, gripper_close, wrist_rotate, cartesian_nudge, and so on down to per-axis jogs. A frontier VLM behind it plans badly, producing long fragile sequences that fail midway, so the proposal on the table is to collect demonstrations and fine-tune a small open-source VLM on this action space, which the team estimates at a few GPU-hours. What do you think?",
       "without_skill": "Accepts the framing and helps plan the fine-tune, treating the failure as a model-capacity problem, which is also the direction of a claim from this very paper that our graph has since deprecated.",
       "without_skill_basis": {
-        "kind": "authored-judgement",
-        "note": "the author's model of what a bare subject would answer. Never observed."
+        "kind": "this-repository-history",
+        "note": "relabelled 2026-11-02 at the research seat's request (PR #691). The reason this prediction gives is that the framing matches \"a claim from this very paper that our graph has since deprecated\", which is a fact about this repository's claim graph and not about any subject model. Nothing in this task's prompt has a graph in it: the prompt is a warehouse arm and 41 tool calls. It carried `authored-judgement` until today because the criterion being applied in practice was \"the reason contains a date\" and this reason contains none, which is the one error the gate cannot see."
       },
       "with_skill": "Reframes the failure as an interface problem, redesigns toward fewer semantic actions, and tries the unmodified model against the better interface before spending on training.",
       "check": {
