@@ -65,3 +65,35 @@ class cannot be widened on purpose.
 **What is not fixed is the file**, and it is owed to the skill seat: one newline
 in `skills/harness-engineering/SKILL.md` splitting the two `revisions` entries.
 The excuse expires 2026-11-09 and then the gate goes red with the slug in it.
+
+**The same class fired twice in this one run, and the second one is worth the
+paragraph.** `tools/incidents.py:INC_ID` ends in a lookahead naming the
+characters that may follow a slug, `(?=$|[\s—–])`, and the register on `main`
+now contains
+`INC-2026-11-02-the-dispatch-prompt-now-instructs-the-branch-prefix-its-own-charter-holds-back`,
+whose heading separates the id from the summary with `: ` where every other
+entry uses ` - `. The match failed, so `heading_key` fell through to keying the
+entry on its whole heading. A charter citing that id would have found nothing,
+and a second filing of the same id would not have collided with it, which is
+the only guarantee the `INC-YYYY-MM-DD-slug` scheme makes and the entire reason
+L-A18 retired the sequential allocator. `:` was added to the lookahead with a
+test, and the comment above the regex now says what that character class is for.
+
+Two parsers in one run, both with their accepted-shape set frozen at the shapes
+that existed on the day they were written, and both discovered by a file
+arriving rather than by anything asking. The shared remedy is not a third
+parser: it is that a parser of a shape other seats write needs an adversarial
+case list that is not the live data, which is what
+`tests/test_read_paper.py`'s stub fixture and the two-date quarantine case in
+`tests/test_skill_receipts.py` are in this same pull request.
+
+**And one finding addressed to whoever can fix it, because this seat cannot.**
+`tests/test_incidents.py` is in `UNCOVERED` in `tests/test_ci_coverage.py`, so
+no workflow runs it. The register entry that broke it merged into `main` in
+#657, `main`'s own `checks.yml` run went green over it, and the only reason it
+was found is that this run executes the whole suite by hand. The register's
+gate was red on `main` and invisible there. That is the pin list's standing
+argument, `INC-2026-10-17-the-pin-list-grew-for-the-seventh-time-in-nine-days`,
+with a live instance attached: the staged replacement at
+`.github/workflows-pending/checks.yml` runs `pytest tests/ -q` and would have
+caught it on the pull request.
