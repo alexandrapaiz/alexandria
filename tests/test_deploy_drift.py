@@ -1025,6 +1025,327 @@ def test_every_watched_app_records_its_own_runtime():
             "the guard has nothing to compare and says so forever")
 
 
+# How many statements of each scheduled entry point run before the first
+# durable write, measured 2026-11-02 and pinned so the number can shrink and
+# cannot grow. The ci_coverage gate uses the same shape for the same reason: a
+# count nobody asserts is a count that drifts in the wrong direction quietly.
+#
+# The ExO seat carded the press's instance on 2026-11-02: `record_runtime`
+# wrote the only row that says a job was INVOKED, and in `weekly` it sat after
+# the availability check, the two prompt reads and the connect, so a death
+# above it left no row and no mail that any seat could query. `first_seen_at`
+# is on the same row, so the drift guard was blind for exactly the app that
+# was missing its slot. The press is repaired in the same change as this
+# pin: its record is now the first thing inside its own `try`, in a connection
+# of its own.
+#
+# `ingest` was the second repair, 2026-11-02, and it was the one this list
+# called the worst of the five: `record_runtime` was written inside
+# `upsert_papers`, which the daily job reaches after `load_sources`, three
+# network fetches and `judge_sources`, and `judge_sources` raises
+# `NothingToIngest` by design. So the one day ingest had a real failure to
+# report was the one day it left no evidence that it ran. Its record is now a
+# `record_invocation()` call that is the first statement of the entry point,
+# which is why its pin is 0 rather than a small number: nothing at all runs
+# above it.
+#
+# **The two numbers are not measured the same way, and that matters when you
+# read them.** This counts statements of the scheduled entry point, so
+# `weekly`'s 7 includes its own inline `psycopg.connect`, and `ingest`'s 0
+# excludes the identical connect because it sits inside the helper. Both jobs
+# have the same thing above the row, which is the connect and nothing else. A
+# zero here therefore means "the floor", not "better than weekly".
+# `test_ingest_records_before_it_fetches_or_judges_a_source` is what keeps the
+# zero honest, because a pin alone cannot see work moved *into* the helper.
+#
+# The remaining three are the same class and are not repaired here, because a
+# reorder inside a model-calling job is a runtime change that wants its own
+# rehearsal (docs/agents/runtime-changes.md) and three of them is not one day's
+# work. What each prelude holds, read out of the modules on 2026-11-02:
+#
+#   weekly    7  a docstring, two imports, the week-label parse, the `try`
+#                and the connect. The parse is outside the try deliberately so
+#                an operator's typo is a traceback rather than an alarm, and
+#                nothing in the seven reaches the network or the filesystem.
+#                The connect is the floor: it is the one failure no row can
+#                survive, because the row needs the connection.
+#   triage    9  `llm()`, `load_prompt()` and `usable_models`, which reads
+#                every provider's model list over the network.
+#   interpret 10 the same three, plus `maintenance_step()`.
+#   distill  13  the same three, plus a `SentenceTransformer` import, plus the
+#                reading-model and window arithmetic.
+#   ingest    0  repaired 2026-11-02. It was 9, and every one of the nine
+#                fetched or judged a source, which made it the worst of the
+#                five. `record_invocation()` is now the first statement in the
+#                function and the connect inside it is all that is above the
+#                row.
+#
+# A number that goes up means a statement was added above a job's only proof
+# that it started. Move it below the record, or change the number here and say
+# why.
+UNGUARDED_PRELUDE = {
+    "weekly": 7,
+    "triage": 9,
+    "interpret": 10,
+    "distill": 13,
+    "ingest": 0,
+}
+
+
+def _recording_functions(tree) -> set:
+    """Every function in a module whose body reaches `record_runtime`.
+
+    `ingest` is why this is not just a search for the call: its record is
+    written inside `upsert_papers`, which the scheduled entry point calls near
+    the end. A test that looked only for the literal call in the entry point
+    would read `ingest` as having no record at all and miss the real finding,
+    which is how much runs before the call it does make.
+    """
+    import ast
+
+    found = set()
+    for node in ast.walk(tree):
+        if isinstance(node, ast.FunctionDef) and "record_runtime" in ast.dump(node):
+            found.add(node.name)
+    return found
+
+
+def _scheduled_entries(tree) -> list:
+    """The module-level functions `modal.Cron` puts on a clock.
+
+    Read off the decorator, the same derive-never-declare rule
+    `runtime_sha.schedules` already applies to the cron expression itself.
+    """
+    import ast
+
+    out = []
+    for node in tree.body:
+        if not isinstance(node, ast.FunctionDef):
+            continue
+        if any("Cron" in ast.dump(dec) for dec in node.decorator_list):
+            out.append(node)
+    return out
+
+
+def unguarded_prelude(app: str) -> tuple[int, list[str]]:
+    """Statements a scheduled job runs before its first durable write.
+
+    Returns the count and the first source line of each, so a failure names
+    the statement that moved rather than only the number.
+    """
+    import ast
+
+    source = (ROOT / rs.APPS[app]).read_text(encoding="utf-8")
+    tree = ast.parse(source)
+    recorders = _recording_functions(tree)
+    entries = _scheduled_entries(tree)
+    assert len(entries) == 1, (
+        f"{rs.APPS[app]} puts {len(entries)} functions on a schedule, so "
+        "'the prelude' is not one number. runtime_sha.schedule_of refuses the "
+        "same shape for the same reason.")
+
+    def holds_record(stmt) -> bool:
+        if "record_runtime" in ast.dump(stmt):
+            return True
+        called = {node.func.id for node in ast.walk(stmt)
+                  if isinstance(node, ast.Call)
+                  and isinstance(node.func, ast.Name)}
+        return bool(called & recorders)
+
+    def first_line(stmt) -> str:
+        segment = ast.get_source_segment(source, stmt) or ""
+        return segment.splitlines()[0].strip() if segment else "?"
+
+    lines: list[str] = []
+
+    def walk(body) -> bool:
+        """Count statements until the record. True once it has been found.
+
+        It descends into the statement that holds the record and counts a
+        statement that does not as one, which is the difference between this
+        and the first draft of it. The first draft counted only the entry
+        point's top-level statements, and the press's repair puts the record
+        inside a `try`, so everything after it was one statement and a new
+        line added inside the try was invisible to the pin. A gate that cannot
+        see the edit it exists to catch is this register's own recurring
+        defect, so it is worth saying which version is here and why.
+        """
+        for stmt in body:
+            if holds_record(stmt):
+                if isinstance(stmt, (ast.Try, ast.With, ast.If, ast.For,
+                                     ast.While, ast.AsyncWith)):
+                    lines.append(first_line(stmt))
+                    for name in ("body", "orelse", "finalbody"):
+                        if walk(getattr(stmt, name, []) or []):
+                            return True
+                return True
+            lines.append(first_line(stmt))
+        return False
+
+    if walk(entries[0].body):
+        return len(lines), lines
+    raise AssertionError(
+        f"{rs.APPS[app]}'s scheduled entry point never reaches a "
+        "record_runtime call, which test_every_watched_app_records_its_own_"
+        "runtime should already have caught")
+
+
+def test_nothing_new_runs_before_a_job_records_that_it_started():
+    """The invocation record stays as early as it is, per app.
+
+    This is the gate behind `UNGUARDED_PRELUDE` above, and the property is
+    one-directional on purpose. Shrinking a prelude is the repair and needs no
+    permission. Growing one puts a new way to die in front of the only row
+    that proves a job ran, and the row is what six surfaces read to answer
+    "did this fire".
+    """
+    for app in sorted(rs.APPS):
+        count, lines = unguarded_prelude(app)
+        pinned = UNGUARDED_PRELUDE[app]
+        check(f"{app} runs no more than {pinned} statements before its record",
+              count <= pinned,
+              f"{app}: {count} statements now, pinned at {pinned}. The "
+              f"prelude is {lines}. Move the new statement below the "
+              f"record_runtime call, or lower the pin and say why.")
+        if count < pinned:
+            # Not a failure. A shrink is the fix, and the message is how the
+            # next run finds out the pin is now loose.
+            print(f"    {app}: prelude is {count}, pinned at {pinned}. "
+                  "Lower the pin.")
+
+
+def test_the_press_records_before_it_reads_a_prompt_or_asks_a_provider():
+    """The press's own repair, asserted against source order rather than pinned.
+
+    The count above would still pass if the three statements the ExO seat's
+    card named were reordered among themselves. This is the specific claim:
+    in `pipeline/weekly.py`, the record is written before the prompt files are
+    opened and before `check_availability` goes to the network, and all three
+    are inside the `try` whose handler mails the owner.
+    """
+    module = (ROOT / rs.APPS["weekly"]).read_text(encoding="utf-8")
+    # Scoped to `weekly`'s own body, because `preflight` and `rehearse` read
+    # the same prompt files and sit above it in the file. An unscoped search
+    # finds the rehearsal's copy of every marker and compares the wrong lines,
+    # which is this test's own first draft and the reason the scoping is here
+    # rather than assumed.
+    start = module.index("def weekly(")
+    end = module.index("@app.function(", start)
+    source = module[start:end]
+    record = source.index('record_runtime(conn, "weekly"')
+    for marker, why in (
+        ('open("/root/prompts/digest.md")',
+         "a prompt missing from the image used to raise above the try, so it "
+         "produced no row and no alarm either"),
+        ("available = check_availability()",
+         "the availability check is a network call and it used to run first"),
+    ):
+        assert marker in source, f"{marker} is gone from the press; re-read this test"
+        check(f"the press records before {marker.split('(')[0].strip()}",
+              record < source.index(marker), why)
+
+    # And the handler is reachable from all three, which is the half that
+    # turns a silent death into an email. The `try` opens before the record.
+    opens = source.index("\n    try:\n")
+    check("the press's invocation record is inside the try",
+          opens < record,
+          "a record written above the try is a record whose failure path "
+          "mails nobody")
+
+
+def test_ingest_records_before_it_fetches_or_judges_a_source():
+    """Ingest's own repair, and the gate that keeps its pin of 0 honest.
+
+    The pin counts statements of the scheduled entry point, and this job's
+    record is a call to `record_invocation`, so the pin reads 0 no matter what
+    that helper grows into. A helper that learned to fetch would therefore
+    pass the pin while reintroducing the exact defect, which is the
+    cannot-see-its-own-edit failure the pin's own docstring warns about one
+    function up. Two claims, then, and neither is a count.
+
+    First, source order inside `ingest`: the record is written before
+    `load_sources`, before all three fetches, and before `judge_sources`,
+    which is the call that raises `NothingToIngest` on a bad feed day by
+    design and so used to make a reported failure and a lost record the same
+    event.
+
+    Second, the helper stays a helper. Nothing in `record_invocation` reaches
+    the network or the sources, so "first statement" and "first thing that
+    happens" are still the same sentence.
+    """
+    import ast
+
+    module = (ROOT / rs.APPS["ingest"]).read_text(encoding="utf-8")
+    start = module.index("def ingest():")
+    end = module.index("@app.function(", start)
+    source = module[start:end]
+    record = source.index("record_invocation()")
+    for marker, why in (
+        ("load_sources()", "the sources file is read off disk"),
+        ("fetch_arxiv(", "the firehose is a network call and it used to run first"),
+        ("fetch_feeds(", "fifty-three feeds are fetched here"),
+        ("fetch_hf_daily(", "one more network call"),
+        ("judge_sources(",
+         "this raises NothingToIngest by design, so the day ingest has a real "
+         "failure to report used to be the day it left no record of running"),
+    ):
+        assert marker in source, f"{marker} is gone from ingest; re-read this test"
+        check(f"ingest records before {marker.rstrip('(')}",
+              record < source.index(marker), why)
+
+    helper = next(
+        node for node in ast.parse(module).body
+        if isinstance(node, ast.FunctionDef) and node.name == "record_invocation")
+    reached = {node.func.id for node in ast.walk(helper)
+               if isinstance(node, ast.Call) and isinstance(node.func, ast.Name)}
+    check("and the record helper fetches nothing itself",
+          not (reached & {"load_sources", "fetch_arxiv", "fetch_feeds",
+                          "fetch_hf_daily", "fetch_arxiv_ids", "judge_sources",
+                          "read_arxiv_cursor", "upsert_papers"}),
+          f"record_invocation calls {sorted(reached)}, so the pin of 0 is "
+          "measuring the wrong thing and work has moved above the row again")
+
+
+def test_every_entry_point_in_ingest_records_its_own_invocation():
+    """Both of ingest's Modal functions, not only the scheduled one.
+
+    `upsert_papers` held the record until 2026-11-02 and both entry points
+    reached it, so moving the call to the daily job alone would have taken the
+    row away from the backfill silently. `ingest_ids` is how a seat answers a
+    reading-queue line that names a paper the window cannot reach, and it runs
+    the same module from the same image, so its row is as true as the cron's.
+    """
+    import ast
+
+    module = (ROOT / rs.APPS["ingest"]).read_text(encoding="utf-8")
+    tree = ast.parse(module)
+    def is_modal_function(dec) -> bool:
+        # `@app.function(...)` is a Call on an Attribute, so the dotted name
+        # never appears in `ast.dump` and a substring search for it finds
+        # nothing at all. That was this test's first draft and it passed over
+        # an empty list, which is the shape of a gate that asserts about
+        # nothing, so the membership check below is here rather than assumed.
+        target = dec.func if isinstance(dec, ast.Call) else dec
+        return (isinstance(target, ast.Attribute) and target.attr == "function"
+                and isinstance(target.value, ast.Name)
+                and target.value.id == "app")
+
+    entries = [node for node in tree.body
+               if isinstance(node, ast.FunctionDef)
+               and any(is_modal_function(dec) for dec in node.decorator_list)]
+    check("ingest.py still has the two Modal functions this test knows about",
+          {node.name for node in entries} == {"ingest", "ingest_ids"},
+          f"found {sorted(node.name for node in entries)}")
+    for node in entries:
+        first = node.body[1] if isinstance(
+            node.body[0], ast.Expr) and isinstance(
+                node.body[0].value, ast.Constant) else node.body[0]
+        check(f"{node.name} records its invocation first",
+              "record_invocation" in ast.dump(first),
+              f"{node.name}'s first statement is "
+              f"{(ast.get_source_segment(module, first) or '?').splitlines()[0]}")
+
+
 def test_an_app_that_has_never_recorded_since_its_code_asked_to_is_behind():
     """No row, while the code asks for one, is the oldest deploy there is.
 

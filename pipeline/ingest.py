@@ -522,6 +522,54 @@ def runtime_guard():
     return module
 
 
+def record_invocation() -> None:
+    """Write down that this job was invoked, before anything that can fail.
+
+    The repair, 2026-11-02, for the second instance of the class the ExO seat
+    carded in the press the same day. `deploy_runtime` holds the only
+    agent-readable row that says a scheduled job ran at all, and in this module
+    it was written inside `upsert_papers`, which the daily job reaches after
+    `load_sources`, three network fetches and `judge_sources`. That order made
+    ingest the worst of the five jobs rather than merely one of them, because
+    `judge_sources` raises `NothingToIngest` **by design** when every source
+    comes back empty. So the one day this job had a real failure to report was
+    the one day it left no evidence that it had run, and the surfaces that ask
+    "did ingest fire" read a row that still named yesterday.
+
+    `first_seen_at` is on the same row, so the drift guard could not date a
+    deploy of this file until a run got all the way to the insert either.
+
+    Its own short-lived connection, the way `pipeline/weekly.py` does it. The
+    connect is the floor: a row needs a connection, so that is the one failure
+    no record of any kind can survive. Everything else in the job now happens
+    below the row. Soft on every path, because this is evidence about a run and
+    never a reason to lose one: `record_runtime` cannot raise, and a connect
+    that fails here is reported and dropped rather than costing the day's
+    papers, which is the judgment `read_arxiv_cursor` already makes one
+    function up for the same reason.
+
+    **The imports are inside the `try` and that is not tidiness.** The first
+    draft of this function had them above it, and `tests/test_feed_health.py`
+    went red on six cases immediately: `psycopg` is not installed in the test
+    sandbox, so a statement this function runs *before* its own error handling
+    was a `ModuleNotFoundError` raised from the first line of the daily job.
+    The docstring above it claimed softness on every path while the code had
+    one path that was not soft, which is the same defect as the one being
+    repaired, one level in. A missing module is now reported and dropped like
+    any other failure to record.
+    """
+    try:
+        import os
+
+        import psycopg
+
+        with psycopg.connect(os.environ["DATABASE_URL"]) as conn:
+            print(runtime_guard().record_runtime(conn, "ingest", __file__)[1])
+    except Exception as exc:
+        print(f"runtime: not recorded ({exc.__class__.__name__}: {exc}), so "
+              f"the drift guard is blind to this run")
+
+
 def upsert_papers(rows: list[dict]) -> int:
     import os
 
@@ -533,10 +581,11 @@ def upsert_papers(rows: list[dict]) -> int:
     """
     inserted = 0
     with psycopg.connect(os.environ["DATABASE_URL"]) as conn:
-        # Say which deploy this is before anything else happens, the way
-        # triage, interpret and weekly have since 2026-09-28. It cannot raise
-        # and cannot abort this transaction; pipeline/runtime_sha.py says how.
-        print(runtime_guard().record_runtime(conn, "ingest", __file__)[1])
+        # The invocation record used to be written here, and it moved to both
+        # entry points on 2026-11-02. This helper is the last durable write of
+        # a run rather than the first, so a record written here dated the end
+        # of the run and not the start of it, and on a refusing day it was
+        # never reached at all. `record_invocation` below says the rest.
         with conn.cursor() as cur:
             for r in rows:
                 if r["tier"] == "b":
@@ -554,6 +603,12 @@ def upsert_papers(rows: list[dict]) -> int:
     timeout=900,
 )
 def ingest():
+    # First, and above everything that can fail. `record_invocation` says why
+    # at length; the short version is that every statement below this one is a
+    # way for the day's run to die without leaving a trace that it started,
+    # and one of them raises on purpose.
+    record_invocation()
+
     cfg = load_sources()
     # Where the last run got to, read before anything is fetched. This is the
     # line that makes a missed day recoverable instead of lost.
@@ -596,7 +651,24 @@ def ingest_ids(ids: list[str], tier: str = "b"):
     backfill inside a normal day's count. `judge_sources` is not consulted here
     for the same reason: a by-id fetch that returns nothing is a wrong id rather
     than a dead source, and the missing ids are printed above.
+
+    It records its invocation too, and that is a behaviour change worth
+    naming rather than an oversight. Before 2026-11-02 the record was written
+    inside `upsert_papers`, so a backfill wrote it as a side effect, and a
+    backfill that matched no id returned early and wrote nothing. Keeping the
+    call here holds that first half exactly where it was. The second half is
+    now consistent with it: this function runs the same module from the same
+    image, so a run of it that finds no papers is still a true statement about
+    what the container holds.
+
+    The confound the writer seat named for the press on 2026-11-02 applies to
+    this row as well: `deploy_runtime` is one row per app with no history and
+    no column naming the caller, so a hand backfill moves `recorded_at` to its
+    own minute and the cron's last minute is gone. That is a missing column
+    rather than a reason to write less down, and it is in `docs/ideas.md`.
     """
+    record_invocation()
+
     rows, status = fetch_arxiv_ids(ids, tier=tier)
     if not rows:
         print(f"nothing to insert for {ids}")

@@ -24359,3 +24359,350 @@ ingestion target rather than a skill target.
   engineer's board row for that credential is open and is the actual blocker.
 - Cost: $0.
 - Status: proposed
+
+## Engineer agent findings (2026-11-02, message run)
+
+### 2026-11-02 - The reader records which url served a paper and not which version of it, so "read in full" is not checkable later (engineer seat, message run, craft scan)
+- Trigger: today's craft scan, below, read against the patch this run shipped.
+  `tools/read_paper.py` now names the route that answered in its `# source:`
+  line, which was the whole point of the change. It still throws away the one
+  field that would let a later reader check the claim: `normalize_id` ends with
+  `re.sub(r"v\d+$", "", ...)`, deliberately, because arXiv's HTML lives at the
+  unversioned path. So `docs/research/reading-queue.md` now carries dozens of
+  lines of the form "read in full 2026-11-02, exit 0, 78,293 chars" with no
+  record of which revision of the paper that was, and arXiv papers are revised.
+- What: Unpaywall's answer for one DOI (measured live this run, see the scan) is
+  five OA locations, each carrying `host_type` and `version`, where `version` is
+  one of `publishedVersion`, `acceptedVersion` or `submittedVersion`, and one is
+  flagged `is_best`. The field exists because "which copy did you read" and
+  "where did you get it" are different questions, and the ar5iv fallback this
+  run added makes them different here for the first time: the mirror is a
+  LaTeXML rendering of the submitted source, not of a published paper, and
+  nothing in the output says so. The proposal is one more header line and one
+  more key, `# version: v3` and `"version"`, resolved from the `v\d+` suffix the
+  Atom entry carries, and the `# source:` line already proves the plumbing for
+  threading a field from the fetch to the cache to the CLI exists.
+- First step: `fetch_metadata` already parses the Atom entry, whose `id` element
+  carries the versioned url, so the version is one `re.search` away from data
+  already in hand. Add it to the dict `fetch_metadata` returns, carry it into
+  `_render` and `_parse_cached` the way `source` is carried today, and extend
+  `tests/test_read_paper.py` with a cached-reprint case, which is where the
+  `source` field's own bug would have been.
+- Cost: $0
+- Status: proposed
+
+### 2026-11-02 - The pdf route is the third route and it is a dependency question rather than a six-line patch (engineer seat, message run)
+- Trigger: the research seat's handoff said "the pdf path answers as well and
+  pypdf is installed in this sandbox", and both halves check out: `curl` on
+  `arxiv.org/pdf/2609.07103` returns 200 with 852,146 bytes, and `pypdf` imports
+  at 6.21.1 here. It was left out of today's patch on purpose and the reason
+  belongs in the ledger rather than only in a commit message.
+- What: `tools/read_paper.py`'s module docstring says "Standard library only, on
+  purpose: the seats run on `ubuntu-latest` with no `pip install` step, so a
+  reader with a dependency is a reader nobody runs." `pypdf` being importable in
+  one sandbox is not the same fact as it being importable wherever the reader
+  runs, and the reader is also shipped into the distill image as a local file
+  (`pipeline/distill.py` adds `tools/read_paper.py` at `/root/read_paper.py`),
+  so a hard import would move a dependency into a Modal image too. A third route
+  is worth having: it is the only route for a pre-2024 paper that ar5iv has not
+  rendered. The shape that costs nothing is a soft route, tried only when both
+  HTML routes fail and only when `import pypdf` succeeds, reported in
+  `# source:` like any other route and absent from `HTML_ROUTES` because it does
+  not return markup and the institutions reader cannot use it.
+- First step: a `fetch_pdf_text(paper_id)` beside `fetch_html_from` that returns
+  `None` on `ImportError` with one line on stderr, wired into `read()` between
+  the HTML routes and the abstract fallback, plus a declaration of `pypdf` in
+  `requirements-dev.txt` only, so the suite can test it and no runtime acquires
+  it. The test case is the one that matters: a sandbox with no `pypdf` must still
+  exit 3 rather than crash.
+- Cost: $0
+- Status: proposed
+
+### 2026-11-02 - MIN_HTML_BYTES no longer separates a stub from a paper, and its comment said it did (engineer seat, message run)
+- Trigger: measuring the arXiv 404 page while building today's fallback, because
+  the fall-through had to be sure the status check was doing the work.
+  `arxiv.org/html/2609.07103` serves 7,882 bytes. `MIN_HTML_BYTES` is 5,000 and
+  the comment above it said an arXiv stub page "is a few hundred bytes". So the
+  floor passes the stub, and what rejects it is the HTTP status, which is checked
+  first. Cleaned, that page is 602 characters, so `MIN_TEXT_CHARS` would have
+  caught it one layer down.
+- What: the comment is corrected in this run's diff, with the measurement in it,
+  because a stale premise beside a live constant is how a later reader concludes
+  the floor is load-bearing. The constant itself is left alone and that is the
+  open question: it is now a filter that rejects nothing any other check would
+  not reject, and it is the only one of the two floors that `fetch_html` applies.
+  A route that answered 200 with a thin page would pass it and reach
+  `pipeline/institutions.py` as markup. Either raise it against a real
+  measurement of the thinnest page worth parsing, or delete it and let the
+  character floor and the status code be the two checks, which is what they
+  already are in practice.
+- First step: measure it rather than argue it. `fetch_html_from` over the
+  reading queue's own ids, recording bytes and cleaned characters for every
+  200 response, which is a few hundred fetches of pages the cache mostly holds
+  already, then set or delete the constant from the distribution. The queue is
+  the right sample because it is the papers this company actually reads.
+- Cost: $0
+- Status: proposed
+
+### 2026-11-02 - Craft scan: Unpaywall answers "where is the full text" with five ranked locations and a version on each, where alexandria's reader answers with one url and an exit code (engineer seat, message run)
+- Trigger: the daily craft scan, pointed at this run's own build. The work was a
+  second fetch route for the paper reader, so the scan went to the product whose
+  entire job is that question. Measured live rather than read about:
+  `api.unpaywall.org/v2/10.1038/nature12373` returns `is_oa: true`,
+  `oa_status: "bronze"`, and `oa_locations` with five entries. Each carries
+  `host_type` (`publisher` or `repository`), `version`
+  (`publishedVersion`, `acceptedVersion`, `submittedVersion`), `license`,
+  `url_for_pdf` and `is_best`, and `best_oa_location` is the one with
+  `is_best: true`. One of the five locations for that DOI is an arXiv pdf.
+- What is worth stealing: the route list is data with fields on it, not a tuple
+  of url templates. Today `HTML_ROUTES` is two format strings and the reader
+  reports one `# source:` line, which is already better than the one route it
+  replaced and is still a weaker answer than Unpaywall's. Three fields are the
+  ones worth having and they are each a day or less: `version`, which is the
+  entry above; `host_type`, which is the difference between arXiv's own
+  rendering and a mirror of it and is the thing a reader should weigh when a
+  table disagrees; and a ranking that is computed rather than hard-coded in the
+  tuple's order, which is what lets a route be added without an argument about
+  where it goes.
+- What alexandria does better, and it is not a small thing: the exit code.
+  Unpaywall hands back `is_oa` and a list, and every caller writes its own
+  judgment about whether that constitutes having read the paper, which is
+  exactly the "every seat wrote its own version" failure `read_paper.py` was
+  built to end. Here, 0 means full text, 3 means the abstract only, 4 means
+  neither, and `|| echo "queue it"` is the whole integration. The reader also
+  refuses to cache an unavailable paper, so today's outage cannot become
+  tomorrow's recorded fact, and that is the discipline this run's own incident
+  is about.
+- First step: the `version` entry above is the first of the three and the only
+  one with its data already in hand.
+- Cost: $0
+- Status: proposed
+
+### 2026-11-02 - Four of the five scheduled jobs can still die without leaving a record, and ingest is the one that does it on purpose (engineer seat, message run, checks-red wake)
+- Trigger: measuring the press's prelude while repairing it. The ExO seat carded
+  `weekly`, which is repaired in this run's diff. The same measurement run over
+  the other four says `triage` executes 9 statements before its record,
+  `interpret` 10, `distill` 13 and `ingest` 9, and the numbers are now pinned in
+  `tests/test_deploy_drift.py` so they can shrink and cannot grow. `ingest` is
+  the one worth reading twice: `load_sources`, three fetches and
+  `judge_sources` all run first, and `judge_sources` raises `NothingToIngest`
+  by design on a bad feed day. So the single day ingest has a real failure to
+  report is the day it leaves no evidence that it ran at all.
+- What: the same repair, four times, in the shape this run proved out. The
+  record moves to the first durable write inside the job's own error handling,
+  in a connection of its own, so the only thing above it is the connect. Each
+  of the four is a handful of lines and the pin turns green as it lands. They
+  are not in this run's diff for one reason: a reorder inside a model-calling
+  job is a runtime change under `docs/agents/runtime-changes.md`, which wants a
+  rehearsal per app, and four rehearsals is not one day.
+- First step: `ingest`. It is the only one of the four that calls no model, so
+  `docs/agents/runtime-changes.md` gives it a bare deploy rather than the two
+  gates, and it is also the instance with the live failure mode. One day.
+- Cost: $0
+- Status: proposed
+
+### 2026-11-02 - A finish signal to go with the start signal, so "it started and never finished" is a query rather than an inference (engineer seat, message run, checks-red wake)
+- Trigger: the craft scan below, read against the repair this run shipped.
+  Moving `record_runtime` to the top of the press's `try` means
+  `deploy_runtime.recorded_at` is now a start signal: it says a run began. No
+  column says a run ended. So "the press started and died" is still derived by
+  joining two tables and knowing that `digests` should hold a row for the week,
+  which is a judgment every reader writes for itself, and that is the failure
+  `tools/read_paper.py` exists to have ended elsewhere.
+- What: one nullable `finished_at` on `deploy_runtime`, written on the way out
+  of the same handler that already mails the owner, plus the one line in
+  `tools/delivery_health.py` that reads the pair. Then three states are a
+  query instead of an argument: no row is "never ran since the code asked",
+  `recorded_at` with no `finished_at` is "started and died", and both is a
+  clean run. It also gives the alarm the row the ExO seat's card asked for as
+  its second option, and gives it without a second table, because the row the
+  alarm would write is the row the run already has.
+- First step: the column and the write, on `weekly` alone, since `weekly` is
+  the job whose handler already exists and whose failure the owner already
+  gets mail about. The other four follow the entry above.
+- Cost: $0
+- Status: proposed
+
+### 2026-11-02 - A checks event should carry its own live confirm, the way the standing block already does (engineer seat, message run, checks-red wake)
+- Trigger: this run's own wake, filed as
+  `INC-2026-11-02-one-wake-carried-three-conditions-and-all-three-were-already-resolved`,
+  the sixth instance of a class first recorded on 2026-10-26. Three conditions
+  arrived and all three were already answered. The standing block carries a
+  sentence telling the seat to confirm it with `GET /api/standing`, that call
+  took one turn, and it disagreed with the block attached to the same wake,
+  which was the answer. The two `checks` events carry no such sentence, so they
+  cost a failed log and two run lists to establish that both named branches
+  were green at their heads.
+- What: the receiver-side half of a remedy whose sender-side half is already
+  specified at the composer. One sentence in the charters' duplicate-wake
+  clause, naming the command for a `checks` event the way the standing block
+  names its own: `gh run list --branch <the branch> --limit 5 --json
+  conclusion,headSha,createdAt`, read before the log. A seat that runs it first
+  reads "the head is green" and writes a sentence instead of hunting a failure
+  that exists only at a commit nobody will merge.
+- First step: it is a charter edit, which is not this seat's to make, so the
+  first step is this entry and the board note that carries it. The owner's merge
+  or a chair's is the whole change.
+- Cost: $0
+- Status: proposed
+
+### 2026-11-02 - Craft scan: Healthchecks.io separates "the job started" from "the job finished" and alarms on the gap, where alexandria had one signal and wrote it late (engineer seat, message run, checks-red wake)
+- Trigger: the daily craft scan, pointed at this run's own build. The work was
+  giving the press an agent-readable record that it was invoked, so the scan
+  went to the product whose entire job is that question. Read live at
+  healthchecks.io/docs on 2026-11-02 rather than from memory.
+- What is worth stealing, and it is one idea: **two signals, not one.** A job
+  appends `/start` to its ping URL when it begins and pings the bare URL when
+  it succeeds, and the service stores both. That buys three things from one
+  extra write. Run time is the gap between adjacent start and success events,
+  so it is measured rather than estimated. The states are named rather than
+  inferred: `New` is a check that has never pinged, `Up`, `Late` is overdue
+  inside its grace, `Down` is overdue past it, and `Started` is its own state.
+  And the alerting rule that matters here is the one that needs both signals:
+  a start with no success inside the grace time is assumed failed and alarms.
+  That is exactly the state this run's repair creates and does not yet read,
+  which is why it is the ledger entry above rather than only a note.
+- What alexandria does better, and it is the same defect this register keeps
+  naming: Healthchecks asks you to type the schedule and the grace into its UI,
+  so the monitor holds a second copy of a fact the job already owns, and the two
+  disagree on the day somebody edits a crontab. Here the schedule is parsed out
+  of the job's own source by `runtime_sha.schedule_of`, the file manifest is
+  parsed out of the job's own `add_local_file` calls, and
+  `runtime_sha.schedule_of` refuses rather than guesses when a module carries
+  two crons. A hand-kept copy of a list is a list that disagrees with reality on
+  the day it matters, and that sentence is already in `pipeline/runtime_sha.py`.
+  The second thing: the ping is a liveness signal and says nothing about what
+  the container contains, where `deploy_runtime` carries a content digest of the
+  files the job is actually running from, which is what lets a seat ask whether
+  the merged fix is the running fix at all.
+- First step: the `finished_at` entry above is this scan's first step and it is
+  already written as its own entry, so this note adds the argument rather than a
+  second card.
+- Cost: $0
+- Status: proposed
+
+### 2026-11-02 - The invocation row has no column naming who invoked it, so one hand run erases the cron's evidence (engineer seat, message run, lane-next wake)
+- Trigger: two halves of one defect, met an hour apart. The writer seat's board
+  note of 02:21Z said it about the press: `deploy_runtime` is one upserted row
+  per app with no history and no column naming the caller, `record_runtime` is
+  on the path of every invocation, so a hand
+  `modal run pipeline/weekly.py::weekly` writes the row exactly as the cron
+  would and overwrites whatever the cron left. The minute is the only
+  discriminator left. Then this run met the same thing in the code it was
+  repairing: `ingest_ids`, the by-id backfill a seat runs to answer a
+  reading-queue line, runs the same module and writes the same `ingest` row. So
+  the confound is not specific to the press being tested by hand. It is a
+  missing column, and today's repair widened the set of runs that write the row
+  without widening what the row can say about them.
+- What: one `invoked_by` column on `deploy_runtime`, written by
+  `record_runtime` from an argument its callers already know, with three
+  values that are all a caller can honestly claim: `cron` from the scheduled
+  entry point, `manual` from a `local_entrypoint` or a hand `modal run`, and
+  `task` from a by-id or by-week function somebody asked for. Then a run that
+  moved the minute says so, and `tools/delivery_health.py` can stop treating
+  an off-slot minute as evidence about the schedule. It pairs with the
+  `finished_at` entry of this morning and wants the same migration, so the
+  two should land together rather than as two schema changes a week apart.
+- First step: the column and the argument, on `ingest` alone, because `ingest`
+  is the one app whose two writers are both already in the repository and
+  neither of them calls a model, so the whole change is testable without a
+  rehearsal. `weekly` follows, and `weekly` is the one the writer seat asked
+  about.
+- Cost: $0
+- Status: proposed
+
+### 2026-11-02 - The prelude measurement cannot follow a record into a helper, so the strongest repair produces the least measurable number (engineer seat, message run, lane-next wake)
+- Trigger: this run's own repair, caught in rehearsal rather than in review.
+  `unguarded_prelude` in `tests/test_deploy_drift.py` counts statements of the
+  scheduled entry point before the first durable write. Moving ingest's record
+  into a `record_invocation()` helper called first takes that count from 9 to
+  0, which is correct and is also the point at which the pin stops measuring
+  anything: a helper that later learns to fetch a feed would leave the pin
+  reading 0 while restoring the whole defect. The second break rehearsed in
+  this run proves it, because the pin passed on it and only the bespoke gate
+  went red. The same asymmetry makes `weekly`'s 7 and `ingest`'s 0 two
+  different units, since weekly's inline `psycopg.connect` is counted and the
+  identical connect inside ingest's helper is not.
+- What: teach `unguarded_prelude` to descend. It already computes
+  `_recording_functions`, the set of functions whose bodies reach
+  `record_runtime`, and `holds_record` already recognises a call to one, so the
+  walk has everything it needs to step into the called function and keep
+  counting there instead of stopping at the call. Then one number means one
+  thing for all five apps, the per-app gate this run had to hand-write for
+  ingest is unnecessary, and the three remaining repairs can each lower a pin
+  rather than each add a test. The pins would be re-measured once in the same
+  change, with the old and new numbers printed side by side.
+- First step: the descent and the re-measurement, with this run's second
+  rehearsed break as the test case it has to catch. Half a day, no production
+  code touched.
+- Cost: $0
+- Status: proposed
+
+### 2026-11-02 - Miniflux stops polling a dead feed after three errors, where a dead feed here waits on a human ruling that is seventeen days old (engineer seat, message run, lane-next wake)
+- Trigger: today's `python3 tools/feed_health.py` run, which is ingest's deploy
+  ladder and was run as this change's availability check. It reads 49 of 53
+  sources delivering, 0 dark and unrecorded, and 4 dark and pinned by hand in
+  `tools/feed_health.py`. The ledger entry that asked for a ruling on those is
+  `2026-10-16 - Five sources are dead and retiring one is the owner's call`,
+  and it is still `proposed` seventeen days later, with `mit-csail` silent
+  since 2019 and `stanford-sail` since 2022. The craft scan below found the
+  product that does not need the ruling.
+- What: steal the counted stop. Miniflux keeps a parsing-error count per feed
+  and `POLLING_PARSING_ERROR_LIMIT`, documented default 3, stops polling that
+  feed once it is reached; a human refreshing it by hand is what clears the
+  count. Here the equivalent is already half built, because `fetch_feeds`
+  reports a status row per source to its caller. The missing half is that
+  nothing remembers yesterday's row, so a source's record is recomputed from
+  one fetch every time and "dark for a week" and "dark once" are the same
+  observation. One small table keyed by source name, a consecutive-zero
+  counter, and a limit, and then the pin in `tools/feed_health.py` is derived
+  from measurement instead of hand-written, a source that has been dark for N
+  days stops costing a fetch, and the owner's ruling becomes a confirmation
+  rather than a prerequisite. The limit is a number to argue about: 3 fetches
+  is right for Miniflux's hourly poll and wrong for a daily one, and the
+  census already measures days of silence, so days is the better unit here.
+- First step: the counter and the table, with `judge_sources` reading it, and
+  the limit set high enough that none of the 49 live sources can trip it on a
+  single quiet day. The four pins stay in place until the counter agrees with
+  them, which is the cheapest way to check a new gate against a known answer.
+- Cost: $0
+- Status: proposed
+
+### 2026-11-02 - Craft scan: Miniflux treats a feed's failure history as state and a dead feed as a decision the software makes, where alexandria recomputes both from one fetch (engineer seat, message run, lane-next wake)
+- Trigger: the daily craft scan, pointed at this run's own build. The work was
+  ingest, so the scan went to the most disciplined open-source feed reader
+  rather than to another research tool. Read live on 2026-11-02 from
+  `miniflux.app/docs/configuration.html`, with the values quoted rather than
+  remembered.
+- What is worth stealing, one idea with two parts: **a feed's failure history
+  is state, and the schedule is per feed rather than per job.**
+  `POLLING_PARSING_ERROR_LIMIT`, default 3, is the counted stop in the entry
+  above. Beside it is `POLLING_SCHEDULER`, default `round_robin`, whose other
+  value is `entry_frequency`: the interval for a feed is derived from how often
+  that feed actually publishes, bounded by
+  `SCHEDULER_ENTRY_FREQUENCY_MIN_INTERVAL` at 5 minutes and
+  `SCHEDULER_ENTRY_FREQUENCY_MAX_INTERVAL` at 1440. A feed that posts twice a
+  year is not asked twice an hour. Here all 53 sources are fetched on one cron
+  at `0 11 * * *` and the census already knows each one's publishing rate, so
+  the input to that policy is measured and unused. `BATCH_SIZE` at 100 feeds
+  and `FORCE_REFRESH_INTERVAL` at 30 minutes are the two bounds that keep the
+  policy from becoming a thundering herd, and both are the kind of number this
+  repository would otherwise discover in production.
+- What alexandria does better, and it is the judgment Miniflux cannot make.
+  `judge_sources` separates "this source delivered nothing" from "every source
+  delivered nothing", and refuses the whole run only on the second, with the
+  arXiv categories as their own quorum because the firehose is what fills
+  `papers`. A per-feed error limit is blind to that distinction by
+  construction: fifty-three feeds failing at once reads as fifty-three
+  independent feed problems, when it is one network, one image or one
+  `sources.yaml`. The second thing is the pins themselves. Each of the four
+  dead sources carries a written reason, the date it was probed, and the
+  candidate replacement URLs that were tried and failed, so a ruling is a
+  five-minute read rather than a re-investigation. Miniflux's stopped feed
+  carries a count.
+- First step: the entry above is this scan's first step and is already written
+  as its own entry. The per-feed interval is the larger half and is not carded,
+  because a second schedule inside one cron is a real design change and
+  ADR-12's cap of five Modal crons is the constraint it has to respect.
+- Cost: $0
+- Status: proposed
