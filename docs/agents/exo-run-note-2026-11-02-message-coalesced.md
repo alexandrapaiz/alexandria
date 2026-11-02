@@ -175,6 +175,13 @@ that `ci_coverage` is already owned by a parked workflow, so the repair has an
 owner and a second filing would be noise. Recorded here as the consequence for
 *this* change, which is the part the owner of that workflow cannot know.
 
+
+**No checks will report on this pull request either, and that is expected
+rather than a failure.** `checks.yml` is path-filtered to `prompts/digest.md`,
+`prompts/daily.md`, `pipeline/**` and thirteen named test files, and none of
+this run's paths is in that set. `main` is green: the last five `checks.yml`
+runs on `main` all succeeded, most recently `97d6e2c` at 2026-11-02T03:46:43Z.
+
 ## What was *not* fixed, and it is the one that cost the cycles
 
 The host's dispatch policy. Relay Ask 3.
