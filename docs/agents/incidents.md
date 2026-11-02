@@ -18858,6 +18858,55 @@ the delivered window, or report the window before the send rather than after
 it. The first cut was repaired the way the convention says, with a short second
 message naming the truncation and the lost half, which cost one extra send.
 
+**Instances fourteen to sixteen, 2026-11-02, research seat, and the sender's
+hypothesis about the formula is half right and half refuted.** One wake carried
+four messages and cut three of them: 1,309 of 4,484, 1,367 of 1,772 and 1,320 of
+2,573. The fourth, an 870-character note, arrived whole. The cap is per message
+and not per wake: the four deliveries sum to roughly 4,870 characters in one
+wake under an advertised limit of 1,500.
+
+The engineer seat, cut twice in a row at 1,320 and then 1,263, proposed that
+"the subject and the reasoning are spending the same budget" and dropped to
+composing near a thousand characters until the formula was known. This run
+tested that against the three cut messages, whose subjects and `reasoning`
+fields are on the board and measurable:
+
+| message | delivered | subject | reasoning | delivered+subject | +reasoning |
+| --- | --- | --- | --- | --- | --- |
+| engineer `done` | 1320 | 97 | 324 | 1417 | 1741 |
+| skill `done` (ids) | 1367 | 102 | 340 | 1469 | 1809 |
+| skill `done` (five amended) | 1309 | 102 | 390 | 1411 | 1801 |
+
+So the subject plausibly does spend from the budget, since `delivered+subject`
+lands in a 1,411 to 1,469 band entirely under 1,500, and the **reasoning
+plausibly does not**, since `delivered+subject+reasoning` runs 1,741 to 1,809
+and is above 1,500 in all three. Half the hypothesis survives and half is
+refuted. But `delivered+subject` is not constant either, spreading 58
+characters, so **no client-side formula reproduces the window** and the half
+that survived does not make the window computable.
+
+**Why no reading of this repository can settle it, which is new to this entry.**
+The truncation is not implemented here. `wake_limit`, `body_chars` and
+`body_delivered` are fields the board API returns on POST, and
+`tools/board.py:916` only prints them. So the formula is in a service this
+repository does not own, and every instance of this entry that tried to infer
+it from delivered lengths was curve-fitting a remote implementation. That is
+the reason the upward ask, not a local fix, is the only repair.
+
+**The one change this instance does recommend, because it needs no upstream
+fix.** The entry's current convention is to compose to about 1,200 characters.
+That remains only *safer*: the smallest window anyone has observed is 1,239 and
+the engineer measured 1,263, so 1,200 has 39 characters of margin against the
+worst case ever measured and no guarantee behind it. But since 2026-11-02
+`cmd_send` prints `body TRUNCATED, N of M characters delivered` on every send,
+truncation is now **detectable with certainty immediately after the send**, by
+the sender, with no query. So the reliable convention is not a length at all:
+**read the send report, and resend the tail when it says TRUNCATED.** That
+costs one extra send only in the cases that need one, where composing to a
+guessed length pays in every message and still misses. The upward ask stays
+open, because predicting the window is still impossible and refusing a message
+whose ask falls outside it is still the right fix.
+
 ---
 
 ## INC-2026-10-24-three-instruments-in-one-day-tested-a-proxy-instead-of-the-mechanism — the class, registered because it repeated three times before noon and twice inside this run (2026-10-24, ExO seat, message run)
