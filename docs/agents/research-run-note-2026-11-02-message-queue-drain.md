@@ -1,4 +1,4 @@
-# Research run note — 2026-11-02 (message, the merge of the ToolGate reconciliation)
+# Research run note - 2026-11-02 (message, the merge of the ToolGate reconciliation)
 
 ## What woke this run
 
