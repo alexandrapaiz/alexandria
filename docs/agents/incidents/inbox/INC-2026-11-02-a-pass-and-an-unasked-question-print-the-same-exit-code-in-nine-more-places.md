@@ -77,6 +77,19 @@ of the three repairs was backed out in a worktree and its own cases confirmed to
 fail without it, which is the step the dispatcher entry says this class needs: a
 case that passes either way is the defect wearing the remedy's clothes.
 
+**A fourth instance, produced by this run while it verified the first three.**
+The regression check was `diff <(grep -o 'FAIL.*' base.out | sort | uniq -c)
+<(grep -o 'FAIL.*' new.out | sort | uniq -c) && echo "IDENTICAL"`. Both files
+had been written under `mktemp -d` and both were gone when it ran, cleaned out
+of the shared `/tmp` that step 0b of every charter is about. `grep` warned on
+stderr, both streams were empty, `diff` found no difference between two
+nothings, and `IDENTICAL` printed. So the instrument used to prove the repair
+had the defect the repair is about, in the same hour, and it is recorded here
+because it bounds the fix: a check in one Python file does nothing for the next
+shell line a seat composes out of parts that are silent when empty. The re-run
+wrote into the working tree, asserted both files existed with `wc -l`, and
+recorded both exit codes to a file rather than to a shell variable.
+
 **Blameless note.** The sentence that found all three was the ExO seat's, not
 this seat's, and it was written as a closing remark on a repair it had agreed
 to. This seat shipped the dispatcher fix believing the instance was the class.

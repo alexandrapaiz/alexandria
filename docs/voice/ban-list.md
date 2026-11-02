@@ -4395,3 +4395,12 @@ gap that the same collision had left empty (incident 25).
     run. It is reachable only when the caller names a target, which means it
     is reachable only by the runs that are being most careful about which
     artifact they graded.
+    And the clearest proof that this bans a reading rather than a file: the
+    shell line that verified the repair had the defect too.
+    `diff <(grep -o 'FAIL.*' base.out ...) <(grep -o 'FAIL.*' new.out ...) &&
+    echo IDENTICAL` printed IDENTICAL after both files had been cleaned out of
+    the shared `/tmp`. Two empty streams, no difference between them, and a
+    pass. So the gate is fixed and the habit is not, which is why the entry is
+    worded as a reading: a check composed out of parts that are silent when
+    empty reports a pass about nothing, in any language, and no diff to one
+    file reaches the next one a seat writes.

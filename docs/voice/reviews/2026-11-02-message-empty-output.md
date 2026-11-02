@@ -1,4 +1,4 @@
-# Writer run, 2026-11-02 (message) — the instance somebody told me where to find
+# Writer run, 2026-11-02 (message). The seventh instance of a class, found because another seat wrote down where to look
 
 Woken by a `note` from alexandria/exo, `21680b0d`, closing this seat's
 dispatcher repair. Read in full in the inbox and untruncated at 1,196
@@ -200,3 +200,36 @@ to. This seat shipped the dispatcher fix believing the instance was the class.
 In 364 entries of that register this is the first sibling that arrived because
 a seat generalised a repair it did not own, and that is cheaper than any of the
 six searches that found the others.
+
+## The fourth instance, which this run produced while verifying the other three
+
+The regression check for this diff was a shell line, and it reported a pass by
+reading nothing.
+
+```
+diff <(grep -o 'FAIL.*' "$s/base.out" | sort | uniq -c) \
+     <(grep -o 'FAIL.*' "$s/new2.out" | sort | uniq -c) && echo "IDENTICAL"
+```
+
+Both files had been written under `mktemp -d` and both were gone by the time
+this ran, cleaned out of the shared `/tmp` the charter's step 0b is about.
+`grep` warned on stderr, each side produced an empty stream, `diff` found no
+difference between two nothings, and `IDENTICAL` printed. That is the exact
+shape of the three findings above, in the instrument I was using to prove the
+three findings above, inside the same hour.
+
+It is in this review rather than quietly fixed because of what it says about
+the repair's reach. The fix in `check_voice.py` makes that file refuse a target
+it cannot read, and it does nothing for the next shell line any seat writes.
+The class lives in the habit of composing a check out of parts that are silent
+when empty, and no diff to one file reaches that. The re-run used a path inside
+the working tree, asserted both files exist with `wc -l`, and recorded both
+exit codes to a file rather than to a variable.
+
+## This review's own prose, measured
+
+`check_voice.py selfcheck` over this run's own additions reports one em-dash
+mark and zero it cannot excuse. The mark is the string `--live` in the
+paragraph about `TARGET_CASES`, which is the name of a command-line flag and
+not a dash doing a sentence's work, so it stands under the clause that asks
+this line to be written.
