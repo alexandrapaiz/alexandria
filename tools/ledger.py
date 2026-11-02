@@ -4,6 +4,7 @@
     python3 tools/ledger.py --census
     python3 tools/ledger.py --status accepted
     python3 tools/ledger.py --check
+    python3 tools/ledger.py --patch origin/main
 
 The ledger's entry contract is printed at the bottom of every charter in this
 repository, and three different consumers depend on it. The PM grooms
@@ -51,6 +52,7 @@ stops the backlog growing, which is the thing a command can actually do.
 import argparse
 import json
 import re
+import subprocess
 import sys
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -85,6 +87,26 @@ DECOY = re.compile(r"Status:\s*(" + "|".join(VALID_STATUSES) + r")\b", re.I)
 
 #: The four fields besides the status that the contract asks for.
 CONTRACT_FIELDS = ("Trigger", "What", "First step", "Cost")
+
+#: How wide a qualifier a field label may carry before the colon.
+#:
+#: The contract block prints `- What:` and seats write `- What alexandria does
+#: better:`, `- What is worth stealing:`, `- Cost to HQ:`, `- First step, if
+#: accepted:`. Measured on the live file the day this was written: 163 lines
+#: across 98 distinct labels, every one of them a contract field wearing a
+#: qualifier, and not one of them a different kind of line. A matcher pinned to
+#: the bare label called all 163 absent, so 80 field misses were the parser's
+#: and not the file's, fourteen entries were reported incomplete that are not,
+#: and the measurement in `tests/test_ledger.py` had been red on `main` for
+#: days reporting them.
+#:
+#: Two bounds keep this from swallowing prose. The field name must end on a
+#: word boundary, so `- Costs nothing:` is not a `Cost` field and
+#: `- First steps:` is not a `First step` one. And the whole label must fit in
+#: the width below with no colon inside it, so a paragraph that happens to open
+#: with the word is not read as a label. The widest real label on the file is
+#: 75 characters.
+FIELD_QUALIFIER_WIDTH = 90
 
 #: A craft or competitive scan note. The charter asks for one of these every
 #: run alongside the day's ideas, and a note is not a proposal, so whether it
@@ -121,6 +143,9 @@ class Entry:
     extra_status_lines: list[int] = field(default_factory=list)
     decoys: list[int] = field(default_factory=list)
     missing_fields: list[str] = field(default_factory=list)
+    #: Field -> the qualified label it was written under, for the fields
+    #: this entry never wrote in the contract's bare form.
+    qualified_fields: dict[str, str] = field(default_factory=dict)
 
     @property
     def readable(self) -> bool:
@@ -151,6 +176,7 @@ class Entry:
             "problem": self.problem,
             "decoys": self.decoys,
             "missing_fields": self.missing_fields,
+            "qualified_fields": self.qualified_fields,
         }
 
 
@@ -167,6 +193,25 @@ def _first_word(raw: str) -> str:
     if not words:
         return ""
     return words[0].strip("`*_.,;:()[]").lower()
+
+
+def field_label(line: str) -> tuple[str, str] | None:
+    """The contract field a list item carries, and the label it carried it under.
+
+    Returns `("What", "What alexandria does better")` for a qualified label and
+    `("What", "What")` for the bare one, so a caller can tell the two apart.
+    `None` for a line that is not a field at all. The first field that matches
+    wins and the order is `CONTRACT_FIELDS`, which matters for nothing today
+    because no two of the four share a prefix.
+    """
+    head = re.match(rf"^-\s+([^:\n]{{1,{FIELD_QUALIFIER_WIDTH}}}):", line)
+    if head is None:
+        return None
+    label = head.group(1).strip()
+    for name in CONTRACT_FIELDS:
+        if re.match(rf"^{re.escape(name)}\b", label, re.I):
+            return name, label
+    return None
 
 
 def parse(text: str) -> list[Entry]:
@@ -200,11 +245,22 @@ def parse(text: str) -> list[Entry]:
             if n + 1 not in {f[0] + 1 for f in found} and DECOY.search(lines[n])
         ]
         body = lines[start:end]
-        missing = [
-            name
-            for name in CONTRACT_FIELDS
-            if not any(re.match(rf"^-\s+{re.escape(name)}:", line) for line in body)
-        ]
+        labelled: dict[str, str] = {}
+        for line in body:
+            found_field = field_label(line)
+            if found_field is None:
+                continue
+            name, label = found_field
+            # The bare label wins over a qualified one, so `qualified` names
+            # only the entries that never wrote the plain form.
+            if name not in labelled or label.lower() == name.lower():
+                labelled[name] = label
+        missing = [name for name in CONTRACT_FIELDS if name not in labelled]
+        qualified = {
+            name: label
+            for name, label in labelled.items()
+            if label.lower() != name.lower()
+        }
         entries.append(
             Entry(
                 line=start + 1,
@@ -216,6 +272,7 @@ def parse(text: str) -> list[Entry]:
                 extra_status_lines=[f[0] + 1 for f in found[1:]],
                 decoys=decoys,
                 missing_fields=missing,
+                qualified_fields=qualified,
             )
         )
     return entries
@@ -403,6 +460,77 @@ def render_census(data: dict) -> str:
     return "\n".join(out)
 
 
+#: The contract-field count measured on `main` on 2026-11-02, with the parser
+#: this file carries today. It is pinned in `tests/test_ledger.py` rather than
+#: here because it is a measurement rather than a gate.
+#:
+#: **It is re-measured against `main`, and that is not the same rule as
+#: `BASELINE`'s.** This constant said "it may fall and it may not rise" when it
+#: was written, and the two paragraphs below it already explained why it has to
+#: rise: it absorbs every seat's history, so a merge that brings in an
+#: incomplete entry raises it through no act of the branch that next reads it.
+#: Held to the stricter rule, the number is a gate on other seats' backlog
+#: wearing a measurement's clothes, and the first branch to meet it pays for a
+#: defect it cannot see. So: re-measure on `origin/main`, set it to that, and
+#: say in the pull request what the delta was and whose entries moved it. What
+#: may never rise is `PATCH_INCOMPLETE`, which is the branch's own appends and
+#: has no budget at all. 2026-11-02: 202 to 205, every one of the three from
+#: `main` (`origin/main` measures 205 on its own, and this branch's 31 new
+#: entries add none).
+#:
+#: Why it is not the gate. On 2026-11-01 this number was 196 when the engineer
+#: branch was cut and 202 ninety minutes later, because six pull requests
+#: merged in between and six of their entries were short of the contract. None
+#: of the six was the branch's. A ratchet on a whole-file number cannot tell
+#: those apart, which is what `patch` below is for: the project number absorbs
+#: everybody's history and the patch number has no budget at all.
+PROJECT_INCOMPLETE = 205
+
+
+def ledger_at(ref: str, path: str = "docs/ideas.md") -> str | None:
+    """The ledger as of `ref`, or None when the ref is not in this checkout.
+
+    None rather than an exception, because the host clones this repository
+    shallow with a single-branch refspec, so `origin/main` resolves on some
+    checkouts and not on others, and a caller has to be able to say "skipped"
+    instead of failing. `INC-2026-10-26-the-single-branch-refspec-survived-the-unshallow-again`
+    is the entry for how long that has cost.
+    """
+    try:
+        done = subprocess.run(
+            ["git", "show", f"{ref}:{path}"],
+            cwd=ROOT, capture_output=True, text=True, timeout=60,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return None
+    return done.stdout if done.returncode == 0 else None
+
+
+def patch(base_text: str, head_text: str) -> dict:
+    """The entries `head_text` adds, and what the contract says about them.
+
+    Codecov's split, applied to this file: a project status "measures overall
+    code coverage across your entire codebase" and a patch status "only
+    measures lines adjusted in the pull request". The project number here is a
+    backlog of 202 entries nobody in the room wrote, so a ratchet is the only
+    shape it can take. The patch number is the author's own appends, so it has
+    no budget: an entry this branch adds carries the four contract fields or it
+    does not, and no amount of unrelated cleanup elsewhere pays for it.
+
+    Entries are matched on `(date, name)`, which is the pair a heading carries
+    and the pair a reader cites. An entry that was edited rather than added is
+    therefore not in `added`, which is deliberate: this answers for what the
+    branch wrote, and rewriting another seat's entry is a thing no seat may do.
+    """
+    base = {(e.date, e.name) for e in parse(base_text)}
+    added = [e for e in parse(head_text) if (e.date, e.name) not in base]
+    return {
+        "added": len(added),
+        "incomplete": [e.as_dict() for e in added if e.missing_fields],
+        "no_status": [e.as_dict() for e in added if not e.readable],
+    }
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     parser.add_argument("--ledger", default=str(LEDGER))
@@ -412,6 +540,9 @@ def main(argv: list[str] | None = None) -> int:
                         help="the entries carrying one status, read properly")
     parser.add_argument("--check", action="store_true",
                         help="the ratchet: exit 1 when the unreadable count climbs")
+    parser.add_argument("--patch", metavar="REF", default="",
+                        help="the entries this branch adds on top of REF, and "
+                             "whether they meet the contract; strict, no budget")
     parser.add_argument("--json", action="store_true")
     args = parser.parse_args(argv)
 
@@ -434,6 +565,32 @@ def main(argv: list[str] | None = None) -> int:
                     f"belong here: python3 tools/ledger.py --census",
                     file=sys.stderr,
                 )
+        return 0
+
+    if args.patch:
+        base_text = ledger_at(args.patch)
+        if base_text is None:
+            print(f"skipped: {args.patch}:docs/ideas.md is not in this checkout, "
+                  f"so there is nothing to diff against", file=sys.stderr)
+            return 0
+        report = patch(base_text, text)
+        if args.json:
+            print(json.dumps(report, indent=2))
+            return 1 if report["incomplete"] or report["no_status"] else 0
+        print(f"{report['added']} entries added on top of {args.patch}.")
+        for bad in report["incomplete"]:
+            print(f"  docs/ideas.md:{bad['line']}  missing "
+                  f"{', '.join(bad['missing_fields'])}  {bad['name']}")
+        for bad in report["no_status"]:
+            print(f"  docs/ideas.md:{bad['line']}  {bad['problem']}  {bad['name']}")
+        if report["incomplete"] or report["no_status"]:
+            print(f"\nBLOCKING: {len(report['incomplete'])} of this branch's own "
+                  f"entries are short of the contract and "
+                  f"{len(report['no_status'])} carry no readable status. There is "
+                  f"no baseline to lower here: these are yours.", file=sys.stderr)
+            return 1
+        print("\nEvery entry this branch adds carries the contract's four fields "
+              "and a readable status.", file=sys.stderr)
         return 0
 
     if args.check:

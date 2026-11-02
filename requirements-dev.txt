@@ -8,3 +8,14 @@ pyjwt>=2.9
 pytest>=8
 pglast>=7   # libpg_query: parses db/schema.sql the way the server does
 markdown==3.7  # the email fallback render; tests/test_email_template.py asserts the pin
+pyyaml>=6   # the YAML oracle the frontmatter gate is checked against, below
+
+# Why pyyaml is here, because it reads like a stray line otherwise.
+# `skills/_validation/trigger_test.py --receipts` parses every shipped
+# SKILL.md with a real loader, and until 2026-10-27 that import was guarded by
+# an `except ImportError` that returned 0 failures, so the gate answered "no
+# skills a consumer cannot load" on a tree it had not looked at. The skill seat
+# replaced the 0 with a truthy sentinel, so the gate now fails closed instead of
+# passing. This line is the other half: it makes the gate RUN wherever this file
+# is installed, rather than fail-closed everywhere. Dropping it does not go
+# quiet any more, it goes red.

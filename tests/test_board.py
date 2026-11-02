@@ -886,3 +886,100 @@ def test_a_limit_above_the_servers_ceiling_is_clamped_so_truncation_stays_honest
     assert json.loads(capsys.readouterr().out)["truncated"] is False
     sent = [c for c in live_board["calls"] if c[1] == "/api/messages"][-1]
     assert sent[2]["limit"] == [str(board.INBOX_LIMIT)]
+
+
+# --------------------------------------------------------------------------
+# The seat argument, which was answered instead of resolved
+# --------------------------------------------------------------------------
+#
+# `INC-2026-10-27-two-readers-answer-a-wrong-seat-name-with-a-confident-zero`.
+# Every message `render_inbox` prints names its sender and its recipient in the
+# qualified form, `alexandria/research -> alexandria/engineer`. Typing that form
+# back produced `to_seat=alexandria/engineer`, which matches no row on the bus,
+# so `yours` was empty; and because the narrowing is done by the server, the
+# `theirs` bucket that exists to say what was filtered never saw a row either.
+# Zero in every bucket, exit 0, against a true count of 22.
+#
+# These assert the resolution rather than the message counts, because the counts
+# live on the live board and the resolution is the defect.
+
+
+def test_the_qualified_form_the_inbox_prints_resolves_to_the_bare_seat():
+    assert board.seat_of(Args(seat="alexandria/engineer"), env={}) == "engineer"
+    assert board.seat_of(Args(seat="alexandria/engineer"), env={},
+                         company="alexandria") == "engineer"
+
+
+def test_the_bare_form_is_untouched():
+    assert board.seat_of(Args(seat="engineer"), env={}) == "engineer"
+    assert board.seat_of(Args(seat="engineer"), env={}, company="alexandria") == "engineer"
+
+
+def test_a_company_half_that_disagrees_is_refused_rather_than_read():
+    # The case worth refusing loudest: two different questions in one call.
+    with pytest.raises(board.BoardError) as exc:
+        board.seat_of(Args(seat="Ursa/engineer"), env={}, company="alexandria")
+    assert "Ursa" in str(exc.value) and "alexandria" in str(exc.value)
+
+
+def test_the_company_half_is_matched_without_regard_to_case():
+    assert board.seat_of(Args(seat="Alexandria/engineer"), env={},
+                         company="alexandria") == "engineer"
+
+
+def test_a_seat_value_the_reader_cannot_resolve_raises_rather_than_querying():
+    # The rule the incident asks for, in one line: no unresolvable seat is
+    # allowed to reach a query that will answer empty.
+    for bad in ("alexandria/", "/", "   ", "alexandria/Ursa/engineer", "/engineer"):
+        with pytest.raises(board.BoardError):
+            board.seat_of(Args(seat=bad), env={}, company="alexandria")
+
+
+def test_a_trailing_slash_is_not_trimmed_into_a_seat_named_after_a_company():
+    # Caught by the test above while this fix was being written. Trimming the
+    # slash made `alexandria/` resolve to the seat `alexandria`, which no row
+    # on the bus is addressed to, which answers empty with a clean zero. The
+    # defect being repaired, reintroduced one layer in.
+    with pytest.raises(board.BoardError) as exc:
+        board.seat_of(Args(seat="alexandria/"), env={}, company="alexandria")
+    assert "no seat after the slash" in str(exc.value)
+
+
+def test_the_qualified_form_is_accepted_from_the_environment_too():
+    # `ASC_SEAT` is how the host supplies this on every scheduled run, so a
+    # host that ever sets the qualified form must not read an empty inbox.
+    assert board.seat_of(Args(seat=None), env={"ASC_SEAT": "alexandria/pm"},
+                         company="alexandria") == "pm"
+
+
+def test_the_header_no_longer_doubles_the_company(live_board, capsys):
+    # The doubled header was the only tell the defect left. It is also the
+    # proof that the seat reached the query in the wrong form.
+    board.main(["inbox", "--company", "alexandria", "--seat", "alexandria/engineer"])
+    out = capsys.readouterr().out
+    assert "inbox for alexandria/engineer" in out
+    assert "alexandria/alexandria" not in out
+
+
+def test_the_qualified_form_asks_the_bus_the_same_question_as_the_bare_one(live_board, capsys):
+    board.main(["inbox", "--company", "alexandria", "--seat", "engineer", "--json"])
+    bare = json.loads(capsys.readouterr().out)
+    board.main(["inbox", "--company", "alexandria", "--seat", "alexandria/engineer", "--json"])
+    qualified = json.loads(capsys.readouterr().out)
+    assert bare == qualified
+    assert [m["id"] for m in qualified["yours"]] == ["m-1"]
+
+
+def test_a_disagreeing_company_half_never_reaches_the_board(live_board, capsys):
+    before = len(live_board["calls"])
+    assert board.main(["inbox", "--company", "alexandria", "--seat", "Ursa/engineer"]) == 2
+    assert len(live_board["calls"]) == before
+
+
+def test_a_write_takes_the_qualified_form_too(live_board, capsys):
+    # `send` reports its own target in the qualified form, so this is the same
+    # round trip: the form the tool prints is a form the tool accepts.
+    board.main(["comment", "--company", "alexandria", "--seat", "alexandria/engineer",
+                "--id", "i-1", "--body", "read"])
+    sent = [c for c in live_board["calls"] if "/comment" in c[1]][-1]
+    assert sent[-1]["seat"] == "engineer"

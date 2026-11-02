@@ -1347,6 +1347,10 @@ def distill(max_papers: int = MAX_PAPERS_PER_RUN, queue_text: str | None = None,
         if not stamping:
             print("claims.prompt_sha is missing, so nothing records which distill "
                   "prompt wrote a claim; run db/schema.sql")
+        addressing = has_column(conn, "claims", "attributed_to")
+        if not addressing:
+            print("claims.attributed_to is missing, so a relayed claim is graded "
+                  "but cannot say whose result it is; run db/schema.sql")
         taxonomy = topics()
         # Both prompts are loaded before the first paper, so a missing or
         # unreadable practices prompt fails the run at the top rather than on
@@ -1355,6 +1359,10 @@ def distill(max_papers: int = MAX_PAPERS_PER_RUN, queue_text: str | None = None,
         print(f"prompt_sha paper {shas['paper']}, practices {shas['practices']} "
               f"({len(taxonomy.TOPICS)} topics accepted)")
         off_list: dict[str, int] = {}
+        # Claims whose subject is another work's result, counted so the run log
+        # says how much of a day's intake is second-hand. The grade carries it
+        # per row; this is the number the log line prints.
+        relayed_rows = 0
 
         wrote_any = False
         finished: list[str] = []   # papers this run actually got through
@@ -1532,10 +1540,31 @@ def distill(max_papers: int = MAX_PAPERS_PER_RUN, queue_text: str | None = None,
                 cols = ["paper_id", "claim", "evidence", "topics", "procedure"]
                 vals = [pid, text, c.get("evidence"), tags, c.get("procedure")]
                 if grading:
-                    row_grade = grader.grade(pid, c.get("evidence"), c.get("measured"), source)
+                    row_grade = grader.grade(pid, c.get("evidence"),
+                                             c.get("measured"), source,
+                                             c.get("relayed"))
                     graded[row_grade] = graded.get(row_grade, 0) + 1
                     cols.append("evidence_grade")
                     vals.append(row_grade)
+                    # The guard fires on the evidence text when the model said
+                    # the claim was the paper's own, and it is printed rather
+                    # than only counted: a grade this job assigned against the
+                    # model's answer is the one a reader will want to argue
+                    # with, and arguing needs the phrase that decided it.
+                    if row_grade == grader.RELAYED:
+                        relayed_rows += 1
+                        if not grader.as_bool(c.get("relayed")):
+                            fired = grader.relay_markers(c.get("evidence"))
+                            print(f"    relayed by the guard ({', '.join(fired)}): "
+                                  f"{text[:90]}")
+                if addressing:
+                    # Only a relayed claim has one, and the prompt says so. A
+                    # model that fills it in anyway is corrected here rather
+                    # than trusted, so `attributed_to is not null` stays
+                    # readable as "this row is somebody else's result".
+                    if grading and row_grade == grader.RELAYED:
+                        cols.append("attributed_to")
+                        vals.append(_text_or_none(c.get("attributed_to")))
                 if keeping_broke:
                     broke = _text_or_none(c.get("broke"))
                     if broke:
@@ -1618,6 +1647,16 @@ def distill(max_papers: int = MAX_PAPERS_PER_RUN, queue_text: str | None = None,
         if graded:
             tally = ", ".join(f"{g} {n}" for g, n in sorted(graded.items()))
             print(f"evidence grades this run: {tally}")
+        # Second-hand rows, every run, whether or not there were any. Zero is
+        # the number worth printing here: the grade landed because one relayed
+        # sentence reached a shipped skill
+        # (INC-2026-10-26-a-papers-own-citation-was-wrong-and-the-corpus-carried-it-faithfully),
+        # so a run after run of zero means the field is not being answered
+        # rather than that the corpus has stopped citing.
+        if graded:
+            print(f"  {relayed_rows} of them are another work's result as this "
+                  "source reports it, which nothing here has checked; each one "
+                  "is a reading-queue line (ADR-35), not a fact")
         # Which prompt read what, every run. The practices split is only worth
         # having if field reports are actually reaching it, and this line is how
         # a reader of the log knows they are without querying anything.

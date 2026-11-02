@@ -573,7 +573,7 @@ def fake_ingest(monkeypatch):
     """
     import pipeline.ingest as ingest
 
-    state = {"upserted": None}
+    state = {"upserted": None, "cursor": None}
 
     def upsert(rows):
         state["upserted"] = rows
@@ -581,18 +581,25 @@ def fake_ingest(monkeypatch):
 
     monkeypatch.setattr(ingest, "load_sources", lambda: {"arxiv": [], "feeds": []})
     monkeypatch.setattr(ingest, "upsert_papers", upsert)
+    # The cursor read is the fifth I/O call, added 2026-10-26 with the paged
+    # window. It is stubbed rather than left to fail soft, because a run that
+    # silently loses its cursor takes the whole window back to the two-day
+    # floor, and this fixture is the only test that sees the two wired together.
+    monkeypatch.setattr(ingest, "read_arxiv_cursor", lambda: "2026-10-23")
 
     def configure(arxiv_counts, feed_counts, hf_count):
         def paper(name, n):
             return {"id": f"{name}:{n}", "source": name, "tier": "a"}
 
-        def fetch_arxiv(cfg):
+        def fetch_arxiv(cfg, cursor=None):
+            state["cursor"] = cursor
             rows, status = [], []
             for index, count in enumerate(arxiv_counts):
                 name = f"arxiv:c{index}"
                 rows += [paper(name, n) for n in range(count)]
                 status.append({"name": name, "kind": "arxiv",
-                               "entries": count, "http": 200})
+                               "entries": count, "http": 200,
+                               "truncated": None})
             return rows, status
 
         def fetch_feeds(cfg):
@@ -621,6 +628,9 @@ def test_ingest_unpacks_both_fetchers_and_upserts_every_row(fake_ingest):
     assert len(state["upserted"]) == 350
     sources = {row["source"] for row in state["upserted"]}
     assert "arxiv:c0" in sources and "feed0" in sources and "hf" in sources
+    # The firehose is told where the last run got to, or three days of a
+    # stopped cron are three days of papers rather than three days of latency.
+    assert state["cursor"] == "2026-10-23"
 
 
 def test_ingest_counts_hf_daily_among_the_sources(fake_ingest):

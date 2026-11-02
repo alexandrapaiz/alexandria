@@ -106,7 +106,14 @@ FEED_WORKERS = 8
 # eight requests. The firehose is the corpus, so correctness beats speed here.
 ARXIV_DELAY = 3.0
 
-ARXIV_MAX_PER_CAT = 100  # the same number pipeline/ingest.py queries with
+# One page, which is all an availability probe needs: this file asks whether
+# a category is answering, not how deep the day is. It is pinned to
+# `pipeline/ingest.py`'s page size by tests/test_arxiv_window.py, because the
+# comment this line used to carry said "the same number pipeline/ingest.py
+# queries with" and nothing checked it. On 2026-10-26 ingest's window became
+# a date range paged at that size and this constant kept the old meaning,
+# which is how a true comment becomes a false one.
+ARXIV_PROBE_ROWS = 100
 
 FAILING = {"empty", "unreachable", "dead-stale"}
 
@@ -250,7 +257,7 @@ def sources_to_check(cfg: dict) -> list[dict]:
                 "url": (
                     "https://export.arxiv.org/api/query"
                     f"?search_query=cat:{cat}&sortBy=submittedDate"
-                    f"&sortOrder=descending&max_results={ARXIV_MAX_PER_CAT}"
+                    f"&sortOrder=descending&max_results={ARXIV_PROBE_ROWS}"
                 ),
             }
         )

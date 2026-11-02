@@ -61,6 +61,18 @@ For each claim provide:
   from somebody else. This is not a judgement of how good the work is, only of
   whether their own number is there, and it decides whether the claim reaches
   the reader as a field-measured result or as an anecdote.
+- `relayed` — `true` when the claim's subject is somebody else's result rather
+  than this team's own experience: a benchmark quoted from a vendor, a number
+  taken from a paper, "the industry standard is", "as X reported". `false` for
+  what this team ran, measured, or lived through in their own system,
+  including their own numbers for a tool they did not write. The field above
+  already tells you to put `measured` to `false` when the only numbers were
+  quoted from somebody else; this field says *that* rather than only saying
+  "no number", which is a different row and was previously indistinguishable
+  from a post that measured nothing at all.
+- `attributed_to` — on a relayed claim, whose result it is, as the post names
+  it: "the DeepSeek-V3 paper", "Anthropic's own benchmark", "a 2025 Stack
+  Overflow survey". Null on every claim that is not relayed.
 - `procedure` — the operational steps, numbered, 2-6 steps, each one short
   sentence, written so an engineer could act on them without the post ("1)
   Route each request through X. 2) Cap the queue at Y. 3) ..."). Include the
@@ -90,5 +102,5 @@ normally a single company, and it is a fact you can nearly always fill in.
 Respond with JSON only:
 
 ```json
-{"institutions": ["..."], "skipped": null, "claims": [{"claim": "...", "evidence": "...", "measured": true, "procedure": "1) ... 2) ...", "broke": "...", "topics": ["systems"]}]}
+{"institutions": ["..."], "skipped": null, "claims": [{"claim": "...", "evidence": "...", "measured": true, "relayed": false, "attributed_to": null, "procedure": "1) ... 2) ...", "broke": "...", "topics": ["systems"]}]}
 ```
