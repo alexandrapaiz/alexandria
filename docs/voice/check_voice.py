@@ -5665,7 +5665,7 @@ def press():
     and concludes the press is current has made the mistake this whole file was
     built to stop.
     """
-    rc = press_cases() | column_cases()
+    rc = press_cases()
     print()
     found = press_deploy()
     if found is None:
@@ -5953,6 +5953,48 @@ def column_cases():
     print(f"UNREACHED_CASES                            "
           f"{len(UNREACHED_CASES) - worse} of {len(UNREACHED_CASES)}")
     return bad | worse
+
+
+def columns():
+    """The schema parser and the column comparison, asserted and read offline.
+
+    It is its own subcommand because `all` excludes `press` and `cadence`, both
+    of which need the network, and `receipt_columns` lives inside `press`
+    because that is where the row is already fetched. Leaving the pure half
+    there too would have put eleven cases behind a command the ordinary run
+    never reaches, which is this file's own defect class wearing a new coat: a
+    measurement nothing runs is not a measurement.
+
+    So the split is by what each half needs. The cases and the schema read need
+    nothing and are here. The comparison against what the receipt actually
+    served needs one fetch and stays in `press`.
+    """
+    rc = column_cases()
+    print()
+    try:
+        text = SCHEMA.read_text()
+    except OSError as e:
+        print(f"  FAIL    db/schema.sql could not be read "
+              f"({type(e).__name__}), so no consumer's column set has "
+              f"anything to be checked against")
+        return 1
+    declared = declared_columns("deploy_runtime", text)
+    if declared is None:
+        print("  FAIL    db/schema.sql declares no `deploy_runtime`. Either "
+              "the table was renamed or this gate's name for it is stale, "
+              "and both make the comparison in `press` a refusal rather "
+              "than a verdict")
+        return 1 | rc
+    print(f"db/schema.sql declares for deploy_runtime  {len(declared)}")
+    for name in declared:
+        print(f"    {name}")
+    print()
+    print("Whether the receipt serves all of them is `press`, because that is")
+    print("where the row is read. The two columns that prompted this gate,")
+    print("`entrypoint` and `file_count`, were declared here from the day the")
+    print("table was created and reached no reader through")
+    print("`tools/delivery_health.py` until 2026-11-02.")
+    return rc
 
 
 def receipt_columns(row):
@@ -7829,6 +7871,7 @@ def main():
                 ("captions", captions),
                 ("blockrules", blockrules),
                 ("dispatch", dispatch),
+                ("columns", columns),
                 ("compare", compare), ("selfcheck", selfcheck))
     # An unknown name is a usage failure and never a pass. Exit 2 rather than
     # 1, so a caller can tell "this gate is not here" from "this gate ran and
