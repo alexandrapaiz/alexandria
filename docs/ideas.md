@@ -24706,3 +24706,133 @@ ingestion target rather than a skill target.
   ADR-12's cap of five Modal crons is the constraint it has to respect.
 - Cost: $0
 - Status: proposed
+
+### 2026-11-02 — The reading queue's depth is 83 and no credential-free surface says so
+
+- Trigger: this run appended two lines to `docs/research/reading-queue.md` and
+  the command printed `81 pending before, 83 after, 6 of them per distill run`.
+  That is fourteen runs of a job that has not fired since 2026-10-23. The
+  number exists in exactly two places: inside a distill run, which prints
+  `{waiting} more in the reading queue` from `pipeline/distill.py:1098`, and on
+  stderr of `python3 pipeline/reading_queue.py`, which a seat has to think to
+  run. Nine surfaces in `tools/delivery_health.py` and not one of them reads
+  the request queue, so "how long until the paper a seat asked for is in the
+  corpus" is a question no standup can answer.
+- What: one surface in the delivery report for the request queue, and it is the
+  rare health check that needs no credential at all, because the queue is a
+  file in the repository. Three numbers and an age: how many lines are pending,
+  how many distill runs that is at `MAX_PER_RUN`, and how old the oldest
+  pending line is by the date it carries. The judgment is the point rather than
+  the count: a queue of six is one run and green, a queue of 83 against a job
+  that last ran ten days ago is the same arithmetic the `Compute` card already
+  makes for the press, and the oldest line's date is the one number that
+  separates a backlog from an outage. It should read UNKNOWN rather than green
+  when the file cannot be parsed, by the rule that file already follows
+  everywhere else.
+- First step: `queue_depth()` in `tools/delivery_health.py`, reading the file
+  through `pipeline/reading_queue.py`'s own parser rather than a second one, and
+  one `Surface` built from it. The parser already returns `Item.raw`, so the
+  oldest line's date is a regex on text the module hands over. One day,
+  including the cases for an unparseable file and an empty queue.
+- Cost: $0
+- Status: proposed
+
+### 2026-11-02 — A docstring that names another module's job is a claim nothing checks
+
+- Trigger: `pipeline/ingest.py`'s local entrypoint said `--ids` is "the entry
+  point the reading queue needs when a line names a paper the window cannot
+  reach". It is not. `pipeline/distill.py` serves that file and says so in its
+  own docstring at line 99. The research seat read the sentence that was
+  addressed to its exact problem, in the module it was already reading, and
+  asked this seat for the one route that needs a credential nobody here has
+  had for twelve runs. Filed as
+  `INC-2026-11-02-the-handoff-asked-for-the-blocked-route-because-the-docstring-of-the-blocked-one-claimed-the-other-ones-job`.
+- What: the general form is not testable and this is deliberately the narrow
+  form. Two modules in this repository can put a paper in `papers` from an
+  arXiv id, `ingest.py` and `distill.py`, and exactly one of them is the entry
+  point for `docs/research/reading-queue.md`. A test that reads both modules
+  and asserts that exactly one claims that file by name is three lines and
+  would have caught this one. What it cannot do is generalize: a gate written
+  for one pair of files is a gate that will be wrong about the third pair, so
+  the entry is honest that its value is one instance of a class rather than
+  the class.
+- First step: in `tests/test_reading_queue.py`, which already reads both
+  modules, assert that `QUEUE_PATH` and the phrase "reading queue" appear as a
+  claim of service in exactly one of `pipeline/ingest.py` and
+  `pipeline/distill.py`. Half a day, and the harder half is choosing a phrase
+  that is neither a grep for prose nor a second copy of the sentence.
+- Cost: $0
+- Status: proposed
+
+### 2026-11-02 — OpenAlex answers by id without a key and carries the traction number arXiv does not
+
+- Trigger: today's craft scan, probed live against the two ids this run queued.
+  `fetch_arxiv_ids` asks arXiv's Atom feed and gets back title, authors,
+  abstract, url and a submission date. It gets no measure of how much a paper
+  has been built on, and `prompts/research-agent.md` makes it charter that
+  impact is revealed by traction rather than by release date. So the one field
+  the relevance law wants is the one field the fetcher cannot supply, and a
+  backfill candidate is ranked today on the research seat's reading alone.
+- What: one function that, given an arXiv id, returns OpenAlex's
+  `cited_by_count` and `publication_date` for it, so the by-id paths can carry
+  a traction number. OpenAlex is keyless, its filter takes an OR list of ids in
+  one request, and the probe below is the measured behaviour rather than its
+  documentation's claim. It is a read of one public endpoint and it would be
+  soft on every path, the way `record_invocation` is: a paper with no traction
+  number is still a paper.
+- First step: the probe already run, turned into a function with its cases.
+  `https://api.openalex.org/works?filter=doi:<a>|<b>&select=id,doi,title,publication_date,cited_by_count`,
+  one request, no key, no delay. The one case that has to be written first is
+  the half-answer named in the scan note below, because a batch route that
+  drops an id silently is the exact defect `fetch_arxiv_ids` already refuses to
+  have. One day.
+- Cost: $0
+- Status: proposed
+
+### 2026-11-02 — Craft scan: OpenAlex and Semantic Scholar, on the one route this run needed
+
+- Trigger: both scanned live today and both chosen for the same reason. This
+  run's whole subject was getting a paper into the corpus by id, outside any
+  window, and these are the two products whose by-id route is the thing they
+  sell. The scan is the charter's craft scan rather than the market agent's
+  landscape watch, so it is read at the route rather than at the positioning.
+- What: Semantic Scholar first, because the result is the shorter half.
+  `POST /graph/v1/paper/batch` is the right shape, it takes namespaced ids
+  including `ARXIV:<id>`, and three requests from this host got `429 Too Many
+  Requests` with a pointer to the key form, on the batch route and on the
+  single-paper route alike. The unauthenticated tier was not slow here, it was
+  closed. An API key is an account, which this seat does not open, so the
+  comparison stops there and the shape is in the ledger rather than in code.
+- Worth stealing, from OpenAlex, which answered. One request, no key, no
+  politeness delay: `filter=doi:<a>|<b>` takes a pipe-separated OR list and
+  `select=` trims the response to the fields asked for. The response carried
+  `cited_by_count`, which is the traction number the relevance law wants and
+  which arXiv's feed does not have at all. Against that, `fetch_arxiv_ids`
+  makes its request against one id list with `ARXIV_DELAY = 3.0` between calls
+  and gets no citation count.
+- And the scan's sharpest finding is a failure in the thing worth stealing. The
+  probe asked for both of this run's ids by their arXiv DOIs and got back
+  `"count": 1`. The one it returned was `Multi-Field Tool Retrieval` under
+  `10.18653/2026.emnlp-main.2212`, which is its EMNLP identity rather than the
+  arXiv DOI the filter asked for, and the response said nothing about the id
+  that matched nothing. So a filter-OR batch route answers a two-id request
+  with one row, keyed on an identifier the caller did not ask for, and a caller
+  that counted rows would read that as success.
+- Where alexandria is better, and it is exactly that. `fetch_arxiv_ids`
+  computes `missing` as the asked set minus the found set and prints it, under
+  a comment that says a backfill asking for six papers and silently landing
+  four "is the shape of defect this entrypoint exists to repair". That comment
+  was written on 2026-10-26 about this repository's own behaviour, and the scan
+  found the same defect live in a product whose by-id route is its product. The
+  second thing is the key space: every row written by either path here is
+  `arxiv:<id>`, so a backfilled paper and a fetched one are one row, where
+  OpenAlex handed back a conference DOI for a paper asked for by its preprint.
+- First step: the entry above this one is this scan's first step and is already
+  written as its own entry, because the traction field is the half worth
+  taking. The pipe-OR batching is the other half and it is not carded, since
+  this repository asks arXiv for a whole id list in one request already and the
+  gain would be against OpenAlex rather than against arXiv.
+- Cost: $0, and that is the finding on the Semantic Scholar half rather than a
+  note about it. Its by-id route needs a key, a key is an account, and an
+  account is the owner's to open.
+- Status: proposed
