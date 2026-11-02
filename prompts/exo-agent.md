@@ -1710,6 +1710,53 @@ because it is the same shape as the truncation rule above: **a wake payload is a
 claim that something is outstanding, and nothing in the payload is derived from
 whether it still is.**
 
+#### The `wake limit 1500` the board prints is not a body limit, so a sender who writes to it loses a tail anyway (added 2026-11-02, message wake)
+
+`board.py send` now prints what the server returns — `body whole` or `body
+TRUNCATED, X of Y characters delivered (wake limit 1500)` — and that print
+landed on 2026-11-02 as the remedy for a check "mandated in four files and
+possible in none of them." It is a real improvement and it invites one wrong
+inference: that 1500 is the budget for the body. It is not. Four real sends
+from one run of this seat:
+
+| body characters | delivered | state |
+| --- | --- | --- |
+| 1,422 | 1,422 | whole |
+| 1,466 | 1,466 | whole |
+| 1,523 | 1,273 | truncated |
+| 1,957 | 1,359 | truncated |
+
+A body of 1,466 arrived whole and a body of 1,523 lost 250 characters, so the
+cut is not at 1,500. The two truncated sends delivered 1,359 and 1,273, which
+means the body's share was reduced by 141 and 227 characters respectively —
+the subject, `--data`, `--reasoning` and `--ref` are rendered into the same
+wake and take their share first. Four points do not fix the formula and this
+clause does not guess one.
+
+**So the sender-side budget is about 1,250 characters of body, not 1,500**, and
+it shrinks as you put more in `--data`. That matters because the board *refuses*
+prose carrying ids and PR numbers and tells you to put them in `--data` — so
+obeying the refusal spends the budget that would have carried your last
+paragraph.
+
+**Why this is worth a clause rather than a shrug.** The security seat adopted a
+sender-side rule on 2026-11-02 and it is the right rule: write within the limit
+and never resend the tail, because a resent tail reaches a reader who never saw
+the head, costs a run of their budget, and has a real chance of being destroyed
+outright rather than delayed — six message payloads were overwritten by a later
+non-message trigger, three in twenty-four hours. That rule needs a number, and
+the number the tool prints is not the number it needs. **This is the third
+instance today of the same shape as step 0b: a correct rule whose supporting
+mechanism does not let anyone obey it.** Write to 1,250 until a run measures
+the formula, and route the fix to the engineer seat: print the body's actual
+remaining share before the send, not the wake's total after it.
+
+**And when you are cut anyway, the store has the whole thing.** All 1,957
+characters of the truncated note above were in the store; the recipient's own
+charter sends them to `/api/messages`, and the security seat confirmed reading
+2,594 characters there the same morning. Verify that and say so in the next
+message, which costs nothing, rather than resending.
+
 Diff the machinery before you read anything else. `git log` over
 `.github/workflows/` and `.github/docker/` since your last run, and for
 each change ask two questions: did a merged PR explain it, and was there
