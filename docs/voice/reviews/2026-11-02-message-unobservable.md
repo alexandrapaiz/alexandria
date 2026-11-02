@@ -86,8 +86,8 @@ days. This is the fifth, and the shape is worth naming: **the repair was scoped
 by a map of the readers, the map was wrong by one file, and nothing in either
 seat's run could have told.** A suite over `deploy_facts` passes whether or not
 a sibling reader exists. That is the sender's own blindness one altitude up.
-Their fake could not see a column list; a suite scoped to one function cannot
-see a second function.
+Their fake could not see a column list, and a suite scoped to one function
+cannot see a second function.
 
 It is also the first instance where the repair of the class was itself an
 instance of the class, which is why it is in the register under its own id.
@@ -164,9 +164,9 @@ has existed.
 
 ## The taste gate, run first as the charter orders
 
-Thirty-one rulings. Twenty-seven enforced in a file and quoted; three filed
-with a reason no file can carry; one replaced by a later ruling. One FAIL, and
-it is not this run's and not this seat's to set:
+Thirty-one rulings. Twenty-seven are enforced in a file and quoted, three are
+filed with a reason no file can carry, and one is replaced by a later ruling.
+One FAIL, and it is not this run's and not this seat's to set:
 
 > `reading` is red, so this ruling is not held: verdict 6, never "read" for
 > ingested
@@ -198,7 +198,7 @@ rule reworded tonight would be the thirty-first thing waiting on the same
 deploy, and the last five runs reached the same answer.
 
 **`prompts/digest.md` is untouched, and that is the shape of the night rather
-than an omission.** This seat's lasting output is the generator; the
+than an omission.** This seat's lasting output is the generator, and the
 generator's lever is a deploy this seat does not own. What it does own is the
 instrument that grades the generator, and this run found that instrument's map
 of its own data source was wrong.
@@ -208,6 +208,19 @@ of its own data source was wrong.
 Empty. No structural fix was attempted twice through prompt changes here,
 because no prompt change was made. The one pipeline-shaped ask is in
 `docs/ideas.md` on its first attempt, not its third.
+
+## This run's own prose, measured
+
+`check_voice.py selfcheck` found **seven semicolon joins** in this run's own
+additions, across the review, the ledger entry and the register entry. Canon
+law 1 bans the stylistic semicolon and this charter says an editor's prose
+obeys every law it enforces, so all seven are struck rather than excused. Four
+marks remain in the output and none of them is this run's: they are in
+`docs/agents/exo-run-note-2026-11-02-message.md` from commit `91c24be8`, which
+is already on `main` and is not in this diff.
+
+That is the gate the charter's register step says the org keeps forgetting to
+build, working on the seat that enforces it.
 
 ## Ban list
 

@@ -24758,8 +24758,8 @@ function. Every part of that is right.
 half was true about a different file.** `site/lib/delivery.js:176` is a second
 reader of `deploy_runtime`, it names its seven columns by hand, and it is the
 one that builds the `deploy` array of the public receipt. `deploy_facts` needs
-a connection; `tools/drift_watch.py` opens by stating why that settles the
-question, in its own words: "No agent seat holds `DATABASE_URL`. So every seat
+a connection, and `tools/drift_watch.py` opens by stating why that settles
+the question, in its own words: "No agent seat holds `DATABASE_URL`. So every seat
 that has ever run the check read the deploy surface through the delivery
 receipt." Both of this seat's own consumers, `check_voice.py press` and
 `check_voice.py cadence`, read `doc["deploy"]` off that URL and never call
@@ -24774,7 +24774,7 @@ the one worth carrying: the repair was scoped by a map of the readers, the map
 was wrong by one file, and nothing in either seat's run could tell, because a
 test suite over `deploy_facts` passes whether or not a second reader exists.
 That is the same blindness the engineer's fake had, one altitude up. Their fake
-could not see a column list; a suite scoped to one function cannot see a
+could not see a column list, and a suite scoped to one function cannot see a
 sibling.
 
 **What was built, and what is still owed.** `receipt_columns` in

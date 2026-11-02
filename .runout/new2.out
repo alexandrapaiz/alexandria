@@ -588,3 +588,296 @@ site/content/issues/2026-W39.md
             site/content/issues/2026-W39.md:38  The field had held that self-evolving execution structures could repair a flawed expert prio
     BARE    club      x1   'rollout'
             site/content/issues/2026-W39.md:38  The newer work shows that an on-policy expert-correction pipeline, which rewrites only the f
+    BARE    coined    x2   'aclarena'
+            site/content/issues/2026-W39.md:50  The ACLArena paper is already covered above.
+  terms only inside a paper's own title         3
+    agent-as-harness, co-evolving, self-improvement
+  names law 11 requires, spelled as they arrive 14
+    cloud, dallas, google, haixin, hkust, peking, research, st, stanford, university, ut, wang, washington, washu
+  the generator's cap is five, this issue has   24, 22 of them bare
+
+The inventory is the check. A CLAUSE row says a marker sits in the
+same sentence and says nothing about whether it defines the term,
+which is the taste gate's lesson in a second place. A BARE row has
+no marker at all and is the finding. A frequency row a grade rules
+ordinary goes in ORDINARY_TERMS, with the grade that ruled it.
+
+==== generator ====
+  the headless cases        14 pass
+prompts/digest.md   2192 lines
+  blocks the file carries twice in a row        0
+  curly braces that do not pair                 0
+  lines ending mid-clause before a new block    0
+  rules whose own opening line was cut          0
+prompts/digest-short.md   133 lines
+  blocks the file carries twice in a row        0
+  curly braces that do not pair                 0
+  lines ending mid-clause before a new block    0
+  rules whose own opening line was cut          0
+
+All four findings are one defect seen four ways, and they run in
+both directions. An edit that inserts without removing leaves the
+duplicate, the truncation and the unpaired brace. An edit that
+removes too much leaves the headless rule, which is what a trim
+under the weight rule does when it takes a bullet's own header
+away with the specimens underneath it.
+None of them is a prose judgment, so none of them belongs in a
+grade a person has to remember to run.
+
+==== specimens ====
+prompts/digest.md
+  quoted spans in the file                      264
+  of those at a writing position                199
+  of those long enough to lift as a sentence    73
+  specimens the tense check would fail          0
+  specimens printing the machine's own words    1
+    INTERNAL   prompts/digest.md:818  [slots]  drawn from the traction stream
+  specimens that are not her own words          62
+  of those written about the payload's subject  27
+    ON-SUBJECT prompts/digest.md:99  [voice]  Agents trained with reinforcement learning often fail at long tasks for a simple reason: the rew
+    ON-SUBJECT prompts/digest.md:111  [voice]  ..., allowing agents to scale up without the instability that previously limited long-horizon tr
+    ON-SUBJECT prompts/digest.md:179  [voice]  **Apple.** One model drives desktop, phone and browser, and it beats the specialists trained for
+    ON-SUBJECT prompts/digest.md:222  [voice]  on-policy distillation, where the smaller model learns from corrections to its own attempts inst
+    ON-SUBJECT prompts/digest.md:224  [voice]  the KV cache, the stored attention state that makes each next token cheap to produce
+    ON-SUBJECT prompts/digest.md:235  [voice]  training on the model's own attempts
+    ON-SUBJECT prompts/digest.md:272  [voice]  if the 64% holds outside this one benchmark family, per-assertion rewards become the default wit
+    ON-SUBJECT prompts/digest.md:284  [voice]  a dense reward—counting passed assertions—produces
+    ON-SUBJECT prompts/digest.md:373  [voice]  Dense rewards won three separate bets
+    ON-SUBJECT prompts/digest.md:389  [voice]  models that learn from their own attempts keep drifting away from the bigger model that was supp
+    ON-SUBJECT prompts/digest.md:528  [slots]  Richer feedback boosts long-horizon agents
+    ON-SUBJECT prompts/digest.md:529  [slots]  Dense rewards took terminal agents from 49% to 64%
+    ON-SUBJECT prompts/digest.md:536  [slots]  FEEs and dense rewards arrive
+    ON-SUBJECT prompts/digest.md:631  [slots]  A dense reward that moved terminal agents fifteen points. Two groups landed on the same answer f
+    ON-SUBJECT prompts/digest.md:696  [slots]  training agents with reinforcement learning
+    ON-SUBJECT prompts/digest.md:738  [slots]  Best-of-three sampling just beat sequential self-correction by up to 9.7 points on less compute.
+    ON-SUBJECT prompts/digest.md:752  [slots]  researchers at Tsinghua and Moonshot AI
+    ON-SUBJECT prompts/digest.md:823  [slots]  three separate papers built on it this week
+    ON-SUBJECT prompts/digest.md:845  [slots]  moved from 2 to 4 citations
+    ON-SUBJECT prompts/digest.md:863  [slots]  No citation movers were recorded this week
+    ON-SUBJECT prompts/digest.md:999  [slots]  An early benchmark result suggested coding agents had hit a hard ceiling...
+    ON-SUBJECT prompts/digest.md:1225  [slots]  Advancing agent design and evaluation pipelines
+    ON-SUBJECT prompts/digest.md:1377  [slots]  N papers read to get to these five
+    ON-SUBJECT prompts/digest.md:1477  [rules]  no result outside the one benchmark family
+    ON-SUBJECT prompts/digest.md:1531  [rules]  up from 49.4% before training
+    ON-SUBJECT prompts/digest.md:1584  [rules]  researchers at the same group
+    ON-SUBJECT prompts/digest.md:1591  [rules]  New work from <benchmark name>
+prompts/digest-short.md
+  quoted spans in the file                      3
+  of those at a writing position                3
+  of those long enough to lift as a sentence    1
+  specimens the tense check would fail          0
+  specimens printing the machine's own words    0
+  specimens that are not her own words          0
+  of those written about the payload's subject  0
+
+The tense finding fails this check. A specimen carrying the one
+shape the file calls grammar rather than judgment, at the one
+position the file says that shape is deliberately absent from,
+is a defect by the file's own reasoning and needs no reading.
+
+The other two lists are inventory and each is a ceiling rather
+than a verdict, for a reason entry 93 gives itself: a quoted
+BANNED specimen is not this class, because a model copying one
+is caught by the ban, and nothing here can tell a banned
+specimen from an offered one. Both lists hold some of each.
+Sorting them is the reading, and the reading belongs to a
+graded review rather than to this command.
+
+==== standalone ====
+  the detector's own cases   17 pass
+  read from   site/content/issues, 2 issue(s): 2026-W37, 2026-W39
+  sentences whose subject is 'you' and whose verb is past  1
+  FAIL    site/content/issues/2026-W39.md:6
+            You have spent the week watching agents get faster by thinking less at test time.
+
+Each hit is a claim about what the reader has done, it is not
+knowable from here, and the repair is the present tense and the
+reader's actual job rather than deletion. The generator's own
+worked answer is the b7d6929 line quoted above.
+
+==== provenance ====
+  the detector's own cases   5 pass
+  2026-W37   [retired, not served]  0 finding(s)
+  2026-W39  0 finding(s)
+
+One paper cannot overturn itself. Each hit is a sentence whose own
+words name the overturned end as work this section cites, so the
+repair is to drop the pairing rather than to reword it: the
+relation is usually `refines` and the item belongs in the new work.
+A clean exit is not a verdict on the section. The figure under the
+wrong paper and the mislabelled two-paper edge both need the
+abstracts, and they are the claims pass's seventh question.
+
+==== devices ====
+  SKIP    site/content/issues/2026-W37.md  retired, not served
+  FAIL    site/content/issues/2026-W39.md  no list and no written turn
+
+Law 14 names three devices as required rather than available, and
+two of them are shapes. A pass here is not a verdict on whether the
+issue is enjoyable, which stays a reading. A failure is a verdict,
+because the one-shape page is the state she read and rejected.
+
+==== routed ====
+  the token cases               8 pass
+  the entry-name cases          4 pass
+  the routing cases             11 pass
+  review files this diff adds   8
+    docs/voice/reviews/2026-11-02-message-ask-clocks.md  (routes a finding)
+    docs/voice/reviews/2026-11-02-message-dispatcher.md  (routes nothing)
+    docs/voice/reviews/2026-11-02-message-empty-output.md  (routes nothing)
+    docs/voice/reviews/2026-11-02-message-invoked-by.md  (routes nothing)
+    docs/voice/reviews/2026-11-02-message-press-slots.md  (routes a finding)
+    docs/voice/reviews/2026-11-02-message-three-zones.md  (routes nothing)
+    docs/voice/reviews/2026-11-02-message-unobservable.md  (routes a finding)
+    docs/voice/reviews/2026-11-02-message-value-rewrite.md  (routes a finding)
+  unsettled entries in docs/ideas.md   794
+  entries this diff names               6
+  VACUOUS docs/voice/reviews/2026-11-02-message-unobservable.md
+            2 section(s) route a finding, no identifier the ledger can be searched for, no entry named
+  BROAD   docs/voice/reviews/2026-11-02-message-ask-clocks.md
+            `NEON_RO_URL` sits in 20 unsettled entries, so it names a machine rather than a finding
+
+A run may route a finding the ledger already holds. It may not do
+so without naming the entry, because that is the difference
+between escalating a stale finding and not knowing it exists.
+
+==== editions ====
+  served by the product     3: 2026-W39, 2026-W40, 2026-W42
+  held in the repository    2: 2026-W37, 2026-W39
+  retired at the serving layer  0
+  round trip verified on     1 edition(s) held both ways
+    OK      2026-W39  the served page un-renders to the file
+  served and unreadable here 2: 2026-W40, 2026-W42
+  FAIL    2026-W40 reached readers and is not a file here, so
+            every default-scope count in this file excludes it
+  FAIL    2026-W42 reached readers and is not a file here, so
+            every default-scope count in this file excludes it
+
+A gate's scope is part of its answer (L-A47) and this file's
+default scope is a directory, while the product's scope is a
+table. They have disagreed since 2026-10-05 and the disagreement
+printed canon law 12 to readers. `--live` closes it per run and
+committing the print closes it for good.
+
+==== marks ====
+  SKIP    site/content/issues/2026-W37.md  retired, not served
+  site/content/issues/2026-W39.md   marks outside a quotation  1
+    FAIL    site/content/issues/2026-W39.md:36  semicolon
+              MaP-WAM now reports **83.3%** on RMBench, and DRG-MAPPO reports **87%** in cooperative air-combat simula
+
+Zero is the generator's own target and it says there is no budget.
+A count without a verdict is what let two of these print: this
+seat's own prose has been failing on the same mark since
+2026-10-10 and the product's prose was only ever measured.
+
+==== ungated ====
+  absolute rules in digest.md            11
+  BLOCK rules in check_digest_quality.py      8
+  rows whose rule has left the generator        0
+  of those the press can hold                   6
+    HELD       law 12, the framework's names are never printed  ->  skeleton-heading
+    HELD       the date is not in the title  ->  date-in-title
+    HELD       ban list 1, the slop lexicon  ->  slop-lexicon
+    HELD       plain ASCII  ->  typesetter-punctuation
+    HELD       the internal vocabulary stays inside  ->  internal-vocabulary
+    HELD       an item never ends on its citation  ->  ends-on-citation
+  rows naming a gate the pre-send gate lacks    0
+  of those nothing can hold                     5
+    UNGATED    the semicolon
+    UNGATED    the em dash
+    UNGATED    law 8, the link reaches the full text
+    UNGATED    law 8, every item carries its link
+    UNGATED    law 14, a list and a written turn
+
+A rule with a target of zero and no gate is enforced by a model
+reading a long file, which is the condition L-A22 names. Each
+UNGATED row above is a rule the generator states absolutely and
+the press cannot refuse, and every one of them has printed.
+
+==== slotwords ====
+  the detector's own cases       5 pass
+  phrasings the ban names        6: 'what changed', 'what fell behind', 'what is new', 'what is working', 'what to read', 'what to watch'
+  slot series outside the ban    0
+  the file writes the banned dress only where it bans it
+
+A rule that bans a phrase and then writes it has handed the model
+the specimen at the position where a heading gets drafted, which
+is the family ban list 100 belongs to. The ban is not the fix.
+The sweep is.
+
+==== slotheads ====
+  the detector's own cases       10 pass
+  phrasings the ban names        6: 'what changed', 'what fell behind', 'what is new', 'what is working', 'what to read', 'what to watch'
+  SKIP    site/content/issues/2026-W37.md  retired, not served
+  OK      site/content/issues/2026-W39.md  5 heading(s), none of them a framework name
+
+Canon law 12 and incident 20. The framework's internal names are
+never printed, and she has ruled it twice because the first ruling
+reached the register and not the artifact. Strike the label and the
+colon, and check whether what is left is the heading.
+
+==== apparatus ====
+  the detector's own cases       9 pass
+  the instrument nouns           'grade', 'procedure', 'evidence'
+  SKIP    site/content/issues/2026-W37.md  retired, not served
+  OK      site/content/issues/2026-W39.md  no instrument wearing a colon
+
+Canon law 7, and the generator bans this shape twice without
+reaching it. Write the sentence whole: the grade is a clause inside
+a sentence doing other work, and a procedure is a list.
+
+==== captions ====
+CAPTION_FRAME cases                        11 of 11
+
+  site/lib/skill-shelves.js  (the skill library's shelves)
+    captions                               7
+    on the opener-then-list frame          4
+    opening on a stem another one uses     0
+    FAIL    4 captions share one frame
+              The scaffold around a model. Tools, prompts, loop structure, and the feedback the loop runs on.
+              Several agents dividing work. How they are organised, how they hand off, and how they fail.
+              Post-training that updates the weights. Distillation, reward design, and self-improvement.
+              Getting an answer out fast and cheap. Decoding, caching, and test-time compute.
+
+A caption set is read as one thing by anybody who scrolls the page,
+so one grammar repeated down it is the unit of the tell. Each
+caption above is accurate about its own shelf, which is what makes
+this prose rather than error.
+
+==== blockrules ====
+  rules the pre-send gate blocks on             8
+  of those this seat has never ruled on         0
+  of those that cannot fire on this edition     2
+  of those the short prompt no longer answers   0
+  rows here for a rule the gate no longer has   0
+
+  Every rule that can hold the short edition is answered in
+  the prompt that writes it. A new BLOCK rule in the pre-send
+  gate fails this check until this seat rules on it.
+
+==== dispatch ====
+DISPATCH_CASES                             6 of 6
+TARGET_CASES                               5 of 5
+ARG_ROUTING_CASES                          5 of 5
+SELECTION_CASES                            3 of 3
+
+==== columns ====
+COLUMN_CASES                               5 of 5
+UNREACHED_CASES                            6 of 6
+
+db/schema.sql declares for deploy_runtime  7
+    app
+    runtime_sha
+    entrypoint
+    file_count
+    recorded_at
+    first_seen_at
+    notified_at
+
+Whether the receipt serves all of them is `press`, because that is
+where the row is read. The two columns that prompted this gate,
+`entrypoint` and `file_count`, were declared here from the day the
+table was created and reached no reader through
+`tools/delivery_health.py` until 2026-11-02.
+
+ALLEXIT=1

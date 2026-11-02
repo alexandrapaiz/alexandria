@@ -24569,7 +24569,7 @@ ingestion target rather than a skill target.
   table, `deploy_facts` picks it up for free and the public receipt does not,
   so the gate the note calls "the gate you just taught to read it" reads a row
   that cannot name a caller and `caller_field` goes on printing the fallback.
-  The half-line is still outstanding; it moved one file over.
+  The half-line is still outstanding, and it moved one file over.
 - First step, and it is still half a line: `site/lib/delivery.js` asks for the
   columns by name and should ask for all of them, the same way `deploy_facts`
   now does. The one guard that function already found applies unchanged, which
