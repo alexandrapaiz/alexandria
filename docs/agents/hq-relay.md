@@ -5624,3 +5624,94 @@ record was a description that merged twenty minutes later. Filed as
 `INC-2026-11-02-two-owner-actions-from-a-merged-sweep-had-no-surface-but-a-pull-request-body`,
 measured by searching the board's items, the window's fifty broadcasts and this
 seat's addressed messages for any mention: zero.
+
+## 2026-11-02, third message wake of the night — the press has no record of an invocation, and the surface that would is the owner's inbox
+
+**One ask, and it is to the owner rather than to HQ**, which is why it is
+written here with its own delivery line rather than folded into a centralizer
+handoff. §3f rule 1 as generalised by the previous run of this seat: an act that
+belongs to somebody who is not a seat is addressed to them in the run that
+finds it.
+
+### Owner Ask 1: did an `ALARM_SUBJECT_CANNOT_PRINT` mail arrive on 2026-10-26?
+
+**The question.** On Monday 2026-10-26 the press's 09:00Z slot produced no
+edition and no run record. Three things are consistent with that and they take
+three different repairs. The owner's inbox is the only surface in existence
+that separates two of them.
+
+**Why only the owner can answer.** `record_runtime` writes
+`deploy_runtime.recorded_at` at `pipeline/weekly.py:1885`, inside the `try` that
+opens at 1874, after `check_availability()` at 1879 and the `psycopg.connect` at
+1881. The `except` at the foot of that `try` calls `notify_owner`
+(`pipeline/weekly.py:1367`), which mails by SMTP and writes to **no table**. So:
+
+| what happened on 2026-10-26 | row on the receipt | mail to the owner | repair, and whose |
+|---|---|---|---|
+| the slot never fired | absent | none | re-deploy `alexandria-weekly` — a deploy |
+| it fired, raised at 1874–1884 | absent | **yes** | the availability check or the DSN — engineer |
+| it fired, raised at 1846–1873 | absent | none | the week label or the prompt files — engineer |
+
+The receipt reads identically for all three. **Yes** to the question puts it in
+row 2 and takes the deploy off the table. **No** narrows it to rows 1 and 3.
+Either answer is worth more than next Monday's firing, which can only settle
+the positive branch.
+
+**What it costs the owner.** One search of one inbox for mail from
+2026-10-26 with that subject, and a one-word reply.
+
+**The code half, which is not asked here and is named so it is not lost.** The
+press has no agent-readable record that it was *invoked*. The cheap fix is not a
+new table: it is moving the first durable write ahead of the first thing that
+can fail, or giving `notify_owner` a row. That is the engineer seat's and is
+carded rather than asked, because an ask is cheaper than an instrument and this
+one has been answerable for seven days.
+
+**Live test for this row.** The answer is a message, so the test is the message:
+`python3 tools/board.py inbox` carries a reply from the owner naming
+2026-10-26 and the alarm subject, or it does not.
+
+### Outstanding with HQ, re-read 2026-11-02T01:51–01:55Z
+
+Per §3f rule 4, and a **diff** against the 01:26:32Z table per the second
+pass's Finding 1: every row there appears here with the reading this run got,
+plus the owner ask above.
+
+| ask | state | live test, and the reading this run got |
+|---|---|---|
+| 2026-11-02 Owner Ask 1: the 2026-10-26 alarm mail | **ASKED 2026-11-02**, open **<1h** | `tools/board.py inbox` carries no reply yet — sent this run, see the delivery line |
+| 2026-11-02 Ask 1: the dispatch's branch name cannot see a held prefix | **DELIVERED 2026-11-02**, open **~1h** | `grep -o 'branch named [^(]*' …/epitome/cli/src/lib/runner.js` → `${name}/${date}-${slug}`, **unchanged** |
+| 2026-11-02 Ask 2: anchor the doorbell after the weekly reset, and name the event in the wake | **DELIVERED 2026-11-02**, open **~1h** | `/srv/asc/hq/runtime/board/api.py:438` → `ASC_WEEK_ANCHOR", "7"`, no override; `triggered by: ${trigger}` at `epitome-next/cli/src/lib/runner.js:73` is still the only identity the prompt carries — **unchanged** |
+| 2026-10-18 decision 056, 1: unshallow the host clone | **open, 15 days** | the durable test, on this run's own log `2026-11-02T01-39-11-953Z-message.log`: `git clone --depth 1  https://github.com/alexandrapaiz/alexandria.git` — **still open, and it cost this run a `git fetch --unshallow` plus a refspec widen before it could read any sibling branch** |
+| 2026-10-24 cadence word: `semimonthly` in `NO_SELF_CONTINUE` | **open, 9 days** | `tools/wake_routes.py --seat security` at 01:53:33Z: `check.failed` and `pr.merged` both `deaf:prefix`, and the cadence gate behind `pr.merged` still reads "would allow the continue-wake (cadence `semimonthly`)" — **unchanged** |
+| 2026-11-01 Ask 1: readable weekly-budget figure and a per-seat floor | **HALF LANDED**, unchanged | `/api/capacity` has **27** keys; no key matching `remain`, `floor` or `budget` → **empty**. The budgeting half is outstanding |
+| 2026-11-01 Ask 2: bound the retry cascade by limit class | **HALF LANDED**, unchanged | `capacity-retry.py --help \| grep -c 'max-per-reset'` → **2**. Subject selection still names the latest run |
+| 2026-11-01 Ask 4: stale emission test on HQ's own main | **DELIVERED 2026-11-01T07:57:04Z**, open **~18h** | not readable from this filesystem, which remains a defect of the ask and is stated rather than hidden |
+| 2026-11-01 Ask 1: the retry's claim window | **ANSWERED 2026-11-02T00:19:35Z, fix not live**, unchanged | `capacity-retry.py --help \| grep -ci 'window\|horizon'` → **0** |
+| 2026-11-02 standing-block object check | **DELIVERED 2026-11-02**, open **~1.5h** | unchanged; the block is repaired when a wake naming a pull request as an open draft carries a state read of that pull request |
+
+**Nothing landed in the twenty-five minutes since the last pass, and nothing
+regressed.** Third reading of this heading in one night and the third to agree
+with itself, which is what the diff rule was added to produce. The two readings
+worth a line are the clone depth, now measured on **this run's own log** rather
+than on a sibling's, and the cadence word, which at nine days is the oldest
+open row on the page and is named by the security seat as the thing that
+unblocks its two deaf subscriptions.
+
+### Finding: this duty's own red-main command reads green off an older commit
+
+Found while running §2b, filed as a charter edit in the same run rather than as
+an ask, because it is this charter's defect and not HQ's. `checks.yml` is
+path-filtered on both `pull_request` and `push: branches: [main]`, so
+`gh run list --workflow=checks.yml --branch=main --limit 5` answers about the
+newest commit that happened to touch one of 23 paths. Main is `729b0d58` and
+has **no `checks` verdict at all**: the #657 merge touched `mcp/server.py`,
+`site/lib/path.js`, `tests/path.test.mjs`, `tests/test_ci_coverage.py` and
+`tests/test_mcp_dsn_redaction.py`, none of them in the filter. `deploy-main`
+ran on it and passed, which is a deploy and not a test. `tools/ci_coverage.py`
+exits 1 today with **14 of 78** test files run in any workflow, and two of the
+five files in main's own head merge carry tests among the 64 that run nowhere.
+
+It is the same class as the owner ask above — a conclusion is a row written by
+a run, so its absence is a claim about a trigger filter and never about the
+code — and both are the class §3g step 6 is amended for in this run's diff.
