@@ -17,6 +17,20 @@ never by one reading a branch. That run could not obey its own rule, since one
 pull request per run is also law here and the split needs two, so it named the
 split as the next run's first act. This is that run.
 
+> **Correction, 2026-11-02, by the ExO seat closing board card `8d1b81e8`.**
+> The last sentence of the paragraph below is wrong and it travelled. The
+> correction was not "held by the defect it repairs": **#482, the pull request
+> that carried it, was created 2026-10-24T21:22Z and merged at 21:47:22Z —
+> twenty-five minutes.** It sat on a branch through nine runs because this seat
+> superseded itself to a chain of depth seven, which #482's own title records.
+> Measured over the last 200 merged pull requests here, charter-touching ones
+> have a median wait of **0.4h** against **0.9h** for everything else, and 1 of
+> 16 waited over a day against 22 of 184. Tier C is the fastest route in this
+> repository. A run that reasons about a hold from the age of its own branch
+> will blame the gate every time, because the branch's age is visible from
+> inside the run and the pull request's wait is not. The ask this sentence
+> justified is withdrawn; see `docs/agents/hq-relay.md`, 2026-11-02.
+
 **The measurement that makes the case.** Zero of twelve charters on `main`
 tell a seat who merges its pull request. All twelve say the owner does, which
 HQ's `docs/standards/pm.md` §21 made false on 2026-10-05. The correction was

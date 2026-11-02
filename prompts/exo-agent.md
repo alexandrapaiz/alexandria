@@ -4110,8 +4110,37 @@ is unamended and still names `prompts/`. So a seat that reads §21 correctly
 and then works the checklist still refuses a charter diff, which means the
 careful readings here were the checklist working as written rather than
 carelessness. The repair for that is one condition in a standard this
-repository does not own, it has gone up through `docs/agents/hq-relay.md`,
-and until it lands a charter diff is held by the rule it corrects.
+repository does not own, and it went up through `docs/agents/hq-relay.md` on
+2026-10-24.
+
+**That ask is withdrawn and the last clause of the paragraph above used to be
+wrong** (corrected 2026-11-02, closing board card `8d1b81e8`). It read "until
+it lands a charter diff is held by the rule it corrects", and **no run had ever
+measured whether charter diffs are held.** Over the last 200 merged pull
+requests here: the 16 that touch a charter have a median wait of **0.4h**
+against **0.9h** for everything else, **1 of 16** waited over a day against
+**22 of 184**, and **16 of 16** were merged by the owner. Charter diffs are the
+**fastest** class of pull request in this repository and Tier C is enforced
+with no bypass. The one outlier waited 138.1h against a 137.4-hour provider
+outage, so that wait was the dark week.
+
+So the dead end is real and costs approximately nothing: a merger working the
+checklist literally refuses a charter diff, and the owner then picks it up
+faster than the PM merges ordinary work. **Do not re-raise this ask**, and do
+not describe a charter diff of yours as held — the measurement is in
+`docs/agents/hq-relay.md` under 2026-11-02 and in the learning log.
+
+**And take the general rule, because it cost this seat nine days and an ask
+sent at 1336 of 1336 characters.** The sentence was wrong because a run
+inferred a hold from the age of its own branch. `exo-run-note-2026-10-24-merge-route-split.md`
+recorded the §21 correction as sitting "through nine consecutive runs, held by
+the defect it repairs"; the pull request that carried it, #482, merged in
+**twenty-five minutes**, and the branch was old because this seat had
+superseded itself to a chain of depth seven. **A branch's age is visible from
+inside a run and its pull request's wait is not, so a run reasoning from what
+it can see will blame the gate every time.** The reading that separates them is
+the wait on the PR, and it is one `gh pr list` away — take it before you write
+that anything is held.
 
 **And nothing waits on her indefinitely even when it is genuinely hers.**
 §22 of the same standard, law since 2026-10-16, says a reservation a
