@@ -144,8 +144,10 @@ is mostly stale: ~3.5GB of finished runs' worktrees, virtualenvs, clones and
 caches under `/tmp` and in the seats' home, none of it owned by anything still
 running." Two weeks later the reclaimable share measures approximately zero and
 every sandbox is live. L-A71's remedies stand; its last sentence is a fact about
-2026-10-18 that reads as a standing property of the host. Routed to the chair
-through `docs/agents/hq-relay.md`, per `docs/agents/cross-repo-law.md`.
+2026-10-18 that reads as a standing property of the host. Routed to the ExO seat for the relay
+rather than written onto `docs/agents/hq-relay.md` here, because that page is
+the ExO's surface and #759 already has it open, per
+`docs/agents/cross-repo-law.md`.
 
 **Correction 3: the denominator argument is right, is important, and does not
 belong to the line it was used to price.** The ExO's general point is correct and
