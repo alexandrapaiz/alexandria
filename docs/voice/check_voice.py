@@ -7798,6 +7798,255 @@ def dispatch():
     return 1 if worse else 0
 
 
+# ---- the fifth altitude, and the one both of this seat's sweeps missed ----
+#
+# The ExO seat's sentence of 2026-11-02 was that a sweep passing one argument
+# tests the command NAME and not what comes after it. This seat agreed, swept
+# `tools/` a second time with a nonsense target instead of a nonsense name,
+# found every file refusing, and was one commit from reporting the fleet clean
+# a second time.
+#
+# The second sweep's domain was positional arguments and `sys.argv[1]`, because
+# those are the shapes this seat's own file uses. A target handed over by a
+# FLAG is neither, and `tools/board.py inbox --seat <anything>` answers
+# "0 messages" and exits 0 for a seat that does not exist. Twelve seats run
+# that command every run, and this seat read a confident zero from it tonight
+# against nine messages it actually held, because the name in the dispatch
+# prompt is `alexandria-writer` and the name on the board is `writer`.
+#
+# So the defect was not in the probe. It was in the domain the probe was
+# measured over, and the domain was a list of shapes that answered confidently
+# about the world it was written in, which is ban list 36 and L-A26 by name.
+# `sweep` above cites that same law in its own docstring. This block exists so
+# the domain is read from the declarations instead of recalled from habit.
+ARG_DECL = re.compile(r"add_argument\(\s*((?:\s*[\"'][^\"']*[\"']\s*,?)+)")
+ARG_LIT = re.compile(r"[\"']([^\"']*)[\"']")
+
+
+def declared_args(source):
+    """Every argument a tool's parser declares, as (kind, name) pairs.
+
+    `None` and never `()` for a file that declares no parser, for the reason
+    `declared_columns` returns `None`: an empty tuple reads as "nothing to
+    cover" and is indistinguishable from a clean pass, which is the entire
+    class this block belongs to.
+
+    Only the leading run of string literals in each call is read, so the
+    keyword arguments after it cannot contribute a name. The long option wins
+    when a call declares both, because `-q, --quiet` is one argument under the
+    name argparse itself stores it as.
+    """
+    runs = ARG_DECL.findall(source or "")
+    if not runs:
+        return None
+    out = []
+    for run in runs:
+        lits = ARG_LIT.findall(run)
+        longs = [x for x in lits if x.startswith("--")]
+        if longs:
+            out.append(("flag",
+                        max(longs, key=len).lstrip("-").replace("-", "_")))
+        elif lits and lits[0].startswith("-"):
+            # A short option with no long form is still an argument. Dropping
+            # it here would undercount the surface silently, which is the
+            # defect this whole block is about, so it is a flag under the
+            # name argparse stores it as. No tool declares one today and the
+            # case below is what makes that a measurement rather than luck:
+            # the mutation test found this hole by surviving, not the cases.
+            out.append(("flag", lits[0].lstrip("-").replace("-", "_")))
+        elif lits:
+            out.append(("positional", lits[0]))
+    return tuple(out)
+
+
+def uncovered_args(declared, probed):
+    """The declared argument names a probe never passed a value for.
+
+    `None` propagates: a surface that could not be read owes no answer about
+    coverage, and saying `()` there would report full coverage of a file
+    nobody parsed.
+    """
+    if declared is None:
+        return None
+    seen = set(probed or ())
+    return tuple(name for _, name in declared if name not in seen)
+
+
+ARG_CASES = (
+    # A positional, which is all either sweep ever reached.
+    ('ap.add_argument("paths", nargs="+")', (("positional", "paths"),)),
+    # The live instance. A target carried by a flag.
+    ('ap.add_argument("--seat", help="the seat acting")',
+     (("flag", "seat"),)),
+    # Short and long for one argument is one argument, under the long name.
+    ('ap.add_argument("-q", "--quiet", action="store_true")',
+     (("flag", "quiet"),)),
+    # A dash in the option is an underscore in the name, the way argparse
+    # stores it, so a probe can be checked against the parser's own spelling.
+    ('ap.add_argument("--since-hours", type=int)',
+     (("flag", "since_hours"),)),
+    # A declaration wrapped over lines, which is most of them in this repo.
+    ('ap.add_argument("--to",\n                default="reader@example.com",\n'
+     '                help="the recipient the footer names")',
+     (("flag", "to"),)),
+    # A short option with no long form, which no tool declares today. The
+    # mutation that made this a positional survived all eight other cases.
+    ('ap.add_argument("-v", action="count")', (("flag", "v"),)),
+    # A keyword holding a string must not become an argument name. This is the
+    # case that would have invented four arguments for `rehearse_email`.
+    ('ap.add_argument("--token", default=None, help="an opaque string")',
+     (("flag", "token"),)),
+    # A subparser name is not an argument. `tools/board.py` declares eight.
+    ('sub.add_parser("show", help="print the board")', None),
+    # No parser at all is refused rather than reported as a clean surface.
+    ("print('hello')", None),
+    # Order is preserved, because a caller reading the gap needs the parser's
+    # order rather than a sorted set.
+    ('ap.add_argument("--company")\nap.add_argument("--seat")\n'
+     'ap.add_argument("key", nargs="?")',
+     (("flag", "company"), ("flag", "seat"), ("positional", "key"))),
+)
+
+UNCOVERED_CASES = (
+    # The live shape. A sweep that passed one positional covers no flag.
+    ((("flag", "seat"), ("flag", "company"), ("positional", "paths")),
+     ("paths",), ("seat", "company")),
+    # A probe that covered everything returns nothing, which is the pass.
+    ((("flag", "seat"),), ("seat",), ()),
+    # Nothing probed is the whole surface uncovered, which is what the
+    # command-name sweep of 2026-11-01 actually achieved.
+    ((("flag", "seat"), ("flag", "company")), (), ("seat", "company")),
+    # An unreadable surface says so rather than claiming full coverage.
+    (None, ("seat",), None),
+    # Nothing declared and nothing probed is not a gap.
+    ((), (), ()),
+)
+
+# What this seat's two sweeps actually passed a value for, as a record rather
+# than as a memory. The first sweep passed a nonsense first argument to all
+# 46 files under `tools/`, which reaches the subcommand name and no declared
+# argument at all. The second passed a path to the four positional arguments
+# in the tree.
+SWEPT = ("paths", "ids", "key")
+
+# Files under `tools/` whose argument surface cannot be read from parser
+# declarations, with the reason each one is not a hole in the measurement.
+# Three of the four are the same three the command-name sweep of 2026-11-01
+# explained, which is why they are quoted from that sweep rather than
+# re-derived here.
+ARG_FILED = {
+    "board_alarm.py": "a library. Its own docstring opens `Not a command`",
+    "panel.py": "a library, imported by the four `panel_*` tools",
+    "check_registers.py": "parses no arguments at all, by design",
+    "check_issue_citations.py":
+        "reads `sys.argv[1]` with no parser, and refuses an absent path with "
+        "a traceback and exit 1, which is loud rather than a false pass",
+}
+
+
+def flags():
+    """The argument surface of `tools/`, read from the declarations.
+
+    This gate grades a measurement and not an edition, so it reads the tree
+    and nothing else. It is in `all` because the thing it protects is the one
+    defect class no output can reveal, and because this seat has now narrowed
+    the same domain twice in two nights.
+
+    What it fails on is closable and small: a file whose surface cannot be
+    read and which no row explains, and a row explaining a file that does not
+    exist or does declare a parser. That is `sweep`'s three-way shape, chosen
+    deliberately, because the register decides the domain and this map only
+    answers for it.
+
+    What it prints and does not fail on is the coverage gap, and the reason is
+    not softness. Deciding which of the declared flags names a target a tool
+    resolves is per-tool judgment across 42 files in the engineer seat's lane,
+    and a gate in this seat's file that failed on it would be this seat holding
+    another seat's surface red forever. The number is the finding and it is in
+    `docs/ideas.md` with an owner. That is the same division `sweep` draws in
+    its own last paragraph between a check and a reading.
+    """
+    tools = ROOT / "tools"
+    files = sorted(tools.glob("*.py"))
+    if not files:
+        print("  FAIL    tools/ holds no python files, so the sweep this gate")
+        print("          measures had no domain and its clean result was")
+        print("          about nothing")
+        return 1
+
+    bad = 0
+    for i, (text, want) in enumerate(ARG_CASES):
+        got = declared_args(text)
+        if got != want:
+            bad = 1
+            print(f"  CASE    declared_args case {i} wanted {want!r} and "
+                  f"got {got!r}")
+    print(f"ARG_CASES                                  "
+          f"{len(ARG_CASES) - bad} of {len(ARG_CASES)}")
+    worse = 0
+    for declared, probed, want in UNCOVERED_CASES:
+        got = uncovered_args(declared, probed)
+        if got != want:
+            worse = 1
+            print(f"  CASE    uncovered_args({probed!r}) wanted {want!r} "
+                  f"and got {got!r}")
+    print(f"UNCOVERED_CASES                            "
+          f"{len(UNCOVERED_CASES) - worse} of {len(UNCOVERED_CASES)}")
+    print()
+
+    unreadable, positional, flagged, gap = [], 0, 0, 0
+    for path in files:
+        declared = declared_args(path.read_text(encoding="utf-8"))
+        if declared is None:
+            unreadable.append(path.name)
+            continue
+        positional += sum(1 for k, _ in declared if k == "positional")
+        flagged += sum(1 for k, _ in declared if k == "flag")
+        gap += len(uncovered_args(declared, SWEPT))
+
+    print(f"files under tools/                         {len(files)}")
+    print(f"  surface readable from declarations       "
+          f"{len(files) - len(unreadable)}")
+    print(f"  no parser, filed with the reason         {len(unreadable)}")
+    for name in unreadable:
+        print(f"    {name}  {ARG_FILED.get(name, '')}")
+    print(f"declared arguments                         "
+          f"{positional + flagged}")
+    print(f"  positional, which both sweeps reached    {positional}")
+    print(f"  carried by a flag, which neither did     {flagged}")
+    print(f"never passed a value by either sweep       {gap}")
+    print()
+
+    unfiled = [n for n in unreadable if n not in ARG_FILED]
+    phantom = sorted(n for n in ARG_FILED
+                     if not (tools / n).exists()
+                     or declared_args((tools / n).read_text(encoding="utf-8"))
+                     is not None)
+    if unfiled:
+        worse = 1
+        for name in unfiled:
+            print(f"  FAIL    tools/{name} declares no parser and no row says "
+                  f"why, so this gate's domain has a hole in it and the "
+                  f"sweep's clean result does not cover that file")
+    if phantom:
+        worse = 1
+        for name in phantom:
+            print(f"  FAIL    ARG_FILED names tools/{name}, which either is "
+                  f"not there or does declare a parser, so the row explains "
+                  f"a hole that is not one")
+    if not unfiled and not phantom:
+        print("  OK      every file's argument surface is either read here or")
+        print("          filed with its reason")
+    print()
+    print("The gap above is the reading. A sweep that mistypes the command")
+    print("name tests the dispatcher, a sweep that mistypes a positional")
+    print("tests four arguments, and the target that actually answered a")
+    print("confident zero to this seat tonight was carried by `--seat`.")
+    print("Which of the flags name a target is the engineer seat's judgment,")
+    print("file by file, and it is in docs/ideas.md under that seat's name.")
+    return bad | worse
+
+
 def main():
     which = sys.argv[1] if len(sys.argv) > 1 else "all"
     # Paths after the subcommand go to `measure`. Without this, the arguments
@@ -7872,6 +8121,7 @@ def main():
                 ("blockrules", blockrules),
                 ("dispatch", dispatch),
                 ("columns", columns),
+                ("flags", flags),
                 ("compare", compare), ("selfcheck", selfcheck))
     # An unknown name is a usage failure and never a pass. Exit 2 rather than
     # 1, so a caller can tell "this gate is not here" from "this gate ran and
