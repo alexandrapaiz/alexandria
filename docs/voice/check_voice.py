@@ -1330,6 +1330,28 @@ SURFACE_GLOBS = ("site/app/**/*.jsx", "site/app/**/*.js", "site/lib/*.js",
 # answering it here.
 ARCHIVE_GLOBS = ("site/content/issues/*.md",)
 
+# The target every line of copy converges on, which is not a surface and is
+# read here anyway. `claims` was pointed at the pages that already shipped, so
+# the one gate the writer charter hands this seat for its step-1b duty could
+# not see a candidate before it left the seat's hands, and it could not see
+# `docs/voice/value.md` at all. That page is where a candidate is told what to
+# say, so a promise with no machine under it lands there one step before it
+# lands on a page, and every candidate written against it inherits the promise
+# while this check stays green on the surfaces. L-A21's first half, with the
+# scope narrower than the subject: name a change that would break what this
+# gate governs, then ask whether the gate would have SEEN it.
+#
+# One file and not the whole directory, deliberately. The other candidate
+# files under docs/voice/ quote the specimens she rejected and the law that
+# rejects them, which is the construction L-A23 names, and a per-sentence
+# hedge test cannot tell a candidate from the rejection printed beside it to
+# warn against it. Reading them needs a convention that marks which lines are
+# the candidate, that convention does not exist, and inventing one here would
+# redden ten existing files over prose nobody can fix. Filed in docs/ideas.md
+# with the proposal rather than guessed at. Until then `claims` takes a path,
+# so a round can aim it at the file it is drafting.
+TARGET_GLOBS = ("docs/voice/value.md",)
+
 # Words that carry no claim. Overlap is scored on the rest, because the claim
 # in the register and the claim on the page are rarely the same string: the
 # register holds "revised when the research sharpens it" and /llms.txt prints
@@ -1391,7 +1413,67 @@ STATE_CASES = (
     # Unbolded, which no row uses today. The whole cell is the verdict then,
     # and the ambiguity rule below still governs it.
     ("queued", "queued"),
+    # The two live cadence rows as of 2026-11-02, both split by half, pinned
+    # because the resolver was already right about them and nothing said so.
+    # The ExO seat's sweep of that day made "a cadence claim carries two
+    # verdicts" step six of its claim sweep, so split cells stop being the
+    # exception here. The strictest half still governs whether a line may
+    # ship, which for both of these is `contradicted`.
+    ("contradicted",
+     "**held on the clock, contradicted on the record**, moved from a flat "
+     "`contradicted` 2026-11-02, and the mechanism is a **job running and "
+     "falling behind** rather than the stopped job of the last reading"),
+    ("contradicted",
+     "**contradicted on the record and on the clock**, moved from "
+     '"contradicted on the record, cadence resumed" 2026-11-02'),
+    # The dangerous direction, which no row writes today and one will: a row
+    # whose record half is the one that holds. `held` must still lose.
+    ("contradicted",
+     "**contradicted on the clock, held on the record**"),
 )
+
+# Which half of a cadence claim each verdict belongs to. `claim_state` answers
+# whether a line may ship and this answers what hedge it needs, which are two
+# questions one word cannot carry: a row false about the current period is
+# softened by naming the gap, and a row false about the whole series is only
+# honest if the claim stops being universal.
+HALF_NAMES = ("clock", "record")
+HALF_CASES = (
+    ("**held on the clock, contradicted on the record**",
+     {"clock": "held", "record": "contradicted"}),
+    # One verdict, two halves, and the second half names no state of its own.
+    ("**contradicted on the record and on the clock**",
+     {"clock": "contradicted", "record": "contradicted"}),
+    ("**contradicted**", {}),
+    # A half-shaped phrase that is not a half. "on the verb" and "on the live
+    # site" are the register's own words for other things entirely.
+    ("**contradicted on the verb, and dark on the live site**", {}),
+    ("**contradicted on the universal reading**", {}),
+    # The history recount, which is the case `claim_state` was written for.
+    # It names no half, so this returns nothing and the AMBIGUOUS line below
+    # stays the right message for it.
+    ("**contradicted**, moved from `held` 2026-10-11", {}),
+)
+
+
+def claim_halves(cell):
+    """The per-half verdicts a cadence row names, as `{half: state}`.
+
+    Empty for every row that does not split, which is most of them, so the
+    caller prints the split only where the register wrote one.
+    """
+    bold = re.search(r"\*\*(.+?)\*\*", cell)
+    scope = (bold.group(1) if bold else cell).lower()
+    out, carry = {}, None
+    for part in re.split(r",| and ", scope):
+        state = next((s for s in STATES
+                      if re.search(r"\b" + re.escape(s) + r"\b", part)), None)
+        half = re.search(r"\bon the (clock|record)\b", part)
+        if state:
+            carry = state
+        if half:
+            out.setdefault(half.group(1), state or carry)
+    return out
 
 
 def claim_state(cell):
@@ -1418,8 +1500,10 @@ def claim_state(cell):
 
 def state_cases():
     """Every case above, run before the register is read."""
-    return [(want, cell) for want, cell in STATE_CASES
-            if claim_state(cell)[0] != want]
+    bad = [(want, cell) for want, cell in STATE_CASES
+           if claim_state(cell)[0] != want]
+    return bad + [(str(want), cell) for cell, want in HALF_CASES
+                  if claim_halves(cell) != want]
 
 
 def claim_words(phrase):
@@ -1450,6 +1534,7 @@ def claim_rows():
         state, ambiguous = claim_state(cells[3])
         rows.append({"phrases": phrases, "where": where, "state": state,
                      "ambiguous": ambiguous, "cell": cells[3],
+                     "halves": claim_halves(cells[3]),
                      "label": phrases[0], "measured": cells[4] if len(cells) > 4 else ""})
     return rows
 
@@ -1509,7 +1594,7 @@ def surface_sentences(path):
     return out
 
 
-def claims():
+def claims(paths=()):
     """Every registered quality claim against the surface that prints it.
 
     docs/agents/quality-claims.md says a claim with no mechanism ships hedged
@@ -1559,16 +1644,26 @@ def claims():
         print("The register's verdict convention changed and STATE_CASES says")
         print("how. Nothing below was read.")
         return 1
-    print(f"  the verdict cases                         {len(STATE_CASES)} pass")
+    print(f"  the verdict cases                         "
+          f"{len(STATE_CASES)} state, {len(HALF_CASES)} half, all pass")
     rows, fails = claim_rows(), []
     hedged, moved, spread, gone = [], [], [], []
     surfaces = []
-    for glob in SURFACE_GLOBS:
-        surfaces += sorted(ROOT.glob(glob))
+    if paths:
+        surfaces = [pathlib.Path(x) if pathlib.Path(x).is_absolute()
+                    else ROOT / x for x in paths]
+    else:
+        for glob in SURFACE_GLOBS + TARGET_GLOBS:
+            surfaces += sorted(ROOT.glob(glob))
     scanned = [(p, surface_sentences(p)) for p in surfaces if p.is_file()]
     print(f"rows in docs/agents/quality-claims.md       {len(rows)}")
     print(f"  not `held`, so hedged or not shipped      "
           f"{sum(1 for r in rows if r['state'] != 'held')}")
+    # L-A47: an instrument's scope is part of its answer. A run that aims this
+    # at one candidate and a run that swept every surface print the same
+    # verdict otherwise, and only one of them has checked the product.
+    print(f"scope                                       "
+          f"{'aimed at ' + ', '.join(shown_path(p) for p, _ in scanned) if paths else 'the shipped surfaces and the target'}")
     print(f"reader-facing surfaces read                 {len(scanned)}")
     print(f"  sentences in them                         "
           f"{sum(len(s) for _, s in scanned)}")
@@ -1582,14 +1677,38 @@ def claims():
         cited = {p for p, _ in row["where"]}
         hits = []
         for path, sentences in scanned:
-            rel = str(path.relative_to(ROOT))
+            # `shown_path` and never `relative_to(ROOT)`. Its own docstring
+            # says the idiom is inlined in six passes, and this was the
+            # seventh: the line raised the moment `claims` was first aimed at
+            # a candidate dumped into /tmp, which is how a round proves the
+            # gate catches the page it is replacing. Same defect as
+            # `standalone` on 2026-11-01, one day later, in the pass that
+            # reports the FINDING rather than the scope.
+            rel = shown_path(path)
             for line, body in sentences:
                 have = claim_words(body)
                 score = max((len(w & have) / len(w)) if w else 0 for w in words)
                 if score >= 0.6 and max(len(w & have) for w in words) >= 3:
                     hits.append((rel, line, body, score))
         print(f"{row['state']:>13}  \"{row['label'][:58]}\"")
-        if row["ambiguous"]:
+        if row["halves"]:
+            # A split cell is not an ambiguous one. The register wrote two
+            # verdicts on purpose, one per half of a cadence claim, and
+            # reporting that as an ambiguity teaches the reader to skim the
+            # line. The shipping decision is unchanged and the strictest half
+            # still governs it; what this adds is which hedge the half needs.
+            print(f"  SPLIT     "
+                  + "   ".join(f"{h}: {row['halves'][h]}"
+                               for h in HALF_NAMES if h in row["halves"]))
+            failed = [h for h in HALF_NAMES
+                      if row["halves"].get(h) not in (None, "held")]
+            print(f"            the {' and '.join(failed)} "
+                  f"{'half fails' if len(failed) == 1 else 'halves fail'}, "
+                  f"so the hedge owed is "
+                  + ("the gap named" if failed == ["clock"]
+                     else "the universal dropped" if failed == ["record"]
+                     else "both, which is the claim withdrawn"))
+        elif row["ambiguous"]:
             print(f"  AMBIGUOUS the state cell names more than one verdict; "
                   f"the strictest is read")
             print(f"            {row['cell'][:96]}")
@@ -2208,15 +2327,26 @@ def candidates(ref=None):
     rows = open_rows()
     out = subprocess.run(["git", "diff", "--name-status", ref],
                          cwd=ROOT, capture_output=True, text=True)
-    new = []
+    new, cited = [], []
     for line in out.stdout.splitlines():
         parts = line.split("\t")
         if len(parts) < 2 or not parts[0].startswith("A"):
             continue
         path = parts[-1]
-        if path.startswith("docs/voice/") and path.endswith(".md") \
-                and (ROOT / path).exists() and (ROOT / path) != AWAITING:
-            new.append(path)
+        if not (path.startswith("docs/voice/") and path.endswith(".md")
+                and (ROOT / path).exists() and (ROOT / path) != AWAITING):
+            continue
+        # The clash test gets the floor's scope, which it should have had from
+        # the start. `is_candidate` exists because "a review cites surfaces as
+        # evidence and failing a grade for quoting the line it grades would
+        # make the gate unusable by the work it governs", which is this
+        # function's own docstring, and that reasoning is about citing a
+        # surface rather than about which half of the pass does the citing.
+        # Run 64 found it by being failed three times over its own grade of
+        # `2026-W42`, whose law 15 verdict has to quote the four live `reading`
+        # lines to say they are red. A gate that reddens the grade is a gate a
+        # run learns to read past.
+        (new if is_candidate(path) else cited).append(path)
     clashes = []
     unregistered = []
     registered = registered_candidates()
@@ -2225,8 +2355,7 @@ def candidates(ref=None):
         named = set(CANDIDATE_FILE.findall(body)) | {m for m in re.findall(
             r"([a-z0-9][A-Za-z0-9_.-]*\.md)", body)}
         surfaces = sorted(set(SURFACE.findall(body)))
-        if surfaces and is_candidate(path) \
-                and pathlib.Path(path).name not in registered:
+        if surfaces and pathlib.Path(path).name not in registered:
             unregistered.append((path, surfaces))
         for surface in surfaces:
             held = rows.get(surface, set())
@@ -2243,6 +2372,12 @@ def candidates(ref=None):
                 clashes.append((path, surface, sorted(held)))
     print(f"candidate files this diff adds under docs/voice/   {len(new)}")
     for path in new:
+        print(f"  {path}")
+    # The scope this read, printed, because a count of zero candidates and a
+    # count of zero added files mean different things (L-A47).
+    print(f"added files it read as records rather than candidates  "
+          f"{len(cited)}")
+    for path in cited:
         print(f"  {path}")
     print(f"surfaces with an open row in awaiting-her-word.md  {len(rows)}")
     for path, surface, held in clashes:
@@ -4022,6 +4157,155 @@ def slotheads(paths=None):
     return rc
 
 
+#: The words this canon and this generator use for their OWN instruments. Kept
+#: to three, and each one earns its place from a specimen rather than from a
+#: worry: `2026-W42` printed all three as colon labels in one edition. A longer
+#: list would start catching the reader's own nouns, and "the practical
+#: consequence" is the reader's.
+APPARATUS = ("grade", "procedure", "evidence")
+
+#: What `apparatus_label` has to get right. The true cases are the four
+#: `2026-W42` printed. The false cases are the colons of the same edition that
+#: are doing honest work, because a detector that reddens those is a detector
+#: the next run deletes.
+#: Fields: (fires, the segment as it is printed)
+APPARATUS_CASES = (
+    (True, "The grade: one platform, one model family, five benchmarks, no "
+           "replication outside the group yet."),
+    (True, "The procedure is extractable: agents submit training configs, "
+           "query checkpoints through an OpenAI-compatible gateway."),
+    (True, "The procedure is clean: retrieve top-50 candidates, expose only "
+           "metadata, allow LOAD_SKILL actions during reasoning."),
+    (True, "The procedure runs: sample an initial skill bundle, execute in "
+           "environment, initialize test suite from instruction."),
+    (False, "This week the field drew a hard line: one camp treats skills as "
+            "retrieved documents, the other as living code."),
+    (False, "Their fix is Progressive Disclosure: show the agent only skill "
+            "names and descriptions, let it request the full content."),
+    (False, "A separate team at Fudan, NUS, and Cardinal AI Lab built "
+            "SkillDAG, which goes further: skills live in a typed graph."),
+    (False, "The practical consequence: if your safety argument assumes exact "
+            "reproducibility, you are running on a narrower guarantee."),
+    # The grade written the way the generator asks for it. A clause inside a
+    # sentence that is also carrying a fact, with no colon anywhere.
+    (False, "Nobody outside the group has run it again, and the gains held "
+            "across all five benchmarks."),
+)
+
+#: The segment before a colon, and the apparatus noun has to be its SUBJECT.
+#: Anchored at the segment's own start so "a hard line" and "goes further" do
+#: not reach it, and capped at four words so a sentence that happens to use the
+#: word somewhere before a legitimate colon is not swept in.
+APPARATUS_LABEL = re.compile(
+    r"(?:^|(?<=[.!?]\s))\s*(?:\*\*|\*|_)?the\s+(" + "|".join(APPARATUS) +
+    r")\b(?:\s+\w+){0,2}?\s*:", re.I)
+
+
+def apparatus_label(segment):
+    """Why one printed segment is the apparatus wearing a colon, or "".
+
+    Ban list 149. The generator already bans this shape twice and reaches
+    neither instance of it, for two different reasons, and the reasons are
+    worth keeping together because they are why a rule stated twice shipped
+    four violations in one edition.
+
+    The grade's rule says the grade is a clause inside a sentence and names
+    the shape that keeps shipping instead, which is "a sentence of its own, in
+    one frame". A verbless colon fragment is neither of those things by the
+    letter, so the rule describes two dresses and the artifact wore a third.
+
+    The procedure's rule says the list is the shape and not a suggestion, and
+    the version that names these three specimens by name is queued behind the
+    deploy rather than live.
+
+    And the heading gate, which is the one thing in the file that collects
+    labels, collects lines beginning with `#` and runs of bold or italic
+    sitting ALONE on a line. All four specimens sit mid-paragraph after a full
+    stop, so the gate written to catch a label cannot see a label in the one
+    position the prose actually puts it.
+    """
+    hit = APPARATUS_LABEL.search(segment)
+    if not hit:
+        return ""
+    # The span and not the line. All four specimens sit mid-paragraph, so a
+    # finding quoted from the line's first characters quotes a sentence that
+    # is not the defect, which is ban list 91's rule applied to an excerpt.
+    found = segment[hit.start():hit.end() + 48].strip()
+    return (f"the apparatus wearing a colon, {hit.group(1).lower()!r}, and the "
+            f"reader reads a label where a sentence was owed\n"
+            f"            found   {found!r}")
+
+
+def apparatus(paths=None):
+    """Does an ISSUE print this canon's own instruments as colon labels?
+
+    Canon law 7 is the law underneath it. The issue never narrates its own
+    method, and the three nouns here are the method's: `grade` is what the
+    evidence law does, `procedure` and `evidence` are payload fields the
+    vocabulary rule forbids saying out loud. A reader who meets "The grade:"
+    in a paragraph has been handed the name of an apparatus they did not know
+    existed, in the place where a sentence was owed.
+
+    Why it is a pass of its own rather than a line in `marks` or `slotheads`.
+    `slotheads` reads headings, and a heading is a line. `marks` reads two
+    punctuation marks and counts them. This reads sentence-internal position,
+    which is the thing both of those are structurally unable to see, and
+    position is the whole finding: the same four fragments at the start of a
+    line would have been caught by the generator's own heading gate before the
+    issue ever rendered.
+
+        python3 docs/voice/check_voice.py apparatus --live
+    """
+    wrong = [(fires, case) for fires, case in APPARATUS_CASES
+             if bool(apparatus_label(case)) is not fires]
+    for fires, case in wrong:
+        print(f"  BROKEN  the detector is {'missing' if fires else 'firing on'}"
+              f" a case it is asserted against")
+        print(f"            {case[:84]}")
+    if wrong:
+        print()
+        print("APPARATUS_CASES says what this pass has to do. Nothing below was")
+        print("read, because a detector failing its own cases reports a clean")
+        print("issue for the wrong reason.")
+        return 1
+    print(f"  the detector's own cases       {len(APPARATUS_CASES)} pass")
+    print(f"  the instrument nouns           "
+          f"{', '.join(repr(a) for a in APPARATUS)}")
+    retired = hidden_weeks()
+    paths = paths or sorted((ROOT / "site/content/issues").glob("*.md"))
+    rc = 0
+    for raw in paths:
+        path = pathlib.Path(raw)
+        if not path.exists():
+            print(f"  {shown_path(path)}: missing")
+            rc = 1
+            continue
+        if path.stem in retired:
+            print(f"  SKIP    {shown_path(path)}  retired, not served")
+            continue
+        hits = []
+        for number, line in enumerate(
+                path.read_text(encoding="utf-8").split("\n"), 1):
+            if line.startswith("#"):
+                continue
+            why = apparatus_label(line)
+            if why:
+                hits.append((number, line, why))
+        if not hits:
+            print(f"  OK      {shown_path(path)}  no instrument wearing a colon")
+            continue
+        rc = 1
+        for number, line, why in hits:
+            print(f"  FAIL    {shown_path(path)}:{number}  "
+                  f"{line.strip()[:68]}")
+            print(f"            {why}")
+    print()
+    print("Canon law 7, and the generator bans this shape twice without")
+    print("reaching it. Write the sentence whole: the grade is a clause inside")
+    print("a sentence doing other work, and a procedure is a list.")
+    return rc
+
+
 #: The seventeen cases `past_tense_you` has to satisfy, as data rather than as
 #: a test file. `tests/` is the engineer's surface and this seat's is
 #: `docs/voice/`, and a first draft of this gate put them in
@@ -5428,11 +5712,11 @@ def press_deploy():
     except Exception as e:
         print(f"  UNREACHED tools/delivery_health.py: {type(e).__name__}: {e}")
         return None
-    body = _fetch(dh.RECEIPT_URL)
-    if body is None:
+    doc = receipt_json(dh.RECEIPT_URL)
+    if doc is None:
         return None
     try:
-        rows = {r["app"]: r for r in json.loads(body).get("deploy", [])}
+        rows = {r["app"]: r for r in doc.get("deploy", [])}
     except (ValueError, KeyError, TypeError) as e:
         print(f"  UNREACHED {dh.RECEIPT_URL}: {type(e).__name__}: {e}")
         return None
@@ -5445,6 +5729,779 @@ def press_deploy():
                                   limit=PRESS_WINDOW, ref="origin/main")
     found["row"] = row
     return found
+
+
+def receipt_json(url):
+    """The public receipt as a dict, or None with the reason printed.
+
+    `press_deploy` read the receipt for its `deploy` array and threw the rest
+    away, and the command below needs the `press` block off the same document.
+    Two fetches of one URL in one file would be a parallel structure before it
+    was a second request, and this file forbids those before it forbids
+    anything else, so both callers come through here.
+    """
+    body = _fetch(url)
+    if body is None:
+        return None
+    try:
+        return json.loads(body)
+    except ValueError as e:
+        print(f"  UNREACHED {url}: {type(e).__name__}: {e}")
+        return None
+
+
+# The press's schedule, read off the job rather than restated here. A copy of
+# `0 9 * * 1` in this file goes stale the first time the engineer seat moves
+# the cron, and the gate would then be confidently wrong about the one number
+# its whole verdict turns on.
+WEEKLY_JOB = ROOT / "pipeline/weekly.py"
+CRON_LINE = re.compile(r"modal\.Cron\(\s*[\"']([^\"']+)[\"']")
+# `M H * * D` and nothing else. Every other cron shape is refused rather than
+# approximated, because this command exists to replace a seat's mental
+# arithmetic and an approximation puts the mistake back one level down.
+WEEKLY_FORM = re.compile(r"^(\d{1,2}) (\d{1,2}) \* \* ([0-7])$")
+
+PRESS_SCHEDULE_CASES = (
+    ("0 9 * * 1", (0, 9, 1)),
+    # Cron's Sunday is 0 and `isoweekday`'s is 7. Converted once, here, so no
+    # caller below compares two conventions.
+    ("30 14 * * 0", (30, 14, 7)),
+    ("0 1 * * 1", (0, 1, 1)),
+    # Refused rather than guessed. A multi-slot or sub-daily cron is a cadence
+    # this enumerator does not model, and a wrong slot list is worse than no
+    # slot list because there is nothing to check it against
+    # (INC-2026-10-26-the-detector-named-a-slot-that-never-came-due-and-called-it-a-slot-that-did-not-fire).
+    ("0 9 * * 1,4", None),
+    ("*/15 * * * *", None),
+    ("0 9 1 * *", None),
+)
+
+
+def press_schedule(line=None):
+    """The press's cron as `(minute, hour, isoweekday)`, or `(None, why)`.
+
+    Reads `pipeline/weekly.py` when given nothing, so the gate and the job
+    cannot disagree. Weekday comes back in `isoweekday`'s convention, where
+    Monday is 1 and Sunday is 7, because every comparison below is against a
+    `date`.
+    """
+    if line is None:
+        if not WEEKLY_JOB.exists():
+            return None, "pipeline/weekly.py is not in this checkout"
+        found = CRON_LINE.findall(WEEKLY_JOB.read_text())
+        if len(found) != 1:
+            return None, (f"pipeline/weekly.py carries {len(found)} "
+                          f"modal.Cron lines, so which one the press runs on "
+                          f"is not readable from the file")
+        line = found[0]
+    m = WEEKLY_FORM.match(line.strip())
+    if not m:
+        return None, (f"the press cron is `{line.strip()}`, which is not the "
+                      f"`M H * * D` form this gate can enumerate")
+    minute, hour, dow = (int(x) for x in m.groups())
+    if minute > 59 or hour > 23:
+        return None, f"the press cron is `{line.strip()}`, which is not a time"
+    return (minute, hour, dow or 7), ""
+
+
+def slots_between(schedule, since, until):
+    """Every firing of `schedule` strictly after `since` and at or before `until`.
+
+    This function is the whole command. A cadence claim is read by counting
+    FIRINGS, and the mistake it replaces is counting PERIODS: on 2026-11-02
+    this seat told the register's owner that two press slots had passed with no
+    edition, because two weeks had ended since the last one. One slot had come
+    due. A week ends on its own and only a schedule can miss, so the period
+    boundary is never the measurable event.
+    """
+    minute, hour, iso = schedule
+    out, day = [], since.date()
+    while day <= until.date():
+        if day.isoweekday() == iso:
+            at = datetime.datetime(day.year, day.month, day.day, hour, minute,
+                                   tzinfo=datetime.timezone.utc)
+            if since < at <= until:
+                out.append(at)
+        day += datetime.timedelta(days=1)
+    return out
+
+
+def next_slot(schedule, after):
+    """The first firing strictly after `after`."""
+    minute, hour, iso = schedule
+    day = after.date()
+    for _ in range(9):
+        at = datetime.datetime(day.year, day.month, day.day, hour, minute,
+                               tzinfo=datetime.timezone.utc)
+        if day.isoweekday() == iso and at > after:
+            return at
+        day += datetime.timedelta(days=1)
+    return None
+
+
+def periods_between(schedule, since, until):
+    """The period ENDS in the span, printed beside the slots and never instead.
+
+    A period ends at the instant the firing's day begins, because the press
+    labels the week that ended the day before it runs. That is not this seat's
+    reading of the schedule: the receipt proves it on one row, where
+    `newest_week` 2026-W42 was created 2026-10-19T09:02Z and 2026-W42 is the
+    week that ended Sunday 2026-10-18.
+
+    Where this count and the slot count differ, the difference is a period that
+    has closed whose slot has not come due, and that window is the only time a
+    hand count can be wrong. For the press it is nine hours wide once a week,
+    and 2026-11-02T01:23Z fell inside it.
+    """
+    wide = slots_between(schedule, since, until + datetime.timedelta(days=1))
+    ends = [datetime.datetime(s.year, s.month, s.day,
+                              tzinfo=datetime.timezone.utc) for s in wide]
+    return [e for e in ends if since < e <= until]
+
+
+# The reading that produced this command, and three around it, asserted before
+# anything live is read. `since` is 2026-W42's creation on the receipt and
+# `until` is the hour of the reading.
+CADENCE_CASES = (
+    # 2026-11-02T01:23:12Z, this run's `observed_at`. Two weeks had ended, one
+    # slot had fired, and this seat reported two. The case IS the incident.
+    ("2026-10-19T09:02:52+00:00", "2026-11-02T01:23:12+00:00", 1, 2,
+     "2026-11-02T09:00:00+00:00"),
+    # The same tree eight hours later, after today's firing. Two slots, two
+    # periods, and the two numbers agree again.
+    ("2026-10-19T09:02:52+00:00", "2026-11-02T09:30:00+00:00", 2, 2,
+     "2026-11-09T09:00:00+00:00"),
+    # The gap window itself, an hour before the missed slot of 2026-10-26: the
+    # week has closed and nothing has failed yet. A seat reading here counts
+    # one and the schedule has missed nothing.
+    ("2026-10-19T09:02:52+00:00", "2026-10-26T08:00:00+00:00", 0, 1,
+     "2026-10-26T09:00:00+00:00"),
+    # The register's own last reading, 2026-10-25T23:32:50Z, which it called
+    # "the clock has not yet missed" in prose and got right. Twenty-seven
+    # minutes before the week closed, so neither number has moved.
+    ("2026-10-19T09:02:52+00:00", "2026-10-25T23:32:50+00:00", 0, 0,
+     "2026-10-26T09:00:00+00:00"),
+    # Minutes after a firing that produced its edition, which is the only
+    # shape of reading on which this row may read OK.
+    ("2026-10-19T09:02:52+00:00", "2026-10-19T09:05:00+00:00", 0, 0,
+     "2026-10-26T09:00:00+00:00"),
+)
+
+
+def cadence_cases():
+    """The schedule parser and the arithmetic, against every pinned case."""
+    rc = 0
+    for line, want in PRESS_SCHEDULE_CASES:
+        got, why = press_schedule(line)
+        if got != want:
+            rc = 1
+            print(f"  CASE    `{line}` wanted {want} and got {got} ({why})")
+    print(f"PRESS_SCHEDULE_CASES                       "
+          f"{len(PRESS_SCHEDULE_CASES) - rc} of {len(PRESS_SCHEDULE_CASES)}")
+    bad = 0
+    sched, _ = press_schedule("0 9 * * 1")
+    for since, until, slots, periods, nxt in CADENCE_CASES:
+        a = datetime.datetime.fromisoformat(since)
+        b = datetime.datetime.fromisoformat(until)
+        got = (len(slots_between(sched, a, b)),
+               len(periods_between(sched, a, b)),
+               next_slot(sched, b).isoformat())
+        if got != (slots, periods, datetime.datetime.fromisoformat(nxt).isoformat()):
+            bad = 1
+            print(f"  CASE    at {until} wanted "
+                  f"{(slots, periods, nxt)} and got {got}")
+    print(f"CADENCE_CASES                              "
+          f"{len(CADENCE_CASES) - bad} of {len(CADENCE_CASES)}")
+    return rc | bad | zones_cases()
+
+
+def week_label(end):
+    """The ISO week label the press prints for a period ending at `end`.
+
+    `end` is the instant the firing's day begins, so the week it closes is the
+    day before it.
+    """
+    d = (end - datetime.timedelta(days=1)).date()
+    y, w, _ = d.isocalendar()
+    return f"{y}-W{w:02d}"
+
+
+# ---------------------------------------------------------------------------
+# What an absent run record proves, which is one proposition about one line.
+#
+# Added 2026-11-02, the second half of the exchange that produced the command
+# below. The first draft of `cadence` read a frozen `recorded_at` beside a
+# missed slot and printed "the slot was UNSCHEDULED rather than the job broken,
+# and nobody has to repair a job to fix it". That is the invented-subject
+# defect this command's own docstring refuses when it cannot parse the cron,
+# committed one screen further down and shipped: it named one cause out of
+# several and recommended a repair on the strength of it.
+#
+# The ExO seat returned the correction as `bf58bdda` and it is right at the
+# code, verified here in `pipeline/weekly.py` rather than accepted from the
+# note. `record_runtime` is called at 1885, inside a `try` that opens at 1874,
+# after `check_availability()` at 1879 and the `psycopg.connect` at 1881. Three
+# calls run BEFORE that handler opens -- `week_just_ended()` at 1846,
+# `week_window()` at 1862 and the two `open("/root/prompts/digest*.md")` reads
+# at 1863 and 1864 -- and `notify_owner`, defined at 1367, is called only from
+# the `except` at the foot of that same handler, so it cannot see any of them.
+# The write site therefore cuts a run into zones and the field reads the same
+# across them.
+
+def press_write_site(path=None):
+    """The line numbers that make the zones, read out of the job's own source.
+
+    Derived, never declared, for exactly the reason `schedules()` in
+    `pipeline/runtime_sha.py` gives about file manifests and this file's own
+    `press_schedule` gives about the cron: a hand-kept copy of a line number is
+    a copy that disagrees with the job on the day it matters, and a line number
+    in a gate's output is the most quietly rotting kind of all. The first
+    version of this block hard-coded 1846, 1862, 1874 and 1885 in its prints,
+    which would have survived exactly as long as nobody edited the press.
+
+    Returns `(sites, "")` or `(None, why)`. `sites` is `try_opens`, `writes_at`,
+    `before_try` and `alarms_at`, every one of them a real line in the file.
+    """
+    import ast
+    path = pathlib.Path(path) if path else WEEKLY_JOB
+    if not path.exists():
+        return None, f"{path} is not in this checkout"
+    try:
+        tree = ast.parse(path.read_text(encoding="utf-8"))
+    except SyntaxError as exc:
+        return None, f"{path} did not parse ({exc})"
+    fn = next((n for n in ast.walk(tree)
+               if isinstance(n, ast.FunctionDef) and n.name == PRESS_APP), None)
+    if fn is None:
+        return None, f"{path} defines no `{PRESS_APP}` function"
+    handler = next((s for s in fn.body if isinstance(s, ast.Try)), None)
+    if handler is None:
+        return None, (f"`{PRESS_APP}` carries no try/except, so there is no "
+                      f"handler boundary and no zone 3")
+    writes = [n.lineno for n in ast.walk(handler)
+              if isinstance(n, ast.Call)
+              and getattr(n.func, "attr", None) == "record_runtime"]
+    if len(writes) != 1:
+        return None, (f"`{PRESS_APP}` calls record_runtime {len(writes)} times "
+                      f"inside its handler, so the write site is not one line")
+    alarms = sorted({n.lineno for h in handler.handlers for n in ast.walk(h)
+                     if isinstance(n, ast.Call)
+                     and getattr(n.func, "id", None) == "notify_owner"})
+    # Only the statements that can actually RAISE, which means the ones
+    # carrying a call. An import or a dict lookup ahead of the handler is a
+    # line and not a risk, and counting it would inflate zone 3 to flatter the
+    # finding. This lands on more lines than the returned note named, not
+    # fewer: it finds `bool(week.strip())` and the two `hashlib` digests as
+    # well as the four calls that note listed.
+    ahead = sorted({s.lineno for s in fn.body if s.lineno < handler.lineno
+                    for n in ast.walk(s) if isinstance(n, ast.Call)})
+    return {"try_opens": handler.lineno,
+            "writes_at": writes[0],
+            "before_try": ahead,
+            "alarms_at": alarms}, ""
+
+
+ZONE_RECORDED = "recorded"
+ZONE_ALARMED = "alarmed-and-unrecorded"
+ZONE_SILENT = "silent"
+# The narrowed form of the third zone, and the only one of these four that a
+# repository can reach on its own. See `zones_open`.
+ZONE_NEVER_INVOKED = "silent, narrowed to never-invoked"
+
+# What each zone is, and the surface that holds the answer. The third column is
+# the half of this that matters: a zone whose evidence lives somewhere nothing
+# here can read is still a zone, and treating an unreadable surface as a
+# surface that does not exist is how one field came to be read as three facts.
+# The Modal app name the alarm mail itself tells the owner to check, which is
+# the surface zone 3 lives on. Taken from `notify_owner`'s own body rather than
+# composed, because a gate that names a slightly wrong app sends its reader to
+# an empty page and they conclude the page is the answer.
+PRESS_MODAL_APP = "alexandria-weekly"
+
+
+def zone_words(sites):
+    """Each zone as (what the run did, the surface that answers), with the real
+    line numbers substituted in from `press_write_site`."""
+    ahead = sites["before_try"]
+    span = (f"{ahead[0]}-{sites['try_opens'] - 1}" if ahead
+            else "nowhere, nothing runs ahead of the handler")
+    return {
+        ZONE_RECORDED: (
+            f"reached line {sites['writes_at']} and the row landed",
+            "this receipt"),
+        ZONE_ALARMED: (
+            f"entered the handler at {sites['try_opens']} and died before "
+            f"line {sites['writes_at']}",
+            f"the owner's inbox, subject ALARM_SUBJECT_CANNOT_PRINT, mailed "
+            f"from line {sites['alarms_at'][-1] if sites['alarms_at'] else '?'}"),
+        ZONE_SILENT: (
+            f"died in one of the {len(ahead)} calls ahead of the handler "
+            f"({span}), or was never invoked at all",
+            f"modal app logs {PRESS_MODAL_APP}, which no instrument here "
+            f"reads"),
+        ZONE_NEVER_INVOKED: (
+            f"was never invoked. The {len(ahead)} calls ahead of the handler "
+            f"({span}) are excluded, not unread: this image got past all of "
+            f"them when it printed the newest edition, and none of them reads "
+            f"anything that changed since",
+            f"modal app list, or the fact that a later firing moves this row "
+            f"at all"),
+    }
+
+
+
+def zones_open(slot_fired, record_fresh, printed_on_this_image=False):
+    """Which zones a receipt reading leaves open. Never fewer than it does.
+
+    Three booleans in: did a slot come due after the newest edition, is there a
+    run record newer than that edition, and did the image named on that record
+    produce the newest edition itself.
+
+    **The third one is the only narrowing available without asking a human, and
+    it is worth the parameter.** When the recorded run IS the run that printed
+    the newest edition, the row's digest is the digest of an image that
+    demonstrably got past every line ahead of the handler. Nothing in those
+    lines depends on the week: `press_write_site` names them, and on the press
+    today they are a `bool(.strip())`, the calendar read, the window
+    arithmetic, two `open()` calls on files baked into that image, and two
+    `hashlib` digests of what those calls returned. An identical image invoked
+    on a later Monday cannot fail there, because there is nothing for it to
+    fail on that changed. So zone 3 collapses to its never-invoked half and the
+    two zones that stay open are the two the owner's inbox separates.
+
+    That narrowing is an inference and this function marks it as one by
+    returning a different zone name rather than the same name with fewer
+    members. The condition is printed beside it, because a caller that cannot
+    see the condition cannot tell a narrowing from a measurement.
+
+    The count is **two** where the returned correction said three, and the
+    difference is worth carrying rather than rounding off. `record_runtime`
+    never raises on any path: its docstring says so and its write runs inside
+    `conn.transaction()`, so a failed write returns the string "NOT recorded"
+    to a caller that prints it and the run continues. So a run CAN reach 1885,
+    leave the field frozen, and go on -- which means `ZONE_RECORDED` is not
+    excluded by a frozen field the way a line count alone suggests. But that
+    path is observationally identical to `ZONE_ALARMED` when the run then
+    fails, and excluded by a moved `newest_week` when it succeeds. It is a
+    fourth way INTO the second zone and not a third answer out of it.
+
+    So the zones partition the code in three and the receipt distinguishes two,
+    and the one question that separates those two is the owner's inbox.
+    """
+    if not slot_fired:
+        return ()
+    if record_fresh:
+        return (ZONE_RECORDED,)
+    if printed_on_this_image:
+        return (ZONE_ALARMED, ZONE_NEVER_INVOKED)
+    return (ZONE_ALARMED, ZONE_SILENT)
+
+
+ZONES_CASES = (
+    # Nothing is owed, so there is no zone question to ask.
+    (False, False, False, ()),
+    (False, True, False, ()),
+    (False, False, True, ()),
+    # One slot fired, the record frozen, and nothing known about the image.
+    # Two zones, and the sentence this replaces named one of them and asked
+    # for a redeploy on it.
+    (True, False, False, (ZONE_ALARMED, ZONE_SILENT)),
+    # The reading of 2026-11-02: the same, except the frozen record IS the run
+    # that printed 2026-W42, 81 seconds before its row landed. Zone 3 narrows.
+    (True, False, True, (ZONE_ALARMED, ZONE_NEVER_INVOKED)),
+    # A slot fired and something wrote the row after the edition. That settles
+    # that a run happened. It does not settle that the CRON ran it; see below.
+    # The image fact cannot narrow a zone that is already down to one.
+    (True, True, False, (ZONE_RECORDED,)),
+    (True, True, True, (ZONE_RECORDED,)),
+)
+
+# How close to a firing a run record has to sit to be that firing. The live row
+# is the calibration: `weekly.recorded_at` 2026-10-19T09:01:21Z against a
+# 09:00Z slot, one minute and twenty-one seconds for `check_availability` and
+# the connect. Fifteen minutes is generous against that and still tight enough
+# that an afternoon `modal run` falls outside it.
+SLOT_TOLERANCE_MINUTES = 15
+
+
+def invocation_window(schedule, when, tolerance=SLOT_TOLERANCE_MINUTES):
+    """`slot` if a run record's hour could be the cron's, else `off-slot`.
+
+    This is the limit on the one branch a firing test can settle. The returned
+    correction said "a run reaching 1885 proves the schedule is installed", and
+    that is one notch stronger than the row can carry. `record_runtime` is on
+    the path of EVERY invocation of `weekly`, cron or `modal run
+    pipeline/weekly.py::weekly`, and `deploy_runtime`'s columns are app,
+    runtime_sha, entrypoint, file_count and three timestamps, where
+    `entrypoint` is the literal `APPS[app]` string and names no caller. So the
+    row's existence proves a run and the MINUTE is the only thing in it that
+    distinguishes the schedule from a hand.
+
+    And the row is one per app, upserted, so a hand run after the slot
+    overwrites the cron's own timestamp. The evidence is not merely ambiguous,
+    it is erasable by any seat acting in good faith, which is why this prints
+    rather than waits to be asked.
+    """
+    minute, hour, iso = schedule
+    at = datetime.datetime(when.year, when.month, when.day, hour, minute,
+                           tzinfo=datetime.timezone.utc)
+    if when.isoweekday() != iso or when < at:
+        return "off-slot"
+    if (when - at).total_seconds() > tolerance * 60:
+        return "off-slot"
+    return "slot"
+
+
+INVOCATION_CASES = (
+    # The live row, which is the calibration: Monday, 81 seconds after 09:00Z.
+    ("2026-10-19T09:01:21.333+00:00", "slot"),
+    ("2026-11-02T09:00:00+00:00", "slot"),
+    # A hand run the same afternoon, which would write this row identically and
+    # erase the only evidence today's test produces.
+    ("2026-11-02T14:30:00+00:00", "off-slot"),
+    # A sibling's Sunday row, the shape that proved the workspace had returned.
+    ("2026-11-01T15:00:17.444+00:00", "off-slot"),
+    # A minute BEFORE the slot cannot be that firing, and a naive absolute
+    # distance would call it one.
+    ("2026-11-02T08:59:00+00:00", "off-slot"),
+    # Sixteen minutes after, just outside the window.
+    ("2026-11-02T09:16:00+00:00", "off-slot"),
+)
+
+
+# The write-site parser, asserted on sources written for it. Every one of the
+# three refusals matters more than the happy path: a gate that guesses a line
+# number when the shape changed is the hand-kept copy this function replaced.
+WRITE_SITE_CASES = (
+    ("def weekly(week=''):\n"
+     "    w = week_just_ended()\n"
+     "    try:\n"
+     "        a = check_availability()\n"
+     "        print(g().record_runtime(c, 'weekly', __file__)[1])\n"
+     "    except Exception as e:\n"
+     "        print(notify_owner(S, str(e)))\n"
+     "        raise\n",
+     {"try_opens": 3, "writes_at": 5, "before_try": [2], "alarms_at": [7]}),
+    # No `weekly` at all: the module was renamed or this is the wrong file.
+    ("def monthly():\n    pass\n", None),
+    # A press with no handler has no boundary, so it has no third zone, and
+    # saying so is more useful than reporting two.
+    ("def weekly(week=''):\n"
+     "    print(g().record_runtime(c, 'weekly', __file__)[1])\n", None),
+    # Two write sites inside one handler: the absence of a row no longer
+    # corresponds to one line, which is the whole proposition this gate makes.
+    ("def weekly(week=''):\n"
+     "    try:\n"
+     "        print(g().record_runtime(c, 'a', __file__)[1])\n"
+     "        print(g().record_runtime(c, 'b', __file__)[1])\n"
+     "    except Exception:\n"
+     "        raise\n", None),
+)
+
+
+def zones_cases():
+    """The zone reading and the invocation window, before any receipt is read."""
+    bad = 0
+    sites_bad = 0
+    with tempfile.TemporaryDirectory() as tmp:
+        for i, (source, want) in enumerate(WRITE_SITE_CASES):
+            f = pathlib.Path(tmp) / f"case{i}.py"
+            f.write_text(source)
+            got, why = press_write_site(f)
+            if want is None:
+                if got is not None:
+                    sites_bad = 1
+                    print(f"  CASE    write-site case {i} should have refused "
+                          f"and returned {got}")
+                elif not why:
+                    sites_bad = 1
+                    print(f"  CASE    write-site case {i} refused with no why")
+            elif got != want:
+                sites_bad = 1
+                print(f"  CASE    write-site case {i} wanted {want} and got "
+                      f"{got} ({why})")
+    print(f"WRITE_SITE_CASES                           "
+          f"{len(WRITE_SITE_CASES) - sites_bad} of {len(WRITE_SITE_CASES)}")
+    bad |= sites_bad
+    for slot_fired, fresh, printed, want in ZONES_CASES:
+        got = zones_open(slot_fired, fresh, printed)
+        if got != want:
+            bad = 1
+            print(f"  CASE    zones_open({slot_fired}, {fresh}, {printed}) "
+                  f"wanted {want} and got {got}")
+    print(f"ZONES_CASES                                "
+          f"{len(ZONES_CASES) - bad} of {len(ZONES_CASES)}")
+    worse = 0
+    sched, _ = press_schedule("0 9 * * 1")
+    for stamp, want in INVOCATION_CASES:
+        got = invocation_window(
+            sched, datetime.datetime.fromisoformat(stamp))
+        if got != want:
+            worse = 1
+            print(f"  CASE    {stamp} wanted {want} and got {got}")
+    print(f"INVOCATION_CASES                           "
+          f"{len(INVOCATION_CASES) - worse} of {len(INVOCATION_CASES)}")
+    return bad | worse
+
+
+def cadence():
+    """The two verdicts a cadence claim carries, each answered by its own reading.
+
+    The ExO seat owns `docs/agents/quality-claims.md` and this seat is its
+    artifact-side gate, which is step 1b of this charter. On 2026-11-02 that
+    seat took one improvement from this one and made it step six of its own
+    claim sweep: **a cadence claim carries two verdicts and one reading can
+    only answer one of them.** This is the half that belongs here, because the
+    register's rows are prose and the hedge a candidate has to carry is this
+    seat's to draft.
+
+    - **the clock.** Is the claim true of the current period? One reading
+      answers it, and the reading is a count of FIRINGS. This is where the
+      improvement was paid for: the note that earned it counted two missed
+      slots because two weeks had ended, and `slots_between` is the repair.
+    - **the record.** Has it been true of every period it covers? No single
+      reading answers it, and the register's own words for the growth row are
+      that six days between two readings "cannot be recovered from a maximum".
+      For the press it CAN be recovered, because every edition is a page that
+      either exists or does not, and that is the asymmetry worth having in a
+      command rather than in a paragraph.
+
+    Three failure modes, and the third is the one no previous reading of this
+    row had asked for.
+
+    - CLOCK, a slot that came due and produced no edition.
+    - RECORD, a period inside the served span with no edition and no make-up.
+    - UNREACHED, the receipt or the library did not answer. Never a pass: a run
+      that cannot read the row and concludes the cadence holds has made the
+      mistake this file was built to stop.
+
+    A fourth thing it prints and never grades: which zones a frozen run record
+    leaves open. It is not a failure mode because no answer to it changes the
+    verdict -- one missed slot fails the clock half whoever missed it -- and it
+    is printed anyway because the repair differs by zone and the previous draft
+    of this command chose one.
+
+    And it reads the run record beside the output, which is a fourth thing and
+    **not** a separation of unscheduled from broken. This docstring claimed
+    that separation for one run and the claim was false; `zones_open` above
+    carries the correction and the reason. The short form: a frozen run record
+    proves that nothing reached `pipeline/weekly.py:1885` and proves nothing
+    else, because three calls and a handler boundary sit above that line. A
+    fresh one proves a run happened and not that the cron ran it, because the
+    row names no caller and the minute is the only discriminator in it.
+
+    What it cannot see, and the second item is new. Whether a slot was served
+    and refused upstream, which lives in the platform and not in this receipt.
+    **Which zone a frozen record belongs to**, which lives in the owner's inbox
+    and in `modal app logs alexandria-weekly`, neither of which any instrument
+    here can read: this gate's job is to name the two zones and the surface
+    that answers, and then stop. And whether an edition that exists is any
+    good, which is every other command in this file.
+    """
+    rc = cadence_cases()
+    print()
+    sched, why = press_schedule()
+    if sched is None:
+        print(f"  FAIL    {why}")
+        print("Nothing below was read, because a slot list computed from a")
+        print("schedule this gate could not parse is the invented-subject")
+        print("defect rather than a weaker version of this answer.")
+        return 1
+    minute, hour, iso = sched
+    day = ("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday",
+           "Sunday")[iso - 1]
+    print(f"the press schedule                         "
+          f"{day}s at {hour:02d}:{minute:02d}Z")
+    print(f"  read from                                "
+          f"pipeline/weekly.py, its own modal.Cron")
+
+    try:
+        sys.path.insert(0, str(ROOT))
+        import importlib.util
+        spec = importlib.util.spec_from_file_location(
+            "_dh", ROOT / "tools" / "delivery_health.py")
+        dh = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(dh)
+    except Exception as e:                          # noqa: BLE001
+        print(f"  UNREACHED tools/delivery_health.py: {type(e).__name__}: {e}")
+        return 1
+    doc = receipt_json(dh.RECEIPT_URL)
+    if doc is None:
+        print("  FAIL    the receipt answered nothing, so this run concludes")
+        print("          nothing about the cadence")
+        return 1
+    press_block = doc.get("press") or {}
+    created = press_block.get("created_at")
+    newest = press_block.get("newest_week")
+    observed = doc.get("observed_at")
+    runs = {r.get("app"): r for r in (doc.get("deploy") or [])}
+    ran = (runs.get(PRESS_APP) or {}).get("recorded_at")
+    if not (created and newest and observed):
+        print("  FAIL    the receipt carries no press block, so the newest")
+        print("          edition and its hour are both unknown")
+        return 1
+    since = datetime.datetime.fromisoformat(created.replace("Z", "+00:00"))
+    now = datetime.datetime.fromisoformat(observed.replace("Z", "+00:00"))
+    slots = slots_between(sched, since, now)
+    periods = periods_between(sched, since, now)
+    nxt = next_slot(sched, now)
+    print(f"read at                                    "
+          f"{observed}, the receipt's own hour")
+    print(f"newest edition                             "
+          f"{newest}, created {created}")
+    print(f"  its age                                  "
+          f"{round((now - since).total_seconds() / 86400, 2)} days")
+    print()
+    print(f"slots that have FIRED since it             {len(slots)}")
+    for s in slots:
+        print(f"    {s.isoformat()}  for {week_label(s)}")
+    print(f"periods that have ENDED since it           {len(periods)}")
+    for e in periods:
+        print(f"    {e.isoformat()}  closing {week_label(e)}")
+    if len(periods) != len(slots):
+        print(f"  the two numbers differ by {len(periods) - len(slots)}, which "
+              f"is a week that has")
+        print("  closed whose slot has not come due. Counting periods here is")
+        print("  the error this command was written for.")
+    print(f"next slot                                  "
+          f"{nxt.isoformat() if nxt else 'unknown'}"
+          f"{'' if not nxt else f', in {round((nxt - now).total_seconds() / 3600, 1)}h'}")
+    print()
+
+    # The clock half.
+    if slots:
+        print(f"  FAIL    CLOCK: {len(slots)} slot(s) came due after "
+              f"{newest} and produced no edition")
+    else:
+        print(f"  OK      CLOCK: no slot has come due since {newest}")
+    print()
+
+    # Did it run at all? This row answers less than it looks like it answers,
+    # and `zones_open` says how much. What it does NOT do any more is name one
+    # cause and ask for a repair on it.
+    if ran:
+        last = datetime.datetime.fromisoformat(ran.replace("Z", "+00:00"))
+        print(f"the press last RECORDED a run              {ran}")
+        others = sorted((r.get("recorded_at") or "")
+                        for a, r in runs.items() if a != PRESS_APP)
+        if others:
+            print(f"  its siblings' newest run                 {others[-1]}")
+        fresh = last > since
+        print(f"  newer than the newest edition            "
+              f"{'yes' if fresh else 'no'}")
+        if fresh:
+            seen = invocation_window(sched, last)
+            print(f"  consistent with the cron's own slot      {seen}")
+            if seen == "off-slot":
+                print("  so a run wrote this row and the schedule did not. A")
+                print("  hand `modal run` writes it identically, the table is")
+                print("  one upserted row per app, and this one has already")
+                print("  overwritten whatever the last firing left.")
+        # Is the row's image the image that printed the newest edition? The
+        # row carries the digest and `first_seen_at`, so this is readable: the
+        # recorded run is that edition's own run when its row landed shortly
+        # BEFORE the edition row did, which is the order those two writes
+        # happen in (1885, then the `digests` upsert). On this receipt the gap
+        # is 91 seconds.
+        seen_first = (runs.get(PRESS_APP) or {}).get("first_seen_at")
+        printed_on = bool(
+            not fresh and 0 <= (since - last).total_seconds()
+            <= SLOT_TOLERANCE_MINUTES * 60)
+        print(f"  its digest                               "
+              f"{(runs.get(PRESS_APP) or {}).get('runtime_sha') or 'none'}"
+              f", first seen {seen_first or 'unknown'}")
+        print(f"  that run is the one that printed {newest}   "
+              f"{'yes' if printed_on else 'no'}")
+        open_zones = zones_open(bool(slots), fresh, printed_on)
+        sites, site_why = press_write_site()
+        if open_zones and sites is None:
+            print()
+            print(f"  UNREACHED the write site: {site_why}, so this reading")
+            print("          cannot name the zones its own absence leaves open")
+            rc = 1
+        elif open_zones:
+            words = zone_words(sites)
+            print()
+            print(f"  zones this reading leaves open             "
+                  f"{len(open_zones)}")
+            for z in open_zones:
+                what, where = words[z]
+                print(f"    {z}")
+                print(f"      the run {what}")
+                print(f"      answered on: {where}")
+        if slots and not fresh:
+            print(f"  so the press has not RECORDED a run since that edition,")
+            print(f"  and that is one proposition about one line: nothing")
+            print(f"  reached {WEEKLY_JOB.relative_to(ROOT)}:"
+                  f"{sites['writes_at'] if sites else '?'}. It does not choose")
+            print("  between the two zones above, it does not say whether the")
+            print("  schedule is installed, and the repair differs by zone, so")
+            print("  this gate names neither.")
+    else:
+        print("the press last RECORDED a run              no row on the receipt")
+
+    # The record half, which needs the series and not the reading.
+    print()
+    served = served_weeks()
+    if served is None:
+        print("  FAIL    RECORD: the library did not answer, so the record")
+        print("          half is unread and this run concludes nothing on it")
+        return 1
+    print(f"weeks the product serves                   "
+          f"{len(served)}: {', '.join(served)}")
+    # Every week the claim covers, which starts at the first edition the
+    # product serves and not at the first slot before it. The first draft of
+    # this walked from the Monday of 2026-W39 and reported 2026-W38 as a hole,
+    # because the firing inside a week labels the week BEFORE it: one slot
+    # earlier than the span is one week earlier than the claim. A week whose
+    # slot has not come due is not owed yet and is named separately.
+    #
+    # The labels sort lexicographically because ISO weeks are zero-padded, so
+    # `>= first` holds across a year boundary as well as inside one.
+    first = min(served)
+    span_from = datetime.datetime.fromisoformat(
+        datetime.date.fromisocalendar(int(first[:4]), int(first[6:]), 1)
+        .isoformat()).replace(tzinfo=datetime.timezone.utc)
+    owed = [w for w in (week_label(s)
+                        for s in slots_between(sched, span_from, now))
+            if w >= first]
+    holes = [w for w in owed if w not in served]
+    pending = [w for w in (week_label(e)
+                           for e in periods_between(sched, span_from, now))
+               if w >= first and w not in owed]
+    # The archive and the record are two different answers to "which weeks
+    # exist", and `site/lib/issues-core.js` says the record decides. Where the
+    # checkout carries an edition the library does not serve, the span above
+    # starts later than the oldest file, and that is worth one printed line
+    # rather than a failure: whether a committed week should be served is the
+    # frontend seat's surface and this gate reads the served set on purpose.
+    filed = sorted(p.stem for p in (ROOT / "site/content/issues").glob("*.md"))
+    older = [w for w in filed if w < first]
+    if older:
+        print(f"  in the checkout and not served            "
+              f"{', '.join(older)}, so the span above starts at {first}")
+    print(f"  weeks whose slot has fired since {first}  {len(owed)}")
+    print(f"  of those, served                         {len(owed) - len(holes)}")
+    print(f"  closed but not yet due                   "
+          f"{', '.join(pending) if pending else 'none'}")
+    if holes:
+        print(f"  FAIL    RECORD: {len(holes)} week(s) had a slot fire and "
+              f"carry no edition")
+        for w in holes:
+            print(f"            {w}")
+        print("          A missed week stays missed unless something makes it")
+        print("          up, so this half cannot be repaired by the next")
+        print("          firing and the claim's universal reading stays false.")
+    else:
+        print(f"  OK      RECORD: every week with a fired slot since {first} "
+              f"is served")
+    print()
+    print("A cadence sentence asserts both halves at once, so a candidate")
+    print("hedged against the clock and silent about the record is still")
+    print("printing a false universal. Which half failed decides the hedge:")
+    print("a clock failure is softened by naming the gap, and a record")
+    print("failure is only honest if the claim stops being universal.")
+    return rc | bool(slots) | bool(holes)
 
 
 # Which law each undeployed generator patch reaches. `press` says the press is
@@ -5864,6 +6921,68 @@ def _git_lines(*args):
     return [x for x in r.stdout.splitlines() if x.strip()]
 
 
+# The dispatcher's own contract, as a function, so it can be asserted.
+#
+# `which` is the name a caller typed. `names` is every name this file answers
+# to. The return is the process exit code the dispatcher owes that pair, and
+# the only interesting value is the one it did not have until 2026-11-02: a
+# name this file does not carry is a USAGE failure, distinct from a gate that
+# ran and failed, and never a pass.
+DISPATCH_UNKNOWN = 2
+
+
+def _dispatch_rc(which, names):
+    return 0 if which in (set(names) | {"all"}) else DISPATCH_UNKNOWN
+
+
+# Asserted because the defect this repairs was invisible by construction: the
+# old dispatcher's wrong answer was silence and exit 0, which is also what a
+# clean pass looks like, so no run could tell the two apart and none did for
+# as long as the file has existed.
+DISPATCH_CASES = (
+    # The live case that found it. `cadence` shipped on an unmerged branch, so
+    # on `main` it is an unknown name, and the ExO seat read exit 0 and no
+    # output as "nothing to report".
+    ("cadence", ("press", "queued"), DISPATCH_UNKNOWN),
+    # The same name, once the branch carrying it has merged.
+    ("cadence", ("press", "queued", "cadence"), 0),
+    # A nonsense argument, which behaved identically to the real subcommand
+    # and is the proof that the silence was about the dispatcher and not about
+    # any one gate.
+    ("zzznosuch", ("press", "queued", "cadence"), DISPATCH_UNKNOWN),
+    # `all` is not in the table and is always known.
+    ("all", ("press",), 0),
+    # The empty table still owes an answer rather than an exception.
+    ("press", (), DISPATCH_UNKNOWN),
+    ("all", (), 0),
+)
+
+
+def dispatch():
+    """Assert that an unknown subcommand fails and a known one does not.
+
+    This gate is about this file and not about an edition, which is why it
+    asserts and reads nothing. It is in `all` because it is six comparisons
+    and because the thing it protects is the one defect class that cannot be
+    caught by reading output: the output is empty either way.
+    """
+    worse = 0
+    for which, names, want in DISPATCH_CASES:
+        got = _dispatch_rc(which, names)
+        if got != want:
+            worse += 1
+            print(f"  DISPATCH_CASES: {which!r} against {names!r} "
+                  f"wanted {want}, got {got}")
+    print(f"DISPATCH_CASES                             "
+          f"{len(DISPATCH_CASES) - worse} of {len(DISPATCH_CASES)}")
+    if worse:
+        print()
+        print("A dispatcher that returns 0 for a name it does not have makes")
+        print("every gate in this file unfalsifiable from the outside, since")
+        print("a missing gate and a passing gate print the same nothing.")
+    return 1 if worse else 0
+
+
 def main():
     which = sys.argv[1] if len(sys.argv) > 1 else "all"
     # Paths after the subcommand go to `measure`. Without this, the arguments
@@ -5874,9 +6993,10 @@ def main():
     paths = sys.argv[2:]
     rc = 0
     takes_paths = {"measure", "links", "delivery", "compare", "firstuse",
-                   "queued",
+                   "queued", "claims",
                    "generator", "specimens", "standalone", "devices",
-                   "captions", "marks", "provenance", "slotheads"}
+                   "captions", "marks", "provenance", "slotheads",
+                   "apparatus"}
     # `--live` is the answer to `editions`, inside one run. It replaces the
     # archive glob with the editions the product actually serves, fetched from
     # the public pages and un-rendered, so a pass grades what a reader opens
@@ -5901,34 +7021,69 @@ def main():
     # `compare` is not in `all` for the same reason `selfcheck` is not: it
     # takes two artifacts the caller has chosen and proved comparable, and
     # `all` runs over whatever is in site/content/issues.
-    for name, fn in (("enforcements", enforcements), ("sweep", sweep),
-                     ("taste", taste),
-                     ("stale", stale), ("measure", measure), ("links", links),
-                     ("delivery", delivery), ("claims", claims),
-                     ("reading", reading),
-                     ("candidates", candidates),
-                     ("deadlines", deadlines),
-                     ("press", press),
-                     ("queued", queued),
-                     ("ledger", ledger),
-                     ("firstuse", firstuse),
-                     ("generator", generator),
-                     ("specimens", specimens),
-                     ("standalone", standalone),
-                     ("provenance", provenance),
-                     ("devices", devices),
-                     ("routed", routed),
-                     ("editions", editions),
-                     ("marks", marks),
-                     ("ungated", ungated),
-                     ("slotwords", slotwords),
-                     ("slotheads", slotheads),
-                     ("captions", captions),
-                     ("blockrules", blockrules),
-                     ("compare", compare), ("selfcheck", selfcheck)):
+    # The command table, hoisted out of the `for` below so the dispatcher can
+    # be asked whether a name exists BEFORE it does any work. Until it was
+    # hoisted, an unknown name matched nothing, printed nothing and returned
+    # the initial rc of 0, so this file answered "nothing to report" to a
+    # question it had never been able to see. The ExO seat hit that on
+    # 2026-11-02 running `cadence` against `main`, where the subcommand had
+    # shipped only on this seat's unmerged branch: silent, exit 0, and
+    # indistinguishable from a pass. A nonsense argument behaved identically.
+    # That is the instrument-answers-a-question-it-cannot-see class this seat
+    # filed the same night, arriving through the dispatcher instead of
+    # through a gate body (INC-2026-11-02-the-subcommand-dispatcher-
+    # answered-ok-to-a-name-it-did-not-have).
+    commands = (("enforcements", enforcements), ("sweep", sweep),
+                ("taste", taste),
+                ("stale", stale), ("measure", measure), ("links", links),
+                ("delivery", delivery), ("claims", claims),
+                ("reading", reading),
+                ("candidates", candidates),
+                ("deadlines", deadlines),
+                ("press", press),
+                ("cadence", cadence),
+                ("queued", queued),
+                ("ledger", ledger),
+                ("firstuse", firstuse),
+                ("generator", generator),
+                ("specimens", specimens),
+                ("standalone", standalone),
+                ("provenance", provenance),
+                ("devices", devices),
+                ("routed", routed),
+                ("editions", editions),
+                ("marks", marks),
+                ("ungated", ungated),
+                ("slotwords", slotwords),
+                ("slotheads", slotheads),
+                ("apparatus", apparatus),
+                ("captions", captions),
+                ("blockrules", blockrules),
+                ("dispatch", dispatch),
+                ("compare", compare), ("selfcheck", selfcheck))
+    # An unknown name is a usage failure and never a pass. Exit 2 rather than
+    # 1, so a caller can tell "this gate is not here" from "this gate ran and
+    # failed", which is the distinction the silent exit 0 destroyed.
+    rc_unknown = _dispatch_rc(which, [name for name, _ in commands])
+    if rc_unknown:
+        print(f"unknown subcommand: {which}", file=sys.stderr)
+        print("This file has no gate by that name, so nothing was checked.",
+              file=sys.stderr)
+        print("A subcommand that shipped on a branch is not here until that",
+              file=sys.stderr)
+        print("branch merges, so check the pull request before reading this",
+              file=sys.stderr)
+        print("file's silence as a pass.", file=sys.stderr)
+        print("", file=sys.stderr)
+        print("known subcommands:", file=sys.stderr)
+        for name, _ in commands:
+            print(f"  {name}", file=sys.stderr)
+        print("  all", file=sys.stderr)
+        return rc_unknown
+    for name, fn in commands:
         if which == name or (which == "all"
                              and name not in ("selfcheck", "compare",
-                                              "press", "queued")):
+                                              "press", "cadence", "queued")):
             print(f"==== {name} ====")
             if name in ("enforcements", "selfcheck", "candidates", "ledger",
                         "routed"):

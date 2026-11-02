@@ -4240,3 +4240,95 @@ gap that the same collision had left empty (incident 25).
     The test is one question. Will the next run that needs this fact be
     reading the file I am putting it in? A review is read once, by its
     author, on the day it is written.
+
+148. The relieved duty, which is the shape a promise takes when it is
+    pretending to be a benefit.
+    Not a phrase. A sentence that tells the reader a job of theirs is
+    already handled reads as the purest kind of value, because it names
+    what the reader ends up holding rather than what the machine does, and
+    it passes every test this seat runs on a candidate. It is also the one
+    sentence shape that cannot be true without a mechanism, since relieving
+    a duty asserts that something else performs it.
+    Three specimens, and two of them are live. `docs/voice/value.md` before
+    this run: "A builder does not audit it, prune it, or go back and check
+    whether what they learned in January still holds, because that work is
+    already done and recorded." The register's verdict on the mechanism
+    under it is "reports, does not replace", so the work is reported and
+    not done. The same page, one paragraph earlier: "Nothing about that
+    requires your attention." And `site/app/skills/page.jsx:31`, approved
+    and live: "You do not schedule the update or read the paper, because
+    the library follows the field and your agents direct themselves from
+    what it holds", sitting above a revision row that has fired zero times.
+    The tell is grammatical and checkable in one pass. A negated
+    second-person verb of effort, which is "you do not", "you never",
+    "a builder does not", "nothing requires", followed by work the reader
+    would otherwise do. Every instance is a claim about our artifact rather
+    than about the research, which is the one distinction the claims gate
+    turns on, and this shape is how such a claim gets past a reader who is
+    checking for mechanism, because the mechanism has been deleted from the
+    sentence along with the reader's work.
+    ```
+    Enforced docs/voice/check_voice.py: "TARGET_GLOBS"
+    LANDED docs/voice/value.md: "The repair is altitude rather than omission"
+    LANDED docs/agents/incidents.md: "the specification the surfaces are drafted from"
+    ```
+    The enforcement is partial and says so. `claims` now reads
+    `docs/voice/value.md` on every run and takes a path for a candidate, so
+    the shape is caught wherever it carries a register row's own wording.
+    It is not caught where the shape is the only tell, because deciding
+    that a negated duty implies a mechanism is the judgment the claims
+    command's docstring already disclaims. The grammatical sweep for the
+    negated verb of effort is the second half, it is a pass of its own, and
+    it is in `docs/ideas.md` with the candidate-fence convention it depends
+    on, because the ten candidate files this would read are the same ten
+    that quote their own rejections.
+
+149. The apparatus wearing a colon, which is a label the one gate written to
+    catch labels cannot see.
+    Not a phrase and not a heading. A sentence-internal fragment whose
+    subject is one of this canon's own instrument words, broken to a colon,
+    with the thing it owed the reader on the far side of the mark. `2026-W42`
+    printed four in one edition: "The grade: one platform, one model family,
+    five benchmarks, no replication outside the group yet.", and "The
+    procedure is extractable:", "The procedure is clean:" and "The procedure
+    runs:", each of the last three opening a comma-run of steps.
+    The reason it earns a number is that the generator bans this shape twice
+    and reaches neither instance, for two different reasons, and the two
+    together are why a rule stated twice shipped four violations.
+    The grade's rule says the grade is a clause inside a sentence and names
+    the shape that keeps shipping instead, which is "a sentence of its own,
+    in one frame". A verbless colon fragment is neither of those by the
+    letter, so the rule describes two dresses and the artifact wore a third.
+    The heading gate is the half that should have caught all four and is the
+    more interesting failure, because it is not missing anything. It collects
+    "the text in front of any colon, bolded or plain", it puts the deciding
+    question to what it collects, and it names "The procedure is
+    extractable:" as a struck specimen of 2026-W39 BY NAME. Every word of
+    that was in the generator the press ran when it wrote this edition,
+    verified at `f16e2775`. So the fragment was collected, the question was
+    available, the specimen was quoted, and the string printed again.
+    What the position buys is the finding. All four sit mid-paragraph after a
+    full stop. Every unit that gate defines is anchored to a LINE, which is
+    what "every line beginning with `#`" and "sitting alone on its own line"
+    and "BEGINS a line" each say, so the one unit that is not line-anchored
+    is the colon, and the colon is the unit a model reads last in a
+    paragraph it has already written. A gate that runs over lines cannot be
+    the gate for a defect that lives inside them.
+    ```
+    Enforced docs/voice/check_voice.py: "apparatus"
+    LANDED docs/voice/check_voice.py: "APPARATUS_CASES says what this pass has to do"
+    LANDED docs/voice/reviews/2026-11-02-message-ask-clocks.md: "four violations of a rule that names its own specimen"
+    ```
+    `apparatus` is the command and it reads sentence-internal position, which
+    is the thing `slotheads` and `marks` are both structurally unable to see:
+    one reads headings and a heading is a line, the other counts two
+    punctuation marks. It fires four times on `2026-W42` and not once on
+    `2026-W37`, `2026-W39` or `2026-W40`, live and in the repository, and its
+    nine asserted cases include the four honest colons of the same edition,
+    because a detector that reddens "This week the field drew a hard line:"
+    is one the next run deletes.
+    **No prompt diff is attached and that is the entry's own argument.**
+    Every word the repair would add is already in the file, so a fifth
+    sentence about labels is the tinker the structure-watch step refuses and
+    the one run 51 reverted inside its own run. The lever is the deploy and
+    the pre-send gate, and both are in `docs/ideas.md` under this run's date.
