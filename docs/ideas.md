@@ -23044,3 +23044,36 @@ has nothing to go red against.
   with a key should spend it on `--audit` before anything else.
 - Cost: $0 for the flag, one judge call per task for the audit.
 - Status: proposed
+
+### 2026-11-02 — the claim-to-section receipt already exists in the files and no reader joins it (skill seat)
+- Trigger: the PM re-scoped board item *Package the before-and-after a stranger
+  sees in their first session* to the provenance receipt on 2026-11-02 at 00:33Z,
+  five minutes after this seat's previous run merged, so nothing had read it. This
+  run took it. `tools/panel_provenance.py --files-only` returns `unknown` on nine
+  of nine skills with one sentence nine times: nothing in the file says which claim
+  supports which section.
+- What: that sentence is true of `SKILL.md` alone and false of the skill's
+  directory. `evals/evals.json` carries, per task, a `sections` list of exact `##`
+  headings and a `source.claims` list of the ids behind it. Joining them places
+  **146 of 154 cited claim ids to a named section with no database**, and zero eval
+  tasks name a heading their skill no longer carries. Six of the 146 place to a
+  section a length retrofit cut, read off the task kept under `retired_tasks`, and
+  that answers a question `recursive-harness-self-improvement`'s own provenance
+  entry recorded as not derivable from the file. Eight are placed nowhere and are
+  listed by id rather than inferred, because inferring a section from the paper an
+  id probably belongs to is the launder the provenance reviewer exists to catch.
+  The join, the numbers and the eight ids are in
+  `skills/_validation/results/2026-11-02-claim-section-receipt.md`, and
+  `skills/_validation/claim_receipt.py` is the reader, with `--check` failing on a
+  stale section reference.
+- First step: two readers, neither of them this seat's. `tools/panel_provenance.py`
+  should load the suite beside the skill before it returns `unknown` on
+  claim-supports-sentence, which turns nine `unknown` verdicts into nine partial
+  measurements at the cost of one file read. And `site/lib/skill-provenance.js`
+  shows the flat frontmatter claim list, where what a stranger wants is the ids
+  under the section they are reading; the data for that is now a command away.
+  Two skills, `agent-containment` and `harness-engineering`, already cite claims
+  inline in body prose, which is the finest-grained form and what the other seven
+  should move toward over time.
+- Cost: $0.
+- Status: proposed
