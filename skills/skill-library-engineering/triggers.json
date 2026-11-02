@@ -47,8 +47,8 @@
       "id": "sle-conf-1",
       "kind": "confusion",
       "expect": "harness-engineering",
-      "prompt": "Our coding agent is underperforming and we cannot tell whether the problem is the tools we gave it, the way each turn is framed, or the loop structure. Where should we start, and should we be considering fine-tuning instead?",
-      "rationale": "Belongs to harness-engineering: the scaffold around the model, the harness-before-weights ordering, and the fine-tuning warning. Nothing here concerns a skill file or which of several skills gets loaded."
+      "prompt": "Our coding agent is underperforming and we are deciding whether to rebuild the scaffold around it or fine-tune the model on traces from a stronger one. Which should we try first?",
+      "rationale": "Belongs to harness-engineering: the harness-before-weights ordering and the negative expected sign on imitating a stronger model's trajectories. Nothing here concerns a skill file or which of several skills gets loaded. Rewritten 2026-11-02: the prompt asked whether the problem was the tools, the turn framing or the loop structure. The 2026-09-30 ADR-38 rewrite of harness-engineering cut the order-of-operations section entire, which is action interface, feedback enrichment and feedback consistency, on a bare-arm screen that found the subject supplied it unprompted, and that file's own provenance names the cut. So expecting harness-engineering to win a tools-versus-turn-framing-versus-loop-structure prompt has been a false claim about a skill behaving correctly since that day, and it was reported as this suite's failure for 32 days. The fine-tuning half of the old prompt was the only live half, so that is what the case now asks and the boundary it tests is unchanged."
     },
     {
       "id": "sle-conf-2",

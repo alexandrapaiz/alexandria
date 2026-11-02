@@ -1165,3 +1165,278 @@ def test_the_company_is_taken_from_the_checkouts_own_remote(monkeypatch):
     assert cf.company_here() == "alexandria"
     monkeypatch.setenv("ASC_COMPANY", "ursa")
     assert cf.company_here() == "ursa"
+
+
+def test_a_re_fire_that_is_still_running_leaves_the_cycle_in_recovery(tmp_path):
+    """Security's real 2026-11-01 slot, read while the re-fire was still going.
+
+    The refused run's own verdict was never the problem: `reason_of` has
+    refused to call a live run lost since it was written. What nobody applied
+    that reasoning to was the *successor*, and the promotion out of `lost`
+    required `successor["pr"]` to be truthy, which a run with no trailer can
+    never be. So a slot in recovery scored `lost` and set the exit code.
+    """
+    write_log(tmp_path, "alexandria-security", "2026-11-01T13-00-27-477Z",
+              "cron", refused("You've hit your weekly limit · resets 11pm (UTC)"),
+              exit_code=1, turns=1)
+    write_log(tmp_path, "alexandria-security", "2026-11-01T23-04-44-320Z",
+              "hook", trailer=False)
+    claims = cf.read_retry_claims(claim_file(
+        tmp_path,
+        **{"alexandria-security": ["2026-11-01T13-00-27-477Z-cron.log"]}))
+    result = cf.judge(cf.read_runs(tmp_path), "2026-11-01", claims=claims,
+                      now=datetime(2026, 11, 1, 23, 34, tzinfo=UTC))
+    assert result["lost"] == [], "a live re-fire is not a lost cycle"
+    finding, = result["recovering"]
+    assert finding["seat"] == "alexandria-security"
+    assert finding["slot"] == "13:00Z"
+    assert finding["why"] == "weekly-limit"
+    assert finding["retried_by"] == "2026-11-01T23-04-44-320Z-hook"
+
+
+def test_a_cycle_in_recovery_does_not_set_the_exit_code(tmp_path, capsys):
+    write_log(tmp_path, "alexandria-security", "2026-11-01T13-00-27-477Z",
+              "cron", refused("You've hit your weekly limit · resets 11pm (UTC)"),
+              exit_code=1, turns=1)
+    write_log(tmp_path, "alexandria-security", "2026-11-01T23-04-44-320Z",
+              "hook", trailer=False)
+    path = claim_file(
+        tmp_path,
+        **{"alexandria-security": ["2026-11-01T13-00-27-477Z-cron.log"]})
+    code = cf.main(["--day", "2026-11-01", "--root", str(tmp_path),
+                    "--claims", str(path), "--now", "2026-11-01T23:34:00Z"])
+    out = capsys.readouterr().out
+    assert code == 0, "a gate must not go red on a recovery that is working"
+    assert "recover  alexandria-security 13:00Z weekly-limit" in out
+    assert "still running" in out
+    assert "LOST" not in out
+    assert "cycle(s) lost" not in out
+
+
+def test_once_the_re_fire_is_too_old_the_cycle_is_lost_again(tmp_path, capsys):
+    """The grace is a wait, not an amnesty.
+
+    Same two logs as the test above, read past `GRACE_MINUTES`. The successor's
+    missing trailer has stopped being evidence of a live run and become
+    evidence that nobody is coming to write it, so the cycle is lost and the
+    exit code says so.
+    """
+    write_log(tmp_path, "alexandria-security", "2026-11-01T13-00-27-477Z",
+              "cron", refused("You've hit your weekly limit · resets 11pm (UTC)"),
+              exit_code=1, turns=1)
+    write_log(tmp_path, "alexandria-security", "2026-11-01T23-04-44-320Z",
+              "hook", trailer=False)
+    path = claim_file(
+        tmp_path,
+        **{"alexandria-security": ["2026-11-01T13-00-27-477Z-cron.log"]})
+    code = cf.main(["--day", "2026-11-01", "--root", str(tmp_path),
+                    "--claims", str(path), "--now", "2026-11-02T06:00:00Z"])
+    out = capsys.readouterr().out
+    assert code == 1
+    assert "lost after a recovery attempt" in out
+
+
+def test_a_finished_re_fire_that_shipped_nothing_is_still_lost(tmp_path, capsys):
+    """The guard is liveness and never the mere absence of a pull request.
+
+    This is the regression that matters: `recovering` must not swallow the
+    case the `lost` hint was written for, a re-fire that ran to completion and
+    reached no pull request.
+    """
+    write_log(tmp_path, "alexandria-security", "2026-11-01T13-00-27-477Z",
+              "cron", refused("You've hit your weekly limit · resets 11pm (UTC)"),
+              exit_code=1, turns=1)
+    write_log(tmp_path, "alexandria-security", "2026-11-01T23-04-44-320Z",
+              "hook", completed(), exit_code=0, turns=40)
+    path = claim_file(
+        tmp_path,
+        **{"alexandria-security": ["2026-11-01T13-00-27-477Z-cron.log"]})
+    code = cf.main(["--day", "2026-11-01", "--root", str(tmp_path),
+                    "--claims", str(path), "--now", "2026-11-01T23:34:00Z"])
+    out = capsys.readouterr().out
+    assert code == 1
+    assert "lost after a recovery attempt" in out
+    assert "recover  " not in out, "the recovering row must not appear"
+
+# --- the pull request index can be blind to a seat, and that is not a verdict
+#
+# Added 2026-11-02. Three readings of one slot in one run, in this order:
+# `LOST?` because the index was blind to `sec/`, then `retried` because the
+# alias made #657 visible, then `LOST?` again because #657 is a draft. Only
+# the third is both right and right for the right reason, and the first two
+# are what these tests stand against.
+
+def test_a_seat_whose_branch_prefix_no_rule_derives_is_still_matched():
+    """`alexandria-security` ships from `sec/`, which neither prefix forms."""
+    assert "sec" in cf._branch_prefixes("alexandria-security")
+    assert "alexandria-security" in cf._branch_prefixes("alexandria-security")
+
+
+def test_an_index_that_knows_no_branch_of_a_seats_is_blind_to_it():
+    index = [pr_entry(660, "alexandria-writer/2026-11-01-hook", "2026-11-01T23:16:37Z")]
+    assert cf.index_is_blind_to("alexandria-okr", index) is True
+    assert cf.index_is_blind_to("alexandria-writer", index) is False
+
+
+def test_an_empty_index_is_not_blindness_because_it_was_never_passed():
+    """`--prs` unpassed is the ordinary case; calling it blindness cries wolf."""
+    assert cf.index_is_blind_to("alexandria-writer", []) is False
+
+
+def test_a_blind_index_says_so_rather_than_reporting_no_pull_request(tmp_path, capsys):
+    write_log(tmp_path, "alexandria-security", "2026-11-01T13-00-27-000Z", "cron",
+              refused("You've hit your weekly limit · resets 11am (UTC)"),
+              exit_code=1, turns=1)
+    index = [pr_entry(660, "alexandria-writer/2026-11-01-hook", "2026-11-01T23:16:37Z")]
+    cf.judge(cf.read_runs(tmp_path), "2026-11-01", pr_index=index,
+             now=datetime(2026, 11, 1, 23, 59, tzinfo=UTC))
+    finding, = cf.judge(cf.read_runs(tmp_path), "2026-11-01", pr_index=index,
+                        now=datetime(2026, 11, 1, 23, 59, tzinfo=UTC))["lost"]
+    assert finding["pr_index_blind"] is True
+
+
+def test_a_re_fire_that_left_its_pull_request_a_draft_has_not_carried_the_cycle(tmp_path):
+    """L-A32: no gate can reach a draft, so a draft is not an arrival.
+
+    Security's 13:00Z slot on 2026-11-01, as the host recorded it: refused at
+    turn one, claimed by the retry, re-fired at 23:04:44Z, and that run opened
+    #657 and exited 124 before `gh pr ready`.
+    """
+    write_log(tmp_path, "alexandria-security", "2026-11-01T13-00-27-000Z", "cron",
+              refused("You've hit your weekly limit · resets 11am (UTC)"),
+              exit_code=1, turns=1)
+    write_log(tmp_path, "alexandria-security", "2026-11-01T23-04-44-320Z", "hook",
+              None, exit_code=124, turns=None)
+    claims = cf.read_retry_claims(claim_file(
+        tmp_path,
+        **{"alexandria-security": ["2026-11-01T13-00-27-000Z-cron.log"]}))
+    index = [dict(pr_entry(657, "sec/2026-11-01", "2026-11-01T23:06:23Z"),
+                  isDraft=True)]
+    result = cf.judge(cf.read_runs(tmp_path), "2026-11-01", claims=claims,
+                      pr_index=index, now=datetime(2026, 11, 2, 0, 5, tzinfo=UTC))
+    assert result["retried"] == []
+    finding, = result["lost"]
+    assert finding["retry_pr_is_draft"] is True
+    assert finding["retry_pr"] == "https://github.com/o/r/pull/657"
+
+
+def test_the_same_re_fire_with_the_draft_readied_does_carry_the_cycle(tmp_path):
+    """The mirror, so the draft check cannot pass by refusing everything."""
+    write_log(tmp_path, "alexandria-security", "2026-11-01T13-00-27-000Z", "cron",
+              refused("You've hit your weekly limit · resets 11am (UTC)"),
+              exit_code=1, turns=1)
+    write_log(tmp_path, "alexandria-security", "2026-11-01T23-04-44-320Z", "hook",
+              None, exit_code=124, turns=None)
+    claims = cf.read_retry_claims(claim_file(
+        tmp_path,
+        **{"alexandria-security": ["2026-11-01T13-00-27-000Z-cron.log"]}))
+    index = [dict(pr_entry(657, "sec/2026-11-01", "2026-11-01T23:06:23Z"),
+                  isDraft=False)]
+    result = cf.judge(cf.read_runs(tmp_path), "2026-11-01", claims=claims,
+                      pr_index=index, now=datetime(2026, 11, 2, 0, 5, tzinfo=UTC))
+    assert result["lost"] == []
+    finding, = result["retried"]
+    assert finding["retry_pr_is_draft"] is False
+
+
+def test_an_index_built_without_isdraft_is_unknown_rather_than_readied(tmp_path):
+    """An absent field is not a false one, which is how the claim file is read."""
+    write_log(tmp_path, "alexandria-security", "2026-11-01T13-00-27-000Z", "cron",
+              refused("You've hit your weekly limit · resets 11am (UTC)"),
+              exit_code=1, turns=1)
+    write_log(tmp_path, "alexandria-security", "2026-11-01T23-04-44-320Z", "hook",
+              None, exit_code=124, turns=None)
+    claims = cf.read_retry_claims(claim_file(
+        tmp_path,
+        **{"alexandria-security": ["2026-11-01T13-00-27-000Z-cron.log"]}))
+    index = [pr_entry(657, "sec/2026-11-01", "2026-11-01T23:06:23Z")]
+    result = cf.judge(cf.read_runs(tmp_path), "2026-11-01", claims=claims,
+                      pr_index=index, now=datetime(2026, 11, 2, 0, 5, tzinfo=UTC))
+    finding, = result["retried"]
+    assert finding["retry_pr_is_draft"] is False
+
+
+# --- the host does not always write a number for `exit`
+#
+# Added 2026-11-02. `# exit=timeout pr=- session=- turns=-` is what the host
+# writes when it kills a run on the wall clock. The trailer pattern took digits
+# only, so the one trailer that proves a run is dead was the one this reader
+# could not see, and `recovering` held security's dead re-fire as "still
+# running" for the whole grace window. Fourth reading of that slot in one run,
+# and the first that is right for the right reason.
+
+def timeout_log(root, seat, stamp, trigger):
+    """A run the host killed on the wall clock, trailer and all."""
+    run_id = f"{stamp}-{trigger}"
+    directory = Path(root) / seat
+    directory.mkdir(parents=True, exist_ok=True)
+    body = HEADER.format(seat=seat, run_id=run_id, trigger=trigger)
+    body += "---\n# exit=timeout pr=- session=- turns=-\n"
+    path = directory / f"{run_id}.log"
+    path.write_text(body, encoding="utf-8")
+    return path
+
+
+def test_a_word_exit_is_a_trailer_rather_than_a_missing_one(tmp_path):
+    run = cf.parse_run(timeout_log(tmp_path, "alexandria-security",
+                                   "2026-11-01T23-04-44-320Z", "hook"))
+    assert run["truncated"] is False
+    assert run["ended"] is True
+    assert run["exit_word"] == "timeout"
+    assert run["exit_code"] is None, "callers compare exit_code to 0; keep it numeric"
+    assert run["turns"] is None, "`turns=-` is unknown, not zero"
+
+
+def test_a_timeout_is_not_a_clean_finish(tmp_path):
+    """Falling through to None here would read `exit=timeout` as success."""
+    run = cf.parse_run(timeout_log(tmp_path, "alexandria-security",
+                                   "2026-11-01T23-04-44-320Z", "hook"))
+    assert cf.reason_of(run, now=datetime(2026, 11, 2, 0, 30, tzinfo=UTC)) == "timeout"
+
+
+def test_a_numeric_trailer_is_unchanged_by_the_widening(tmp_path):
+    path = write_log(tmp_path, "alexandria-engineer", "2026-10-25T11-06-03-756Z",
+                     "cron", completed(), exit_code=0,
+                     pr="https://github.com/o/r/pull/516", turns=25)
+    run = cf.parse_run(path)
+    assert (run["exit_code"], run["turns"], run["exit_word"]) == (0, 25, None)
+    assert run["ended"] is True
+
+
+def test_a_re_fire_killed_on_the_clock_is_not_in_recovery(tmp_path):
+    """Security's slot, as the host actually recorded it.
+
+    The re-fire's trailer says `exit=timeout`, so it has finished and its
+    `pr=-` is not the absence of a trailer. Before the widening this read as
+    `recovering` — "which is still running" — and the draft check could not
+    fire, because `recovering` outranks it.
+    """
+    write_log(tmp_path, "alexandria-security", "2026-11-01T13-00-27-000Z", "cron",
+              refused("You've hit your weekly limit · resets 11am (UTC)"),
+              exit_code=1, turns=1)
+    timeout_log(tmp_path, "alexandria-security", "2026-11-01T23-04-44-320Z", "hook")
+    claims = cf.read_retry_claims(claim_file(
+        tmp_path,
+        **{"alexandria-security": ["2026-11-01T13-00-27-000Z-cron.log"]}))
+    index = [dict(pr_entry(657, "sec/2026-11-01", "2026-11-01T23:06:23Z"),
+                  isDraft=True)]
+    result = cf.judge(cf.read_runs(tmp_path), "2026-11-01", claims=claims,
+                      pr_index=index, now=datetime(2026, 11, 2, 0, 25, tzinfo=UTC))
+    assert result["recovering"] == []
+    finding, = result["lost"]
+    assert finding["retry_pr_is_draft"] is True
+
+
+def test_a_re_fire_with_no_trailer_at_all_is_still_in_recovery(tmp_path):
+    """The mirror: the widening must not take `recovering` away from its own case."""
+    write_log(tmp_path, "alexandria-security", "2026-11-01T13-00-27-000Z", "cron",
+              refused("You've hit your weekly limit · resets 11am (UTC)"),
+              exit_code=1, turns=1)
+    write_log(tmp_path, "alexandria-security", "2026-11-01T23-04-44-320Z", "hook",
+              None, trailer=False)
+    claims = cf.read_retry_claims(claim_file(
+        tmp_path,
+        **{"alexandria-security": ["2026-11-01T13-00-27-000Z-cron.log"]}))
+    result = cf.judge(cf.read_runs(tmp_path), "2026-11-01", claims=claims,
+                      now=datetime(2026, 11, 1, 23, 30, tzinfo=UTC))
+    assert len(result["recovering"]) == 1

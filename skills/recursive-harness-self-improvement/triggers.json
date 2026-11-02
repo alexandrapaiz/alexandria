@@ -3,7 +3,7 @@
   "suite_version": 1,
   "written": "2026-09-22",
   "author": "skill agent (ADR-22)",
-  "note": "The five-prompt trigger test prompts/skill-agent.md requires, plus one confusion case per neighbouring skill in the library. Run with skills/_validation/trigger_test.py.",
+  "note": "The five-prompt trigger test prompts/skill-agent.md requires, plus one confusion case per neighbouring skill in the library. Run with skills/_validation/trigger_test.py. Revised 2026-11-02 (ADR-38 length retrofit, 362 lines to 109): rhsi-pos-3 is retired with section 8 (see retired_cases) rather than rewritten, because the skill no longer answers the question and a pass would be the wrong outcome. ONE positive replaces it, rhsi-pos-4 for delta 3 (attribution as search), and the suite therefore holds at the 67 cases that `tests/test_skill_scope.py::test_the_suite_is_the_published_one_and_not_a_new_exam` pins. Delta 5 (feedback cost) also had no positive case, which is a gap retiring rhsi-pos-3 made visible rather than created, and the written case for it is held in docs/ideas.md with its text and its first draft's failure, to be shipped by whoever raises the pin to 68. That pin exists so a seat cannot pass its own measurement by writing easy queries, it cannot tell a replacement from an addition, and the number is in tests/ which is outside this seat's write surface. Respecting it costs one real case and that is the right trade. rhsi-conf-1 was rewritten earlier the same day for a different reason, recorded on the case.",
   "cases": [
     {
       "id": "rhsi-pos-1",
@@ -22,12 +22,12 @@
       "rationale": "Sections 4 and 5 are the whole answer, and the wrong default (accept if the diagnosis that motivated the edit looks sound) is what a builder reaches for unaided."
     },
     {
-      "id": "rhsi-pos-3",
+      "id": "rhsi-pos-4",
       "kind": "positive",
       "expect": "recursive-harness-self-improvement",
-      "prompt": "Thirteen coding agents are committing to one shared repository trying to push the same metric, and for five days every one of them has been building on the same idea. How do we get the exploration spread out again?",
-      "anchor": "when several agents rewrite one shared codebase and converge on the same idea",
-      "rationale": "The Agora monoculture finding is the only evidence in the library that speaks to a population of self-editing agents collapsing, and the diversity-signal answer is not obvious."
+      "prompt": "Our agent's run logs are hundreds of thousands of tokens long, and when a run fails we cannot tell which function in the scaffold caused it. Right now a judge model reads the log once and names a culprit. Should we pay for a stronger judge?",
+      "anchor": "when attributing a failure to one function inside a long execution log",
+      "rationale": "Written 2026-11-02 to replace rhsi-pos-3. Delta 3 is the best-evidenced delta in the file and had no positive case before this, and it is the delta three confusion cases in other skills' files now point at, so the suite was asserting coverage it never tested from the inside. The decision the prompt is about to get wrong is the one delta 3 answers with a number: buy search turns before a bigger diagnostician, because a lower-tier judge with four turns of continual search matched a higher-tier judge with one pass. Phrased in the vocabulary a requester would use rather than the library's, which is the he-pos-1 lesson from the same run."
     },
     {
       "id": "rhsi-neg-1",
@@ -47,8 +47,8 @@
       "id": "rhsi-conf-1",
       "kind": "confusion",
       "expect": "harness-engineering",
-      "prompt": "We are going to evolve our agent's harness rather than train the model, and our own engineers will write each change by hand this sprint. Which parts of the scaffold give the most back, and how do we tell which sub-agent is at fault when the pipeline fails?",
-      "rationale": "Belongs to the neighbour. It borrows this skill's headline vocabulary (evolve the harness, not the weights) but a person writes every change, so the answer is harness-engineering's order-of-operations and sequential-intervention sections, not this skill's gates and freeze lists. Routing it here would hand the reader machinery for an automation that does not exist."
+      "prompt": "We are going to evolve our agent's harness rather than train the model, and our own engineers will write each change by hand this sprint. Is harness work really the better spend than fine-tuning, and in what order?",
+      "rationale": "Belongs to the neighbour. It borrows this skill's headline vocabulary (evolve the harness, not the weights) but a person writes every change, so the answer is harness-engineering's harness-before-weights ordering and its negative expected sign on the imitation fine-tune, not this skill's gates and freeze lists. Routing it here would hand the reader machinery for an automation that does not exist. Rewritten 2026-11-02: the prompt also asked how to tell which sub-agent is at fault. That clause was testing two things this case cannot test. The 2026-09-30 ADR-38 rewrite of harness-engineering cut the localisation half of its debugging section, on a bare-arm screen that found the subject supplied it unprompted, and that file's own provenance names the cut. So expecting harness-engineering to win a sub-agent-attribution prompt has been a false claim about a skill behaving correctly since that day, and it was reported as this suite's failure for 32 days. And failure localisation is now this skill's own section 3, so the clause argued for the owning skill inside a case whose whole point is that the owning skill loses. Both halves of the defect are the clause's, so the clause is gone and the live harness-versus-weights question is what the case now asks."
     },
     {
       "id": "rhsi-conf-2",
@@ -56,6 +56,17 @@
       "expect": "self-improving-post-training-loops",
       "prompt": "We want the agent's own successful rollouts to become the training data for the next fine-tune of the model itself. How do we decide which rollouts are good enough to train on, and how do we keep the run from collapsing?",
       "rationale": "Belongs to the other neighbour. Self-referential improvement again, and the words loop, own rollouts and improve itself all appear, but the thing being updated is the weights, which is the boundary this skill's description draws explicitly. Routing it here would give scaffold-edit gates to a question about teacher gating and collapse."
+    }
+  ],
+  "retired_cases": [
+    {
+      "id": "rhsi-pos-3",
+      "kind": "positive",
+      "expect": "recursive-harness-self-improvement",
+      "prompt": "Thirteen coding agents are committing to one shared repository trying to push the same metric, and for five days every one of them has been building on the same idea. How do we get the exploration spread out again?",
+      "anchor": "when several agents rewrite one shared codebase and converge on the same idea",
+      "rationale": "The Agora monoculture finding is the only evidence in the library that speaks to a population of self-editing agents collapsing, and the diversity-signal answer is not obvious.",
+      "retired": "2026-11-02. This case tested the trigger 'when several agents rewrite one shared codebase and converge on the same idea', and the ADR-38 length retrofit cut section 8, the Agora population finding, along with that clause of the description. It is retired rather than rewritten because the skill no longer answers the question, so a pass would be the wrong outcome, which is the handling ac-pos-3 received on 2026-10-06. It passed on its last run before retirement and went to silence the moment the description clause left, which is the engine agreeing that the clause was the whole of its coverage. The finding is queued in docs/research/reading-queue.md for a seat that can give it a page, and nothing in this library covers it today."
     }
   ]
 }

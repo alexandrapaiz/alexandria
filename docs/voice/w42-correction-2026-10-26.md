@@ -140,6 +140,70 @@ this sentence.
 Under the company standard's §22 this proceeds as recommended after
 forty-eight hours of her silence. It moves no authority and no money.
 
+## How the two edits sequence, and where the notice actually goes
+
+Added by writer run 59, after the PM agreed with the ruling, merged it, and
+posted the notice question to her as a formal ask. Nothing above changed. What
+was missing was the part a seat who does not write prose has to be handed, which
+is the anchor, the form, and what to do when only one of the two edits is
+available. Until this section existed the notice lived as a quoted
+recommendation inside an argument, and the frontend seat would have had to
+decide where it sits and what it looks like, which is this seat's decision and
+not theirs.
+
+**There are two edits and they are independent.** The pull is one, and it is
+available now: the corrected body is `2026-W42-corrected.md`, it has been read
+against the live page, and no word of it waits on anybody. The notice is the
+other, it is one line, and it waits either on her word or on the clock the
+company standard put on her silence, which is 20:44 UTC on 2026-10-28 and is
+recorded with that hour in `awaiting-her-word.md`.
+
+**The pull is never held for the notice.** A frontend run that lands the body
+and leaves the notice for a second diff has done the whole job it can do, and a
+run that waits so both land together keeps a false section in front of readers
+to save a seat one diff. That trade is the wrong way round. If the clock has run
+out by the time that seat runs, the notice is still not theirs to infer: the
+resolution gets recorded in the register by the seat that reads the ruling, and
+`check_voice.py deadlines` is what fails a writer run until that happens.
+
+**The anchor.** The notice is a new paragraph directly under the masthead, which
+is line 3 of the corrected file, with one blank line above it and one below. The
+lead paragraph follows it. Nothing else in the file moves, and the notice is the
+only line on the page that is about the page.
+
+**The form, decided here so nobody has to decide it twice.** Plain prose. No
+italic, no bold, no horizontal rule above it, no label in front of it. The
+masthead above it is italic because it is standing furniture that appears on
+every issue, and a notice set in italic directly under it reads as a second
+clause of that furniture rather than as a statement about this one page. Her
+ruling of 2026-09-29 already bans bold inside body copy and colon-led devices,
+so "Correction:" in front of the sentence is out on the register's own terms
+even though it is the shape a newspaper would use.
+
+**The date.** "October 26, 2026" is the form the press already prints to
+readers. `pipeline/weekly.py` builds every issue's date range as the month's
+name, the day, a comma, and the year, so the notice matches the one date format
+this product has ever shown a reader rather than introducing a second.
+
+**The sentence, verbatim, which is the one in the section above and is quoted
+again here only so the edit can be made from one place:**
+
+> One section of this issue was removed on October 26, 2026, because its three
+> statements about findings that newer work had overturned did not hold against
+> the papers it cited.
+
+**And one ground for it that run 57 did not name, because it is stronger than
+the one it did.** That run argued the notice from the scope of her 2026-09-19
+ban, which reads on method narration and not on this. Canon law 7 does better
+than permitting the sentence. Its first clause asks for exactly this shape:
+disclose a limitation in one plain sentence when it materially affects that
+day's content. A section that was wrong three times out of three and has been
+taken off the page is the clearest case of material that law describes, and the
+ban in the law's second clause is on the issue narrating its own methodology,
+ranking logic or virtues. This sentence narrates none of those. It says what
+happened to one page, in the past tense, and claims nothing about how the
+library works.
+
 ## Who sets it
 
 The frontend seat, and the route needs no database credential, which is the
