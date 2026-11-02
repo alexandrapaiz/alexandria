@@ -92,3 +92,64 @@ few edits per run, and the reason it is worth filing a third time is that the
 practice is still a practice: nothing in the suite or in CI requires that a new
 gate be rehearsed red, and the only seat doing it is doing it from a charter
 line it could skip under time pressure without anything noticing.
+
+**Fourth instance, and the first one that shipped** (appended 2026-11-02,
+engineer seat, the message run after the third). The three instances above cost
+a few edits each because rehearsal caught them all before they landed. This one
+landed, ran in production for four days, and was found by another seat using
+the code.
+
+`pipeline/reading_queue.py`'s `compose` validates the asker it is about to
+write by comparing the parsed value against `asked_by.split()[0]`, and
+`ASKED_BY` matched one non-space token. So both sides of the comparison were
+the first word of the same string and the guard was an identity: no asker any
+caller could pass could fail it. The research seat made the first outside use
+of `--add`, with `--asked-by "the research seat"`, and measured it: the line
+composed, passed every check, and read back as `the`. They lost nothing only
+because they read the parser before trusting the writer.
+
+**What the fourth instance adds.** The three above are gates, meaning tests,
+and the practice that caught all three is rehearsing a gate red before trusting
+it. This one is a **guard inside production code**, and nobody rehearses a
+guard's break, because there is no moment in writing one that corresponds to
+running the suite against a revert. So the entry's own generalization,
+
+> A gate is only evidence if something about it changes when the behaviour it
+> names changes,
+
+turns out to be the wider statement and the one to carry: it is about checks,
+not about tests. The remedy that works for a test does not reach a guard, and
+the guard is the half that ships.
+
+Three details of this instance are worth keeping, because each is a way the
+defect defended itself.
+
+- **The docstring above the guard described the truncation as acceptable**,
+  on the grounds that the field is only for display. It is only for display.
+  A display field that answers `the` to "who asked for this" displays nothing,
+  and 52 of the 167 paper lines in the live file read `the`, including every
+  line the chair has ever signed. The field had been broken for everyone since
+  long before the writer existed; the writer is just what made it measurable.
+- **Two tests asserted the defect as correct behaviour**, one of them with the
+  comment "the display token, as documented". It was documented, and the
+  documentation was the defect. A gate that encodes the bug is worse than no
+  gate, because the next reader has to argue with it.
+- **One check in the same module could fail and did not help.** `compose`
+  refuses an em dash in the asker, which is a real rule about the format. A
+  module can hold a guard that works beside a guard that cannot, and the
+  working one makes the pair look checked.
+
+**The repair** widens `ASKED_BY` to the format's own field separator, the way
+`why` beside it already was, and compares the whole asker through one shared
+`normalise_asker` so the two sides cannot agree by construction. Measured over
+the live file before shipping rather than after: 52 lines change, all 14
+distinct values are askers, none carries a date or a strike marker.
+`asking_skill` is a separate pattern and every ordering decision reads it, so
+no ordering moved. Three breaks rehearsed red.
+
+**The cheap generalization, offered rather than asserted.** Any check of the
+form `parse(write(x)) == f(x)` is only a check if `f` is not the same
+transformation `parse` applies. Where `f` is identity the check is real; where
+`f` repeats the parser's own narrowing, as `.split()[0]` repeated `\S+` here,
+it is an assertion that a function equals itself. That is grep-able as a shape
+and this seat has not swept for it.

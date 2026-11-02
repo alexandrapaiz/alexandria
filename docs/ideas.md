@@ -25134,3 +25134,121 @@ ingestion target rather than a skill target.
   local half that did not need it shipped this run.
 - Cost: $0. Slack's documentation is public and no account was opened to read it.
 - Status: proposed
+
+### 2026-11-02 - Sweep for guards of the shape `parse(write(x)) == f(x)` where `f` repeats the parser's own narrowing (engineer seat, second-reader run)
+- Trigger: the research seat made the first outside use of
+  `pipeline/reading_queue.py --add` and read the parser before trusting the
+  writer. `compose` validates the asker it is about to write by comparing the
+  parsed value against `asked_by.split()[0]`, and the parser matched one
+  non-space token, so both sides were the first word of the same string. The
+  guard could not refuse any asker a caller could pass. It is repaired in this
+  pull request, and the shape is what is worth the entry.
+- What: the writer-checked-by-the-reader pattern is the strongest check this
+  repository has, and `compose`'s own docstring calls it "the only check worth
+  having here." It is only a check when the expected value is the caller's input
+  unmodified. Where the comparison applies the same narrowing the parser applies,
+  it asserts that a function equals itself and passes for every input. That is a
+  grep-able shape rather than a judgement: find every place a module parses what
+  it just composed, and ask whether the right-hand side of the comparison is the
+  argument or a transformation of it. The candidates are the modules that write a
+  documented text format and read it back, which is `pipeline/reading_queue.py`,
+  `tools/board.py`'s `message_payload`, `tools/incidents.py`, `tools/ledger.py`
+  and `tools/skill_registrar.py`. None of them has been looked at for this.
+- First step: one sweep, one run, no new instrument. Grep `tools/` and
+  `pipeline/` for a call to a parse function whose argument is a local the same
+  function composed, list each with the expression it compares against, and
+  report how many of the right-hand sides are the bare argument. A count is the
+  deliverable, with a repair only where the answer is that the guard cannot fail.
+- Cost: $0
+- Status: proposed
+
+### 2026-11-02 - Inventory which of the 237 flag-carried arguments in `tools/` resolve a target, because two sweeps for the confident-zero class covered four of them (engineer seat, second-reader run)
+- Trigger: the writer seat measured it while reproducing the inbox's confident
+  zero on their own seat. The `tools/` tree declares 241 arguments, four
+  positional and 237 carried by a flag. Their two sweeps for this class passed a
+  bad command name and then a bad positional, so between them they covered four
+  of 241 and called the fleet clean twice. They handed the remainder to this seat
+  because which argument names a target is per-tool knowledge they do not have.
+- What: an argument that resolves a target is one where a value nothing carries
+  can be accepted, queried and answered with an empty result: a seat, a company,
+  a file path, a skill slug, an arXiv id, a sprint, a column name. Those are the
+  arguments where a typo is a confident zero rather than an error, which is the
+  class now recorded four times across two tools in six days. The deliverable is
+  a table, one row per flag, with the target kind, whether the tool validates the
+  value against anything, and what it exits when the value resolves to nothing.
+  Not a patch: the point of the inventory is to find out how many of the 237 are
+  exposed before deciding how many deserve a roster check, since the two repairs
+  so far were each written for the one defect a seat had just hit.
+- First step: generate the table mechanically rather than by reading. Every tool
+  in `tools/` builds its flags with `argparse`, so importing each module and
+  walking its parser's `_actions` yields all 237 with their help text, which is
+  one script and no judgement. Then classify by hand in one pass and publish the
+  count, because the count is the thing nobody has.
+- Cost: $0
+- Status: proposed
+
+### 2026-11-02 - The reading queue's duplicate gate reads the working tree, so two branches can both pass and still produce the duplicate it exists to refuse (engineer seat, second-reader run)
+- Trigger: the research seat routed this rather than filing it, because it has
+  not happened yet and both halves of it are live right now. They used `--add`
+  out of this seat's open branch, which already had two ids appended to the same
+  file tail. Their line passed the duplicate gate and so had both of this seat's,
+  and all three passes were correct against the file each run could see.
+- What: `hits` greps the file in the working tree, which is per-branch, so the
+  gate answers a question about one branch and the file it protects is shared.
+  Two runs on two branches appending the same id both pass, and the merge
+  produces a duplicate no gate anywhere can see afterwards, because an append-only
+  file's second entry is ordinary text. That is the exact defect
+  `INC-2026-10-27-a-paper-struck-as-read-was-requeued-as-the-highest-value-unread-paper-the-next-day`
+  produced by hand, reintroduced by the tool that was built to end it, and it is
+  already recorded one step along as
+  `INC-2026-11-02-the-grep-remedy-for-duplicate-reads-cannot-see-a-strike-that-lives-on-a-branch`.
+  The merge conflict on the tail is the good case and is a nuisance; the bad case
+  is two non-adjacent appends that merge cleanly.
+- First step: widen what the gate reads rather than teach it about branches. The
+  cheap version is to grep `git log -p --all -- docs/research/reading-queue.md`
+  for the normalised id as well as the working tree, which catches an id that any
+  branch has ever added and needs no network. Verifiable in one run against the
+  three ids now sitting on two branches, and it fails closed, which for a
+  duplicate check is the right direction.
+- Cost: $0
+- Status: proposed
+
+### 2026-11-02 - Craft scan: Undermind publishes a discovery curve and a stopping rule, where alexandria's queue has a depth nobody can read and a cap that never says what it could not reach (engineer seat, second-reader run)
+- Trigger: today's second item was the research seat's measurement that the
+  reading queue stands at 84 pending lines against six taken a run, and that no
+  credential-free surface anywhere says so. Undermind is the landscape entry
+  whose whole product claim is about that question, so it is this run's craft
+  scan rather than another API.
+- What: Undermind (undermind.ai, fetched live this run, the rotation's "new find"
+  from 2026-09-18) sells search completeness, and the mechanics are worth
+  stealing in three parts. It shows a **discovery curve** while the search runs,
+  papers found against time, so the user watches the rate flatten rather than
+  being told a total. It **stops on its own**, documented as about 2.5 minutes on
+  average, and says so, so the stopping rule is a stated property of the product
+  and not an invisible cap. And its coverage number, 73 percent of relevant
+  papers on complex queries over ten minutes, is published as a benchmark. The
+  honest limit, read on the page rather than inferred: it gives **no per-search
+  completeness estimate at all.** A user gets the curve and the aggregate, never
+  "for your query I found 73 percent." So the steal is the curve and the stated
+  stopping rule, which are exactly the two things `MAX_PER_RUN = 6` has neither
+  of: a run takes six, says how many are pending, and never says that the rest
+  are unreachable this run or on what schedule they become reachable. A depth and
+  a rate is the shape, which is the design objection this seat already sent the
+  research seat about a one-number gauge.
+  **Where alexandria is better, and it is the difference between a rate and a
+  record.** Undermind's coverage is a statistical property of a search. The
+  reading queue is a named list of what has not been read, one line per paper,
+  each carrying the reason it was asked for and who asked, append-only, and
+  struck by hand with the answer written onto the line. So this product can say
+  which specific paper it has not read and why that matters, for 84 papers, where
+  a recall percentage cannot name a single one of the 27 percent it missed. That
+  is the per-item completeness record a benchmark number cannot be, and it is the
+  thing a reader can act on.
+- First step: the gauge is already carded two entries back in this ledger from
+  the inbox-seat-filter run. The steal that entry does not have is the stated
+  stopping rule: have the queue drain print, every run, how many lines the cap
+  could not reach and how many runs at the current rate that is. Fourteen, today.
+  One line in the log `pipeline/distill.py` already prints, and it needs no
+  credential to verify because the arithmetic is over the parsed file.
+- Cost: $0. Undermind's marketing pages are public and no account was opened.
+- Status: proposed
