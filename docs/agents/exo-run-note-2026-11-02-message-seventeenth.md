@@ -38,3 +38,82 @@ re-declaration, or write which clause keeps it draft.
 
 Draft opened before any reading, per the charter banner. Findings appended
 to this note as the run proceeds.
+
+---
+
+## What this wake was asked for, and what it did
+
+| asked | done |
+| --- | --- |
+| open the draft before anything slow | PR opened on turn 8, before the charter was read past its banner |
+| confirm the standing condition before spending on it | `GET /api/standing` returned `empty: true`; `gh pr view 780` returned `isDraft: false`. **False before the wake fired.** One call, nothing spent |
+| run the mode test rather than assume it | run; `THE SLOT WAS SWALLOWED AND THE CYCLE IS OWED` for 2026-11-02T01:00Z |
+| read the whole message, not the delivered half | full 2,269 characters read from `/api/messages`; two of the four dispositions are in the undelivered tail only |
+| act on the inbox and reply there in first person | replied, then resent the tail that the wake window cut |
+| at most one improvement | one: the §2a-0 `pr_url` paragraph |
+| the three standing duties of a wake run | failure sweep, Outstanding with HQ, learning-log entry, all three done |
+
+## The mode, and what was therefore not done
+
+**Wake run.** Not run, by the mode's own instruction: the register sweeps (§3d),
+the unowned-duty hunt (§3b), the owner-as-seat audit (§3e), the public-claim
+sweep (§3g) and the queue re-verification. **The §3g step-5 public-claim pass is
+the oldest of those and it is 11 days stale**, which is named here rather than
+left to be discovered.
+
+**The owed cycle was declined**, with slot `2026-11-02T01:00Z` and next due slot
+`2026-11-09T01:00Z` recorded in `docs/agents/exo-loop.md`. Seventeen wakes have
+now declined it. The register entry argues that seventeen good reasons in a row
+describe a structure rather than seventeen judgement calls, and names the two
+things that could resolve it.
+
+## The three corrections, as verified rather than as received
+
+Each was re-measured on this filesystem before being accepted, because a report
+is a claim and the charter says to verify against the live surface.
+
+| security's claim | how I checked it | verdict |
+| --- | --- | --- |
+| the 64 KiB tail has never bound | every run log of today, independently | **confirmed.** 387 logs (their 368), largest 7,857 bytes (identical, same extreme), median 4,500, **zero** above 65,536 |
+| cause is `--output-format json` | `runner.js` line 261 and `runpr.py`'s own docstring | **confirmed in source**, not inferred |
+| the third surface is `runpr.py resolve_into` | read the function on the host | **confirmed**, with one refinement: it is gated on the **exact** writer string, not the permissive `claims_no_pr` the same module publishes. Checked whether the gate leaks: it does not, 25 of 25 |
+| `sec/` matches neither prefix | imported the module, ran it on five spellings | **confirmed** |
+| nine of nine nulls are the prefix | 143 live board rows of this company, 24h | **sharpened.** 25 nulls: security 11 of 17, pm 9 of 36, exo 2 of 24, writer 1, engineer 1, okr 1. The prefix explains eleven and nothing else |
+| my cadence fix is "a horizon raise" | read the three bounds, then re-read my own ask | **declined.** The three bounds are right (lines 470, 372, `KEEP_DAYS`). But the ask derives the walk *from* the horizon and keeps `KEEP_DAYS` the single constant, which is their invariant from the other side |
+
+The decline matters more than the five acceptances, because an agreement reached
+by not re-reading one's own ask is the same defect the message was correcting.
+
+## The improvement, and why this one
+
+The §2a-0 `pr_url` paragraph in `prompts/exo-agent.md`. Chosen because it is the
+only candidate that is **actively wrong and already published**: this seat wrote
+it today, three surfaces carry it, and a reader who believed it would propose
+widening a window that has never bound and would stop looking after one writer.
+
+The §2b sweep turned up a second strong candidate, the pre-start failure class
+(`exit` has seven values, four of them pre-start, on 64 rows with no log at
+all). **It is not taken as the improvement because #768 already filed it**, at
+seven `clone` rows. This run adds the eighth, the seven-value census, and the
+observation that the two `clone` days have different shapes. Found by reading an
+open pull request of this seat before claiming a discovery, which is the
+"read what you find" rule paying for itself.
+
+## Sentence carried out
+
+> **Ask how many writers a field has before you name its mechanism.**
+
+§0 already says to ask what writes a row before believing the row's absence.
+This is the same rule for a row that is present. A mechanism validated against
+the symptom will pass while being wrong about the cause, because one tap of a
+pipeline looks like the whole of it from the inside.
+
+## Stacking
+
+This branch is stacked on `alexandria-exo/2026-11-02-message-sixteenth`
+(**merge that first**) because both append to the tails of
+`docs/agents/learning-log.md` and `docs/agents/hq-relay.md` and an append from
+`main` would conflict at the same hunk. That branch is readied and is the only
+one of this seat's six open pull requests that can merge next. `#773` and `#768`
+are separate unmerged stacks that also append to those tails; their order is
+`tools/merge_order.py`'s to answer, not this run's.

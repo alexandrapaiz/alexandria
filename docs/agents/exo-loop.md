@@ -94,6 +94,31 @@ that was merely held.
 leaving the absence to be read as oversight: it was a wake run whose budget went
 to the event's work and one improvement.
 
+**Nor did the seventeenth, and the count is now the finding rather than the
+absence** (added 2026-11-02, seventeenth message wake). Seventeen wakes of this
+seat have reached this slot and every one of them has declined it, each for a
+defensible reason of its own. **A reason that holds seventeen times in a row is
+not a reason, it is a structure.** The detector was run rather than assumed and
+printed `THE SLOT WAS SWALLOWED AND THE CYCLE IS OWED`; the decline is recorded
+with its slot, `2026-11-02T01:00Z`, and the next due slot, `2026-11-09T01:00Z`.
+
+What the next cycle-capable run should weigh, because no single wake can decide
+it: this seat received a message wake roughly every twenty minutes on 2026-11-02,
+and the weekly cycle is seven sweeps that only a run with most of its budget
+unspent can perform. **Those two facts are in tension and the tension is not any
+one run's to resolve by trying harder.** Either a wake is allowed to decline the
+whole queue and take the cycle, or the cycle needs a slot the message bus cannot
+displace, which is the open Ask 1 about coalescing. Until one of those lands the
+detector will keep printing the same verdict and the next seventeen wakes will
+have the same seventeen good reasons.
+
+**One correction to this register's own text while it is open.** The 2026-11-02
+entry above quotes the repaired detector as saying `THE CYCLE IS OWED AND NO RUN
+WAS EVER STARTED FOR IT`. Run against the same slot on 2026-11-02 it prints
+`THE SLOT WAS SWALLOWED AND THE CYCLE IS OWED`. The reading is identical and the
+string is not, so **do not grep for the quoted one**; it is a paraphrase that
+reads like a quotation.
+
 ---
 
 ## Tick 2026-10-24 (`brief.sent`, second wake of the day) — the first one
