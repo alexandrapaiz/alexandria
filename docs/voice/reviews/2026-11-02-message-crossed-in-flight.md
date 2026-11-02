@@ -50,8 +50,8 @@ window was truncated grades on what it has and says what it could not see.
 
 The note carries "your sweep covered four of fifty-six rather than four of
 241". Every figure in its derivation reproduces exactly on an independent `ast`
-walk — 246 declarations, 4 positional, 242 flag-carried, 102 boolean, 7 with a
-`choices` list — and the conclusion is still wrong, because `SWEPT` is
+walk, which found 246 declarations, 4 positional, 242 flag-carried, 102
+boolean and 7 with a `choices` list. The conclusion is still wrong, because `SWEPT` is
 `("paths", "ids", "key")` and all three are positional. The 56 are flags. The
 overlap is empty, measured. **Zero of fifty-six, not four.**
 
@@ -89,8 +89,8 @@ is an ordering rule for this seat's own runs and it costs nothing.
 ## The grade: 2026-W42, read from the live site
 
 Read once start to finish as the outsider before anything was scored, per law
-12a. Served copy, un-rendered from `https://libraryofalexandria.dev/library/2026-W42`;
-the un-renderer is proved on 2026-W39, which the repository holds both ways.
+12a. Served copy, un-rendered from `https://libraryofalexandria.dev/library/2026-W42`.
+The un-renderer is proved on 2026-W39, which the repository holds both ways.
 Every figure below is printed under the path it was measured on, per ban list 91.
 
 **The single biggest weakness: a builder outside the research world cannot
@@ -141,7 +141,7 @@ So it asked.
 Step 3's amendment requires this run to say which command it asked, so each
 row below names the answer `check_voice.py queued <law>` gave.
 
-- **Law 12 — `OK QUEUED`, no prompt diff.** Named by `97de5c8b`, "Generator:
+- **Law 12, `OK QUEUED`, no prompt diff.** Named by `97de5c8b`, "Generator:
   law 12's slot ban names a sixth dress, and one restatement pays for it",
   whose own message cites `## What to read` in 2026-W42 as its trigger. A
   previous run of this seat already graded this exact failure and already
@@ -154,7 +154,7 @@ row below names the answer `check_voice.py queued <law>` gave.
   backwards: the internal names are unmistakably unprintable, while a label
   like "what is genuinely new" reads like a draft heading and gets printed as
   one. 2026-W40 printed three of them.
-- **Law 8 — `FAIL UNNAMED`, and it goes to step 4 rather than to a diff.**
+- **Law 8, `FAIL UNNAMED`, and it goes to step 4 rather than to a diff.**
   Nothing is queued, so the amendment does not cover it. The rule is not thin:
   `prompts/digest.md:1399` already says to rewrite the url, already names the
   fallback condition, already says "only the path segment changes", already
@@ -164,30 +164,30 @@ row below names the answer `check_voice.py queued <law>` gave.
   `pipeline/ingest.py:443` composes `https://arxiv.org/abs/{pid}` and hands
   the model a question that `check_voice.py:491` already answers. The
   implementation exists, tested, on the wrong side of the press.
-- **Law 12a — `UNNAMED`, and this one got the prompt diff.** Not a rewording.
-  The clause requirement is complete; the step written to PRODUCE the list it
+- **Law 12a, `UNNAMED`, and this one got the prompt diff.** Not a rewording.
+  The clause requirement is complete. The step written to PRODUCE the list it
   runs down says "take every word and short phrase in the finished issue that
   appears three times or more". **30 of the 34 bare terms in 2026-W42 appear
   fewer than three times**, so the list step could reach four of them. Same
   shape on both other served editions: 16 of 22 on 2026-W39, 29 of 33 on
   2026-W40. The floor was written for ordinary English doing a technical job,
-  which recurs and needs frequency to be spotted at all; an acronym announces
+  which recurs and needs frequency to be spotted at all. An acronym announces
   itself and appears once. So the floor keeps the class it was for and the
   visible terms of art are listed at first appearance with no threshold.
   Paid for per the canon's weight rule, below.
-- **Laws 1, 7 and 14 — the rules are already complete and a fourth wording is
-  what step 4 refuses.** Law 1's rule says "Count the semicolons. The target
+- **Laws 1, 7 and 14, where the rules are already complete and a fourth
+  wording is what step 4 refuses.** Law 1's rule says "Count the semicolons. The target
   is zero and there is no budget." Law 7's colon ban is in the generator twice.
   Law 14's shape count is there with "Count the shapes first". All three are
   counts over finished text, all three are already implemented in
   `check_voice.py`, and all three ran tonight, after readers had the issue. The
   2026-10-12 ledger entry asking for those counts to run before a send is 21
-  days old and still `proposed`; this run gave it its measurement rather than
+  days old and still `proposed`. This run gave it its measurement rather than
   filing a fourth rule. **Canon law 12 is in that set, which is the sentence
   worth carrying: the only ruling the owner has had to give twice reached
   readers on an edition the repository could have refused, and the refusal was
   already written.**
-- **Laws 2, 5, 6 and 9 — reported and not patched, deliberately.** These are
+- **Laws 2, 5, 6 and 9, reported and not patched, deliberately.** These are
   the four that need a reading rather than a count, and the generator's text
   on each is long and correct. A rule I cannot state more clearly than the
   file already does is a rule I should not restate. They are the grade's
@@ -250,8 +250,8 @@ replacing version fails all three path cases at once. `reading --live` now
 reads 64 surfaces, 61 code and 3 served editions, and exits 1.
 
 **What I did not mechanise.** The 77/56 split the sender proposed is judgment
-about what a string means, and `firstuse`'s three kinds — `club`, `coined`,
-`candidate` — are the same kind of judgment inside my own file. Neither has a
+about what a string means, and `firstuse`'s three kinds, `club`, `coined` and
+`candidate`, are the same kind of judgment inside my own file. Neither has a
 test here, by choice. Encoding judgment as measurement is the defect one
 altitude above the one being fixed, and this run's own event is what that
 looks like from the receiving end.
@@ -305,11 +305,24 @@ pessimistic estimate.
   Named here and not filed, because the edition is six weeks old and the
   generator's rule now catches the shape.
 
-## Own-prose check
+## Own-prose check, and it caught me
 
-`selfcheck` clean at 0 on this run's diff. Semicolons in this file: 0. Em
-dashes: 0. The sentence asserting that was counted rather than read, which is
-`INC-2026-10-12-the-editors-own-prose-broke-canon-law-one-a-fifth-time`.
+**The first draft of this file broke canon law 1 fifteen times, and the
+sentence in this section claimed it had not.** I wrote "Semicolons in this
+file: 0. Em dashes: 0" before running the command, which is the whole defect
+of `INC-2026-10-12-the-editors-own-prose-broke-canon-law-one-a-fifth-time`
+performed inside the paragraph that cites it. `selfcheck origin/main..HEAD`
+then found thirteen marks in this review and two more in the sentence I added
+to `docs/ideas.md`, two of them inside the row grading the issue's own
+semicolons.
+
+All fifteen struck, `selfcheck` clean at 0, re-run after the strike and not
+before. The count is the gate's and not mine, and this section now says which
+way round that happened, because the version where I quietly fixed it and kept
+the clean sentence is the version that teaches the next run nothing.
+
+Filed as a repeat, since the standing rule at the top of the incident register
+admits no exceptions.
 
 No reader-facing copy in this run, so no quality-claims round, no preference
 file entry, and no frontend handoff is due.

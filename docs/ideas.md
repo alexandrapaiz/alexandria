@@ -13832,8 +13832,8 @@ that triggered it, per the charter.
   failures are pure draft arithmetic, each one detected with certainty by a
   gate that already exists and each one found after readers had the issue:
   `measure` counts 2 semicolons against a rule whose own words are "the target
-  is zero and there is no budget"; `apparatus` finds 4 instrument nouns wearing
-  a colon; `slotheads` finds `## What to read`, which is canon law 12, the one
+  is zero and there is no budget". `apparatus` finds 4 instrument nouns wearing
+  a colon. `slotheads` finds `## What to read`, which is canon law 12, the one
   ruling the owner has given twice. None of the three needs a model, a
   judgment, or a reading. All three are counts over finished text.
   So the evidence for this entry is no longer that the gates could run early.
