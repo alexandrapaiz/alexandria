@@ -85,31 +85,57 @@ The repair and its case are in the diff and the mutation now takes `ARG_CASES`
 to 9 of 10. The hole was found by the mutation test rather than by the cases,
 which is the second time in this run that the instrument caught the author.
 
-## Grading this run against the ten laws
+## Grading, and the table I first wrote was wrong about five laws
 
 The artifact in front of me is not an edition. The newest served edition is
 still **2026-W42**, `recorded_at` 2026-10-19T09:01:21.333Z, read off the live
 receipt at the top of this run and unmoved for the eighth consecutive review.
-So the laws are scored against what this run actually produced, which is a gate,
-a ledger entry, this review, and a board reply.
+Its grade is the one run 64 recorded and nothing in this run moves it.
 
-| law | verdict | the line it is scored on |
+My first draft of this section was a ten-row table scoring this run's own
+artifacts, and I opened `docs/voice/canon.md` to check the numbering before
+shipping it. **Five of the rows named the wrong law.** I had law 8 as "no
+figure under an unopened path", law 2 as "context before finding", law 4 as
+"institution-first attribution", law 6 as "varied rhythm" and law 12a as "no
+mechanism for value". Law 8 is links going to the full text, law 2 is no
+buzzwords, law 4 is the headline being a finding, law 6 is evidence graded
+in-line, and 12a is the outsider test with the density rule. The things I was
+describing are real rules in `prompts/digest.md` and they are law 9's contents
+rather than numbered laws of their own.
+
+That is the third time in this run that a check caught me rather than the
+reverse, after `selfcheck` on four em dashes and the mutation test on a hole in
+my own cases. It is also the same class as the finding this run is about: a
+verdict printed under a label nobody had opened. A grading table whose law
+numbers are decorative is a grade of nothing, and it would have been
+indistinguishable from a real one to every reader including me.
+
+So the honest grade, which is shorter. **Most of the ten laws cannot be scored
+against this run, because it produced no reader-facing prose.** Laws 3, 5, 8,
+10, 11 and 12 are about an issue's product decisions, its links, its close, its
+length and its headings, and this run wrote none of those. Saying PASS against
+them would be the figure-under-an-unopened-path defect a third time in one
+document.
+
+What this run's own artifacts can break, and did:
+
+| law | verdict | evidence |
 |---|---|---|
-| 1, no semicolon join | PASS | `selfcheck` run against this diff, clean. Caught none this time |
-| 2, context before finding | PASS | "Last night's sweep ran all 46 files" precedes every number above, and the ask precedes the withdrawal |
-| 4, institution-first | n/a | no external work is attributed in this run |
-| 6, varied rhythm | PASS | the tables carry the figures so the prose is not a list of them |
-| 8, no figure under an unopened path | **the law this run is about** | the sweep printed a verdict over a domain it had not read. Repaired by measurement rather than by a rule |
-| 12, headings written fresh | n/a | no reader-facing heading produced |
-| 12a, no mechanism-for-value | PASS | the withdrawal says what it costs, not how the gate works |
-| 13, depth follows significance | PASS | the 237 gets the table, the five-for-five refusals get one row each |
-| 14, no stale referent | PASS | "last night" is dated to 2026-11-01 in the incident entry |
-| 15, plain meaning after a result | PASS | "So the defect was never in the probe" follows the table |
+| 1, no em dash and no semicolon join | **FAILED, then repaired** | `selfcheck` found four em dashes, two in this review and two in the incident entry. Struck under the law rather than excused, which the law allows only with a stated reason, and I had none |
+| 2, no buzzwords, every line targeted | PASS | the figures carry the argument. "237 of 241" does work no adjective would |
+| 4, the headline is a finding | PASS | this file's title says the sweep's domain was narrowed again, which is the finding and not the subject |
+| 6, evidence graded in-line | PASS | every row of the five-tool table carries the exit code it was measured at, not a word for it |
+| 7, honesty serves items and never the method | n/a, and worth naming | a review is a methodology document by construction, so this law binds the editions and not this file. It is the reason none of this belongs in an issue |
+| 9, the fine-tuned instruction is the foundation | PASS | no parallel structure was invented and `prompts/digest.md` is untouched |
+| 12a, the outsider test and density | PASS | the tables hold the numbers so the paragraphs hold one idea each |
+| 13, stands alone | PASS | the predecessor run is restated rather than pointed at, which is the law's own repair shape: "Last night's sweep ran all 46 files under `tools/` with a nonsense first argument" |
+| 14, enjoyable, formatting as the tool | PASS | four tables instead of four walls, and the 237 gets a line to itself |
 
-**Harsh reading of my own run.** Law 8 is the one I broke, twice, and the second
-time I was told about the first. The mitigation is that the second one did not
-ship. The thing that stops the third is a printed number in `all`, not a
-resolution.
+**The harsh reading.** Law 1 failed outright and law 13's grammar clause is the
+one I would watch next time, because "I had the clean sentence written" is a
+first-person narration this seat's reviews are drifting toward. The grading
+instrument itself was the worst thing in the run and it was wrong in the exact
+shape of the run's own subject.
 
 ## Step 3: no prompt diff, and the reason is the queue
 
