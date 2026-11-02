@@ -135,6 +135,40 @@ def measure(slug, task, starter, check):
                 "declared": declared}
 
 
+def declaration_problems(slug, task):
+    """A `fixture_leak` that cannot drift away from the file it describes.
+
+    `hands_over` is the authored half of this field, so every entry has to be a
+    string the task's own starter files actually contain. Without that the
+    declaration is prose about a fixture rather than a reading of one, and the
+    fixture can be rewritten underneath it without anything noticing.
+    """
+    fl = task.get("fixture_leak")
+    if not fl:
+        return []
+    out, tid = [], task["id"]
+    if "swept" not in fl:
+        out.append(f"{slug}/{tid}: `fixture_leak` does not say whether it was "
+                   "swept, so a reader cannot tell an unread fixture from one "
+                   "with nothing to declare")
+        return out
+    blob = "\n".join((task.get("files") or {}).values())
+    if fl["swept"]:
+        if not fl.get("hands_over"):
+            out.append(f"{slug}/{tid}: claims `swept` and lists nothing under "
+                       "`hands_over`")
+        if not fl.get("withheld"):
+            out.append(f"{slug}/{tid}: claims `swept` and says nothing about what "
+                       "the fixture withholds, which is where the prediction has "
+                       "to aim")
+        for phrase in fl.get("hands_over") or []:
+            if phrase not in blob:
+                out.append(f"{slug}/{tid}: `hands_over` claims the fixture says "
+                           f"{phrase!r} and its starter files do not contain that "
+                           "string")
+    return out
+
+
 def problems(rows):
     out = []
     for r in rows:
@@ -162,9 +196,14 @@ def main():
     ap.add_argument("--check", action="store_true")
     args = ap.parse_args()
 
-    rows = [measure(*t) for t in project_tasks(args.skills_dir)]
+    tasks = list(project_tasks(args.skills_dir))
+    rows = [measure(*t) for t in tasks]
     bad = problems(rows)
+    for slug, task, _starter, _check in tasks:
+        bad += declaration_problems(slug, task)
     undeclared = [r for r in rows if r["declared"] is None]
+    unswept = [t["id"] for _s, t, _st, _c in tasks
+               if not ((t.get("fixture_leak") or {}).get("swept"))]
     collapsed = [r for r in rows
                  if r["passed"] is not None and r["passed"] != r["of"]]
 
@@ -193,6 +232,9 @@ def main():
           "and a subject that changes nothing are the same number\nto this "
           "harness, so none of these rows can show the partial improvement its\n"
           "own prediction implies.")
+    print(f"\n{len(unswept)} of {len(rows)} have not been swept by a hand for what "
+          "their starter file names to\nthe subject: "
+          f"{', '.join(unswept) if unswept else 'none'}.")
     print(f"\n{len(undeclared)} of {len(rows)} declare no `fixture_leak`, so what "
           "their starter file hands the\nsubject is unrecorded. That is the "
           "backlog this instrument exists to shrink, and\nit is reported rather "

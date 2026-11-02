@@ -751,7 +751,8 @@
           "passed": 0,
           "of": 4
         },
-        "renamed": "2026-11-02. The starter file was called `bisect.py` and the probe ran in a working directory containing it, so it shadowed the standard library module `_pytest` imports and pytest died before collecting a single probe. The task scored 0.0 in BOTH arms whatever the subject wrote, which is how a control passes trivially while measuring nothing: a control is passed when the arms agree, and two constant zeros always agree. Found by skills/_validation/project_fixture_probe.py, which is the instrument that runs each fixture rather than reading it."
+        "renamed": "2026-11-02. The starter file was called `bisect.py` and the probe ran in a working directory containing it, so it shadowed the standard library module `_pytest` imports and pytest died before collecting a single probe. The task scored 0.0 in BOTH arms whatever the subject wrote, which is how a control passes trivially while measuring nothing: a control is passed when the arms agree, and two constant zeros always agree. Found by skills/_validation/project_fixture_probe.py, which is the instrument that runs each fixture rather than reading it.",
+        "swept": true
       }
     },
     {
