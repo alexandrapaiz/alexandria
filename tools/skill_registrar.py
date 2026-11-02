@@ -98,6 +98,24 @@ STATUS = "approved"
 # has been fixed raises nothing at all, so the fix landing never turns anything
 # red; the constant is then simply spent, and deleting it is a one-line change
 # the gate's own `--json` output asks for.
+# RE-OPENED 2026-11-02 for one skill, by the engineer seat, same class of
+# reason as the first time and a different defect. `harness-engineering`'s
+# `revisions:` list reached main with two entries glued onto one line, and
+# `frontmatter_problems` called the file clean for it, because the old `_quoted`
+# asked whether a value ends with the quote it starts with rather than whether
+# anything follows the closing quote. PyYAML refuses the file outright. The
+# detector is fixed in this same change, which is what turned five gates red:
+# the parser is now honest and the file is still broken, and the fix for the
+# file is one newline inside `skills/`, which this seat does not write. Filed as
+# `INC-2026-11-02-the-frontmatter-detector-called-a-file-clean-that-pyyaml-refuses`
+# and named for the skill seat.
+#
+# The expiry moved from 2026-11-03 to 2026-11-09 with it, because an excuse
+# opened today against a date one day out is an excuse that blocks tomorrow
+# whether or not anybody has been asked. A week is the skill seat's next few
+# runs; if it lapses, the gate goes red with the slug in it, which is the
+# outcome this paragraph is for.
+#
 # SPENT AND EMPTIED 2026-10-27. It held `evaluation-integrity` and
 # `skill-library-engineering`, both waiting on the skill seat's quoting fix. That
 # fix merged, both descriptions are quoted on main, and all nine skills now load
@@ -107,8 +125,22 @@ STATUS = "approved"
 # `test_a_spent_quarantine_entry_asks_to_be_deleted` turned red on the merge that
 # brought the fix in, and this is what it asked for. An empty dict is the healthy
 # resting state, not a missing value.
-FRONTMATTER_QUARANTINE: dict[str, str] = {}
-FRONTMATTER_QUARANTINE_EXPIRES = "2026-11-03"
+FRONTMATTER_QUARANTINE: dict[str, str] = {
+    "harness-engineering": (
+        "two `provenance.revisions` entries are on one line on main, so PyYAML "
+        "refuses the file. The fix is a newline, and it is a write into skills/"
+    ),
+}
+FRONTMATTER_QUARANTINE_EXPIRES = "2026-11-09"
+
+#: The defect classes the quarantine is allowed to excuse, matched against the
+#: problem text. Each is a frontmatter defect whose only fix is a write into
+#: `skills/`. It is a list rather than a free pass because the excuse used to be
+#: `"unquoted colon" in p`, a literal buried inside `quarantined_problems`, and
+#: the second defect class to ever need the quarantine was not that string. An
+#: excuse that silently covers one class is a gate nobody can widen on purpose;
+#: an excuse that covers every class is a gate that is off.
+QUARANTINABLE = ("unquoted colon", "after its closing quote")
 
 
 # ----------------------------------------------------------- frontmatter
@@ -161,12 +193,56 @@ class FrontmatterError(ValueError):
 AMBIGUOUS_COLON = re.compile(r":(?:\s|$)")
 
 
+def _closing_quote(value: str) -> int | None:
+    """The index of the quote that closes a value opening with one, or None.
+
+    `value.endswith(value[0])` was the old test and it is not the same question.
+    A line that glues two quoted scalars together, `"one"    - "two"`, starts
+    and ends with a double quote and is refused by every loader, because after
+    a closing quote YAML allows whitespace and a comment and nothing else. That
+    is not a hypothetical: it is how `skills/harness-engineering/SKILL.md`
+    reached `main` on 2026-11-02 with two `revisions` entries on one line, with
+    this parser reporting the file clean
+    (`INC-2026-11-02-the-frontmatter-detector-called-a-file-clean-that-pyyaml-refuses`).
+
+    YAML's own escapes decide where the scalar ends: inside single quotes `''`
+    is a literal quote, inside double quotes `\"` is.
+    """
+    if not value or value[0] not in "\"'":
+        return None
+    quote, i = value[0], 1
+    while i < len(value):
+        char = value[i]
+        if quote == '"' and char == "\\":
+            i += 2
+            continue
+        if char == quote:
+            if quote == "'" and value[i + 1:i + 2] == "'":
+                i += 2
+                continue
+            return i
+        i += 1
+    return None
+
+
 def _quoted(value: str) -> bool:
-    return len(value) > 1 and value[0] in "\"'" and value.endswith(value[0])
+    """Opens with a quote, closes it, and carries nothing after the close."""
+    close = _closing_quote(value)
+    return close is not None and not value[close + 1:].strip()
 
 
 def _unterminated(value: str) -> bool:
-    return bool(value) and value[0] in "\"'" and not _quoted(value)
+    """Opens with a quote that is never closed at all."""
+    return bool(value) and value[0] in "\"'" and _closing_quote(value) is None
+
+
+def _after_close(value: str) -> str:
+    """Whatever follows the closing quote, which YAML allows to be blank only."""
+    close = _closing_quote(value)
+    if close is None:
+        return ""
+    rest = value[close + 1:].strip()
+    return "" if rest.startswith("#") else rest
 
 
 def frontmatter_problems(fm: str) -> list[str]:
@@ -197,6 +273,12 @@ def frontmatter_problems(fm: str) -> list[str]:
                 problems.append(
                     f"the list item `{_clip(item)}` opens with a quote and never "
                     "closes it, so where the value ends is a guess")
+            elif _after_close(item):
+                problems.append(
+                    f"the list item `{_clip(item)}` carries `{_clip(_after_close(item), 24)}` "
+                    "after its closing quote, so it is more than one entry on one "
+                    "line. A loader refuses the file; this parser would read the "
+                    "first and silently drop the rest. Put each on its own line.")
             elif not _quoted(item) and AMBIGUOUS_COLON.search(item):
                 problems.append(
                     f"the list item `{_clip(item)}` holds an unquoted colon, so "
@@ -229,6 +311,12 @@ def frontmatter_problems(fm: str) -> list[str]:
             problems.append(
                 f"`{key.strip()}:` opens with a quote and never closes it, so "
                 "where the value ends is a guess")
+        elif _after_close(value):
+            problems.append(
+                f"`{key.strip()}:` carries `{_clip(_after_close(value), 24)}` after "
+                "its closing quote, where YAML allows only blanks and a comment. "
+                "A loader refuses the file; this parser would read the quoted part "
+                "and silently drop the rest.")
         elif not _quoted(value) and AMBIGUOUS_COLON.search(value):
             problems.append(
                 f"`{key.strip()}:` holds an unquoted colon, which YAML reads as "
@@ -249,10 +337,10 @@ def parse_frontmatter(fm: str, *, strict: bool = True) -> dict:
     """The frontmatter as nested dicts and lists. Lookahead, never guesswork.
 
     `strict` is the refusal, and it is the default because a reader that cannot
-    tell a guess from a read should be told. The seven call sites that pass
-    `strict=False` are the ones that have to keep working while the two skills
-    in `FRONTMATTER_QUARANTINE` are still unquoted on main; each one says so,
-    and `grep -rn 'strict=False' tools/` is the list.
+    tell a guess from a read should be told. The call sites that pass
+    `strict=False` are the ones that have to keep working while a skill in
+    `FRONTMATTER_QUARANTINE` is still broken on main; each one says so, and
+    `grep -rn 'strict=False' tools/ tests/` is the list.
     """
     if strict:
         problems = frontmatter_problems(fm)
@@ -630,7 +718,8 @@ def quarantined_problems(problems, today: str = "", quarantine=None,
     for slug in quarantine:
         marker = f"skills/{slug}/SKILL.md: "
         excused |= {p for p in problems
-                    if p.startswith(marker) and "unquoted colon" in p}
+                    if p.startswith(marker)
+                    and any(cls in p for cls in QUARANTINABLE)}
     return excused
 
 

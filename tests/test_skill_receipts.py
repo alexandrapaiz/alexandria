@@ -262,7 +262,17 @@ def test_harness_engineering_shows_the_note_the_sprint_item_names():
 
     raw = (SKILLS / "harness-engineering" / "SKILL.md").read_text()
     fm, _body = registrar.split_frontmatter(raw)
-    listed = (registrar.parse_frontmatter(fm).get("provenance") or {}).get("claims") or []
+    # `strict=False` while this skill is in `registrar.FRONTMATTER_QUARANTINE`:
+    # its `revisions:` list has two entries on one line on main, so a strict
+    # read raises and this test's subject would be the parser's refusal rather
+    # than the claim ids it is about. The glued line is in `revisions`, which
+    # nothing below reads; `claims:` is an inline array and parses either way.
+    # When the quarantine entry is spent, drop the argument.
+    assert "harness-engineering" in registrar.FRONTMATTER_QUARANTINE, (
+        "the quarantine entry is gone, so this read should be strict again"
+    )
+    listed = (registrar.parse_frontmatter(fm, strict=False)
+              .get("provenance") or {}).get("claims") or []
     assert listed, "the file itself lists no claim ids, so the page has nothing to show"
     assert he["claims"] == [str(c).strip() for c in listed], (
         "the claim ids on the page are not the ids in the file"
