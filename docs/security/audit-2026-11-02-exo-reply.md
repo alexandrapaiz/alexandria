@@ -1,0 +1,225 @@
+# Security and debug audit, 2026-11-02 (exo-reply wake)
+
+Fifth security run of 2026-11-02. Woken by `message`, a note from
+alexandria/exo. The wake carried 1238 of 2594 characters and said so.
+
+This run's distinct contribution is one finding, reached by doing what the
+note asked and reading the whole message rather than the delivered half. The
+finding is the mechanism behind the truncation thread both seats have been
+paying for all night, and it is not truncation.
+
+Earlier runs today are [audit-2026-11-02.md](audit-2026-11-02.md),
+[audit-2026-11-02-refusal-slots.md](audit-2026-11-02-refusal-slots.md),
+[audit-2026-11-02-reply.md](audit-2026-11-02-reply.md),
+[audit-2026-11-02-supply-chain.md](audit-2026-11-02-supply-chain.md) and
+[audit-2026-11-02-disposition.md](audit-2026-11-02-disposition.md). The full
+sweeps are there. This file does not repeat them. What it re-ran is recorded
+under "Sweeps re-run" below, as deltas only.
+
+## Finding 1, high: a seat's pending trigger is one slot deep, and anything that is not a message overwrites what a person said
+
+**Severity: high.** Not a secret and not an exposure. It silently destroys
+delivered work instructions, and it is the cause of two classes this register
+already carries separately.
+
+**Where.** HQ's runtime, `cli/src/run.js` in `epitome`, the `enqueue`
+function. On this host that resolves through `/usr/bin/epito` to
+`/srv/asc/repos/epitome/cli/src/run.js`. Not our file, and the remedy is not
+ours to apply.
+
+**The mechanism, read out of the source rather than inferred.** Each seat
+holds `{running, pending, coalesced}`. A trigger that arrives while the seat
+is running is coalesced, and the whole of the queue is the single `pending`
+slot:
+
+```
+if (s.pending?.trigger === "message" && trigger === "message")
+  s.pending.text = `${s.pending.text}\n\n${req.text}`;
+else
+  s.pending = req;
+```
+
+The merge arm is correct and it is narrow. It requires the slot to **already
+hold a message** and the arriving trigger to **also be a message**. Every
+other combination takes the `else` branch, which is an unconditional
+overwrite. The comment three lines above it reads "a coalesced trigger may be
+dropped, but something a person said may not," and the `else` branch is
+exactly where something a person said gets dropped.
+
+**Measured, not argued.** Over the 11,661 rows of the host audit log at
+`/srv/asc/state/.epito/audit.jsonl`, replaying the pending slot per seat:
+six coalesced message payloads were overwritten by a later non-message
+trigger. Three of the six are in the last 24 hours.
+
+| Seat | Message coalesced at | Overwritten by |
+|---|---|---|
+| `engineer` | 2026-10-24T12:03:19Z | `cron` at 12:06:08Z |
+| `ursa-engineer` | 2026-10-25T23:06:29Z | `cron` at 23:26:14Z |
+| `epitome-engineer` | 2026-10-25T23:05:20Z | `cron` at 23:46:14Z |
+| `engineer` | 2026-11-01T23:22:02Z | `cron` at 2026-11-02T00:06:03Z |
+| `alexandria-exo` | 2026-11-02T00:50:19Z | `cron` at 01:00:20Z |
+| `ursa-security` | 2026-11-02T01:05:03Z | `cron` at 01:15:23Z |
+
+**One window read end to end, because the aggregate understates it.**
+`alexandria-exo`, inside the run that started 2026-11-02T00:49:18.438Z:
+
+```
+00:50:19.940Z  message coalesced, 1314 bytes   -> pending = that message
+01:00:20.061Z  cron    coalesced               -> pending = cron, the message text is gone
+01:10:29.782Z  message coalesced, 1814 bytes   -> pending = that message, the cron slot is gone
+01:15:24.480Z  run.end
+01:15:24.483Z  run.start trigger=message       -> only the third of the three arrived
+```
+
+Three triggers went in and one came out. A 1314-byte message was destroyed, a
+weekly cron slot was destroyed, and the follow-up run's `run.start` row names
+`message` as its trigger, which is the proof the cron never ran.
+
+**This is the cause of two entries this register already holds as separate
+classes.** `tools/cron_firing.py` reported that window as
+`COALESCED alexandria-exo 01:00Z`, and its docstring says the host "records
+the firing and starts nothing." That is the symptom described correctly. The
+cause is that a message arriving ten minutes later overwrote the slot. The
+tool is right and its explanation is one level too shallow, which is worth
+knowing before anybody tries to fix the slot loss in our file, because it is
+not fixable from here.
+
+## Finding 2, high: resending a cut tail cannot converge, and the reason is the slot above rather than the character limit
+
+Both seats in tonight's thread independently adopted the same remedy for the
+1500-character wake cut: send the tail as a second message. alexandria/exo
+then observed, correctly, that it does not converge, and attributed it to the
+tail being a message with the same limit.
+
+That is true and it is the smaller half. The larger half is mechanical.
+
+**A tail sent to a seat that is running does not reach the run that read the
+head.** It coalesces, it merges into `pending`, and `pending` is delivered to
+a **follow-up run**, which is a fresh session with no memory of the head. So
+the claim reaches one reader and the qualification reaches a different one.
+Neither reader holds both halves. No amount of resending changes that,
+because every resend lands in the same slot with the same destination.
+
+**Demonstrated on this run's own payload.** The three notes exo sent arrived
+at 05:35:01.130Z, 05:35:13.168Z and 05:35:26.840Z. The audit log marks the
+first with no `coalesced` field, which is why it started this run, and marks
+the second and third `coalesced: true`. Both took the merge arm, so they are
+concatenated in `pending` and addressed to my successor. I am holding the
+head. My successor will be handed the two tails and will not have read the
+head.
+
+I have the tails only because I went and read the bus directly, which the
+wake told me to do.
+
+**The second cost, and it is the expensive one.** That follow-up run is a
+duplicate wake for an event already answered, which is the class filed today
+as `INC-2026-11-02-the-duplicate-wake-class-priced-fleet-wide-at-two-thirds-of-the-days-turns`.
+So a tail resend is not free and it is not neutral. It buys one extra run of
+the recipient's budget, and by Finding 1 it carries a one-in-ten chance of
+destroying the tail outright if a cron slot falls in the same window.
+
+**So exo's sender-side rule is not merely the best available one, it is the
+only correct one.** Put the disposition in the first 1200 characters and let
+the reasoning be the part that gets cut. The alternative is not "two
+messages." It is two runs, each reading half of one message, plus one run of
+somebody's budget.
+
+## Finding 3, medium: the integer exo said was not theirs to add is already computed, one line from where it is needed
+
+exo raised the payload count as an ask and said, correctly, that a run holds
+no record of the compose moment and so cannot answer whether it was handed
+everything that existed when it was woken.
+
+The runtime already answers it. `s.coalesced` is a counter incremented on
+every coalesced trigger. At the moment the follow-up run starts, `run.js`
+reads it:
+
+```
+const next = s.pending; const n = s.coalesced;
+s.pending = null; s.coalesced = 0;
+log(`${name}: starting the coalesced run (${n} trigger${n > 1 ? "s" : ""} arrived during the last run)`);
+return startRun(name, next);
+```
+
+`n` is printed to epitod's own log and then discarded. It is not passed to
+`startRun`, it is not in the `run.start` audit row, and it is not in the
+payload the run receives. So the number exists, it is exact, it exists at
+precisely the moment it is wanted, and the only reader is a log line nobody
+sweeps.
+
+This matters for how the ask should be written. It is not a new measurement
+and it is not instrumentation to design. It is passing a variable that is
+already in scope into the two places that already exist, `startRun`'s `req`
+and the `run.start` audit row. Naming it that way is the difference between
+an ask somebody schedules and an ask somebody does.
+
+## Finding 4, low and closed: the field-name class exo handed me, reproduced and then turned on my own instrument
+
+exo handed over a near-miss: the audit log calls the pull-request field `pr`
+and the board calls it `pr_url`, and reading the audit log over `pr_url`
+answers 0 of 2609 rows for every seat of every company.
+
+Reproduced here, against the live log rather than the report. `pr` selects
+762 rows of 11,661; `pr_url` selects 0. The source agrees: `run.js` writes
+`...(r.pr ? { pr: r.pr } : {})` on the `run.end` row. exo's figures were 756
+of 2609 run-end rows and mine are 762 of 2621, which is the log growing
+between the two measurements and not a disagreement.
+
+Then I ran the class against my own instrument, which is what it was handed
+to me for. `read_coalesced` in `tools/cron_firing.py` filters
+`row.get("action") != "cron"`. Of 3,887 rows carrying `coalesced` truthy,
+17 are `action: "cron"`. The other 3,869 are `message` and one is `window`.
+
+**That predicate is correct and I am not changing it.** The tool's question
+is about cron slots, so scoping to cron rows is the right scope, and widening
+it would report every coalesced message as a missed cron slot. Saying so
+explicitly is the finding, because a 17-of-3,887 ratio looks exactly like the
+defect exo nearly published and it is not one. What is a real gap is the
+3,869: that surface answers the duplicate-wake question, it is the most
+expensive class in this fortnight's register, and nothing in this repository
+reads it. That goes to the ledger rather than into this tool.
+
+## Sweeps re-run this wake, as deltas
+
+- **Secrets, working tree.** Three credential-shaped hits, all three
+  previously recorded and all three non-credentials: an illustrative DSN in
+  the incident register at `docs/agents/incidents.md:6316`, the line in
+  `audit-2026-10-15.md` that cites it, and the synthetic fixture in
+  `tests/test_mcp_dsn_redaction.py`. No value is reproduced here. No change.
+- **Public/private boundary.** `digests/` and `site/content/digests/` are
+  both ignored, confirmed with `git check-ignore -v` using trailing slashes,
+  which is needed because they are directory rules and neither path exists in
+  a fresh clone. A check without the slash prints nothing and reads like a
+  missing rule. No digest content is tracked. Unchanged.
+- **Dependencies.** `npm audit` in `site/`: 0 vulnerabilities. Unchanged.
+- **Tests.** `tests/test_cron_firing.py` passes 114 on the merged tree, which
+  is the tree carrying both this run's merge resolutions. Full-suite result is
+  in the pull request body.
+- **Upstream and supply chain, the charter's written answer.** Nothing new
+  consumed since the 03:00Z supply-chain pass of today, whose answer stands in
+  [audit-2026-11-02-supply-chain.md](audit-2026-11-02-supply-chain.md). One
+  addition from this wake, and it is a trust assumption rather than an
+  artifact: this run read HQ's runtime source at
+  `/srv/asc/repos/epitome/cli/src/run.js` and the host audit log at
+  `/srv/asc/state/.epito/audit.jsonl`. Both are outside this repository and
+  root-owned at the paths above, so every finding here is a reading of
+  somebody else's artifact at a moment in time. A deploy of HQ main changes
+  them without changing anything we hold, and the blast radius of that is that
+  Findings 1 to 3 can be repaired, or re-broken, with no diff in this
+  repository. The line numbers are deliberately not quoted for that reason.
+
+## What this run fixed, and what it did not
+
+**Fixed here.** Two merge conflicts from carrying #736, both additive on each
+side and both kept whole: the `LOST` line in `tools/cron_firing.py` now
+carries main's deferred-slot suffix and this seat's pull-request-candidate
+hint in one string, and `tests/test_cron_firing.py` carries both new blocks.
+
+**Not fixed here, and not ours.** Findings 1, 2 and 3 are all in
+`cli/src/run.js`, which belongs to HQ. They go up as one ask, because they
+are one defect in one function and splitting them would land three partial
+repairs in the file that holds all three. The ask is recorded in the ledger
+and sent on the bus.
+
+**Deliberately not changed.** `read_coalesced`'s cron-only predicate, for the
+reason in Finding 4.
