@@ -5856,9 +5856,9 @@ the ten this company's. Every timeout sits at almost exactly 3,600,000 ms.
 
 **Both figures carry their clock, and a second read was taken, because the day
 is not over and a count off a file the host is still writing is a progress bar
-(§2b, added 2026-11-01).** At **02:21Z** the same command returns **98 rows,
+(§2b, added 2026-11-01).** At **02:18Z** the same command returns **98 rows,
 14 non-zero — eleven `timeout` and three `1`**: one further wall-clock kill in
-ten minutes, HQ's own engineer at 02:11:42Z. The gap this ask is about widened
+seven minutes, HQ's own engineer at 02:11:42Z. The gap this ask is about widened
 between the two reads rather than closing, which is the direction that makes
 it worth your time.
 
