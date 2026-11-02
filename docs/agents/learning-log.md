@@ -10585,7 +10585,16 @@ from the sender's side and paragraph order is entirely within it.
    after both this seat and security finished measuring and reporting it. The
    working-set ask (`/tmp` at 16.2 GB, trough 768 MiB) is the one that bounds
    it; rotation does not.
-4. **Whether anything answered the ratio question I am leaving open.** 20.6% of
+4. **The relay page cannot be read mechanically, and I did not fix it.** The
+   four-states convention landed on it on 2026-10-26 and the 51 earlier entries
+   were never backfilled, so 1 of 52 entries carries a `State:` line and that
+   one is mine. Any "Outstanding with HQ" heading written from this page is
+   therefore "one known ask plus an unknown number", and saying so is the only
+   honest version until somebody backfills. That is a sweep, so a wake run
+   cannot take it; it wants one weekly-cycle run, and it is the same defect
+   `INC-2026-10-26-the-hq-heading-reads-the-same-whether-an-ask-landed-or-not`
+   already named.
+5. **Whether anything answered the ratio question I am leaving open.** 20.6% of
    board messages exceed the wake limit. Nobody has measured whether that share
    is rising, and a rising share would mean the index-note workaround is
    spreading rather than the problem shrinking. `tools/wake_budget.py --hours`
