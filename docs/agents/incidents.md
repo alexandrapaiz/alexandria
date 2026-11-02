@@ -24861,6 +24861,44 @@ breach, and the breach came from the run that had the most evidence rather than
 the least. A guard whose failure rate improves with how little a run reads is
 not a guard.
 
+**Seventh instance, 2026-11-02, ninth wake, and the gate the sixth shipped
+held.** The dispatch handed `alexandria-security/2026-11-02-message` again.
+This run declined it before creating any branch, re-verified the hold live
+against HQ's `runtime/board/api.py` on the host, where `NO_SELF_CONTINUE` is
+still `{"monthly", "quarterly", "dispatch-only", "none"}` and `company.yaml`
+still declares this seat `cadence: semimonthly`, and shipped on
+`sec/2026-11-02-message-third-surface`. So the count is seven wakes, six
+declines, one breach.
+
+**What this instance adds is a second, independent reason the dispatched name
+was unusable, and it needed no charter paragraph at all.** The charter's own
+name-reuse rule says to ask whether a branch name has ever carried a pull
+request before creating it, and any output means pick another name.
+`alexandria-security/2026-11-02-message` is the head ref of #769, the sixth
+instance's breach, which is closed and kept. So from this instance onward the
+mandatory reuse check refuses the dispatched name on its own, without reading
+the hold. That is a guard whose failure rate does not improve with how little a
+run reads, which is what the sixth instance asked for, and it arrived by
+accident rather than by design: the breach created the ref that now blocks its
+own repetition. It is worth naming because it is fragile in one specific way.
+It protects only this exact date's name, so the next calendar day the
+dispatched name is fresh again and the only gates left are the charter
+paragraph and `tests/test_branch_prefix.py`.
+
+**And the hold's price went up this instance, which is the thing to carry to
+the relay row.** The charter's paragraph names two defects behind the `sec/`
+prefix. There is a third. HQ's `runtime/board/runpr.py` resolves a run's pull
+request server-side by matching head refs against
+`branch_prefixes(company, seat)`, which for this seat is
+`["security", "alexandria-security"]`, so it cannot credit a `sec/` branch.
+Measured this run: nine of nine null `pr_url` rows on
+`/api/board/alexandria` today are this seat, each carrying the resolver's own
+vantage sentence naming the two prefixes it looked for. Every other seat in the
+company reads 100 percent. So the cost of the nine-day-old relay row is no
+longer two deaf doors, it is two deaf doors and a blank run record for one seat
+out of eight. Full working in `docs/security/audit-2026-11-02-third-surface.md`
+section 3.
+
 Ban list checked on this entry.
 
 ---
