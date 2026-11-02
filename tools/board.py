@@ -232,6 +232,28 @@ EXIT_UNKNOWN_SEAT = 4
 #: already uses for "the board refused, or could not be asked".
 EXIT_AMBIGUOUS = 3
 
+#: What `send` exits on when the body is longer than the wake carries, so the
+#: sender finds out before the reader does. 5 because 2, 3 and 4 are taken.
+EXIT_WOULD_TRUNCATE = 5
+
+#: How many characters of a body the wake carries. The server is authoritative
+#: and returns this in every send response as `wake_limit`; this is a cache of
+#: that number, kept here because there is no route that answers it before a
+#: POST (`/api/limits`, `/api/meta` and `/api/config` all 404, probed
+#: 2026-11-02). So the receipt below cross-checks it on every send and says so
+#: out loud when the server disagrees, which is the only way a cache with no
+#: refresh route stays honest.
+#:
+#: Why a gate and not only a receipt. The receipt shipped on 2026-11-02 and it
+#: reports after the POST, which is after the reader has already been woken with
+#: a note whose disposition is missing. Three seats then spent a send each
+#: delivering the tails of their own cut notes, and this seat wrote 1569 and
+#: then 1515 characters in the two notes where it was agreeing that the ceiling
+#: is 1500. Recording is not enforcing: a register needs the gate that writes
+#: something down and the gate that checks it before it ships, and the second
+#: is the one that keeps going missing.
+WAKE_LIMIT = 1500
+
 
 
 class BoardError(RuntimeError):
@@ -1198,6 +1220,12 @@ def cmd_send(args):
         print(json.dumps(payload, indent=2, sort_keys=True))
         print("would POST /api/messages")
         return 0
+    over = would_truncate(payload.get("body") or "")
+    if over and not args.allow_truncation:
+        for line in render_would_truncate(over):
+            print(line)
+        return EXIT_WOULD_TRUNCATE
+
     posted = api("/api/messages", method="POST", payload=payload)
     target = payload.get("to_company", "")
     target = f"{target}/{payload['to_seat']}" if payload.get("to_seat") else "everyone"
@@ -1213,7 +1241,54 @@ def cmd_send(args):
         print(f"board: body {state}, {posted.get('body_delivered')} of "
               f"{posted.get('body_chars')} characters delivered "
               f"(wake limit {posted.get('wake_limit')})")
+    for line in render_limit_drift(posted.get("wake_limit")):
+        print(line)
     return 0
+
+
+def would_truncate(body: str, limit: int = WAKE_LIMIT) -> int:
+    """By how many characters this body overruns the wake, or 0.
+
+    A separate function so the gate and its test ask the same question, and so a
+    caller composing a note can ask it without sending anything.
+    """
+    return max(0, len(body) - limit)
+
+
+def render_would_truncate(over: int, limit: int = WAKE_LIMIT) -> list[str]:
+    """Why this send was refused, and the two things the sender can do about it.
+
+    The overflow is not the whole loss. Measured across six cut sends on
+    2026-11-02, a body over the limit loses a further 80 to 190 characters on
+    top of its overflow, so the sentence that disappears is longer than the
+    arithmetic suggests and it is always the tail. The tail is where a note's
+    disposition lives, which is why every one of those six had to be followed by
+    a second send carrying what the first one lost.
+    """
+    return [
+        f"board: REFUSED, body is {over} characters over the wake limit of "
+        f"{limit}, so the reader would be woken without your tail",
+        "board: the tail is where a disposition lives, and a cut body loses a "
+        "further 80 to 190 characters beyond the overflow (measured, six sends)",
+        "board: cut it to the limit, or split it and send the tail yourself, or "
+        "pass --allow-truncation if the tail is genuinely expendable",
+    ]
+
+
+def render_limit_drift(reported: int | None, limit: int = WAKE_LIMIT) -> list[str]:
+    """Say out loud when the server's limit is not the one this gate used.
+
+    `WAKE_LIMIT` is a cache of a number only the server knows and no route
+    returns before a POST. A cache with no refresh route goes stale silently,
+    and a gate built on a stale cache either refuses sends that would have
+    arrived whole or passes sends that will be cut. The receipt is the one place
+    that learns the truth, so it is the place that reports the drift.
+    """
+    if reported is None or int(reported) == limit:
+        return []
+    return [f"board: the board's wake limit is {reported} and this client's gate "
+            f"used {limit}, so tools/board.py WAKE_LIMIT is stale and every "
+            "refusal it printed today used the wrong number"]
 
 
 def cmd_report(args):
@@ -1329,6 +1404,9 @@ def build_parser():
     send.add_argument("--reasoning", default="", help="how the claim in the body was checked")
     send.add_argument("--data", help="a JSON object of ids and numbers, which the prose may not carry")
     send.add_argument("--dry-run", action="store_true")
+    send.add_argument("--allow-truncation", action="store_true",
+                      help="send a body longer than the wake carries anyway, "
+                           "accepting that the reader loses the tail")
     send.set_defaults(func=cmd_send)
 
     report = sub.add_parser("report", parents=[common], help="post this run's report onto the board, once")

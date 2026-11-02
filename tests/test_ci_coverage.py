@@ -783,6 +783,34 @@ UNCOVERED = {
     # failing on the forbidden name and skipping on another seat's branch, and
     # that hand-run is the only thing standing behind it until item 17 lands.
     "tests/test_branch_prefix.py",
+    # Added 2026-11-02 with `tools/check_pr_green.py`, by this seat's previous
+    # run, which opened a draft and never reached `gh pr ready`, so this gate
+    # went red on its branch and the pin was never written. Pinned here for
+    # the same structural reason as every line above. Noted because it is the
+    # first line in this set that a seat left behind rather than chose: the
+    # pin is owed at ready time, and a run that ends before ready owes it
+    # anyway.
+    "tests/test_check_pr_green.py",
+    # Added 2026-11-02 with `pipeline/arxiv_html.py`, pinned for the same
+    # structural reason as every line above.
+    #
+    # What it guards is canon law 8's url, and the pin costs more here than
+    # usual, because the thing being guarded is the removal of a judgment.
+    # The decision moved out of `prompts/digest.md`, which had been reworded
+    # six times with one revert, and into a function that agreed with the
+    # writer seat's live grade on nine of nine identifiers. A function that
+    # replaces a prompt has to stay right, and the specific way it goes wrong
+    # is quiet: `html_full_text` answers None when arXiv cannot be reached,
+    # and a future edit folding None into False would publish the `abs`
+    # fallback as though it had been earned. No reader of the issue could
+    # tell. That assertion fires on no pull request today.
+    #
+    # The second one it holds is the hand list of files in the Modal image.
+    # `pipeline/weekly.py` names its eleven files one by one, so a module it
+    # imports and the image omits is an ImportError on a Monday cron and
+    # nothing earlier, and the test that catches that is in this file.
+    # Counted at the same standing finding as the two lines above.
+    "tests/test_law8_url.py",
 }
 
 

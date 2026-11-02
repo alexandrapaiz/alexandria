@@ -859,6 +859,82 @@ def test_a_digest_that_matches_no_commit_says_so_rather_than_guessing():
               dh.name_undeployed(found) == "", dh.name_undeployed(found))
 
 
+def test_a_shallow_clone_is_blamed_on_the_depth_and_not_on_the_deploy():
+    """The shallow case `undeployed_commits`'s docstring promised all along.
+
+    A shallow clone holds one commit, so the digest replay can match nothing,
+    and the answer used to be "the deploy was built from code that is not in
+    this history". That is a sentence about the deploy, and it sent a reader
+    to look at a deploy that was fine
+    (INC-2026-10-27-the-deploy-surface-said-not-in-this-history-about-a-commit-forty-three-back).
+    The writer seat met the same sentence from the gate side and could not
+    tell a stale image from a short clone.
+
+    `_shallow_state` has been in this module since the drift clock needed it.
+    The repair is the call, not a new measurement.
+    """
+    with tempfile.TemporaryDirectory() as tmp:
+        full = fixture_history(Path(tmp), [("prompts/triage.md", "A change"),
+                                           ("prompts/triage.md", "Another")])
+        shallow = Path(tmp) / "shallow"
+        subprocess.run(["git", "clone", "-q", "--depth", "1",
+                        f"file://{full}", str(shallow)],
+                       check=True, capture_output=True)
+        check("the fixture really is shallow, or this test proves nothing",
+              dh._shallow_state(shallow) is True, str(dh._shallow_state(shallow)))
+
+        found = dh.undeployed_commits(shallow, "triage", "0ldc0dec0de")
+        check("the depth is named as the cause",
+              "shallow clone" in found.get("why", ""), str(found))
+        check("the deploy is explicitly not judged",
+              "has not been judged" in found.get("why", ""), str(found))
+        check("and it does not say the code is not in this history",
+              "not in this history" not in found.get("why", ""), str(found))
+        check("the flag is on the dict, so a caller need not grep the sentence",
+              found.get("shallow") is True, str(found))
+        check("no commit is named, because none was placed",
+              "commits" not in found, str(found))
+        check("the headline clause stays empty rather than wrong",
+              dh.name_undeployed(found) == "", dh.name_undeployed(found))
+
+
+def test_a_complete_clone_still_blames_the_deploy_for_an_unplaceable_digest():
+    """The other half of the fork, so the repair narrows rather than replaces.
+
+    An image built from code that never merged is a real state and the old
+    sentence is the right one for it. `shallow` is absent rather than False on
+    this path, because the question was asked and answered no.
+    """
+    with tempfile.TemporaryDirectory() as tmp:
+        repo = fixture_history(Path(tmp), [("prompts/triage.md", "A change")])
+        found = dh.undeployed_commits(repo, "triage", "0ldc0dec0de")
+        check("the deploy is named as the cause on a complete clone",
+              "not in this history" in found.get("why", ""), str(found))
+        check("and the shallow sentence is not reached",
+              "shallow clone" not in found.get("why", ""), str(found))
+
+
+def test_a_git_that_cannot_answer_is_not_called_a_shallow_clone():
+    """`_shallow_state` has three outcomes and only True is the shallow case.
+
+    `is True` rather than truthiness is the whole content of this test. A git
+    that fails to answer returns None, and None reported as shallow would
+    excuse a deploy that nobody checked.
+    """
+    with tempfile.TemporaryDirectory() as tmp:
+        repo = fixture_history(Path(tmp), [("prompts/triage.md", "A change")])
+        real = dh._shallow_state
+        dh._shallow_state = lambda root: None
+        try:
+            found = dh.undeployed_commits(repo, "triage", "0ldc0dec0de")
+        finally:
+            dh._shallow_state = real
+        check("an unanswerable git falls through to the deploy sentence",
+              "not in this history" in found.get("why", ""), str(found))
+        check("and claims no shallow flag",
+              "shallow" not in found, str(found))
+
+
 def test_a_job_that_never_reported_has_nothing_to_diff():
     with tempfile.TemporaryDirectory() as tmp:
         repo = fixture_history(Path(tmp), [("prompts/triage.md", "A change")])

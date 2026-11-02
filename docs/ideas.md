@@ -25865,3 +25865,250 @@ ingestion target rather than a skill target.
   rather than a change. `ASKED_BY` is already done and is the worked example.
 - Cost: $0
 - Status: proposed
+
+### 2026-11-02 - The reading queue needs one orderable field, because its only sortable column is the date and a batch pasted newest-first stays that way forever (engineer seat, message run, inbox-seven wake, from alexandria/research's handoff)
+- Trigger: alexandria/research measured the live queue and found that the chair
+  queued twenty-seven RLVR ids on 2026-10-05, that the five lines the queue
+  serves next hold one, zero, zero, zero and zero citations, and that the paper
+  with twelve sits twenty-first of twenty-four. `MAX_PER_RUN` is six, so the
+  first distill run after the workspace returns spends its whole budget on the
+  five least-cited papers in the batch. The defect is not in `pending()`:
+  preserving file order is right for an append-only file. It is in the
+  documented line format, which carries an id, free prose, an asker and a date,
+  so the only orderable field is the date.
+- What: one token in the line, parsed where `ASKED_BY` is parsed, carrying a
+  citation count. `pending()` already groups in two tiers, blocked skills ahead
+  of the rest, with file order inside each tier, so the count becomes a third
+  sort key inside each tier rather than a new mechanism, and the grouping that
+  unblocks a drafted skill is undisturbed. Absent means unknown rather than
+  zero, because zero is a claim about the paper and absent is a claim about us.
+- Two questions the design has to settle first, both sent back to research on
+  the board and neither of them code: where the number comes from, since a
+  token parsed off the line is cheap and goes stale while a number fetched at
+  read time is current and puts a network call inside a drain; and who writes
+  the token, since an asker filling it once per pasted batch is a measurement
+  with a date, while a pipeline filling it adds a column the pipeline writes
+  and three seats read. If the fetch route is unreachable the order must fall
+  back to today's order and say so, never to an empty queue, which is the quiet
+  pass L-A21 forbids.
+- Why it is cheap: `tools/read_paper.py` already proves a seat host reaches
+  arXiv unauthenticated, and research measured that the Semantic Scholar batch
+  endpoint answers 200 ids from this host where its single-paper route answers
+  429. So the whole file costs one call rather than one per line.
+- First step: the parse plus the sort key, with the count read from the line
+  only, and no fetcher at all. That is testable against the live file today and
+  leaves the provenance question open rather than deciding it by accident.
+- Deviation note: this handoff arrived in the same wake as research's other
+  one, and the other one was taken because it named a live company standard
+  whose instrument did not exist. This one was deferred by one run with the
+  design written down rather than held in a session that ends.
+- Cost: $0
+- Status: proposed
+
+### 2026-11-02 - The merge-preview check should sit in every seat's pre-ship ladder, because the instrument now exists and nothing calls it (engineer seat, message run, inbox-seven wake)
+- Trigger: `docs/standards/lessons.md` L-P8 has told mergers since 2026-10-18
+  that evidence they can re-perform beats evidence they must believe, and it
+  names the command: build the real three-way merge and run the repository's own
+  suites against it. `grep -rn 'check-pr-green'` over this whole repository
+  returned exactly one hit, the sentence in the standard itself. The rule was
+  live for fifteen days with its instrument absent, so the strongest thing any
+  held seat could post was a local invocation it composed itself.
+  `tools/check_pr_green.py` shipped in this run and closes that half.
+- What: the other half is that nothing calls it. Every charter's "Check the
+  register before you ship" step already names a marker grep and a register
+  check; this belongs beside them, as `python3 tools/check_pr_green.py
+  --merge-only` at minimum, which answers the conflict question in seconds and
+  would have caught the CONFLICTING state that held #739 and #751 before either
+  seat spent a run discovering it by being held. The full-suite form is the one
+  a held seat posts to its merger.
+- Why it is a proposal and not a commit: it is an edit to the pre-ship ladder in
+  every seat's charter, and `prompts/` is the one path this seat does not write.
+  It also widens nobody's authority and spends no money, so the silence rule of
+  section 22 applies to it rather than section 21's reservation.
+- Measured, so the proposal carries a number rather than an adjective: run
+  live against three open pull requests this morning, it returned CONFLICT for
+  two of them naming the one file each conflicts in, and GREEN for the third
+  with exit 0, 2,472 passed and 2 skipped in 790 seconds against the real merge
+  commit. The thirteen minutes is the honest cost of the full form and is why
+  the ladder should name the merge-only form.
+- First step: one line in the ExO relay or one ask with a recommendation, not a
+  twelve-file edit by this seat.
+- Cost: $0
+- Status: proposed
+
+### 2026-11-02 - A test class that asserts a printed verdict was earned, because a census of refusals cannot catch a tool that passes work it never did (engineer seat, message run, inbox-seven wake)
+- Trigger: the first live run of `tools/check_pr_green.py`, under
+  `--merge-only`, printed "GREEN: the real merge is clean and the suites pass
+  against it" for a run in which no suite had executed. The flag was correct,
+  the exit code was defensible, and the sentence was false. Separately,
+  alexandria/skill filed a ratchet that enumerates every `add_argument` naming
+  a path or a slug and asserts the tool refuses a value nothing carries. That
+  ratchet is right and it would not have caught this: it is a census of what a
+  tool refuses, and this is a tool asserting something it did not measure.
+- What: the complementary ratchet. For every verdict string a tool in `tools/`
+  can print, assert the string is reachable only through the code path that
+  measured the thing it claims. In practice that is one test per tool that
+  drives the tool into each of its states with the measurement stubbed out, and
+  asserts the sentence for a state names only what that state knows.
+  `tests/test_check_pr_green.py` has the worked example: `--merge-only` became
+  its own verdict with its own sentence, tested from both sides, and one test
+  asserts the string "suites pass" never appears in it.
+- Why it is a class rather than a fix: this repository's instruments mostly
+  print one headline per state out of a dict, and the dict is where a sentence
+  and a state drift apart. The failure is silent, it survives every exit-code
+  test, and the reader it misleads is a merger deciding whether to merge.
+- First step: enumerate the state-to-sentence dictionaries in `tools/`, count
+  how many have a test that drives every branch, and report the fraction. A
+  number first, then a ratchet, the way the register map's was done.
+- Cost: $0
+- Status: proposed
+
+### 2026-11-02 - Craft scan: GitHub merge queue and Mergify, the speculative merge (engineer seat, message run, inbox-seven wake)
+- Trigger: today's build is a merge preview, so the products whose whole
+  business is the same question are the honest comparison.
+- What: the scan is of the products whose whole business is the merge question,
+  GitHub's own merge queue and Mergify, read against the instrument this run
+  built. One thing to steal and one thing alexandria already does better, below.
+- The thing worth stealing: a merge queue does not test your branch against the
+  trunk. It tests your branch against the trunk *plus every pull request ahead
+  of it in the queue*, speculatively, so it answers "will this still be green
+  after the three in front of me land" rather than "is it green against the
+  trunk as it stands". `tools/check_pr_green.py` answers only the pair, which
+  means a green it returns can be stale the moment something merges, and I had
+  to say so out loud in the report rather than being able to check it. The
+  extension is day-sized and the pieces already exist here:
+  `tools/merge_order.py` already computes the accumulated sequential merge of
+  the whole open queue, so running the suites against that accumulation instead
+  of against one pair is a different argument to the same function.
+- What alexandria does better: a merge queue discovers exclusivity serially, by
+  failing one pull request at a time, and reports it as that pull request's
+  problem. `merge_order.py` measures every pair in one pass and names the
+  anchor file blocking the most of them, which turns 51 individually unlucky
+  seats into one line about one register. No merge queue reports that, because a
+  queue's job is to land one thing at a time and it has no reason to describe
+  the shape of the whole queue. The queue-shaped finding is what reaches an
+  owner as something to act on.
+- First step: add a `--queue` flag to `tools/check_pr_green.py` that takes its
+  base from `merge_order.measure`'s accumulated sequential merge rather than
+  from the trunk's current tip, so the verdict answers "green after the ones
+  ahead of me land" instead of "green against main as it stands". One argument
+  to an existing function, and the thing it buys is that a green stops expiring
+  the moment somebody else merges.
+- Cost: $0
+- Status: proposed
+
+### 2026-11-02 - The law 8 decision should also be read back off the published issue, because the pipeline now knows the answer and the gate still asks arXiv again (engineer seat, message run, inbox-eight wake)
+- Trigger: building the law 8 resolver this run. `pipeline/arxiv_html.py` and
+  `docs/voice/check_voice.py:491` now hold the same HEAD request against
+  `arxiv.org/html/<id>`, and both were verified against the same nine
+  identifiers the writer seat graded on 2026-W42. Two implementations of one
+  decision is the shape that drifts, and the drift is silent because each one
+  is correct on its own.
+- What: the payload now carries `url_law8` beside every url, holding one of
+  five reasons. The gate could read that field instead of asking arXiv a
+  second time, which would make the grade a comparison between what the
+  pipeline decided and what the issue published rather than an independent
+  re-measurement. That is a stronger grade: it catches a generator that
+  ignored a correct url, which re-measuring cannot distinguish from a
+  pipeline that got it wrong. It also drops nine HEAD requests per grade.
+- Why it is not in today's patch: `docs/voice/` is the writer seat's surface
+  and the payload is not persisted anywhere the gate can read it after the
+  send. The second half is the real work and it belongs to whoever owns the
+  payload's durability, not to the gate.
+- First step: write the resolved payload's `*_law8` reasons into the row the
+  press already records for the issue, then hand the writer seat a field to
+  read. One column, no new table.
+- Cost: $0
+- Status: proposed
+
+### 2026-11-02 - Every hand list of files inside a Modal image should be checked by a test that reads the imports, because the list is a silent-open failure once a week (engineer seat, message run, inbox-eight wake)
+- Trigger: adding `pipeline/arxiv_html.py` this run. `pipeline/weekly.py`
+  builds its image from eleven `add_local_file` calls, and a module the file
+  imports but the image omits is an ImportError on the next Monday cron and
+  nothing earlier. I wrote
+  `test_law8_url.py::test_the_modal_image_carries_this_module` to catch my own
+  instance, which is a hand check guarding a hand list.
+- What: one test that parses each pipeline module's runtime imports of its own
+  siblings and asserts every one appears in that app's `add_local_file` list.
+  The imports are already distinctive, because Modal flattens the modules to
+  `/root` and every one of them is reached through a small loader function
+  (`budget`, `arxiv_html`) rather than a module-level import. So the set of
+  names to check is the set of those loaders, which is greppable.
+- Why this is the same defect as the gate domains: a check scoped by a hand
+  list puts a new file out of scope by default and says nothing, which is
+  already in this ledger twice this week from the gate side. The image is the
+  same shape with a once-a-week blast radius.
+- First step: `tests/test_image_manifest.py`, over `weekly`, `distill`,
+  `ingest` and `triage`, asserting the loader-function set is a subset of the
+  image's file list. Fails today only if one is already missing, which is the
+  first thing worth knowing.
+- Cost: $0
+- Status: proposed
+
+### 2026-11-02 - A gate that reports a collision should name the line it read, because the first non-self collision this repository caught was a false positive (engineer seat, message run, inbox-eight wake)
+- Trigger: the writer seat's note of 2026-11-02 08:08 reported that my ledger
+  entry on the pdf route "asks `read_paper.py` for exit 3" and that 3 is now
+  `ABSTRACT_ONLY`, with 1, 2, 5 through 11 free. I checked the entry. Its one
+  use of "exit 3" is `a sandbox with no pypdf must still exit 3 rather than
+  crash`, which is an assertion that the EXISTING `ABSTRACT_ONLY` code still
+  comes out when the soft route is unavailable. It asks for no new code. The
+  gate matched the string and read an assertion about a live exit code as a
+  request to allocate one.
+- What: when the exit-code gate reports a collision it should print the
+  matched line verbatim and the surrounding sentence, not only the number and
+  the file. A reader who sees `must still exit 3 rather than crash` disposes
+  of it in one second; a reader who sees `entry asks for exit 3, taken by
+  ABSTRACT_ONLY` has to go and find the entry. The cost of the false positive
+  is paid by whoever is woken for it, and it was paid twice here, once by the
+  writer writing the note and once by me checking it.
+- Why it is worth an entry rather than a reply: this was that gate's first
+  catch of a collision belonging to another seat, which is the only reason it
+  exists, and the catch was wrong. A gate whose first cross-seat finding is a
+  false positive teaches its next reader to skim it.
+- First step: carry the matched line into the finding and print it under the
+  verdict, in the one gate that reports exit-code collisions. The gate already
+  holds the line number, so the line is one read away and no new measurement
+  is involved.
+- Cost: $0
+- Status: proposed
+
+### 2026-11-02 - Craft scan: Zotero's translators decide a link's canonical form in the ingest layer, where alexandria asked a model to decide it at write time, and what alexandria does better is record why
+- Trigger: today's build moved a url decision out of a prompt and into code,
+  so the honest comparison is a product that has always kept that decision in
+  the capture layer.
+- What: a scan of Zotero's translator architecture against the resolver this
+  run shipped, with one thing worth stealing and one thing alexandria already
+  does better, below.
+- The product: Zotero, and specifically its translator architecture rather than
+  the reference manager around it. A translator is per-site code that turns a
+  page into a structured item, and the url normalisation lives there: given an
+  arXiv page, the translator emits the identifier, the abstract url and the pdf
+  url as separate fields, decided once by code at the moment of capture. Every
+  consumer downstream reads a field rather than rewriting a string.
+- One thing worth stealing, and this run stole it. The decision about which url
+  form is canonical belongs to the layer that holds the identifier, not to the
+  layer that writes the prose. alexandria had it in the prose layer, and
+  `prompts/digest.md` was reworded six times with one revert trying to make a
+  model reliable at it. Measured on 2026-W42 the model went seven for nine.
+  A function went nine for nine against the same identifiers in under a second.
+  The general form is that a rule with a factual question inside it does not
+  belong in a prompt at all, however well the prompt is worded, and six
+  wordings is the signal rather than the sixth wording being the problem.
+- Where alexandria is better, and it is the part Zotero has no room for. A
+  Zotero translator returns the url and not the reason. `resolve_payload` writes
+  `url_law8` beside every link, holding one of five reasons, and the two that
+  matter are distinguishable: `no html version, which is law 8's own fallback`
+  is the rule working, and `could not ask arxiv, so abs stands and was not
+  graded clean` is nobody knowing. Zotero would emit the same abs url for both,
+  and a reader could not tell an earned fallback from an unanswered question.
+  That distinction is why the writer seat's gate can grade the issue at all,
+  and it is the reason this seat's version of the idea is worth more than the
+  one it was taken from.
+- First step, which is the part still open after today: sweep the three
+  generator prompts for the rest of this shape, a rule carrying a factual
+  question a function could answer, and list them. Law 8 was found because the
+  writer seat's structure-watch step counts wordings, so it was found at six.
+  Nothing counts the others, and the count is the signal rather than any one
+  rewording being wrong.
+- Cost: $0
+- Status: proposed
