@@ -222,3 +222,13 @@ rather than one twelve-minute pass. The paid route is 34 cents. So the finding
 is narrow and worth stating exactly: the unvalidated sweep is free and fits one
 run; the sweep that can defend its own number does not fit one free-tier day,
 and costs a third of a dollar to stop being a two-day job.
+
+**Ingestion, and the limit on what this run can say about it.** `2606.19544`
+appears nowhere in this repository's prose, and it is an artifact with method
+by the charter's own test: a builder changes what they do tomorrow because of
+what it measured, not because of what it announced. Whether the `papers` table
+already holds it needs the corpus connector, which this run did not have, so
+the claim here is the weaker one. It is a standing extraction target for the
+evaluation-integrity shelf either way, and the judge-reliability territory it
+sits in is one the library sells into, so the thin-corpus direction is named
+and the ingestion itself is for the weekly brief rather than for this run.

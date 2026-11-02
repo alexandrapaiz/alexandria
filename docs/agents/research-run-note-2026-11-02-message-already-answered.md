@@ -72,6 +72,26 @@ taken without it.
    the sandboxed stage, which makes remedy one a precondition for remedy two
    rather than a cheaper alternative to it.
 
+4. **The live-world check moved one of those numbers** (L-R1, run against this
+   run's own territory rather than #691's). `arxiv:2606.19544`, read in full:
+   21 LLM judges from 9 providers, 118 runs, about 541,000 judgments. Exact
+   match overstates Cohen's kappa by 33.8 to 41.3 points, universally; judge
+   rankings move by up to 14 positions between benchmarks, so a reviewer's
+   general reputation is not evidence about our task; the cheapest judges carry
+   position bias up to 0.192 against 0.002 at the top, which is the one place
+   the free-tier candidates are the wrong class, and which does not apply to a
+   pointwise binary verdict; and verbosity bias has collapsed below 0.011
+   across all 21, so a 2023 precaution carried into a 2026 design is cargo.
+   Its section 5.3 states a five-step Minimum Viable Validation Protocol, which
+   is a third-party validation protocol for the third-party reviewer -- the
+   same independence-by-construction move remedy two makes, at remedy one's
+   price. **Its step 3 moves the bill:** three replicates at temperature 0 turn
+   102 calls into 306 and 97,946 tokens into 293,838, which fits groq's 1,000
+   RPD and **exceeds its 200,000 TPD**, so the validated sweep is 1.47
+   free-tier days rather than one twelve-minute pass, or 34 cents on the paid
+   route. The unvalidated sweep is free and fits one run; the sweep that can
+   defend its own number does not.
+
 The facts in (3) were already in this seat's queue answer on #691. The
 inference and the decomposition are not, and the note says so in its own text
 rather than letting a reader assume otherwise.
