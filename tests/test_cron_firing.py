@@ -1052,3 +1052,95 @@ def test_a_claim_with_no_hook_after_it_orphans_nothing_silently(tmp_path):
     assert result["orphaned"] == []
     finding, = result["lost"]
     assert finding["slot"] == "11:05Z"
+
+
+def test_a_re_fire_that_is_still_running_leaves_the_cycle_in_recovery(tmp_path):
+    """Security's real 2026-11-01 slot, read while the re-fire was still going.
+
+    The refused run's own verdict was never the problem: `reason_of` has
+    refused to call a live run lost since it was written. What nobody applied
+    that reasoning to was the *successor*, and the promotion out of `lost`
+    required `successor["pr"]` to be truthy, which a run with no trailer can
+    never be. So a slot in recovery scored `lost` and set the exit code.
+    """
+    write_log(tmp_path, "alexandria-security", "2026-11-01T13-00-27-477Z",
+              "cron", refused("You've hit your weekly limit · resets 11pm (UTC)"),
+              exit_code=1, turns=1)
+    write_log(tmp_path, "alexandria-security", "2026-11-01T23-04-44-320Z",
+              "hook", trailer=False)
+    claims = cf.read_retry_claims(claim_file(
+        tmp_path,
+        **{"alexandria-security": ["2026-11-01T13-00-27-477Z-cron.log"]}))
+    result = cf.judge(cf.read_runs(tmp_path), "2026-11-01", claims=claims,
+                      now=datetime(2026, 11, 1, 23, 34, tzinfo=UTC))
+    assert result["lost"] == [], "a live re-fire is not a lost cycle"
+    finding, = result["recovering"]
+    assert finding["seat"] == "alexandria-security"
+    assert finding["slot"] == "13:00Z"
+    assert finding["why"] == "weekly-limit"
+    assert finding["retried_by"] == "2026-11-01T23-04-44-320Z-hook"
+
+
+def test_a_cycle_in_recovery_does_not_set_the_exit_code(tmp_path, capsys):
+    write_log(tmp_path, "alexandria-security", "2026-11-01T13-00-27-477Z",
+              "cron", refused("You've hit your weekly limit · resets 11pm (UTC)"),
+              exit_code=1, turns=1)
+    write_log(tmp_path, "alexandria-security", "2026-11-01T23-04-44-320Z",
+              "hook", trailer=False)
+    path = claim_file(
+        tmp_path,
+        **{"alexandria-security": ["2026-11-01T13-00-27-477Z-cron.log"]})
+    code = cf.main(["--day", "2026-11-01", "--root", str(tmp_path),
+                    "--claims", str(path), "--now", "2026-11-01T23:34:00Z"])
+    out = capsys.readouterr().out
+    assert code == 0, "a gate must not go red on a recovery that is working"
+    assert "recover  alexandria-security 13:00Z weekly-limit" in out
+    assert "still running" in out
+    assert "LOST" not in out
+    assert "cycle(s) lost" not in out
+
+
+def test_once_the_re_fire_is_too_old_the_cycle_is_lost_again(tmp_path, capsys):
+    """The grace is a wait, not an amnesty.
+
+    Same two logs as the test above, read past `GRACE_MINUTES`. The successor's
+    missing trailer has stopped being evidence of a live run and become
+    evidence that nobody is coming to write it, so the cycle is lost and the
+    exit code says so.
+    """
+    write_log(tmp_path, "alexandria-security", "2026-11-01T13-00-27-477Z",
+              "cron", refused("You've hit your weekly limit · resets 11pm (UTC)"),
+              exit_code=1, turns=1)
+    write_log(tmp_path, "alexandria-security", "2026-11-01T23-04-44-320Z",
+              "hook", trailer=False)
+    path = claim_file(
+        tmp_path,
+        **{"alexandria-security": ["2026-11-01T13-00-27-477Z-cron.log"]})
+    code = cf.main(["--day", "2026-11-01", "--root", str(tmp_path),
+                    "--claims", str(path), "--now", "2026-11-02T06:00:00Z"])
+    out = capsys.readouterr().out
+    assert code == 1
+    assert "lost after a recovery attempt" in out
+
+
+def test_a_finished_re_fire_that_shipped_nothing_is_still_lost(tmp_path, capsys):
+    """The guard is liveness and never the mere absence of a pull request.
+
+    This is the regression that matters: `recovering` must not swallow the
+    case the `lost` hint was written for, a re-fire that ran to completion and
+    reached no pull request.
+    """
+    write_log(tmp_path, "alexandria-security", "2026-11-01T13-00-27-477Z",
+              "cron", refused("You've hit your weekly limit · resets 11pm (UTC)"),
+              exit_code=1, turns=1)
+    write_log(tmp_path, "alexandria-security", "2026-11-01T23-04-44-320Z",
+              "hook", completed(), exit_code=0, turns=40)
+    path = claim_file(
+        tmp_path,
+        **{"alexandria-security": ["2026-11-01T13-00-27-477Z-cron.log"]})
+    code = cf.main(["--day", "2026-11-01", "--root", str(tmp_path),
+                    "--claims", str(path), "--now", "2026-11-01T23:34:00Z"])
+    out = capsys.readouterr().out
+    assert code == 1
+    assert "lost after a recovery attempt" in out
+    assert "recover  " not in out, "the recovering row must not appear"

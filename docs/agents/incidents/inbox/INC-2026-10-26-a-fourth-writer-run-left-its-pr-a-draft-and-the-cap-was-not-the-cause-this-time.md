@@ -57,3 +57,14 @@ from 150 to 225 is on the host's disk and served by `GET /api/agents`, and the
 process that hands a cap to a run reads the roster once at startup with no
 reload route. Both halves are true at once. The cap cannot reach a run, and
 raising it would still not have saved run 55.
+
+**Fifth sighting, 2026-10-27, writer run 60.** Run 59 was cut off at turn 61,
+which is 40 percent of the cap, by the provider limit rather than by
+`max_turns`. It had opened #619 as a draft and written a four-line review stub,
+so the draft carried one run of work that nobody could read and three runs that
+were already in it from #612 and #615. The next run was the scheduled window
+roughly three hours later. This sighting is recorded here rather than as its own
+entry because the entry above already names the class correctly and already
+names the fix, which is that readying comes before the work rather than after.
+Run 60 readied its own pull request as soon as the review, the gate and the two
+registers were committed, and did the closing of the superseded pair afterwards.

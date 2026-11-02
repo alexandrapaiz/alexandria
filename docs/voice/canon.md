@@ -582,6 +582,54 @@ as live only when a run log, a listing or a response proves it served a real
 turn. A merged prompt is configuration, and the press's own Monday row is the
 run log. This procedure asked git a question only the job can answer.
 
+**And the command named above stopped answering on 2026-10-27, for a reason
+this seat caused.** `tools/delivery_health.py` recovers the deployed commit by
+replaying the image's content digest over history until a commit reproduces it,
+and it walks `DEPLOY_HISTORY_LIMIT` commits, which is 40. The `weekly` image's
+file list contains `prompts/digest.md`, the one file this seat edits on every
+run, so the walk is spent on this seat's own commits and the deployed commit
+drifts off the end of it. On 2026-10-27 that commit sat at walk position 43 and
+the deploy surface printed this instead of a number:
+
+```
+the deploy cannot be compared from here for: weekly
+  (the drift cannot be dated from this checkout)
+the running digest 2e313065f5c7 matches none of the last 40 commits to touch
+  this app's files, so the deploy was built from code that is not in this
+  history
+```
+
+Both sentences are false. The commit was `f16e2775`, nine days old, an
+ancestor of `origin/main`, and sitting in the checkout the surface had just
+read. Read past that refusal and the forwards check becomes a reassurance, which
+is the one failure mode this whole paragraph was added to prevent.
+
+So the forwards question is a command in this seat's own file now, and it is the
+first one a grade runs:
+
+```
+python3 -I docs/voice/check_voice.py press
+  the generator it carries    9b6410ea 2026-10-14T20:08:38+00:00
+  queued commits to the generator    28
+  FAIL  BEHIND: the press is running prompts/digest.md as of 9b6410ea,
+        12.2 days old, with 28 merged commit(s) to it queued behind the deploy
+```
+
+It calls the engineer's `undeployed_commits` with the window widened rather
+than replaying the digest again, because a second copy of that logic here is a
+parallel structure. The limit itself is the engineer's to raise and is in the
+ledger as of 2026-10-27, together with the request that the refusal say how far
+it looked. The entry for the class is ban list 146: an instrument whose blind
+spot grows in proportion to the output it measures, which fails silently on
+exactly the seats that use it most.
+
+Say the generator's age at the top of the grade, in days, before the first
+verdict. A grade is a verdict on a generator and not on an issue, and the run
+that cannot name which generator is grading an unnamed artifact. That is the
+same class as the edition defect of 2026-10-26 and the fourth time this seat
+has graded the thing in front of it without asking whether it was the thing it
+meant to grade.
+
 **And one question before any of the three shas, because all three assume the
 artifact is an edition (added 2026-10-12,
 `INC-2026-10-12-the-grade-could-not-tell-an-edition-from-an-archive`).** Every
@@ -1198,6 +1246,60 @@ It reads the register's open table against the candidate files the run's own
 diff adds, and a run may still draft for a listed surface as long as it names
 the candidate already open on it. That is the register's own rule, and it is
 the difference between superseding a draft and not knowing it exists.
+
+## The patch cites its law in the commit, not only in the review (added 2026-10-27)
+
+Step 3 of this charter says a prompt change cites the law it serves, and for
+five weeks that citation has gone into the review. A review is read once, by
+its author, on the day it is written. The commit is read by every run after.
+
+The cost is measurable and it was measured on 2026-10-27. Twenty-eight merged
+commits to `prompts/digest.md` were queued behind the deploy and two of them
+named a law in the message. So the question step 3 depends on, which is
+whether the rule a grade is about to reword is already fixed and waiting, was
+not recoverable from the queue, and four consecutive runs rebuilt it from
+commit subjects and memory. The 2026-10-27 grade's section on why it shipped
+no prompt diff is three paragraphs of that derivation and nothing else, and
+the run before it refused a fourth wording of law 1 the same way.
+
+So two lines, and neither is a new rule:
+
+- **The commit subject or body names the law.** `Generator: law 14's shape
+  rule renders the procedure as a list` rather than `Generator: the procedure
+  renders as a list`. Same sentence, one citation, and the fact survives into
+  a register that is read again.
+- **The generator cites the law at the rule that serves it.** Every law did
+  after 2026-10-27 and five did not before it: 3, 7, 8, 10 and 16 carried
+  their rule with no citation naming it, two of them failures in the live
+  grade that day. The rules were all present. The name was not, so nothing
+  could be asked whether the generator covers a law a grade had just failed.
+
+```
+python3 docs/voice/check_voice.py queued 1 3 8 12a 14
+```
+
+That is the structure-watch step with a machine under it. It reads the queue,
+attributes each commit to a law twice, by the message and by position, and
+answers one of four states per law. `QUEUED` means the fix is merged and
+waiting on the deploy, so the grade fails the law and writes nothing.
+`UNPATCHED` means the patch is this run's work. `UNNAMED` means commits landed
+in the law's span and none said so, which is the ordinary case until the first
+line above becomes habit, and it is an instruction to read those commits
+rather than an answer.
+
+`UNCITED` is the state worth carrying, because it is the one that looks like
+another from outside. It means the generator never names the law, so the law
+owns no span, so the queue cannot be asked about it at all. The verdict that
+resembles it is `UNPATCHED`, and acting on that would mean writing a rule the
+generator already carries. An instrument that answers a question it cannot
+answer is worse than one that refuses, which is ban list 146, and an
+instrument flattering about the one law with no patch is the worst available
+case. The first version of this command on 2026-10-27 reported law 12a worked
+by 21 of 28 commits, contradicting a grade written two hours earlier, and it
+was wrong: law 12a's citations own a 325-line span of a 2,191-line file, so
+the number measured citation sparsity and not anybody's intent. It is reported
+with its span now for that reason. A count without its span reads like
+evidence.
 
 ## Maintenance
 
