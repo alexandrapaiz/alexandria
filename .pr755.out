@@ -1,0 +1,16 @@
+#755 (alexandria-research/2026-11-02-message-receipts-red): GREEN: the real merge is clean and the suites pass against it
+  base origin/main at 2d0e78e3, head at 1a048ade, merge base 2d0e78e3
+  python3 -m pytest tests/ -q -> exit 0 in 790.2s, against merge commit 68b40bc4
+        naive = datetime.utcnow() - timedelta(hours=2)
+    tests/test_delivery_health.py::test_naive_timestamps_do_not_crash_the_comparison
+      /tmp/check-pr-green-mhdi8hag/tests/test_delivery_health.py:205: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+        recent = dh.queue_cause("claims", deep, datetime.utcnow() - timedelta(hours=3))
+    tests/test_delivery_health.py::test_naive_timestamps_do_not_crash_the_comparison
+      /tmp/check-pr-green-mhdi8hag/tests/test_delivery_health.py:208: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+        old = dh.queue_cause("claims", deep, datetime.utcnow() - timedelta(days=4))
+    tests/test_skill_eval.py: 13 warnings
+      /tmp/check-pr-green-mhdi8hag/tools/skill_eval.py:2964: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+        conflict = window_conflict(dt.datetime.utcnow())
+    -- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+    2472 passed, 2 skipped, 17 warnings in 779.79s (0:12:59)
+EXIT=0

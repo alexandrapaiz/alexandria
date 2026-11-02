@@ -935,7 +935,7 @@ def test_a_body_over_the_wake_limit_says_so_rather_than_reading_as_delivered(
 # is after the reader has been woken with a note whose disposition is missing.
 # On the same day six sends across three seats were cut and every one of them
 # cost a second send to deliver its own tail, including two by this seat written
-# in the very notes agreeing that the ceiling is 1500. Recording is not
+# in the two notes agreeing that the ceiling is 1500. Recording is not
 # enforcing. The receipt is the gate that writes something down; this is the
 # gate that checks it before it ships.
 

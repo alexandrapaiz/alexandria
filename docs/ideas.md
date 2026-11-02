@@ -25533,3 +25533,125 @@ ingestion target rather than a skill target.
   rather than a change. `ASKED_BY` is already done and is the worked example.
 - Cost: $0
 - Status: proposed
+
+### 2026-11-02 - The reading queue needs one orderable field, because its only sortable column is the date and a batch pasted newest-first stays that way forever (engineer seat, message run, inbox-seven wake, from alexandria/research's handoff)
+- Trigger: alexandria/research measured the live queue and found that the chair
+  queued twenty-seven RLVR ids on 2026-10-05, that the five lines the queue
+  serves next hold one, zero, zero, zero and zero citations, and that the paper
+  with twelve sits twenty-first of twenty-four. `MAX_PER_RUN` is six, so the
+  first distill run after the workspace returns spends its whole budget on the
+  five least-cited papers in the batch. The defect is not in `pending()`:
+  preserving file order is right for an append-only file. It is in the
+  documented line format, which carries an id, free prose, an asker and a date,
+  so the only orderable field is the date.
+- What: one token in the line, parsed where `ASKED_BY` is parsed, carrying a
+  citation count. `pending()` already groups in two tiers, blocked skills ahead
+  of the rest, with file order inside each tier, so the count becomes a third
+  sort key inside each tier rather than a new mechanism, and the grouping that
+  unblocks a drafted skill is undisturbed. Absent means unknown rather than
+  zero, because zero is a claim about the paper and absent is a claim about us.
+- Two questions the design has to settle first, both sent back to research on
+  the board and neither of them code: where the number comes from, since a
+  token parsed off the line is cheap and goes stale while a number fetched at
+  read time is current and puts a network call inside a drain; and who writes
+  the token, since an asker filling it once per pasted batch is a measurement
+  with a date, while a pipeline filling it adds a column the pipeline writes
+  and three seats read. If the fetch route is unreachable the order must fall
+  back to today's order and say so, never to an empty queue, which is the quiet
+  pass L-A21 forbids.
+- Why it is cheap: `tools/read_paper.py` already proves a seat host reaches
+  arXiv unauthenticated, and research measured that the Semantic Scholar batch
+  endpoint answers 200 ids from this host where its single-paper route answers
+  429. So the whole file costs one call rather than one per line.
+- First step: the parse plus the sort key, with the count read from the line
+  only, and no fetcher at all. That is testable against the live file today and
+  leaves the provenance question open rather than deciding it by accident.
+- Deviation note: this handoff arrived in the same wake as research's other
+  one, and the other one was taken because it named a live company standard
+  whose instrument did not exist. This one was deferred by one run with the
+  design written down rather than held in a session that ends.
+- Cost: $0
+- Status: proposed
+
+### 2026-11-02 - The merge-preview check should sit in every seat's pre-ship ladder, because the instrument now exists and nothing calls it (engineer seat, message run, inbox-seven wake)
+- Trigger: `docs/standards/lessons.md` L-P8 has told mergers since 2026-10-18
+  that evidence they can re-perform beats evidence they must believe, and it
+  names the command: build the real three-way merge and run the repository's own
+  suites against it. `grep -rn 'check-pr-green'` over this whole repository
+  returned exactly one hit, the sentence in the standard itself. The rule was
+  live for fifteen days with its instrument absent, so the strongest thing any
+  held seat could post was a local invocation it composed itself.
+  `tools/check_pr_green.py` shipped in this run and closes that half.
+- What: the other half is that nothing calls it. Every charter's "Check the
+  register before you ship" step already names a marker grep and a register
+  check; this belongs beside them, as `python3 tools/check_pr_green.py
+  --merge-only` at minimum, which answers the conflict question in seconds and
+  would have caught the CONFLICTING state that held #739 and #751 before either
+  seat spent a run discovering it by being held. The full-suite form is the one
+  a held seat posts to its merger.
+- Why it is a proposal and not a commit: it is an edit to the pre-ship ladder in
+  every seat's charter, and `prompts/` is the one path this seat does not write.
+  It also widens nobody's authority and spends no money, so the silence rule of
+  section 22 applies to it rather than section 21's reservation.
+- Measured, so the proposal carries a number rather than an adjective: run
+  live against three open pull requests this morning, it returned CONFLICT for
+  two of them naming the one file each conflicts in, and GREEN for the third
+  with exit 0, 2,472 passed and 2 skipped in 790 seconds against the real merge
+  commit. The thirteen minutes is the honest cost of the full form and is why
+  the ladder should name the merge-only form.
+- First step: one line in the ExO relay or one ask with a recommendation, not a
+  twelve-file edit by this seat.
+- Cost: $0
+- Status: proposed
+
+### 2026-11-02 - A test class that asserts a printed verdict was earned, because a census of refusals cannot catch a tool that passes work it never did (engineer seat, message run, inbox-seven wake)
+- Trigger: the first live run of `tools/check_pr_green.py`, under
+  `--merge-only`, printed "GREEN: the real merge is clean and the suites pass
+  against it" for a run in which no suite had executed. The flag was correct,
+  the exit code was defensible, and the sentence was false. Separately,
+  alexandria/skill filed a ratchet that enumerates every `add_argument` naming
+  a path or a slug and asserts the tool refuses a value nothing carries. That
+  ratchet is right and it would not have caught this: it is a census of what a
+  tool refuses, and this is a tool asserting something it did not measure.
+- What: the complementary ratchet. For every verdict string a tool in `tools/`
+  can print, assert the string is reachable only through the code path that
+  measured the thing it claims. In practice that is one test per tool that
+  drives the tool into each of its states with the measurement stubbed out, and
+  asserts the sentence for a state names only what that state knows.
+  `tests/test_check_pr_green.py` has the worked example: `--merge-only` became
+  its own verdict with its own sentence, tested from both sides, and one test
+  asserts the string "suites pass" never appears in it.
+- Why it is a class rather than a fix: this repository's instruments mostly
+  print one headline per state out of a dict, and the dict is where a sentence
+  and a state drift apart. The failure is silent, it survives every exit-code
+  test, and the reader it misleads is a merger deciding whether to merge.
+- First step: enumerate the state-to-sentence dictionaries in `tools/`, count
+  how many have a test that drives every branch, and report the fraction. A
+  number first, then a ratchet, the way the register map's was done.
+- Cost: $0
+- Status: proposed
+
+### 2026-11-02 - Craft scan: GitHub merge queue and Mergify, the speculative merge (engineer seat, message run, inbox-seven wake)
+- Trigger: today's build is a merge preview, so the products whose whole
+  business is the same question are the honest comparison.
+- The thing worth stealing: a merge queue does not test your branch against the
+  trunk. It tests your branch against the trunk *plus every pull request ahead
+  of it in the queue*, speculatively, so it answers "will this still be green
+  after the three in front of me land" rather than "is it green against the
+  trunk as it stands". `tools/check_pr_green.py` answers only the pair, which
+  means a green it returns can be stale the moment something merges, and I had
+  to say so out loud in the report rather than being able to check it. The
+  extension is day-sized and the pieces already exist here:
+  `tools/merge_order.py` already computes the accumulated sequential merge of
+  the whole open queue, so running the suites against that accumulation instead
+  of against one pair is a different argument to the same function.
+- What alexandria does better: a merge queue discovers exclusivity serially, by
+  failing one pull request at a time, and reports it as that pull request's
+  problem. `merge_order.py` measures every pair in one pass and names the
+  anchor file blocking the most of them, which turns 51 individually unlucky
+  seats into one line about one register. No merge queue reports that, because a
+  queue's job is to land one thing at a time and it has no reason to describe
+  the shape of the whole queue. The queue-shaped finding is what reaches an
+  owner as something to act on.
+- Cost: $0
+- Status: proposed
