@@ -77,7 +77,9 @@ INC-2026-09-24-press-provider-migration. This runner reads
 from __future__ import annotations
 
 import argparse
+import atexit
 import datetime as dt
+import functools
 import hashlib
 import json
 import math
@@ -1422,6 +1424,35 @@ def workspace(task: dict, check: dict, base: pathlib.Path,
 UNRUNNABLE = 127
 
 
+@functools.lru_cache(maxsize=1)
+def _python_shim() -> str | None:
+    """The one shim directory this process needs, or None when `python` exists.
+
+    Cached, prefixed and removed at exit, for three reasons found by measurement
+    rather than by review (2026-11-02, the third fill of the host's 45G volume).
+    **Cached**, because the old version called `tempfile.mkdtemp()` once per
+    command and removed none of them, so a suite of N commands left N
+    directories behind; 355 of them were attributed to this function on
+    2026-11-02 and the whole leaked population on that host was 12,958
+    directories holding 851M. **Conditional**, because the old version built the
+    directory before testing `shutil.which("python")` and so left an empty one
+    on every host that already has the interpreter it was shimming. And
+    **prefixed**, because 9,944 of those 12,958 directories carried `mkdtemp`'s
+    bare default name and no tool could be billed for any of them: a prefix is
+    the difference between a leak with an owner and a leak without one.
+    """
+    if shutil.which("python"):
+        return None
+    root = tempfile.mkdtemp(prefix="skill-eval-shim-")
+    atexit.register(shutil.rmtree, root, True)
+    shim = pathlib.Path(root) / "bin"
+    shim.mkdir(parents=True)
+    link = shim / "python"
+    link.write_text(f'#!/bin/sh\nexec "{sys.executable}" "$@"\n')
+    link.chmod(0o755)
+    return str(shim)
+
+
 def command_env() -> dict:
     """The environment a suite's command runs in, with `python` made to exist.
 
@@ -1430,17 +1461,14 @@ def command_env() -> dict:
     `exit 127` on the first machine this harness ran on. A shim beats asking six
     task files to spell the interpreter differently, and it is not a lie: the
     interpreter it points at is the one running this file.
-    """
-    import os
 
-    shim = pathlib.Path(tempfile.mkdtemp()) / "bin"
-    shim.mkdir(parents=True)
-    link = shim / "python"
-    if not shutil.which("python"):
-        link.write_text(f'#!/bin/sh\nexec "{sys.executable}" "$@"\n')
-        link.chmod(0o755)
+    A fresh dict every call, because the caller hands it to `subprocess.run` and
+    the shim path behind it is shared; `_python_shim` is what is cached, not this.
+    """
     env = dict(os.environ)
-    env["PATH"] = f"{shim}:{env.get('PATH', '')}"
+    shim = _python_shim()
+    if shim:
+        env["PATH"] = f"{shim}:{env.get('PATH', '')}"
     return env
 
 

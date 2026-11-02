@@ -18,10 +18,13 @@ assertion that this implementation agrees with it.
 
 from __future__ import annotations
 
+import glob
 import json
+import os
 import pathlib
 import re
 import sys
+import tempfile
 
 import pytest
 
@@ -1848,3 +1851,50 @@ def test_a_deviation_travels_into_the_history_with_its_run():
     assert entry["repetitions_overridden"] is True
     history = ev.appended_history(None, result)
     assert history[-1]["policy_overrides"] == overrides
+
+
+def test_command_env_creates_one_shim_directory_however_many_times_it_is_called():
+    """The leak that put 355 directories on a volume that then filled (2026-11-02).
+
+    `command_env` is called once per suite command, and the version before this
+    test called `tempfile.mkdtemp()` on every one of those calls and removed
+    none of them. The defect was invisible to review because the function is
+    correct in isolation — it returns a working environment every time — and it
+    was invisible to this suite because `command_env` had no test at all. What
+    makes it testable is counting the artefacts rather than checking the return
+    value, so that is what this asserts.
+    """
+    ev._python_shim.cache_clear()
+    before = set(glob.glob(tempfile.gettempdir() + "/skill-eval-shim-*"))
+    paths = {ev.command_env()["PATH"] for _ in range(20)}
+    after = set(glob.glob(tempfile.gettempdir() + "/skill-eval-shim-*"))
+
+    assert len(after - before) <= 1, "one shim per process, not one per call"
+    assert len(paths) == 1, "twenty calls must agree on the PATH they return"
+
+
+def test_command_env_returns_a_fresh_dict_so_one_caller_cannot_edit_another_s():
+    """The shim is shared; the environment handed to `subprocess.run` is not."""
+    first, second = ev.command_env(), ev.command_env()
+    assert first is not second
+    first["PATH"] = "clobbered"
+    assert ev.command_env()["PATH"] != "clobbered"
+
+
+def test_command_env_builds_no_shim_at_all_when_python_already_exists(monkeypatch):
+    """The second half of the same defect: it built the directory, then asked.
+
+    The old body ran `mkdtemp()` and `mkdir()` before testing
+    `shutil.which("python")`, so every host that already had the interpreter got
+    an empty directory per call for a shim it never needed.
+    """
+    ev._python_shim.cache_clear()
+    monkeypatch.setattr(ev.shutil, "which", lambda name: "/usr/bin/python")
+    before = set(glob.glob(tempfile.gettempdir() + "/skill-eval-shim-*"))
+
+    env = ev.command_env()
+
+    assert ev._python_shim() is None
+    assert set(glob.glob(tempfile.gettempdir() + "/skill-eval-shim-*")) == before
+    assert env["PATH"] == os.environ["PATH"]
+    ev._python_shim.cache_clear()
