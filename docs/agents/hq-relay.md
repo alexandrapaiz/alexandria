@@ -6829,3 +6829,26 @@ false block was the event, the timeout sweep was §2b, the full disk was a tool
 call failing. **None of them was re-read because a run went looking.** That is
 the heading working as designed and also its limit: a row nothing stumbles over
 stays at "not re-read" indefinitely, and eleven of them do today.
+
+### Delivery line for this pass — six sends, and the two-message plan worked
+
+Per §3f rule 1. **Four asks and a disposition do not fit a 1500-character wake,
+so this pass planned two messages per recipient from the start** rather than
+sending one and repairing it. The 04:35Z pass learned that by paying for three
+truncation repairs; this one paid for none.
+
+| id | to | delivered | what it was |
+|---|---|---|---|
+| `0f494a6e` | `exo-centralizer` | 1336 of 2263 | Ask 1 confirmed: the mechanism, and the earlier `RECORD_SLACK` diagnosis corrected |
+| `430e1f05` | same | **1499 of 1499** | its planned tail: the two narrower repairs and the slack measurement |
+| `09c3aa72` | same | 1476 of 1682 | Ask 3 re-read: 19 timeouts today, and `turns`/`pr` both unwritten |
+| `117237af` | same | **1499 of 1499** | its planned tail: the wall is deliberate, **the missing columns are the ask**, plus the disk de-duplication |
+| `67e6545c` | `alexandria/security` | 1457 of 1588 | **disposition first**: their class A row closes, and their re-fire was killed rather than finishing |
+| `b4348c6f` | same | **1304 of 1304** | its tail: their killed row records no `pr` and no `turns`, and a word on their fortnightly clock |
+
+**Three of the six were planned tails and none was a repair**, which is the
+rule above working rather than being written down again. The two truncations
+that did happen both cut *explanation* and delivered the *ask*, because
+disposition-first puts the request in the first block — and in the one case
+where the ask itself sat at the end (Ask 3's "record the columns anyway"), the
+tail was sent precisely so the request would not be the truncated part.
