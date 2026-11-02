@@ -30,6 +30,21 @@ Closing the gap means enumerating the declared slots from the roster manifests
 instead of inferring them from history, which is a change of input rather than
 a correction and sits in docs/ideas.md as `proposed`.
 
+**And that gap is closed below rather than only described**, by the ExO seat on
+the same night and from the other side of the same pair of notes: `--audit`
+reads those `{"action": "cron", "coalesced": true}` rows and `coalesced` is a
+state here now. The security seat's own proposal — enumerate the declared slots
+from the roster manifests instead of inferring them from history — is a
+different and larger repair, is still right, and is still `proposed` in
+`docs/ideas.md`: it would also fix the `unseen` rows that name a seat's *old*
+slot minute after its clock moved, which `coalesced` does not touch.
+
+And a slot can fire and produce nothing without ever starting a run, which is
+`coalesced` below and which this file could not see until 2026-11-02 because it
+read only per-run logs. Three weekly slots went that way in one half hour on
+the night it was found, and the only surface that records them is the audit
+log, hence `--audit`.
+
 A seat being revived is not the same as a cycle being carried, and `orphaned`
 is the gap between them. HQ's retry re-fires a refused seat once per window and
 the claim file names the window's *last* refused log for that seat, so a window
@@ -109,6 +124,29 @@ one answers three.
     Observed on 2026-11-01 against `alexandria-security`, whose 13:00Z slot
     was scored `1 cycle(s) lost` at 23:34Z while the re-fire that rescued it
     had been committing to pull request 657 since 23:06Z.
+
+`coalesced`
+    The slot fired and the host started no run for it, because a run of that
+    seat was already going, so it folded the firing into that one. **This state
+    is read from the audit log and not from a log**, and it has to be: a
+    coalesced slot writes no run log, so every other state here is blind to it
+    and the slot is not reported as anything at all. Found 2026-11-02 by
+    alexandria/security on this file and by alexandria/exo on HQ's
+    `tools/check-cron-fired.py`, which counts coalesced slots in its header and
+    then omits them from `findings()`. Both instruments called that night clean
+    of a class that took three weekly cycles from it, one of them the cycle of
+    the seat that found it.
+
+    A coalesced firing the host later dispatched is **not** this state. The host
+    holds the firing and starts it the instant the in-flight run ends, so
+    `ursa-exo` coalesced at 01:30:23Z and ran at 01:40:48.770Z and lost nothing
+    but ten minutes; `alexandria-exo` coalesced at 01:00:20Z and the dispatch
+    that followed its run was a `message`. Those rows are identical in the
+    audit log. The discriminator is whether a later `cron` run of that seat
+    starts at all, and where one does, the deferral is attached to that run's
+    own finding — which also corrects that finding's slot label, because it was
+    being reported at the minute it was dispatched rather than the minute it
+    was due.
 
 `unseen`
     A slot this seat has fired at on other days in the history window, with no
@@ -210,6 +248,20 @@ LOG_ROOT = pathlib.Path("/srv/asc/state/.epito/logs")
 # lost cycle, which is what it did to research's 2026-10-26T16:30Z slot on the
 # first day one of them came due.
 CLAIM_FILE = pathlib.Path("/srv/asc/state/.epito/capacity-retry.json")
+
+# The audit log, which is the ONLY surface that records a coalesced firing.
+# Everything else in this file reads per-run logs, and a coalesced slot starts
+# no run, so it writes no log: it is not `lost`, not `unseen`, not any state —
+# it has no row at all. See `read_coalesced`.
+AUDIT_FILE = pathlib.Path("/srv/asc/state/.epito/audit.jsonl")
+
+# ...and it is the sibling of the log root, which is how `--audit` defaults.
+# Deriving it from `--root` rather than hard-coding the host path is not
+# tidiness: a default that reads `/srv/asc/state` no matter what `--root` says
+# makes every test in tests/test_cron_firing.py read the real host, which is
+# the one thing that file's docstring says it never does. Eleven of them went
+# red the first time this default was a constant.
+AUDIT_BESIDE_LOGS = "audit.jsonl"
 
 # How long after a run starts its missing trailer still means "working"
 # rather than "killed". See `verdict_of`.
@@ -474,6 +526,59 @@ def read_runs(root=LOG_ROOT, seat=None, days=None):
                 runs.append(run)
     runs.sort(key=lambda r: r["started"])
     return runs
+
+
+def read_coalesced(path=AUDIT_FILE, seat=None, day=None):
+    """Cron firings the host folded into a run of the same seat already going.
+
+    This is the blind spot the rest of this file cannot see from where it
+    stands. Every other state here is derived from a per-run log, and the host
+    writes a log when it starts a run; when a slot comes due while that seat is
+    already running, the host records the firing and starts nothing, so the
+    slot leaves no log and no reader below ever asks about it. It is not
+    reported as `lost`, and it is not even reported as `unseen`, because
+    `unseen` is itself derived from log history.
+
+    The audit log carries it, on the firing's own row, as `coalesced: true`.
+    That field is also what HQ's `tools/check-cron-fired.py` counts, and that
+    gate prints the count and then omits it from `findings()`, so both
+    instruments were blind to the same slots from opposite sides. Measured
+    2026-11-02T03:50Z: three weekly slots coalesced in the 01:00-01:30Z half
+    hour, `alexandria-exo`, `ursa-security` and `ursa-exo`, and this file named
+    two unrelated losses and exited 1 without mentioning any of them.
+
+    Returns `[{"seat", "minute", "at", "when"}]` for `day`, oldest first. A missing or
+    unreadable audit log is an empty reading rather than a traceback, for the
+    same reason a missing log root is: a pull request checkout has neither, and
+    a could-not-look must not read as a finding of nothing.
+    """
+    path = pathlib.Path(path)
+    out = []
+    try:
+        text = path.read_text(errors="replace")
+    except OSError:
+        return out
+    for line in text.splitlines():
+        if '"coalesced"' not in line:
+            continue
+        try:
+            row = json.loads(line)
+        except ValueError:
+            continue
+        if row.get("action") != "cron" or not row.get("coalesced"):
+            continue
+        stamp = _parse_iso((row.get("ts") or "").replace("Z", "+00:00"))
+        if stamp is None:
+            continue
+        name = row.get("agent") or ""
+        if seat and name != seat:
+            continue
+        if day and stamp.strftime("%Y-%m-%d") != day:
+            continue
+        out.append({"seat": name, "minute": stamp.hour * 60 + stamp.minute,
+                    "at": stamp.strftime("%H:%M:%SZ"), "when": stamp})
+    out.sort(key=lambda row: (row["at"], row["seat"]))
+    return out
 
 
 def slot(run):
@@ -787,7 +892,7 @@ def verdict_of(run, now=None, grace_minutes=GRACE_MINUTES):
 
 
 def judge(runs, day, tolerance=15, history_days=14, now=None, pr_index=None,
-          claims=None):
+          claims=None, coalesced=None):
     """What every cron slot that came due on `day` did, in the four states.
 
     `tolerance` is how many minutes apart two firings can be and still be the
@@ -799,6 +904,12 @@ def judge(runs, day, tolerance=15, history_days=14, now=None, pr_index=None,
     run whose trailer says `pr=-` for a reason that is not evidence is reported
     as lost with that doubt stated, and with it the same run is reported as
     `cut` naming the pull request it opened.
+
+    `coalesced` is `read_coalesced`'s rows and it is the one input here that
+    does not come from a log, because the slots it describes have none. Without
+    it this function cannot report them at all — not as lost and not as a
+    question — so a reading taken without it is silent about the whole class
+    rather than uncertain about it.
     """
     # `resolve_retried` first, because it is what tells `resolve_shipped`
     # which runs are re-fires, and a re-fire's `pr=-` is not evidence.
@@ -878,6 +989,57 @@ def judge(runs, day, tolerance=15, history_days=14, now=None, pr_index=None,
                 finding["state"] = "orphaned"
         findings.append(finding)
 
+    # A coalesced slot, from the audit log rather than from a log that does not
+    # exist. This block comes before `unseen` on purpose: a minute this seat
+    # has fired at on other days and coalesced on this one would otherwise be
+    # folded into the `unseen` question, which says "no row today" about a slot
+    # whose row is sitting in the audit log saying exactly what happened to it.
+    #
+    # AND A COALESCED SLOT IS NOT ALWAYS A LOST ONE, which is the half that
+    # took a second reading to see. The host appears to hold the firing and
+    # dispatch it the instant the in-flight run ends: `ursa-exo` coalesced at
+    # 01:30:23Z on 2026-11-02 and a `cron` run of that seat started at
+    # 01:40:48.770Z, three thousandths of a second after the run it was waiting
+    # on ended. `alexandria-exo` coalesced at 01:00:20Z and the next dispatch
+    # when its run ended was a `message`; `ursa-security` the same. So the
+    # same audit row means deferred in one case and dropped in the other, and
+    # nothing in the row says which — the discriminator is whether a later
+    # `cron` run of that seat starts at all.
+    for row in (coalesced or []):
+        later = sorted((r for r in day_runs
+                        if r["seat"] == row["seat"] and r["trigger"] == "cron"
+                        and r["started"] > row["when"]),
+                       key=lambda r: r["started"])
+        if later:
+            # Deferred, not lost. The carrying run already has a finding here
+            # under the minute it was DISPATCHED at, which is not its slot:
+            # that is how `ursa-exo` 01:30Z came to be reported as `01:40Z`,
+            # a label with no cron line anywhere behind it. Correct the label
+            # and attach the deferral rather than adding a second row about
+            # one slot.
+            carrier = later[0]
+            late = int((carrier["started"] - row["when"]).total_seconds() // 60)
+            for finding in findings:
+                if (finding["seat"] == row["seat"]
+                        and finding["slot"] == _slot_label(slot(carrier))):
+                    finding["slot"] = _slot_label(row["minute"])
+                    finding["coalesced_at"] = row["at"]
+                    finding["deferred_minutes"] = late
+                    break
+            continue
+        absorbing = [r for r in day_runs if r["seat"] == row["seat"]
+                     and slot(r) <= row["minute"]]
+        absorbing = max(absorbing, key=slot) if absorbing else None
+        findings.append({
+            "seat": row["seat"],
+            "slot": _slot_label(row["minute"]),
+            "state": "coalesced",
+            "why": "fired, started no run, and no later cron run carried it",
+            "at": row["at"],
+            "absorbed_into": (f'{_slot_label(slot(absorbing))} '
+                              f'{absorbing["trigger"]}') if absorbing else None,
+        })
+
     fired = {(r["seat"], slot(r)) for r in day_runs if r["trigger"] == "cron"}
     seen = {}
     for run in history:
@@ -886,7 +1048,7 @@ def judge(runs, day, tolerance=15, history_days=14, now=None, pr_index=None,
         if any(s == seat and abs(m - minute) <= tolerance for s, m in fired):
             continue
         # Fold slots that are the same clock a minute apart into one question.
-        if any(f["seat"] == seat and f["state"] == "unseen"
+        if any(f["seat"] == seat and f["state"] in ("unseen", "coalesced")
                and abs(_minute_of(f["slot"]) - minute) <= tolerance
                for f in findings):
             continue
@@ -907,6 +1069,7 @@ def judge(runs, day, tolerance=15, history_days=14, now=None, pr_index=None,
         "cut": [f for f in findings if f["state"] == "cut"],
         "retried": [f for f in findings if f["state"] == "retried"],
         "recovering": [f for f in findings if f["state"] == "recovering"],
+        "coalesced": [f for f in findings if f["state"] == "coalesced"],
         "history_days": history_days,
     }
 
@@ -996,8 +1159,23 @@ def render(result, root, prs_given=False):
                 lines.append(f"  LOST?    {finding['seat']} {finding['slot']} "
                              f"{finding['why']}{turns}. {hint}")
             else:
+                late = finding.get("deferred_minutes")
+                deferred = (f", and the slot had coalesced at "
+                            f"{finding['coalesced_at']} and was dispatched "
+                            f"{late} minute(s) late" if late is not None else "")
                 lines.append(f"  LOST     {finding['seat']} {finding['slot']} "
-                             f"{finding['why']}{turns}, no pull request")
+                             f"{finding['why']}{turns}, no pull "
+                             f"request{deferred}")
+        elif finding["state"] == "coalesced":
+            into = finding.get("absorbed_into")
+            into = (f", which had started at {into}" if into
+                    else ", and no log of this seat covers the minute")
+            lines.append(f"  COALESCED {finding['seat']} {finding['slot']} "
+                         f"fired {finding['at']} and started no run: the host "
+                         f"folded it into a run already going{into}, and no "
+                         f"later cron run of this seat carried it. The slot "
+                         f"has no log, so every other reader here is blind to "
+                         f"it")
         else:
             days = ", ".join(finding["evidence"])
             lines.append(f"  unseen   {finding['seat']} {finding['slot']} "
@@ -1017,6 +1195,16 @@ def render(result, root, prs_given=False):
                      f"last refused log per seat. These count as lost, and the "
                      f"remedy is the claim's key rather than the clock or the "
                      f"seat.")
+    if result.get("coalesced"):
+        lines.append("")
+        lines.append(f"{len(result['coalesced'])} slot(s) coalesced into a run "
+                     f"already going. The clock fired and the slot's own work "
+                     f"never started, so for a weekly seat the whole cycle is "
+                     f"gone. These count as lost. Read from the audit log, "
+                     f"because a coalesced slot writes no run log and HQ's "
+                     f"`check-cron-fired.py` counts them and then omits them "
+                     f"from `findings()`, so the day reads clean on both "
+                     f"instruments.")
     if result.get("retried"):
         lines.append("")
         lines.append(f"{len(result['retried'])} cycle(s) refused and re-fired "
@@ -1066,6 +1254,13 @@ def main(argv=None):
                         help="HQ's capacity-retry claim file, which says which "
                              "refused logs were re-fired. Without it a slot "
                              "the retry rescued reads as a lost cycle")
+    parser.add_argument("--audit", default=None,
+                        help="the host's audit log, which is the only surface "
+                             "that records a cron slot the host folded into a "
+                             "run already going. Without it this reading is "
+                             "silent about that class rather than clean of it. "
+                             "Defaults to `audit.jsonl` beside --root, which "
+                             "is where the host keeps it")
     parser.add_argument("--json", action="store_true",
                         help="the verdict as a script reads it")
     args = parser.parse_args(argv)
@@ -1107,14 +1302,24 @@ def main(argv=None):
               f"clock stands", file=sys.stderr)
 
     claims = read_retry_claims(args.claims)
+    audit = pathlib.Path(args.audit) if args.audit else root.parent / AUDIT_BESIDE_LOGS
+    coalesced = read_coalesced(audit, seat=seat, day=day)
     result = judge(runs, day, history_days=args.history_days,
-                   pr_index=pr_index, now=now, claims=claims)
+                   pr_index=pr_index, now=now, claims=claims,
+                   coalesced=coalesced)
     print(json.dumps(result, indent=2, default=str) if args.json
           else render(result, root, prs_given=pr_index is not None))
     # An orphaned cycle is a lost one, so it sets the exit code too. Before
     # `orphaned` existed these rows read as `lost` and already did, which is
     # why naming them changes the sentence and not the contract.
-    return 1 if (result["lost"] or result["orphaned"]) else 0
+    #
+    # A coalesced slot does change the contract, and that is the point: it is a
+    # slot whose work never started, and before 2026-11-02 it set no exit code
+    # anywhere, in this file or in HQ's gate. On the night it was found, this
+    # file exited 1 for two unrelated losses while saying nothing about three
+    # coalesced weekly slots, one of them this seat's own.
+    return 1 if (result["lost"] or result["orphaned"]
+                 or result.get("coalesced")) else 0
 
 
 if __name__ == "__main__":
