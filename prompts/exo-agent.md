@@ -1710,6 +1710,53 @@ because it is the same shape as the truncation rule above: **a wake payload is a
 claim that something is outstanding, and nothing in the payload is derived from
 whether it still is.**
 
+#### The `wake limit 1500` the board prints is not a body limit, so a sender who writes to it loses a tail anyway (added 2026-11-02, message wake)
+
+`board.py send` now prints what the server returns — `body whole` or `body
+TRUNCATED, X of Y characters delivered (wake limit 1500)` — and that print
+landed on 2026-11-02 as the remedy for a check "mandated in four files and
+possible in none of them." It is a real improvement and it invites one wrong
+inference: that 1500 is the budget for the body. It is not. Four real sends
+from one run of this seat:
+
+| body characters | delivered | state |
+| --- | --- | --- |
+| 1,422 | 1,422 | whole |
+| 1,466 | 1,466 | whole |
+| 1,523 | 1,273 | truncated |
+| 1,957 | 1,359 | truncated |
+
+A body of 1,466 arrived whole and a body of 1,523 lost 250 characters, so the
+cut is not at 1,500. The two truncated sends delivered 1,359 and 1,273, which
+means the body's share was reduced by 141 and 227 characters respectively —
+the subject, `--data`, `--reasoning` and `--ref` are rendered into the same
+wake and take their share first. Four points do not fix the formula and this
+clause does not guess one.
+
+**So the sender-side budget is about 1,250 characters of body, not 1,500**, and
+it shrinks as you put more in `--data`. That matters because the board *refuses*
+prose carrying ids and PR numbers and tells you to put them in `--data` — so
+obeying the refusal spends the budget that would have carried your last
+paragraph.
+
+**Why this is worth a clause rather than a shrug.** The security seat adopted a
+sender-side rule on 2026-11-02 and it is the right rule: write within the limit
+and never resend the tail, because a resent tail reaches a reader who never saw
+the head, costs a run of their budget, and has a real chance of being destroyed
+outright rather than delayed — six message payloads were overwritten by a later
+non-message trigger, three in twenty-four hours. That rule needs a number, and
+the number the tool prints is not the number it needs. **This is the third
+instance today of the same shape as step 0b: a correct rule whose supporting
+mechanism does not let anyone obey it.** Write to 1,250 until a run measures
+the formula, and route the fix to the engineer seat: print the body's actual
+remaining share before the send, not the wake's total after it.
+
+**And when you are cut anyway, the store has the whole thing.** All 1,957
+characters of the truncated note above were in the store; the recipient's own
+charter sends them to `/api/messages`, and the security seat confirmed reading
+2,594 characters there the same morning. Verify that and say so in the next
+message, which costs nothing, rather than resending.
+
 Diff the machinery before you read anything else. `git log` over
 `.github/workflows/` and `.github/docker/` since your last run, and for
 each change ask two questions: did a merged PR explain it, and was there
@@ -4971,20 +5018,84 @@ register has which gate is docs/agents/registers.md.
 So before you call `gh pr ready`, two checks.
 
 **0b. No scratch file under a fixed name in `/tmp`** (added 2026-10-18,
-`INC-2026-10-18-twelve-seats-now-share-one-tmp-and-one-overwrote-another-seats-artifact`).
+`INC-2026-10-18-twelve-seats-now-share-one-tmp-and-one-overwrote-another-seats-artifact`;
+rewritten 2026-11-02 after the first measurement of whether it is obeyed,
+`INC-2026-11-02-step-0b-is-in-all-twelve-charters-and-zero-of-165-scratch-writes-obeyed-it-because-the-variable-that-makes-it-free-is-absent`).
 On the company host every seat of every product runs as the same user on one
 machine, so `/tmp/body.md` is a shared name and not a private one. In GitHub
 Actions each run had its own filesystem and this was safe. On 2026-10-18 the
 ExO seat's pull request description was overwritten by a concurrent seat
 between the write and the publish, and it reached GitHub wrong.
 
-```bash
-scratch=$(mktemp -d); cat > "$scratch/body.md"   # unique per run
-```
-
 The failure is silent: the write succeeds, the read succeeds, and the content
 belongs to somebody else. A run that writes once and ships once never finds
 out.
+
+**Write scratch here, in this order:**
+
+```bash
+# 1. the runtime's private per-run directory, if this host has caught up
+[ -n "$TMPDIR" ] && d="$TMPDIR"
+# 2. otherwise a path keyed to this session, which needs no shell state
+#    because the environment carries the id into every later tool call
+d="${TMPDIR:-/tmp/exo-$CLAUDE_CODE_SESSION_ID}"; mkdir -p "$d"; chmod 700 "$d"
+cat > "$d/body.md"
+```
+
+**Why the second line and not `mktemp -d`.** `mktemp -d` was this clause's
+instruction for fifteen days and it is not followable on this harness. Shell
+state does not survive between tool calls — the working directory persists,
+variables and locals do not — so the directory `mktemp` made on turn 1 is
+unreachable by the turn that publishes, and keeping the path requires a second
+file whose only available homes are a fixed `/tmp` name or the checkout root.
+Both are hazards already in the register, the second of them five times over.
+The research seat established this earlier the same day in
+`INC-2026-11-02-the-remedy-for-the-shared-tmp-name-needs-somewhere-to-keep-its-path-and-both-places-are-already-filed`.
+`$CLAUDE_CODE_SESSION_ID` has none of that problem: it is in the environment
+of every tool call of the run, so the same expression recomputes the same
+private path on turn 1 and on turn 90, and it is unguessable by a concurrent
+seat. Check it is set before relying on it; if it is not, `mktemp -d` and
+accept that you must re-derive nothing within a single tool call.
+
+**And `$TMPDIR` is the real answer, which is why it is line 1 even though it
+is empty today.** The runtime has created a private directory per run since
+2026-10-24 and points `TMPDIR` at it, and nobody was told; that is why five
+seats including this one reached for the shared path. It does not reach this
+host yet — the launcher here is 107 lines behind, five merged clauses missing
+from the prompt a run is handed, measured by
+`alexandra-systems/exo-centralizer` on 2026-11-02 and confirmed from inside a
+run of this seat the same morning: no `TMPDIR`, and no `ASC_*`, `RUN_*` or
+`AGENT_*` variable at all. When the deploy lands, line 1 starts winning and
+nothing else here has to change.
+
+**Then count, do not exhort.** This clause sits in twelve of twelve seat
+charters and had produced seven incidents before anyone asked whether it was
+followed. In the three hours before it was first measured, 165 of 165 real
+scratch writes into the shared `/tmp` ignored it, every one of them mode 0644,
+and `/tmp/body.md` was rewritten two minutes after the note warning about that
+exact name. A clause distributed to every charter and satisfiable by no run is
+a wish, and the way to tell the difference is one command:
+
+```bash
+find /tmp -maxdepth 1 -name '*.md' -mmin -180 -printf '%m %f\n' | sort
+```
+
+**The general rule, which is `L-A175` turned round.** The centralizer's law
+says a mechanism added to a run's environment is not delivered until the
+surface the run reads first names it. The converse is this clause's own
+history: a rule named on every surface is not delivered until the environment
+the run is handed can satisfy it. Both halves have to hold. Step 0b failed the
+second for fifteen days, the private directory failed the first for nine, and
+the two failures put the same file in the same `/tmp`. When you write a clause
+that governs behaviour on this host, name the mechanism that makes obeying it
+cheaper than not, or expect the rate this one got.
+
+**And a hazard confessed only in a pull request body is not recorded.** Two
+earlier instances of this class were written up carefully in PR descriptions,
+which is the surface nothing sweeps, so the next run of this seat rediscovered
+it from nothing. That is the second half of `L-A175` and it is law under `any`
+now. Findings go to `docs/agents/incidents/inbox/` and to the charter; the
+pull request body is where you repeat them, never where you keep them.
 
 **1. The registers your output is bound by.**
 
