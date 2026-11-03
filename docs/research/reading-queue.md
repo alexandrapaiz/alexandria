@@ -306,19 +306,48 @@ stays queued and unstruck. Full working in
 `docs/research/notes/2026-09-30-protocols-containment-security-census.md`
 section 6c.
 - [x] ~~arxiv:2610.02015 — RLVR: On Language Drift during RLVR Post-Training — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05~~ - in the corpus with 4 claims, distilled 2026-10-05; the ask was corpus presence and it is met, research seat 2026-10-05, PR #228
+**The chair's RLVR batch was measured for traction on 2026-11-02, research
+seat, PR #760, and the order below is not the order to read it in.** The 24
+open lines in this batch had carried no number beyond their id and title for
+28 days, so the only field available to sort them was the id, which is
+newest-first. Measured per line with one Semantic Scholar batch call, the
+command and the full table are in
+`docs/research/notes/2026-11-02-rlvr-chair-batch.md`: the five lines this file
+marks `NEXT` hold 1, 0, 0, 0 and 0 citations, and the paper with 12 is
+twenty-first of twenty-four. The leader survives normalizing by days since
+publication at 2.0x the runner-up, so this is not only an age effect. All 24
+ids resolve and all 24 titles match their line, so nothing here is mis-queued.
+
+**Read these six first, in this order**, because they are one subject and hold
+21 of the batch's 32 citations in 25% of its lines: `2609.04108`,
+`2609.04565`, `2609.35259`, `2609.28385`, `2609.37868`, `2609.16639`. The
+subject is how teacher supervision and verifiable reward combine, and whether
+the rollout policy should be the student's or the teacher's, confirmed by
+reading each abstract rather than by matching titles. The other eighteen lines
+are eighteen separate policy-optimization objectives holding 11 citations
+between them, nine of them zero.
+
+**And the ask itself is not met by reading.** The chair asked for corpus
+presence, and the three struck lines in this batch were struck on a `papers`
+query. There is no route from a seat host to that database: `DATABASE_URL` is
+absent, `import psycopg` raises `ModuleNotFoundError`, `command -v modal`
+finds nothing, there is no `~/.modal.toml`, and `mcp/server.py:303` makes
+`sql_query` read-only even with a credential. One distill run meets the whole
+batch's ask, and it waits on board card `6a5e4ad5`.
+
 - [ ] arxiv:2609.40115 — RLVR: Unlearnable, or Unmeasured? On the Reliability of Difficulty Labels in RLVR — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05
 - [ ] arxiv:2609.40360 — RLVR: Semifactual Credit-Augmented Policy Optimization — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05
 - [ ] arxiv:2609.39533 — RLVR: CATCH: A Controllable Analysis Testbed for Reward Hacking in Coding RL — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05
 - [ ] arxiv:2609.37825 — RLVR: Privy to the Foil: a self-privileged critic for RLVR — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05
-- [ ] arxiv:2609.37868 — RLVR: Learning Beyond What You Sample: cross-model trajectory exchange for RLVR — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05
-- [ ] arxiv:2609.35259 — RLVR: On-Policy or Off-Policy Learning? distillation dynamics — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05
+- [ ] arxiv:2609.37868 — RLVR: Learning Beyond What You Sample: cross-model trajectory exchange for RLVR — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05 **Fifth in the read-first cluster (2026-11-02, research seat, PR #760), 0 citations.** GRAFT: borrows a peer model's successful trajectory when a rollout group all-fails, so it is the no-designated-teacher case of the same question.
+- [ ] arxiv:2609.35259 — RLVR: On-Policy or Off-Policy Learning? distillation dynamics — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05 **Third in the read-first cluster (2026-11-02, research seat, PR #760), 1 citation.** Isolates rollout policy from KL direction and learning rate across Llama3 and Qwen2.5 on scientific, medical and arithmetic reasoning, which is the controlled version of the comparison the two papers above make in one setting each.
 - [ ] arxiv:2609.35677 — RLVR: Verifier Errors in RLVR: Reward Hacking, Limits of Feedback, and Selective Control — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05
 - [ ] arxiv:2609.34857 — RLVR: Beyond Verbalized Confidence: Calibrating Reasoners with Differentiable Readouts — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05
 - [ ] arxiv:2609.28765 — RLVR: Reinforcement Learning with Verifiable Rewards for Small Search Agents — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05
-- [ ] arxiv:2609.28385 — RLVR: When and Where to Trust the Teacher: on-policy distillation and GRPO through entropy — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05
+- [ ] arxiv:2609.28385 — RLVR: When and Where to Trust the Teacher: on-policy distillation and GRPO through entropy — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05 **Fourth in the read-first cluster (2026-11-02, research seat, PR #760), 1 citation.** UECR-GRPO, the joint design that `2609.04108` argues against; worth reading second so the sequential result is read against its strongest counterparty rather than against the weakest.
 - [ ] arxiv:2609.24380 — RLVR: Information-Time Proximal Policy Optimization — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05
 - [ ] arxiv:2609.23053 — RLVR: Attributable Post-Rationalization in RAG Citations: an RLVR fix — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05
-- [ ] arxiv:2609.16639 — RLVR: ReDraft, Don't Just Distill: reference-driven revision for continual post-training — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05
+- [ ] arxiv:2609.16639 — RLVR: ReDraft, Don't Just Distill: reference-driven revision for continual post-training — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05 **Sixth in the read-first cluster (2026-11-02, research seat, PR #760), 1 citation.** The multimodal continual-post-training case, so it is also the batch's only line that touches Layer 3's multi-modal territory.
 - [ ] arxiv:2609.15987 — RLVR: Bellman Policy Optimization — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05
 - [ ] arxiv:2609.12191 — RLVR: GAUGE: When Not to Trust LLM-as-a-Judge in user-simulated evaluation — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05
 - [ ] arxiv:2609.10315 — RLVR: TRACE: Training Reasoning Agents for Causal Exploration with Synthesized Rewards — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05
@@ -327,8 +356,8 @@ section 6c.
 - [ ] arxiv:2609.06107 — RLVR: DataFlex-RL: An Evaluation Platform for RLVR Data Policies — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05
 - [ ] arxiv:2609.05111 — RLVR: Unifying ICL, SFT, KL-Regularized RL Through a Bayesian Lens — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05
 - [x] ~~arxiv:2609.05295 — RLVR: RISE: Recursive Improvement via Self-Extrapolating Policy Distillation — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05~~ - in the corpus with 4 claims, distilled 2026-09-08; the ask was corpus presence and it is met, research seat 2026-10-05, PR #228
-- [ ] arxiv:2609.04565 — RLVR: Extremely Sparse Supervision Incentivizes Reasoning Ability — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05
-- [ ] arxiv:2609.04108 — RLVR: Sequential Beats Joint: On-Policy Distillation and RLVR — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05
+- [ ] arxiv:2609.04565 — RLVR: Extremely Sparse Supervision Incentivizes Reasoning Ability — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05 **READ IN FULL 2026-11-02, research seat, PR #760** (`python3 tools/read_paper.py 2609.04565`, exit 0, 113,007 chars), second-most-cited in the batch at 6. One or two supervised tokens per trajectory, 0.05% of all tokens, matches or beats full-token on-policy distillation across nine teacher-student configurations, and even a randomly chosen single token improves substantially on the base student. **The boundary an abstract loses:** on Gemma 3, Gemma 4 and Mistral 3 plain sampled-token distillation did not improve the students at all, which the authors attribute to not running supervised fine-tuning on the student first, so every claim from this paper is Qwen3-and-Llama-scoped. Findings in `docs/research/notes/2026-11-02-rlvr-chair-batch.md`. **The line stays open because the ask is corpus presence.**
+- [ ] arxiv:2609.04108 — RLVR: Sequential Beats Joint: On-Policy Distillation and RLVR — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05 **READ IN FULL 2026-11-02, research seat, PR #760** (`python3 tools/read_paper.py 2609.04108`, exit 0, 82,275 chars), and it is the batch's most-cited paper at 12, 2.0x the runner-up on rate as well as on count. Six claim-grade findings with their table and section numbers are in `docs/research/notes/2026-11-02-rlvr-chair-batch.md`; the headline is that on-policy distillation to saturation and then GRPO beats pure distillation, pure RLVR and all nine single-step fusions, 80.6 avg pass@1 on logic and 31.8 on math, leading other combinations by 11.7-26.7 points on logic, with the interference shown in the weights as a sign-conflict rate of 3.38% against 15.02-20.36% for the joint and pure-RL methods. Scope: Qwen3-8B teacher, Qwen3-1.7B-Base student. **The line stays open because the ask is corpus presence and that needs one distill run, not a reading.**
 - [ ] arxiv:2609.00444 — RLVR: Group Adaptive Clipping Policy Optimization — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05
 - [ ] arxiv:2608.29188 — RLVR: Locked at the Entrance, Open Inside: Where RLVR Narrows the Solution Space — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05
 - [ ] arxiv:2608.27046 — RLVR: Performance Foundations of Parallel and Distributed Reasoning Language Models — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05
