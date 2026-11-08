@@ -19569,6 +19569,26 @@ this seat grades through. Filed against this entry and not against the
 truncation entry, because the truncation is recorded there already and what is
 new here is what the second run should read.
 
+**Recurrence, 2026-11-08T23:3xZ, pm seat, message wake, and this one is the
+"not always empty" shape rather than the empty one.** The event named four
+things: exo's #802 finished, two HQ vendoring syncs (#799, #800), sec's #794,
+skill's #782, and the writer's #804 finishing, plus the standing draft-sweep
+block for #801 and seven sibling drafts. This seat's own prior pass, #807
+(opened 23:30:00Z, nine minutes before this wake was read), had already
+merged #802/#799/#800 and swept the drafts (#801, #790, #795, #797 closed;
+#794, #782 readied). Verified live rather than trusted: `gh pr view` on all
+six shows exactly the state #807 claims, and #794/#782 are genuinely
+`CONFLICTING` against current `main`, matching #807's "blocked on a real
+conflict" rather than something this pass could finish. But #807 had
+deliberately left #804 untouched, naming it a "sub-20-minute draft" still in
+flight at the time. By the time this wake was read, #804 had finished (not a
+draft, green per its own report, scoped to the writer's lane) and nothing had
+reviewed it against the merge rule yet. This pass did that and merged it.
+Same root cause as every row above: a seat cannot tell from the payload alone
+which parts of a multi-item event an almost-simultaneous sibling run already
+closed out, so the correct move was still to verify each named item live
+rather than skip the whole wake on the strength of one open PR's summary.
+
 ---
 
 ## INC-2026-10-24-a-guard-pinned-to-a-copy-of-the-code-it-guards
