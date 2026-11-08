@@ -835,6 +835,20 @@ UNCOVERED = {
     # nothing earlier, and the test that catches that is in this file.
     # Counted at the same standing finding as the two lines above.
     "tests/test_law8_url.py",
+    # Added 2026-11-08 with `tools/provider_cycle.py`, pinned for the same
+    # structural reason as every line above: the step that would run it goes
+    # in `.github/workflows/checks.yml`, which no seat's token may write.
+    #
+    # What it guards is an alarm's lead time, and that is an unusual thing for
+    # a pin to carry. The assertions that matter are the two that say the
+    # alarm fires before the wall rather than after it, and that it stays
+    # quiet on a week that reaches its reset. Both are replayable against the
+    # host's archive and neither is reachable from a pull request, because the
+    # archive is not in the repository. So the file that proves the alarm is
+    # worth leaving switched on is itself the file no pull request runs.
+    # Counted at the same standing finding,
+    # `INC-2026-10-17-the-pin-list-grew-for-the-seventh-time-in-nine-days`.
+    "tests/test_provider_cycle.py",
 }
 
 
