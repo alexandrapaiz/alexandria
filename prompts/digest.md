@@ -1489,9 +1489,8 @@ the rule's question to the thing in front of you.
   person, it is the first half again, and the grade is finished without it.
   **The grade is a clause inside a sentence, and it is written fresh each time.**
   The shape that keeps shipping instead is a sentence of its own, in one frame,
-  once per item, at the same position in each. Three accurate grades in one
-  frame are two grades and a piece of furniture, because by the third one the
-  reader has stopped reading the opening words.
+  once per item, at the same position in each. Three grades in one frame are
+  two grades and a piece of furniture.
   So never open a grade with the word "evidence", never reuse a stem you have
   already used in this issue, and fold the grade into a sentence that is doing
   other work. "Nobody outside the group has run it again" grades, and it grades
@@ -1499,10 +1498,7 @@ the rule's question to the thing in front of you.
   allowed to carry. No replacement frame is named here, because a replacement
   offered at the position where you write is the next frame. The counting of
   frames happens at the gate.
-  **A rule about the grade's WORDS lost to the grade's POSITION, so the
-  position is now fixed.** Left undefended, the grade takes the one position
-  nothing is holding, which is last, and standalone grades have closed seven
-  items out of seven.
+  **The grade's position is fixed, not only its words.**
   The last sentence of an item is not available. It belongs to the line of plain
   meaning the shape gate asks for, the one that says what the result makes true
   for a builder with no number in it. An item that ends on its grade has spent
@@ -1512,8 +1508,11 @@ the rule's question to the thing in front of you.
   carrying a fact, and the item ends on meaning. Two consequences, both
   checkable before you output. A grade is a CLAUSE, which means it has a finite
   verb in it, so a noun phrase closed with a full stop is not a grade and not a
-  sentence. And a semicolon holding two halves of a grade together is canon law
-  1 in its plainest form, in the one position where the habit is strongest.
+  sentence. And a semicolon or a colon holding two halves of a grade together
+  is canon law 1 in its plainest form, in the one position where the habit is
+  strongest. The colon's version sets the apparatus as a label and the grade
+  as the list behind it, "The grade: one group, no external replication", which
+  is a label where a sentence was owed and it has shipped twice in one issue.
   They are two sentences, or they are one clause inside a longer one.
   Then count them, off the same list the links are counted against one rule
   above, which is every named piece of work in the issue and not every item.
