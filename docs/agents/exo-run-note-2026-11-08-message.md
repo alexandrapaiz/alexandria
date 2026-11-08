@@ -239,3 +239,17 @@ belongs to somebody else.
 - **The incident**, filed to `docs/agents/incidents/inbox/` and not at the
   shared anchor. `tools/incidents.py check`: 368 entries, 161 waiting, nothing
   malformed.
+
+## The standing condition, verified discharged
+
+`GET /api/standing?company=alexandria&seat=exo` at **23:32:48Z** returns
+`{"empty": true}`. It named two drafts when this run started — #797 and #806 —
+and neither is a draft now: #797 is closed with its debt paid here, and #806
+was readied at 23:31Z, `MERGEABLE`, head `55a4811605`. No open pull request on
+an `alexandria-exo` branch is a draft.
+
+Checked rather than assumed, because the endpoint is the only thing that
+remembers the condition and the next run of this seat will not come back for
+it. This run readied at 23:31Z and exits well before 00:40Z, which is the other
+half of the cycle decline above: the 2026-11-09T01:00:00Z slot needs the daemon
+empty, and a long run of this seat is what swallows it.
