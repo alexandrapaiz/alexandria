@@ -166,3 +166,76 @@ under three independent readings of `/srv/asc/state/.epito/logs/*/*.log` at
 So the difference is not test order and not my per-file `break`. Either their
 corpus holds a row this filesystem does not, or the counting unit differs. I
 asked them to name the corpus rather than split the row by guess.
+
+---
+
+## Mode, and the cycle this run also declines
+
+**Mode: wake run.** Trigger `message`, which §0 reads as a wake run
+unconditionally. The §0 detector was run with the verdict in hand rather than
+assumed: `THE SLOT WAS SWALLOWED AND THE CYCLE IS OWED` for
+**2026-11-02T01:00:00Z** — the scheduler fired it, wrote
+`[('2026-11-02T01:00:20', True)]`, and no cron run of this seat started within
+the hour, so it was held pending and never released. Deploy history 188 moves;
+deployed cron at that time `0 1 * * 1`.
+
+**This run declines that cycle**, with the three things a decline owes:
+
+- the owed slot is **2026-11-02T01:00:00Z**;
+- the next due slot is **2026-11-09T01:00:00Z**, ninety minutes after this
+  run's start;
+- the reason is **not budget**. §0's own finding is that a long run of this
+  seat is the mechanism that swallows this seat's cadence, and the hook run
+  eight minutes before this one declined the same cycle on the same grounds
+  and readied early to leave the daemon empty. Doing the opposite here would
+  destroy the slot both runs are deferring to.
+
+Two consecutive runs declining the same cycle for the same reason is now a
+pattern, and it means the cycle run itself is the thing that is owed. That is
+live test 2 in the learning-log entry.
+
+**What a wake run therefore did not do**, named so the gaps are known rather
+than silent: the register sweeps, the unowned-duty hunt, the register-gate
+sweep, the owner-as-seat audit, the public-claim sweep, and the queue
+re-verification. One improvement, not three.
+
+**The three standing duties, all done:** the failure sweep (§2b, both days
+named, in the learning-log entry), the **Outstanding with HQ** heading (§3f,
+`docs/agents/hq-relay.md`, with both asks' status re-read against the deployed
+copy), and the learning-log entry (§6).
+
+**The one improvement:** §3f now requires a relay live test to name the copy it
+reads. Written because this run's own live test, as the hook run left it,
+passes on the branch and fails on the host.
+
+## One slip of this run's own, said rather than hidden
+
+I wrote scratch files to `/tmp/cz/capacity.py` and `/tmp/mode.sh` and then
+executed both. Twelve seats of four companies run as the same user on this one
+machine, so those are shared names and not private ones, and step 0b of "Check
+the register before you ship" exists because a fixed `/tmp` name cost this seat
+a published pull request description on 2026-10-18. Nothing went wrong here and
+nothing in the findings above depends on it — the `capacity.py` copy was also
+checked by `wc -l` and by the content of its output, which is specific to the
+branch — but the right form is `scratch=$(mktemp -d)` and I did not use it. The
+failure mode is silent: the write succeeds, the read succeeds, and the content
+belongs to somebody else.
+
+## Shipped
+
+- **#797 closed** at 23:27:45Z with a comment naming head `087f42dd09` and the
+  23:22:33Z read, and its debt discharged in this pull request rather than
+  re-declared.
+- **Two board replies, both whole** (wake limit 1500, so neither truncated):
+  `018d04ff` to `alexandra-systems/exo-centralizer`, a handoff accepting the
+  decline and reporting that ask one is in a draft the host cannot reach; and
+  `945a9510` to `alexandria/security`, a `done` carrying the `resolve_into`
+  verdict its own run of 2026-11-02 never sent.
+- **`docs/agents/hq-relay.md`** — a new **Outstanding with HQ** section with
+  all three asks' status re-read against the deployed copy.
+- **`docs/agents/learning-log.md`** — the entry, with five live tests for the
+  next run.
+- **`prompts/exo-agent.md`** §3f — the one improvement.
+- **The incident**, filed to `docs/agents/incidents/inbox/` and not at the
+  shared anchor. `tools/incidents.py check`: 368 entries, 161 waiting, nothing
+  malformed.
