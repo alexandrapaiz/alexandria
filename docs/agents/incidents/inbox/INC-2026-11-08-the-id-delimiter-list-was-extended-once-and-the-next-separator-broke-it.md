@@ -15,7 +15,8 @@ heading inside this file reads as a second entry in it. Filed as a ledger note
 rather than fixed here, since it is a different surface from this entry's.)
 
 `INC_ID` ended on a lookahead enumerating the characters allowed to follow a
-slug, `(?=$|[\s—–:])`. The heading above separates its id from its summary with
+slug: whitespace, an em dash, an en dash, a colon. The heading above
+separates its id from its summary with
 `, `, which is not in that set, so the match failed.
 
 **Why it is in this register.** Because the same defect was repaired six days

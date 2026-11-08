@@ -26675,8 +26675,8 @@ ingestion target rather than a skill target.
 - What is worth stealing. Not the enum, which is obvious once stated, but the
   separation of the remedy from the diagnosis. Today's whole cost was that the
   action which would have ended the outage was written in the error message
-  257 times — raise the limit at `claude.ai/admin-settings/usage` — and the
-  only reader of that message was a classifier looking for a different word.
+  257 times, which is raise the limit at `claude.ai/admin-settings/usage`, and
+  the only reader of that message was a classifier looking for a different word.
   A refusal record here should carry its remedy as its own field, so that the
   surface reporting a lost cron slot can print what to do about it without
   any reader having to parse the sentence a second time. `tools/cron_firing.py`

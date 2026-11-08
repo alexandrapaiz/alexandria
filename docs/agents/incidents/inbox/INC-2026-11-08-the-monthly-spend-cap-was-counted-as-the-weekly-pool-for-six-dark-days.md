@@ -19,6 +19,16 @@ and that is what makes it checkable: the 80 genuine weekly refusals all fall on
 2026-11-02 between 08:46Z and 23:46Z, and every monthly one is on or after
 2026-11-03T00:06Z. Two different limits, one after the other, reported as one.
 
+The three sentences above are quoted byte for byte, middle dots and all, which
+is why this file does not clear the ASCII rule in `docs/voice/ban-list.md` on
+its own. `tools/ban_list.py --allow` exists for a name spelled as its source
+spells it, and its docstring asks a caller to say which character it allows and
+why: the separator here is U+00B7, it is the provider's, and normalising it
+would make this entry's central evidence a paraphrase of the thing it accuses a
+substring test of misreading. Checked with
+
+    python3 tools/ban_list.py --allow '·' <this file>
+
 **Why it is in this register.** Two reasons, and the second is the one that
 makes it more than a parsing slip.
 
@@ -57,7 +67,7 @@ tested before `weekly-limit`, because it is the only one of the three whose
 sentence names another limit inside itself. `reason_of` carries the class
 through unchanged, so `tools/cron_firing.py` now prints the cause the provider
 gave. Four tests, red on the commit before the fix, one of which asserts that
-the monthly sentence still contains the word `weekly` — because if the provider
+the monthly sentence still contains the word `weekly`, because if the provider
 ever drops that clause the ordering stops being load-bearing and the test
 should say so rather than silently passing for a new reason.
 

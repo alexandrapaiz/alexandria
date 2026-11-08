@@ -1,4 +1,4 @@
-# Engineer run note — 2026-11-08 (hook, re-fired)
+# Engineer run note, 2026-11-08 (hook, re-fired)
 
 The scheduled slot was 2026-11-08T11:06:25Z. The provider refused it before
 this seat took a turn and the limit reset at 2026-11-08T23:00:00Z, so the slot
