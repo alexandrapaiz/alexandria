@@ -138,16 +138,74 @@ def test_the_seat_filter_reads_one_directory(tmp_path):
     assert seats == {"ursa-engineer"}
 
 
-# --- the two limits are two things ---------------------------------------
+# --- the three limits are three things -----------------------------------
+
+# The two spend variants are quoted from `/srv/asc/state/.epito/logs` rather
+# than paraphrased, because the bug they catch lives in a subordinate clause:
+# both of them say "your weekly limit resets", so any reader that tests for
+# the word `weekly` before the word `spend` calls them the weekly wall. All
+# 257 spend refusals on that host take one of these two forms.
+SPEND_SENTENCES = [
+    ("You've hit your org's monthly spend limit · ask your admin to raise it "
+     "at claude.ai/admin-settings/usage · your weekly limit resets "
+     "Nov 8, 11pm (UTC)"),
+    ("You've hit your org's monthly spend limit · ask your admin to raise it "
+     "at claude.ai/admin-settings/usage · your weekly limit resets 11pm (UTC)"),
+]
+
 
 @pytest.mark.parametrize("sentence,expected", [
     ("You've hit your weekly limit · resets 11pm (UTC)", "weekly-limit"),
     ("You've hit your 5-hour limit · resets 4am", "session-limit"),
     ("Your session limit was reached", "session-limit"),
     ("Overloaded", "unclassified-429"),
+    (SPEND_SENTENCES[0], "spend-limit"),
+    (SPEND_SENTENCES[1], "spend-limit"),
 ])
 def test_the_refusal_sentence_is_the_only_discriminator(sentence, expected):
     assert cf.classify_refusal(sentence, 429) == expected
+
+
+@pytest.mark.parametrize("sentence", SPEND_SENTENCES)
+def test_the_spend_wall_is_not_read_off_its_weekly_clause(sentence):
+    """The regression that held the portfolio shut for six days.
+
+    This file said the provider had two limits until 2026-11-08. The spend
+    sentence contains `your weekly limit resets`, so `"weekly" in text`
+    matched it and `classify_refusal` returned `weekly-limit` for 257 of 257
+    spend refusals — a confident wrong answer, never `unclassified-429`.
+    Seventy-four of those were cron slots, which is 74 of the 177 slot
+    refusals this module exists to name.
+
+    The assertion that matters is the second one. A weekly wall names its own
+    reset and a spend cap has none, so the word `weekly` tells the next reader
+    to wait for a boundary that will not help.
+    """
+    assert cf.classify_refusal(sentence, 429) == "spend-limit"
+    assert cf.classify_refusal(sentence, 429) != "weekly-limit"
+
+
+def test_the_spend_test_runs_before_the_weekly_test():
+    """Order, not vocabulary, is the fix — so pin the order itself.
+
+    A sentence naming both walls has to resolve to the narrower one. Adding
+    `spend-limit` *after* the weekly branch would leave every test above
+    passing on the two real variants only by accident of their wording.
+    """
+    both = "hit your org's monthly spend limit, and your weekly limit resets"
+    assert cf.classify_refusal(both, 429) == "spend-limit"
+
+
+def test_a_weekly_refusal_is_still_weekly_after_the_third_class_arrived():
+    """The other direction: the fix must not drag weekly rows into spend.
+
+    All three real weekly variants, quoted from the same host. 487 refusals
+    take one of these forms and none of them says `spend`.
+    """
+    for sentence in ("You've hit your weekly limit · resets Nov 1, 11pm (UTC)",
+                     "You've hit your weekly limit · resets 11pm (UTC)",
+                     "You've hit your weekly limit · resets Nov 8, 11pm (UTC)"):
+        assert cf.classify_refusal(sentence, 429) == "weekly-limit"
 
 
 def test_the_result_line_is_found_whatever_its_whitespace(tmp_path):
@@ -189,6 +247,27 @@ def test_the_weekly_and_session_limits_do_not_collapse_into_one_word(tmp_path):
     result = cf.judge(cf.read_runs(tmp_path), "2026-10-25", now=NOW)
     assert sorted(f["why"] for f in result["lost"]) == [
         "session-limit", "weekly-limit"]
+
+
+def test_the_three_limits_reach_the_verdict_as_three_words(tmp_path):
+    """End to end, because `classify_refusal` is not where a reader looks.
+
+    The label has to survive `read_runs` and `judge` and arrive in the
+    finding, since what the register quotes is the printed verdict and not
+    the function's return value.
+    """
+    write_log(tmp_path, "alexandria-market", "2026-11-06T11-00-10-855Z",
+              "cron", refused(SPEND_SENTENCES[0]), exit_code=1, turns=1)
+    write_log(tmp_path, "alexandria-engineer", "2026-11-06T12-06-00-000Z",
+              "cron", refused("You've hit your weekly limit · resets 11pm (UTC)"),
+              exit_code=1, turns=1)
+    write_log(tmp_path, "engineer", "2026-11-06T00-06-00-000Z", "cron",
+              refused("You've hit your 5-hour limit · resets 4am"),
+              exit_code=1, turns=1)
+    result = cf.judge(cf.read_runs(tmp_path), "2026-11-06",
+                      now="2026-11-06T23:00:00Z")
+    assert sorted(f["why"] for f in result["lost"]) == [
+        "session-limit", "spend-limit", "weekly-limit"]
 
 
 # --- the three states ----------------------------------------------------
