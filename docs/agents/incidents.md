@@ -25421,6 +25421,11 @@ heading: `2026-W40` three times, `2026-W42` once as `## What to read`, and
 given twice, already recorded as incident 20, and it has now shipped to readers
 in three consecutive sends.
 
+The span is longer than three. `INC-2026-09-24-prohibition-supplies-the-string`
+recorded this reaching subscribers "for the third time" on 2026-09-24, with the
+rule in five places and a gate asking the right question already running, and
+it is the incident behind L-A23 in the company standard.
+
 The repeat is not the heading. It is that the gate written to catch it reported
 `OK` on the newest one. `slotheads` matched the ban's phrasings with `==`, and
 the phrase had been added to the ban eight days earlier for the bare form, so
