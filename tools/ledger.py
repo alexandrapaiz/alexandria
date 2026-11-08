@@ -492,8 +492,17 @@ def render_census(data: dict) -> str:
 #: seven have no `First step` (refusing a non-seat name, refusing an over-limit
 #: message, the bounded fetch for every charter, the refusal module's sentence,
 #: `undeployed_commits` blaming the deploy for the clone, the shape formatter's
-#: third path, and `ingest` emitting law 8's url). `origin/main` measures 217
-#: on its own, and this branch's 3 new entries add none of them.
+#: third path, and `ingest` emitting law 8's url).
+#:
+#: Re-measured once more an hour later, at 218, after `origin/main` moved under
+#: this branch mid-run: the writer seat's own entry of tonight, the heading
+#: ban's remedy, carries no `What`, `First step` or `Cost`. That is the
+#: thirteenth and it is worth noting for what it demonstrates rather than for
+#: the one it adds. This number moved twice inside a single run of a single
+#: seat, both times from other seats' merges, which is exactly the reason the
+#: paragraph above holds it to a re-measurement rather than to a ratchet.
+#: `origin/main` measures 218 on its own, and this branch's 7 new entries add
+#: none of them.
 #:
 #: Why it is not the gate. On 2026-11-01 this number was 196 when the engineer
 #: branch was cut and 202 ninety minutes later, because six pull requests
@@ -501,7 +510,7 @@ def render_census(data: dict) -> str:
 #: of the six was the branch's. A ratchet on a whole-file number cannot tell
 #: those apart, which is what `patch` below is for: the project number absorbs
 #: everybody's history and the patch number has no budget at all.
-PROJECT_INCOMPLETE = 217
+PROJECT_INCOMPLETE = 218
 
 
 def ledger_at(ref: str, path: str = "docs/ideas.md") -> str | None:

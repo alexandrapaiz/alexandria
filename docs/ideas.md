@@ -26492,6 +26492,64 @@ ingestion target rather than a skill target.
 - Cost: $0
 - Status: proposed
 
+### 2026-11-08 - The heading ban's proposed remedy would not have caught the heading that shipped next, because the defect was never which list (writer seat, for the engineer, correcting an open entry)
+- Trigger: the grade of `2026-W44` in `docs/voice/reviews/2026-11-08.md`. Its
+  reading list prints `## What to read yourself` and
+  `check_voice.py slotheads` reported `OK  5 heading(s), none of them a
+  framework name`.
+- Corrects, and does not duplicate: "2026-11-01 - The pre-send heading ban and
+  the voice canon's heading ban share no phrase, and four live headings walked
+  through both", still `proposed`. That entry is right about the drift and its
+  measurement stands. Its remedy is to have the pre-send gate read the ban from
+  the quoted list inside `prompts/digest.md` rather than from a hand-kept
+  tuple, "because a derived list cannot drift".
+- Why that is insufficient as written, measured rather than argued. The derived
+  list already held the phrase. `97de5c8b` added `what to read` to the
+  generator's quoted ban on 2026-11-01, the same day that entry was filed and
+  for the same reason, so by the time `2026-W44` was written the list was
+  correct and both voice-side gates were deriving from it. The heading still
+  passed, because `slot_heading` tested membership with `==` and
+  `what to read yourself` is not `what to read`. A derived list matched by
+  equality drifts exactly as fast as a hand-kept one: by one word, per print.
+- So the ask has two halves now, and the second is the one nobody has filed.
+  Keep the derivation, which is still right. And have whatever the pre-send
+  gate ends up calling test the PREFIX, not the whole string: a banned phrasing
+  followed only by a remainder that would be true of every issue is the banned
+  phrasing. The voice side of that landed in this run at
+  `docs/voice/check_voice.py` and it is the reference implementation, including
+  the boundary case that has to keep passing, so the gate does not need to
+  invent the reading.
+- The count, because it is the argument for doing this now rather than next.
+  **Three of the four editions the product serves print a framework name as a
+  heading**, verified live against the served pages rather than against
+  `site/content/issues/`, which holds two of the four:
+  ```
+  2026-W39  clean
+  2026-W40  ## What is gaining ground: ...   ## What is genuinely new: ...   ## What fell behind: ...
+  2026-W42  ## What to read
+  2026-W44  ## What to read yourself
+  ```
+  This is canon law 12, the one ruling the owner has given twice, recorded as
+  incident 20. It has now shipped to readers in three consecutive editions.
+- The structural half, which is the writer charter's structure-watch step and
+  the reason this entry exists rather than a seventh phrasing. The generator's
+  rule for this slot is right, explicit, and was in the file that wrote the
+  violation: "Build the heading from the papers underneath it and never from
+  the act of recommending them." The generator also says why it keeps failing,
+  in its own words: "This slot fails more often than the other three and the
+  reason is structural. The first three sections are named after the day's
+  news. This one is named after something the issue does every time it runs,
+  so a generic line is always available here." A slot whose correct answer is
+  never forced by the material is a slot the press should compose or refuse,
+  the way `ensure_fresh_title` already refuses a reused title and asks the
+  model again. That is the lever. Three prompt attempts on this one heading
+  have now shipped three violations.
+- Why this is the engineer's and not this seat's: `tools/` and `pipeline/` are
+  pipeline code and the writer charter's boundary says never pipeline code.
+  This seat owns the ban's wording and the voice gate, and both are correct as
+  of this run. Neither reaches a send.
+- Status: `proposed`
+
 ### 2026-11-02 - Derive a gate's domain or declare it, because a hand-written domain is the only part of a ratchet nothing checks
 - Trigger: two seats shipped a ratchet for the confident-zero class within one
   hour on 2026-11-02, and both gave their ratchet a hand-written domain. The
