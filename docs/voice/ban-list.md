@@ -4680,3 +4680,56 @@ gap that the same collision had left empty (incident 25).
     and never as the reader's.
     LANDED docs/voice/check_voice.py: "the typed length is the posted length"
     LANDED docs/voice/check_voice.py: "the typed length plus one per split"
+
+157. The ban list matched with `==`, which the next print defeats by adding
+    one word.
+    Not a phrase. A reading, like 146 and 150, and it bans a shape of
+    enforcement rather than a shape of sentence. A register that holds a
+    closed list of banned strings and tests membership by equality is a
+    register that covers the print it was written from and nothing after it,
+    because the thing it is written from is the only specimen it has and the
+    next one is written by a model that has never seen the list.
+    The instance, and the dates are the whole finding. `2026-W42` served
+    `## What to read` as the reading list's whole heading. `97de5c8b` added
+    `what to read` to the generator's quoted ban on 2026-11-01, which is where
+    `check_voice.py slotwords` and `slotheads` both derive their dress, so the
+    list and the gate were correct and in step. On 2026-11-02 the press printed
+    `2026-W44`, whose reading list reads `## What to read yourself`, and
+    `slotheads` reported `OK  5 heading(s), none of them a framework name`.
+    One trailing reflexive, eight days after the list was widened for the bare
+    form, and the gate written to catch exactly this said the issue was clean.
+    What makes it a class rather than a miss is that the patch and the evasion
+    point the same way. The repair for a print is to add that print's string,
+    so the list grows by one specimen per edition while the space of dresses
+    is a language. `what to read yourself` is not a clever evasion either. It
+    is the framework's own internal name for the slot, which canon law 9
+    writes as "Read these yourself", so it is the one dress the ban could
+    least afford to miss and the one a model is likeliest to reach for.
+    The test, and it is asked of a gate rather than of a line. Does this check
+    fire on anything other than the specimen that caused it to be written? If
+    the only way to answer yes is to add another string, the check is a record
+    of past violations wearing a detector's name.
+    The repair is the prefix and not a seventh string: the banned phrasing
+    followed only by a remainder that would be true of every issue is the
+    banned phrasing. `SLOT_INVARIANT` is that remainder and it is kept small
+    on purpose, because a remainder carrying the day's material is the heading
+    law 12 asks for and firing on it gets the gate deleted inside a week.
+    Note what that still is, so no run reads it as the cure. It is a closed
+    list one level up, and the structural answer is the press composing or
+    refusing this heading the way `ensure_fresh_title` already refuses a
+    reused title. That ask is in docs/ideas.md under 2026-11-08, as a
+    correction to the proposed remedy of 2026-11-01, which would not have
+    caught this heading either: it proposes that the pre-send gate derive its
+    list from the generator rather than keep a tuple by hand, and the defect
+    was never which list. It was the `==`.
+    No prompt diff, and for once the reason is not that the words are already
+    there. The generator's rule for this slot is right, explicit, and was in
+    the file that wrote the violation: "Build the heading from the papers
+    underneath it and never from the act of recommending them." A ban list
+    naming a seventh dress would also hand the model that dress at the
+    position where the heading gets drafted, which is entry 100.
+    ```
+    Enforced docs/voice/check_voice.py: "slotheads"
+    LANDED docs/voice/check_voice.py: "SLOT_INVARIANT"
+    LANDED docs/voice/reviews/2026-11-08.md: "the gate said OK"
+    ```
