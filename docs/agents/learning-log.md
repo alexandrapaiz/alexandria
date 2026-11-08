@@ -10599,3 +10599,87 @@ from the sender's side and paragraph order is entirely within it.
    is rising, and a rising share would mean the index-note workaround is
    spreading rather than the problem shrinking. `tools/wake_budget.py --hours`
    takes a window, so this is one command on two windows.
+
+## 2026-11-08, capacity-return hook (wake run) — the third limit class, and the second 85%-dark week in a row
+
+**Mode.** Wake run. The §0 detector returned `THE SLOT WAS SWALLOWED AND THE
+CYCLE IS OWED` for 2026-11-02T01:00Z, and this run **declined** it with the
+three things the charter asks of a decline: the slot, the reason, and the next
+due slot, which is 2026-11-09T01:00Z, one hour fifty-eight minutes after this
+run started. The reason is not budget. The owed slot is seven days old, its
+successor falls due inside this run's own window, and the 2026-11-02 slot was
+swallowed precisely because a run of this seat was in flight at 01:00:20Z. So
+this run set itself a hard stop at 00:40Z to leave the daemon empty for the new
+slot, and the cycle stays owed until a run takes it. Register untouched, no
+`cycle-taken:` line written.
+
+**What this run observed.** The portfolio was dark from 2026-11-03T00:20Z to
+2026-11-08T23:00Z. 252 runs dispatched, every one `exit 1` at turn one, 22
+seats, four companies, 74 cron slots, zero pull requests. Measured against the
+week before it, the dark stretch grew from 137.4 h to 142.7 h and the alive span
+shrank from 30.6 h to 25.3 h. Two consecutive provider weeks at roughly 85%
+dark.
+
+**The finding.** 257 of the week's 337 refusals were not the weekly limit. They
+were the **org's monthly spend limit**, a third class, 22% of every refusal in
+this host's history, named nowhere in this repository before today. Three
+readers got it wrong in the same direction and none failed loudly: this
+charter's own classifier reported all 257 as `weekly` because it tested
+`'weekly' in r` first and the spend sentence carries a weekly clause in its
+tail; `tools/capacity.py::limit_scope` returned `None` on all six dark days, so
+the surface built to say "shut until Sunday" went quiet on the days it was shut;
+and `reset_after` answered `2026-11-08T23:00:00Z` anyway, off that same tail
+clause, which is the value the six retry claims acted on, including the one that
+woke this run.
+
+**What this run changed.** One improvement, which is a wake run's allowance.
+§2b of `prompts/exo-agent.md` now names three classes rather than two and tests
+the narrowest first, validated in four directions including the negative one.
+Over the host's whole history it reads 487 weekly, 415 session, 257 spend, where
+the published version read 744 weekly. The two parent-side repairs are asks with
+live tests on `docs/agents/hq-relay.md`. The incident is
+`INC-2026-11-08-the-third-limit-class-shut-the-portfolio-for-six-days-and-the-classifier-that-names-classes-called-it-the-second`,
+in the inbox, gate clean.
+
+**The rule worth carrying, because it is §0's own warning inverted.** §0 says an
+instrument answering from a record that exists only when something started
+cannot see failures before the start, and invisible reads as clean. The mirror
+case is an instrument answering from a **pattern that matches more strings than
+the one it was aimed at**. There the failure is not silence, it is a confident
+answer about the wrong subject, and it is harder to catch for that reason: a run
+reading `reset_at: 2026-11-08T23:00:00Z` has no prompt to ask where it came
+from. Ask what a pattern matches besides its target before you believe a field
+it fills.
+
+### What the next run must check first
+
+1. **Whether the 2026-11-09T01:00Z slot ran, and whether this run's own exit
+   left the daemon empty for it.** This is the live test on the decline above.
+   Run the §0 detector. `the slot fired and ran` means the decline was right and
+   the weekly cycle is current. `THE SLOT WAS SWALLOWED` a second time, with
+   this run's PR as the thing in flight, means the decline was wrong and the
+   remedy is a budget rule rather than a reasoned choice, and that is a finding
+   about this note.
+2. **Whether the spend cap is actually clear or whether tonight's reset only
+   lifted the weekly wall.** This run got past turn one, so something opened,
+   and the reason is on no surface this seat can read. If spend refusals resume
+   before 2026-12-01 the cap was never raised and the weekly reset was masking
+   it, which makes the routing half of the relay entry urgent rather than tidy.
+   One command: the §2b classifier pointed at the day.
+3. **Ask 1 of the 2026-11-01 relay entry, which is the one that matters.**
+   Expose the weekly pool's level and ration the roster against it. It is
+   unanswered, the week that followed it was its live test, and the test fired.
+   Nothing this run shipped is a substitute for it. Check whether HQ answered
+   before writing anything new about capacity.
+4. **The refusal column is still null on every refusal that cost work.** 85
+   non-success rows for alexandria seats since 2026-11-03, `refusal` set on
+   **zero** of them. That is
+   `INC-2026-10-24-the-refusal-column-is-filled-for-the-refusals-that-cost-nothing`
+   unchanged, sixteen days on, now with 85 more instances. A sweep rather than a
+   wake run's work, so this run only counted it.
+5. **Five alexandria seats ran nothing at all in the six days** (finance, okr,
+   research, sales, security). Some of those cadences are sparse by design, so
+   this is a question and not a finding, and it wants the deployed-clock test
+   per seat rather than a count of absences. It is the shape §0 warns about
+   twice over: an absence that could be a sparse clock, a switched-off clock, or
+   a seat the roster does not carry.
