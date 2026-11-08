@@ -922,7 +922,7 @@ def figures(paths=None):
 
     The whole-issue density is printed beside it and deliberately carries no
     target, because the generator states none. 52 figures in 1,017 words is
-    the shape of the page and the grade reads it; three in a paragraph is the
+    the shape of the page and the grade reads it. Three in a paragraph is the
     rule and this is where it is enforced.
 
         python3 docs/voice/check_voice.py figures --live
@@ -1348,7 +1348,34 @@ def code_state(path):
     return state
 
 
-def quoting(text):
+#: What `quoting` has to get right, as data, because the reading below was
+#: changed on 2026-11-08 and a changed reading with no cases is a guess.
+#: Fields: (excused, the line, whether a four-space indent means a code block)
+QUOTING_CASES = (
+    # Markdown, where an indent is a fenceless code block and the mark is the
+    # literal character. This is the behaviour that has to survive.
+    (True, "    pytest -q; echo done", True),
+    # The live case that found the gap. This seat's own prose, inside a Python
+    # docstring, joining two finished sentences with a semicolon.
+    (False, "    the page and the grade reads it; three in a paragraph is the",
+     False),
+    # A quoted specimen inside a docstring stays excused, because striking the
+    # mark would falsify the quote. That reading is not the indent's.
+    (True, '    the row reads "a; b" and the grade quotes it whole', False),
+    # A shell line in a docstring, which says so with its own prompt.
+    (True, "    $ psql -c 'select 1;'", False),
+    # A quotation of somebody else's prose, marked as one.
+    (True, "> the rule is stated; nothing enforces it", True),
+)
+
+
+def quoting_cases():
+    """Every case above, run before a diff is read."""
+    return [(want, line, code) for want, line, code in QUOTING_CASES
+            if quoting(line, code) is not want]
+
+
+def quoting(text, indent_is_code=True):
     """Is the mark inside something quoted, or inside a command?
 
     The two exceptions are the whole difficulty and both were settled in prose
@@ -1356,9 +1383,27 @@ def quoting(text):
     of the artifact or of a surface's output cannot be struck without
     falsifying the quote, and a semicolon inside a shell line is the literal
     character. Everything else is a finding.
+
+    `indent_is_code` is the third exception and it was wrong by default until
+    2026-11-08. In Markdown a four-space indent is a fenceless code block, so
+    excusing the line wholesale is right. In Python it is scope, so every line
+    of every docstring and every indented comment in this file was excused for
+    as long as the check has existed. Measured on the day the parameter was
+    added: 2,670 indented prose lines in `check_voice.py`, 14 of them carrying
+    a canon law 1 mark this reading could not see, 10 of those plainly this
+    seat's own prose joining two finished sentences. The gate that reads this
+    seat's added lines for law 1 was blind to the surface this seat writes
+    most of its prose on, and the line that found it was added by this run.
+
+    The caller decides, and `selfcheck` passes `False` only for `.py` files
+    under `docs/voice/`, which is this seat's own surface. The same reading
+    applies to `tools/*.py` and that is a filing for the engineer rather than
+    a red this seat drops on another lane (incident 23's class).
     """
     stripped = text.lstrip()
-    if text.startswith(("    ", "\t")) or stripped.startswith((">", "$", "#!")):
+    if indent_is_code and text.startswith(("    ", "\t")):
+        return True
+    if stripped.startswith((">", "$", "#!")):
         return True
     if stripped.startswith("|") and stripped.endswith("|"):
         return True
@@ -1430,6 +1475,13 @@ def selfcheck(ref=None):
     separator. Nowhere else.
     """
     ref = ref or "origin/main"
+    wrong = quoting_cases()
+    for want, line, code in wrong:
+        print(f"  CASE    wanted excused={want}: {line.strip()[:60]}")
+    if wrong:
+        print("QUOTING_CASES says which marks this reading excuses, and the")
+        print("reading changed. Nothing below was read.")
+        return 1
     bad = selfcheck_cases()
     if bad:
         for want, line, start in bad:
@@ -1455,7 +1507,11 @@ def selfcheck(ref=None):
             if path not in fences:
                 fences[path] = fenced(path)
                 states[path] = code_state(path)
-            if n in fences[path] or quoting(text):
+            # Indentation means a code block in Markdown and scope in
+            # Python, so the excuse is the caller's to grant. Scoped to this
+            # seat's own surface: see `quoting`.
+            own_python = path.startswith("docs/voice/") and path.endswith(".py")
+            if n in fences[path] or quoting(text, not own_python):
                 continue
             if mark == EM and text.lstrip().startswith("#"):
                 continue
