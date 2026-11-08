@@ -762,6 +762,27 @@ UNCOVERED = {
     # which is the shape of the two incidents this file's set exists to name.
     # Counted at the same standing finding as the line above.
     "tests/test_resolve_target.py",
+    # Added 2026-11-02 with the security seat's branch-prefix gate, pinned for
+    # the same structural reason as every line above and counted at the same
+    # standing finding, `INC-2026-10-17-the-pin-list-grew-for-the-seventh-time-in-nine-days`.
+    #
+    # This pin is the sharpest argument in the set for applying item 17, and
+    # the reason is that the run which added the file is the reason the file
+    # exists. The security seat's charter holds its branch prefix at `sec/` on
+    # purpose, because `semimonthly` is absent from the bus's self-continue
+    # suppression set, so moving the prefix would wake the seat on its own
+    # merges. Five runs were handed the forbidden name by their dispatch prompt
+    # and declined it. The sixth created the branch, pushed it and opened a
+    # pull request on it, because eleven of twelve seats here legitimately use
+    # the seat-name prefix and the ambient evidence agreed with the prompt
+    # against one paragraph of one charter.
+    #
+    # So this is a gate written after prose failed, which this set then cannot
+    # run, which means the next instance is caught by the same thing that
+    # failed the last one. It was verified by hand both ways before shipping,
+    # failing on the forbidden name and skipping on another seat's branch, and
+    # that hand-run is the only thing standing behind it until item 17 lands.
+    "tests/test_branch_prefix.py",
     # Added 2026-11-02 with `tools/check_pr_green.py`, by this seat's previous
     # run, which opened a draft and never reached `gh pr ready`, so this gate
     # went red on its branch and the pin was never written. Pinned here for
