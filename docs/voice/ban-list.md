@@ -4813,3 +4813,10 @@ gap that the same collision had left empty (incident 25).
     LANDED docs/voice/check_voice.py: "QUOTING_CASES"
     LANDED docs/voice/reviews/2026-11-08-message.md: "excused it"
     ```
+    Swept, and the sweep found a second surface rather than a second file. A
+    body typed into `tools/board.py send` or `tools/board.py report` is read by
+    nothing, because `selfcheck` reads added lines in files and a board post is
+    neither. This run committed the same mark there within the hour of
+    narrowing the reading above, and the message was on the bus before it could
+    be struck. That one is the engineer's and is in docs/ideas.md under the
+    shared refusal module.
