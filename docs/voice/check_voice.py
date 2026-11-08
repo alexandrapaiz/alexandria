@@ -4167,7 +4167,33 @@ SLOT_HEADING_CASES = (
     (False, "## Three papers for anyone wiring memory or kill switches into "
             "production"),
     (False, "## What to read if you have one hour"),
+    # The specimen that found the equality bug. `2026-W44` served this on
+    # 2026-11-08 and this gate read OK, because 'what to read yourself' is not
+    # 'what to read' and nothing here was looking at prefixes. It is the
+    # framework's own internal name for the slot, which law 9 writes as "Read
+    # these yourself", so it is the one dress the ban could least afford to
+    # miss.
+    (True, "## What to read yourself"),
+    # The same evasion with a standing time adverbial instead of a reflexive.
+    # Neither remainder is about the day, which is the whole test.
+    (True, "## What is new this week"),
+    # And the boundary that keeps this from eating the slot: a remainder that
+    # is a reader's condition is material, so it passes exactly as the bare
+    # second form above does.
+    (False, "## What to read when the week has been long"),
 )
+
+
+#: Remainders that add nothing a reader could date. A banned phrasing followed
+#: only by these is the banned phrasing wearing a suffix, which is how
+#: `2026-W44` served the reading slot's own internal name past an equality
+#: test. Kept small on purpose: the moment a word here could carry the day's
+#: material, this reading starts firing on the headings law 12 wants.
+SLOT_INVARIANT = frozenset((
+    "yourself", "yourselves", "myself", "ourselves",
+    "this", "week", "today", "now", "again", "so", "far",
+    "month", "year", "issue", "edition",
+))
 
 
 def slot_heading(heading, dress):
@@ -4180,7 +4206,21 @@ def slot_heading(heading, dress):
     those phrasings, or that wears one as the label before a colon, is the
     internal name printed. `2026-W42` serves `## What to read`.
 
-    The second is the colon. Law 12's text says a paraphrase of a banned
+    The second reading is the PREFIX, and it is here because equality was the
+    whole test until 2026-11-08. `2026-W42` served `## What to read`, the ban
+    gained that phrasing in `97de5c8b`, and `2026-W44` served `## What to read
+    yourself`, which this gate passed. One trailing word walked past a list the
+    product had just been patched to hold, so the list is not where this can be
+    held: the phrasing plus a remainder that would be true of every issue is
+    the phrasing. `SLOT_INVARIANT` is that remainder and it is deliberately
+    tiny, because a remainder carrying the day's material is the heading law 12
+    asks for and firing on it would delete this gate within a week. Note what
+    this still is, so the next run does not read it as the cure: a closed list
+    one level up. The structural answer is in `docs/ideas.md` and it is the
+    press composing or refusing this heading the way `ensure_fresh_title`
+    already refuses a reused title.
+
+    The third is the colon. Law 12's text says a paraphrase of a banned
     heading is the banned heading, and the generator says in its own words that
     a colon does not launder it. A heading that opens on `What` and then breaks
     to a colon is the slot label with the day's news bolted behind it, which is
@@ -4199,6 +4239,12 @@ def slot_heading(heading, dress):
     for d in dress:
         if label == d:
             return f"the ban's own phrasing, {d!r}"
+    for d in dress:
+        if label.startswith(d + " "):
+            rest = label[len(d):].strip()
+            if all(w in SLOT_INVARIANT for w in rest.split()):
+                return (f"the ban's own phrasing, {d!r}, plus {rest!r}, which "
+                        f"is true of every issue")
     if ":" in low and low.startswith("what "):
         return f"a slot label laundered by a colon, {label!r}"
     return ""
