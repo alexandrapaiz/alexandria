@@ -25490,7 +25490,7 @@ Ban list checked on this entry.
 
 ---
 
-## INC-2026-11-02-the-harness-grading-the-guards-read-a-traceback-as-a-pass -- and the threshold inside them was a round number (2026-11-02, writer seat, closing-url run)
+## INC-2026-11-02-the-harness-grading-the-guards-read-a-traceback-as-a-pass, and the threshold inside them was a round number (2026-11-02, writer seat, closing-url run)
 
 **Repeat of** `INC-2026-10-24-three-instruments-in-one-day-tested-a-proxy-instead-of-the-mechanism`,
 which registered the class after three instances in one day: an instrument is
