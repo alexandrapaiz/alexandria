@@ -981,7 +981,43 @@ that took the owed cycle,
 The clause above treats the refusal as an accident the host should retry
 around. It is not an accident. **The provider enforces two limits and this
 charter has only ever named one.** The refusal sentence says which, and it is
-in each run's own log:
+in each run's own log.
+
+**There are three and this paragraph said two for fourteen days** (corrected
+2026-11-08, capacity-return hook,
+`INC-2026-11-08-the-third-limit-class-shut-the-portfolio-for-six-days-and-the-classifier-that-names-classes-called-it-the-second`).
+The third is the **org's monthly spend limit**, and it is 257 of the 1,159
+refusals in this host's whole history, 22%. It took the portfolio from
+2026-11-03T00:06Z to 2026-11-08T18:20Z: 252 runs dispatched, every one `exit 1`
+at turn one, 22 seats, four companies, 74 cron slots, zero pull requests. Read
+the class off the sentence and not off the status, because all three are the
+identical `api_error_status: 429`:
+
+```
+  "You've hit your session limit · resets 5am (UTC)"
+  "You've hit your weekly limit · resets Nov 8, 11pm (UTC)"
+  "You've hit your org's monthly spend limit · ask your admin to raise it at
+   claude.ai/admin-settings/usage · your weekly limit resets Nov 8, 11pm (UTC)"
+```
+
+**The spend sentence contains the word "weekly", so the order of the tests is
+the whole correctness of the classifier.** The version this charter published
+until today read `'weekly' if 'weekly' in r else 'session' if ...`, and run
+against 2026-11-03 through 2026-11-08 it returned **`{'weekly': 257}`** — the
+right count, under the name of a wall that was not holding. That is worse than
+no classification, because every conclusion this charter draws from the word
+"weekly" is a conclusion about a reset at the week boundary, and the whole point
+of the class is that **a spend cap has no reset.** It clears when a human raises
+it, which is the one thing the sentence says and no instrument here read: *ask
+your admin*. A session limit and a weekly limit clear themselves. This one sits
+there until somebody is told, and for six days nobody was.
+
+So the test for the narrowest class goes first, and the command below is ordered
+that way. Take the general rule, because it is not about this sentence: **when
+one class's text is a superset of another's, the classifier's `if` order is the
+classification, and a chain written in the order the classes were discovered is
+in the wrong order by construction.** This charter's own instrument had the
+newest class last and the oldest first, which is exactly backwards.
 
 ```bash
 # which limit refused a run, which no exit code or 429 status can tell you
@@ -997,17 +1033,39 @@ for f in glob.glob('/srv/asc/state/.epito/logs/*/%s*.log' % DAY):
             except Exception: break
             if d.get('api_error_status') == 429:
                 r = d.get('result') or ''
-                c['weekly' if 'weekly' in r else
-                  'session' if 'session' in r else r[:40]] += 1
+                # NARROWEST FIRST. The spend sentence carries a weekly clause in
+                # its tail, so any test for 'weekly' placed above this one claims
+                # all 257 of them and reports a wall that has no reset as a wall
+                # that resets on Sunday.
+                c['spend'   if 'monthly spend' in r else
+                  'weekly'  if 'weekly'        in r else
+                  'session' if 'session'       in r else r[:40]] += 1
             break
 print(dict(c))
 PY_LIMIT
 ```
 
-On 2026-10-25 that returned **65 weekly against 5 session**, and over the
-host's whole history 73 weekly against 226 session. So the weekly class is a
-fifth of all refusals and no charter, register or instrument in this
-organization distinguished it until today.
+On 2026-10-25 that returned **65 weekly against 5 session**. Over the host's
+whole history, with the spend branch in place, it is **487 weekly, 415 session
+and 257 spend**; without it the spend rows are added to the weekly ones and the
+weekly figure reads 744. Pointed at `2026-11` it is **399 refusals, 142 weekly,
+257 spend, and not one session** — and note that the month prefix is not the
+provider week: 141 of those weekly rows belong to the stretch that ended at
+2026-11-01T23:00Z, and the week that ended 2026-11-08T23:00Z holds 337, of which
+80 are weekly and 257 are spend. **A prefix is a convenient window and never the
+window a limit is enforced over**, so say which you read whenever you quote
+either. Pointed at `2026-11-05`, a day in the middle of the dark stretch, it is
+`{'spend': 42}` where the published version said `{'weekly': 42}`.
+
+**Validated in four directions, two of them negative**, which is this page's own
+rule about a new check. Against the three real sentences quoted above it returns
+`spend`, `weekly` and `session` respectively. With the `spend` branch removed it
+returns `weekly` for the spend text, which is the defect reproduced on demand.
+Pointed at `2026-10-25`, the day the two-class version was written, it returns
+the same 65 and 5 that version did, so the repair changes no earlier reading.
+And pointed at a day with no refusals it returns `{}` rather than a zero for
+each class, which is the honest answer and the one a reader can tell from a
+not-looked-at.
 
 **The difference is the reset horizon and it changes every conclusion drawn
 from a refusal.** A session limit resets in hours and inside the same day, so
