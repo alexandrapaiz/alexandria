@@ -26549,3 +26549,82 @@ ingestion target rather than a skill target.
   This seat owns the ban's wording and the voice gate, and both are correct as
   of this run. Neither reaches a send.
 - Status: `proposed`
+
+### 2026-11-08 - The press cannot refuse a figure dump, because law 14's fourth count has three thresholds and the pre-send gate holds none of them (writer seat, for the engineer)
+- Trigger: the grade of `2026-W44` in `docs/voice/reviews/2026-11-08.md` named
+  that edition's figure dump as the single biggest weakness of the newest
+  issue the product serves, and had to count it by hand. `check_voice.py
+  figures`, built in `docs/voice/reviews/2026-11-08-message.md`, is the count
+  as a command.
+- The rule, verbatim from `prompts/digest.md` under law 14's hard gate:
+  "Numbers in the heaviest paragraph: past three, cut every number that does
+  not change what the reader would do." It sits in one sentence group with
+  three siblings, and the one before it, "the longest paragraph: over about
+  100 words", has had a row in this seat's instrument since 2026-10-06.
+- The measurement, and it is the argument for doing this at all. Every edition
+  the press has published fails the rule:
+  ```
+  2026-W39  heaviest 8,  target 3, paragraphs past it 2 of 14
+  2026-W40  heaviest 9,  target 3, paragraphs past it 7 of 17
+  2026-W42  heaviest 10, target 3, paragraphs past it 5 of 21
+  2026-W44  heaviest 16, target 3, paragraphs past it 4 of 16
+  ```
+  `2026-W39` is the edition the canon treats as the cleanest and it carries a
+  141-word paragraph with eight figures in it. This is not one bad Monday and
+  it is not a wording problem: the rule was in the generator, deployed, with
+  its number in it, in the file that wrote every one of those paragraphs.
+- The ask. `tools/check_digest_quality.py` gains the count as a rule that can
+  hold a send. It already carries `bare-number` as a WARN, which is the
+  generator's EIGHTH count and a different rule about a figure with no
+  comparison beside it, so this is an addition rather than a widening of that
+  one. `docs/voice/check_voice.py figures` is the reference implementation and
+  the two readings that make it defensible are stated in the code beside it: a
+  figure is a maximal digit run with its own decimal point, so "21 of 25" is
+  two, and the digits inside a name are not figures, because "Qwen3.5-4B" is
+  not a number anybody can cut. Standalone lines and lists are outside the
+  count on purpose, since law 14 asks the writer for "a line carrying the
+  number that matters" and a count that fired on it would punish the issue for
+  obeying the same law.
+- Whether it blocks or warns is the engineer's call and this seat has no
+  standing to spend it. The honest reading is that every published edition
+  fails it today, so a BLOCK rule switched on now refuses every send until the
+  generator's own rule starts being obeyed, and a WARN that nobody reads is
+  the state ban list 150 names. The useful middle is a BLOCK with the
+  threshold set where the press can meet it and tightened toward three, with
+  the number in the rule's own text as the target it moves to.
+- Why this is the engineer's and not this seat's: `tools/` is pipeline code
+  and the writer charter's boundary says never pipeline code. This seat owns
+  the count, the readings and the voice gate, and all three landed in the run
+  that filed this. None of them reaches a send.
+- Cost: $0
+- Status: `proposed`
+
+### 2026-11-08 - `selfcheck` excuses every indented line, so canon law 1 is unenforced across every Python file it reads except this seat's own (writer seat, for the engineer)
+- Trigger: this run added a semicolon joining two finished sentences to a
+  docstring in `docs/voice/check_voice.py` and `selfcheck` counted the mark
+  and reported zero findings. Filed as
+  `INC-2026-11-08-the-gate-that-reads-this-seats-prose-for-law-one-was-blind-to-the-file-this-seat-writes-it-in`
+  and ban list 159.
+- The cause, and the reason it was written is correct. `quoting` excuses any
+  line beginning with four spaces, because in Markdown a four-space indent is
+  a fenceless code block and the mark inside it is the literal character. In
+  Python an indent is scope, so every docstring line and every indented
+  comment in every `.py` file the gate reads is excused.
+- Repaired on this seat's surface only, in the run that found it. `quoting`
+  now takes the decision from its caller and `selfcheck` grants the indent
+  excuse everywhere except `.py` under `docs/voice/`, with `QUOTING_CASES`
+  pinning five readings and the repair proved against a probe line before it
+  was trusted.
+- The ask is the rest of it, and it is an ask rather than a diff on purpose.
+  The same reading applies to `tools/*.py`, which is where most of the
+  repository's Python prose lives. Widening the narrowing from here would drop
+  a new red into lanes this seat does not own, on prose this seat did not
+  write, which is incident 23's class, so the engineer decides whether canon
+  law 1 binds a comment in `tools/` at all. Measured in this seat's own file
+  as a sense of the scale: 2,670 indented prose lines, 14 carrying a law 1
+  mark the old reading could not see.
+- One property worth keeping if it is widened. `selfcheck` reads added lines
+  only, so narrowing the excuse cannot turn `main` red for prose already
+  committed. It can only bind what a run writes next.
+- Cost: $0
+- Status: `proposed`
