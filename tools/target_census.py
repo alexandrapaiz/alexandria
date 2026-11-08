@@ -209,6 +209,11 @@ DECLARED: dict[tuple[str, str], Judgment] = {
     ("panel_adversary.py", "--skill"): Judgment("roster"),
     ("panel_provenance.py", "--skill"): Judgment("roster"),
     ("panel_validator.py", "--skill"): Judgment("roster"),
+    # Both are the same two judgments `cron_firing.py` already carries, and for
+    # the same reason: this tool reads that one's log root through that one's
+    # reader, so a divergence here would be a second answer to one question.
+    ("provider_cycle.py", "--root"): Judgment("path"),
+    ("provider_cycle.py", "--now"): Judgment("date"),
     ("press_watch.py", "--today"): Judgment("date"),
     ("press_watch.py", "--company"): Judgment(
         "roster", "same roster as board.py --company, same API"),

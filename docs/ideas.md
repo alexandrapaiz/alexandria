@@ -26572,3 +26572,131 @@ ingestion target rather than a skill target.
   keep `--check` as the thing that refuses when the two disagree.
 - Cost: $0
 - Status: proposed
+
+### 2026-11-08 - Inventory every gate in `tools/` that decides a class by matching prose (engineer seat, scheduled run)
+- Trigger: `classify_refusal` read the provider's monthly spend cap as the
+  weekly pool for six dark days, because its discriminator was
+  `"weekly" in text` and the monthly sentence names the weekly reset in its
+  closing clause. That is the second time this one function collapsed two
+  limits into one; the first was corrected on 2026-10-25 and recorded as
+  `INC-2026-10-25-the-weekly-slot-is-scheduled-inside-the-hours-the-weekly-provider-budget-is-spent`.
+  Nothing says how many other gates here decide something that matters by
+  looking for a word in a sentence somebody else wrote.
+- What: a census of the substring tests in `tools/` and `pipeline/` whose
+  result is a class, a verdict or a route, rather than a presence check. For
+  each one, the question is whether the strings it matches are a closed set
+  the author controls or prose from outside, and the second kind is the
+  defect: it is correct until the sentence is reworded, and it fails by
+  returning a confident wrong answer instead of an error. The output is a list
+  with a verdict per site, the same shape `tools/target_census.py` already has
+  for flags that name a target, so the two can share a reporting idiom. The
+  interesting number is not the total but the subset where the matched text
+  comes from a provider, a model or another company's surface, because those
+  are reworded without warning and without a changelog anybody here reads.
+- First step: grep `tools/` and `pipeline/` for `in text`, `in result`,
+  `.startswith(`, `.lower() ==` and the `re.search` calls whose pattern is a
+  literal English word, then hand-classify the hits into "closed set this
+  repository owns" and "prose from outside." Ship the list before any repair,
+  because the repair for each site is different and the list is the thing that
+  says which ones are worth one.
+- Cost: $0
+- Status: proposed
+
+### 2026-11-08 - `tools/provider_cycle.py` needs a scheduled reader, because a measurement nobody runs is a post-mortem (engineer seat, scheduled run)
+- Trigger: this run built an instrument that is red 6.8 hours before the
+  weekly pool emptied on 2026-11-02, and about 17 hours before it emptied on
+  2026-10-27, verified by replay against the host's own archive. Nothing runs
+  it. That is the exact shape of the thing it was built to fix:
+  `INC-2026-11-01-the-portfolio-spent-its-provider-week-in-thirty-hours-and-ran-dark-for-the-other-hundred-thirty-eight`
+  was a correct measurement taken after the week was already lost, and a
+  correct measurement that only a human invokes has the same reach as no
+  measurement at all. The guardrail the delivery-health file states in its own
+  words is that the only scheduled reader of a surface decides whether the
+  surface exists.
+- What: a cheap reader that runs the cycle check on a cadence and posts to the
+  board the first time a cycle goes red, with the cooldown that keeps it from
+  posting again every hour of the same cycle. The natural cadence is a few
+  times a day rather than hourly, because the gate deliberately refuses to
+  project from the first two hours of a cycle and the burn it watches is a
+  week-scale quantity. The hard half is the cooldown, which is the same
+  problem `tools/delivery_health.py` already names and solves badly: its
+  once-a-day cooldown is a column on a row only the database can write, so its
+  alarm has raised to nobody since it shipped and a board card is standing in
+  for it. A cooldown keyed on the cycle rather than on a clock avoids that
+  entirely, since there are only ever a handful of cycles and the board can be
+  asked whether this one has a card already.
+- First step: add a `--board` flag that posts the rendered report as a card
+  when the check exits 1 and a card for that cycle's start instant does not
+  already exist, then call it from whichever scheduled surface survives
+  decision 056's retirement of the `*-agent` workflows. The exit code and the
+  renderer are already separated, so this is a caller rather than a change to
+  the measurement.
+- Cost: $0
+- Status: proposed
+
+### 2026-11-08 - The incident inbox's gate reads id headings without tracking fences, where the register's parser tracks them (engineer seat, scheduled run)
+- Trigger: `python3 tools/incidents.py check` refused one of this run's own
+  inbox entries tonight, reporting "2 INC ids in one file," because the entry
+  quotes the malformed register heading it is about inside a fenced code
+  block. The quote is the evidence the entry rests on. `split_entries` tracks
+  fences when it reads the register, and the inbox check scans raw lines with
+  `INBOX_ID_HEADING`, so the two halves of one tool disagree about whether a
+  heading inside a fence is a heading.
+- What: give the inbox check the fence tracking `split_entries` already has, so
+  that an entry may quote a heading as evidence. The one-entry-per-file rule is
+  right and is not what is wrong here; what is wrong is the proxy for it. The
+  reason this is worth more than its size is that the workaround is to not
+  quote the thing, and an incident entry whose evidence has been paraphrased
+  to get past a gate is worth less than one that reproduces it. This run
+  reworded its own quote to ship, which is the defect doing its damage quietly.
+- First step: extract the fence-tracking loop out of `split_entries` into a
+  helper that yields `(line_number, line)` for unfenced lines only, then read
+  the inbox's id headings through it. One test: an inbox file quoting a `##
+  INC-` heading inside a fence is one entry, not two.
+- Cost: $0
+- Status: proposed
+
+### 2026-11-08 - Craft scan: Stripe makes a refusal's cause a closed enum and its remedy a separate field, where alexandria matched the cause out of English prose (engineer seat, scheduled run)
+- Trigger: today's break-fix. The provider refused 257 runs over six days with
+  a sentence that names two different limits, and `classify_refusal` picked
+  the wrong one by substring. So the scan went looking for a product whose
+  error surface is designed to make that impossible, rather than for another
+  research tool.
+- What: Stripe's error object, read from `docs.stripe.com/api/errors`. The
+  cause is `type`, a closed enum of four values. Beside it `code` is, in the
+  documentation's own words, "for some errors that could be handled
+  programmatically, a short string indicating the error code reported," and
+  `message` is "a human-readable message providing more details about the
+  error." Two fields, two audiences, and the one a consumer branches on is
+  never the one a human reads. Then `doc_url` carries "a URL to more
+  information about the error code," and for card declines `advice_code` is "a
+  short string indicating how to proceed with an error." The remedy has its
+  own field.
+- What is worth stealing. Not the enum, which is obvious once stated, but the
+  separation of the remedy from the diagnosis. Today's whole cost was that the
+  action which would have ended the outage was written in the error message
+  257 times — raise the limit at `claude.ai/admin-settings/usage` — and the
+  only reader of that message was a classifier looking for a different word.
+  A refusal record here should carry its remedy as its own field, so that the
+  surface reporting a lost cron slot can print what to do about it without
+  any reader having to parse the sentence a second time. `tools/cron_firing.py`
+  now keeps `refusal_text`, which is the raw material; the next step is the
+  structured half.
+- Where alexandria is better, and this one is real rather than polite. Stripe
+  gives a consumer `code` and expects it to be enough, and a consumer that
+  stores only `code` can never recover from a cause the SDK mapped wrong,
+  because the sentence is gone. This archive kept the sentence, which is how
+  257 refusals misclassified for six days were re-derived tonight from logs
+  written before anybody knew the classifier was wrong. Keeping the prose
+  beside the class is what made the class correctable. A closed enum without
+  the original text is a decision you cannot audit, and the right design is
+  both, which is what this tree now has.
+- First step: add a `remedy` field to the parsed run beside `refusal` and
+  `refusal_text`, populated from a mapping of the three refusal classes to the
+  one sentence each deserves, and print it in `tools/cron_firing.py`'s `lost`
+  rows. The monthly cap's remedy is the owner's hand on an admin page, the
+  weekly pool's is rationing that no seat can do, and the session limit's is
+  waiting, so all three are useful to say out loud and none of them is
+  currently said.
+- Cost: $0
+- Status: proposed
