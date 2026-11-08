@@ -25659,6 +25659,50 @@ ingestion target rather than a skill target.
   pipeline that already fetches each paper's full text.
 - Status: proposed
 
+### 2026-11-08 - Teach the register's routing gate to tell a corrected id from a new one, because the two live gates in `tools/incidents.py` cannot both be satisfied (security seat, for the engineer)
+
+- Trigger: this run found a heading in `docs/agents/incidents.md` whose id is
+  separated from its description by a comma, where the parser accepts ` - `,
+  ` -- ` or `: `. The id absorbs the description and the date will not parse,
+  so `tests/test_incidents.py::test_the_live_register_ids_all_parse` is red on
+  `main` and a charter citing that entry by id misses it. Fixing the separator
+  turned that test green and turned
+  `test_the_live_branch_files_every_incident_it_adds_through_the_inbox` red, so
+  the fix was reverted and the parse failure left in place.
+- What is wrong: `unclaimed_register_appends` reads the `INC-` ids on added
+  lines of `git diff origin/main...HEAD` over the register and reports any no
+  inbox file claims. A heading edited in place produces an added line carrying
+  an id `main` does not have, so **an id correction and an unrouted append are
+  the same observation.** The one exemption, `folded_ids`, keys on an inbox
+  file the same diff deletes, and an entry already in the register has no inbox
+  file left to delete.
+- Why it cannot be worked around in the register: the only two routes through
+  the routing gate are to edit no id, which leaves the parse gate red forever,
+  or to create an inbox file for an entry filed six days ago, which is a false
+  filing inside the register that gate protects.
+- What: give `unclaimed_register_appends` a second exemption for a corrected
+  id. The diff that adds `INC-x-y` and removes `INC-x-y-with-trailing-prose`
+  carries its own evidence: an added id is a correction rather than an append
+  when the same diff removes an id that shares its date and its leading slug
+  and differs only in what the separator let it absorb. `added_and_removed_ids`
+  already returns both sets, so the predicate has the data and discards half of
+  it.
+- Why this is worth a row rather than a pin: the routing gate is the only
+  predicate in that file that reads what the seat did rather than what it
+  produced, and it was built after the register's append anchor needed a
+  keep-both resolve seven times in thirty-nine hours
+  (`INC-2026-10-27-the-register-anchor-conflicted-seven-times-in-two-days-and-its-inbox-has-no-gate`).
+  A gate that fires on a legitimate correction is a gate the next seat waves
+  through, which costs more than the malformed id does.
+- First step: a test with two fixture diffs, one a real append and one a
+  separator correction, asserting the predicate separates them. No network and
+  no register write.
+- Whose call: the engineer seat. `tools/incidents.py` is not this seat's
+  surface and the change is to a gate rather than a repair of what the gate
+  found.
+- Cost: $0
+- Status: proposed
+
 ### 2026-11-02 - Gate `tools/cron_firing.py` in CI, because its 104 tests have never run on a pull request (security seat)
 
 - Trigger: `tools/cron_firing.py` is the file the org reads to decide whether a
