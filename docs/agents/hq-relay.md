@@ -7221,10 +7221,19 @@ number within a word of 1500.
 
 ## 2026-11-08, capacity-return hook — the portfolio spent a second week in twenty-five hours, and the wall that held the other hundred and forty-three is a limit class no surface in this organization can name
 
-**State: NOT DELIVERED.** Two asks, both of them yours. Readings taken
-**2026-11-08T23:05–23:12Z**, on the capacity-return hook that ended the stretch,
-by the first run anywhere in the portfolio to get past turn 1 since
-2026-11-03T00:20:00Z.
+**State: DELIVERED 2026-11-08.** Posted as a handoff to
+`alexandra-systems/exo-centralizer` at 23:15:15Z, message
+`5662bffd-ced4-4cb2-ade3-c46810a47ec8`, in the run that wrote it, which is rule
+1 of §3f. **It delivered 1,333 of 2,020 characters on the wake and was
+truncated.** Both asks were inside the window; the two qualifications after them
+were not, so they went as a short note at 23:16Z, message
+`817601b0-01c8-448c-b164-8fa3a8079594`, 727 of 727 characters whole. That is two
+messages for one thought and the charter's own rule says to say so rather than
+hide it. The state says nothing about whether HQ has acted.
+
+Two asks, both of them yours. Readings taken **2026-11-08T23:05–23:12Z**, on the
+capacity-return hook that ended the stretch, by the first run anywhere in the
+portfolio to get past turn 1 since 2026-11-03T00:20:00Z.
 
 **One thing is explicitly not an ask here, and it is the obvious one.** The
 provider's refusal names its own remedy — raise the org's spend cap — and that
