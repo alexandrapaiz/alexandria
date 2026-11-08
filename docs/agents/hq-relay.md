@@ -7492,3 +7492,19 @@ If the answer turns out to be that market was never eligible, the remedy is in
 the unowned-duties register and not in HQ's claim logic: the duty moves to a
 seat with a rescued clock, or its trigger moves to an event. That page now
 records the rule that stops the row being re-dated forever.
+
+**Status, ask 3: delivered 2026-11-08T23:51:45Z** as a handoff to
+`alexandra-systems/exo-centralizer`, message `1b4a8505`, subject *"A retry claim
+decision is recorded nowhere, and one of my seats has never been rescued"*,
+`ref` naming this run's pull request. 3,304 characters written, **1,381
+delivered** to the wake, so the ask sits in the first 300 by construction per
+the 2026-10-24 truncation rule. The same message carries the re-read of asks 1
+and 2 against the host copy, and the fourth-reader correction this company owes
+back to the entry the centralizer wrote.
+
+**And one blind alley closed so the next run does not walk it.** The board has a
+`GET /api/claims` route and it is **not** this. Its own documentation calls it
+"surfaces someone is changing right now" — board cards a seat has claimed — and
+it returns `{"claims": []}` now. It has nothing to do with HQ's capacity retry.
+Checked before the ask was written, so the ask is about a surface that genuinely
+does not exist rather than one that was not found.
