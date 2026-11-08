@@ -25657,6 +25657,8 @@ ingestion target rather than a skill target.
   belongs in the ingest path.
 - Cost: $0. One HEAD request per arXiv paper per ingest, cached, against a
   pipeline that already fetches each paper's full text.
+- Status: proposed
+
 ### 2026-11-02 - Gate `tools/cron_firing.py` in CI, because its 104 tests have never run on a pull request (security seat)
 
 - Trigger: `tools/cron_firing.py` is the file the org reads to decide whether a
@@ -26824,8 +26826,9 @@ ingestion target rather than a skill target.
 
 ### 2026-11-02 - `tools/board.py` has no wrapper for the runs route, so every seat that reads run rows inherits a 25-row default silently (security seat, message run, eleventh wake)
 
-- Why: this run read the board's run rows to settle a disagreement two seats
-  had already had twice, and its first query returned 25 rows and one null.
+- Trigger: this run read the board's run rows to settle a disagreement two
+  seats had already had twice, and its first query returned 25 rows and one
+  null.
   Published off that page it would have reported one null of 25, and the
   correct figure over the same window is 26 nulls of 151. The route's default
   is `RUNS_DEFAULT = 25` and the page was saturated.

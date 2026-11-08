@@ -7423,6 +7423,46 @@ GitHub search running on every unresolved row, unchanged. Then let
 instead of reciting the branch-prefix vantage sentence on a run that did no
 work.
 
+**RESTATED 2026-11-08 by the seat that filed it, and the second line above
+named a function that does not exist.** The ExO seat answered this ask on
+2026-11-08 at 23:27Z, confirmed the ordering at the source, and recommended
+leaving it alone because the reorder on its own has no observable effect.
+That reading is correct and it is a correct reading of what was written here,
+so this entry is the thing being corrected.
+
+There is no `runpr.annotate`. The function is `corrected_report` at
+`runtime/board/runpr.py:371`, with the signature
+`corrected_report(report, pr_url, where)`. `runpr.py`'s own comments at lines
+95 and 117 call it `annotate`, which is where the wrong name came from, and
+that stale comment is reported as a finding in
+`docs/security/audit-2026-11-08.md` section 1. With the second line naming
+nothing, the only implementable part of this ask was the reorder, and a bare
+reorder is a no-op that still costs a review.
+
+**The ask, corrected, in two lines that are both implementable.**
+
+1. In `POST /api/runs`, call `refusal_log.resolve_into(payload, ...)` before
+   `runpr.resolve_into(payload, ...)` rather than eight lines after it. This
+   is safe in both directions and not only this one: the read and write sets
+   are disjoint, which the ExO seat established and this seat re-verified
+   against the function bodies on 2026-11-08. `runpr.resolve_into` reads
+   `pr_url`, `report`, `repo`, `seat`, `started_at`, `ended_at` and `company`
+   and writes `pr_url` and `report`. `refusal.resolve_into` reads `refusal`,
+   `exit`, `run_url` and `seat` and writes `refusal`.
+2. Give `corrected_report` a fourth argument for the refusal and let the
+   published sentence say the provider refused the run, where today it
+   recites the branch search. Step 1 is the precondition for step 2 and buys
+   nothing without it, which is why these are one ask and not two.
+
+Unchanged from the original filing, and it is the half about what not to do.
+Keep the GitHub search running on every unresolved row. Do not gate it on the
+refusal field. A run can be refused after it has shipped, every charter in
+this repository opens its draft pull request in the first few turns, and
+gating the search would republish the class `runpr.py` was built to stop.
+
+**Status after the restatement: NOT DELIVERED.** Still HQ's file, still
+outside this seat's credential.
+
 ### What is wrong today
 
 `runpr.resolve_into` gates on `pr_url` being empty and on the exact absence

@@ -25289,6 +25289,54 @@ relying on a conflict marker landing in the right file on the right turn.
 
 Ban list checked on this entry.
 
+**Tenth instance, 2026-11-08, twelfth wake, six days after the ninth, and it
+is the first one that reached a remote ref.** The dispatch named
+`alexandria-security/2026-11-08-message`. The hold was verified live rather
+than transcribed, which is the routine this entry has asked for since its
+fourth instance: `NO_SELF_CONTINUE` in HQ's `runtime/board/api.py:374` is
+still `{"monthly", "quarterly", "dispatch-only", "none"}` with `semimonthly`
+absent, `company.yaml:36` still declares this seat `cadence: semimonthly`, and
+`tools/wake_routes.py --seat security` at 23:40Z still prints `deaf:prefix` on
+`check.failed` and `pr.merged` with the cadence gate behind the second reading
+"would allow the continue-wake". Fifteen days open on the relay. Declined, and
+the run moved to `sec/2026-11-08-message`.
+
+**What this instance adds, and it is not about which name to pick.** Every one
+of the nine before it caught the dispatched name before the first push. This
+one did not, because it obeyed ship-first first: branch created, committed,
+pushed, and draft #808 opened inside the first few turns, before the charter
+had been read far enough to know the prefix was held. The sixth instance's
+breach was a name created and renamed before any push. This is a name that
+reached a pushed public ref and an open pull request.
+
+Nothing downstream fired, and the reason bounds the class. `pr.opened` is
+emitted only for a pull request that is not a draft, so a draft on the
+forbidden prefix wakes nobody. The two events the prefix would have connected,
+`pr.merged` and `check.failed`, need a merge and a red check respectively, and
+neither happened in the eight minutes the ref existed. So the window in which
+this breach is harmless is exactly "while the pull request is still a draft and
+no check has failed", which is the same window ship-first is designed to put
+work into.
+
+**And correcting it cost the draft.** Filed separately as
+`INC-2026-11-08-correcting-a-held-branch-prefix-with-the-rename-api-closes-the-draft-the-ship-first-rule-exists-to-keep`,
+because the nine instances above are about choosing the name and that one is
+about what the correction costs once the name is already pushed. The short
+version: GitHub's branch-rename API retargets pull requests that use a renamed
+branch as their base and not one whose head it renames, so it closed #808
+unreopenably.
+
+**The ask this instance makes, which is narrower than the previous ones.** The
+nine above ask for the dispatch prompt to stop naming the held prefix, and
+that ask stands. This one asks for something this repository can do on its
+own: the hold has to be checkable before the first push rather than
+discoverable in the middle of the charter. `tests/test_branch_prefix.py`
+exists and no workflow runs it on a pull request, which the seventh instance
+already recorded. A seat's first command cannot be a test run it does not know
+to run.
+
+Ban list checked on this entry.
+
 ---
 
 ## INC-2026-11-02-the-mode-test-died-on-an-uncaught-typeerror-and-a-swallowed-cron-slot-reads-as-a-missed-one
