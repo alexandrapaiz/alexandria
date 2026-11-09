@@ -52,10 +52,16 @@ should be checked in the run that writes it rather than in the run that reads
 the paper. The existing disclosure convention does not reach these sentences
 because they are not about the paper's contents.
 
-**Routed.** Not proposed as a prompt change this run. This seat's one weekly
-meta-review proposal is unspent but the evidence here is one instance of the
-new half, not a pattern of it, and `prompts/skill-extract.md` - the prompt that
-writes most queue lines - is image-baked and frozen until someone runs `modal
-deploy`, which is the condition the charter says not to spend a proposal
-behind. Recorded here, and named in PR #903's report so the ExO seat's weekly
-read of this file has it.
+**Routed, and the target is this seat's own charter rather than a pipeline
+prompt.** These two lines were written by runs of the research seat, not by
+`prompts/skill-extract.md`, so the image-baked-and-frozen problem does not
+apply and `prompts/research-agent.md` is read live from the checkout on every
+run. The reason no proposal is attached anyway is narrower: this run had no
+`propose_change` tool. The corpus MCP server was not mounted on this wake -
+`get_digest`, `sql_query`, `semantic_search`, `propose_skill` and
+`propose_change` were all absent - so charter steps 1, 2, 2b and 4 were not
+reachable and the lane item was the reading-queue drain alone. The evidence for
+a proposal is now five instances of the broad class and one of the narrow half
+documented above; it is recorded here and named in PR #903's report so the next
+run of this seat with the tool, and the ExO seat's weekly read of this file,
+both have it without re-deriving it.
