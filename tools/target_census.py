@@ -223,6 +223,30 @@ DECLARED: dict[tuple[str, str], Judgment] = {
     # `tests/test_target_census.py` fail on an undeclared flag, and they were
     # failing on live `main` until this row.
     ("kill_vocabulary.py", "--root"): Judgment("path"),
+    # Added 2026-11-09 with the vendored copy of HQ's register merger. The
+    # three positionals are files the tool opens, so `open()` raises on an
+    # absent one and `path` is exactly right for them.
+    ("merge_register.py", "base"): Judgment("path"),
+    ("merge_register.py", "ours"): Judgment("path"),
+    ("merge_register.py", "theirs"): Judgment("path"),
+    # The five pattern flags are the first REGEX-valued flags in this census,
+    # and none of the six kinds fits them. `text` is the closest and it is
+    # declared here under protest, because the clause that justifies `text` is
+    # "nothing to resolve" and a regex has plenty to resolve: a `--heading`
+    # that matches nothing does not raise and does not refuse, it parses the
+    # register as one block and merges it at exit 0. That is a confident zero,
+    # which the comment above KINDS says only `roster` can produce.
+    #
+    # So the census is one kind short rather than these flags being `text`, and
+    # the gap is filed as a ledger idea rather than fixed here, because adding
+    # a seventh kind re-opens all 148 declared rows and this run is a break-fix
+    # plus a handoff. `tests/test_merge_register.py` carries the floor
+    # assertions that stand in for the missing kind's probe in the meantime.
+    ("merge_register.py", "--heading"): Judgment("text"),
+    ("merge_register.py", "--identifier"): Judgment("text"),
+    ("merge_register.py", "--key"): Judgment("text"),
+    ("merge_register.py", "--section"): Judgment("text"),
+    ("merge_register.py", "--section-end"): Judgment("text"),
     ("ledger.py", "--ledger"): Judgment("path"),
     ("ledger.py", "--status"): Judgment("roster"),
     ("ledger.py", "--patch"): Judgment("opaque"),

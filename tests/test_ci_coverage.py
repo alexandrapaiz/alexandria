@@ -245,6 +245,23 @@ UNCOVERED = {
     # because the next seat to touch the tally has no red to tell it that a
     # whole-history count returns the union of two vocabularies.
     "tests/test_kill_vocabulary.py",
+    # Added 2026-11-09 by the engineer seat, and unlike the three above this
+    # one IS this run's file, so it is pinned in the commit that creates it
+    # rather than discovered later by somebody else's red.
+    #
+    # What it guards, because the gate requires a reason and not a name.
+    # `test_merge_register.py`, 8 cases, over the copy of HQ's register merger
+    # vendored here the same day: that the vendored header still carries a
+    # checkable blob sha and source commit, that its usage line names a path
+    # that exists in this repository, that a hash line inside a fenced block is
+    # not read as an entry start, that two sides appending different entries
+    # both survive with nothing blended, that a duplicate entry on either side
+    # is refused with nothing written, and that the four `--heading` patterns
+    # the header documents each find a floor of real entries in the real file.
+    # Silent on a pull request, the last of those is what rots first: a pattern
+    # that stopped matching does not fail, it merges a one-entry document and
+    # exits 0, so the register it was pointed at is rebuilt as a single block.
+    "tests/test_merge_register.py",
     "tests/accounts.test.mjs",
     # Added 2026-10-13 with the Polar integration, pinned for the same
     # structural reason as every line above and worth more than any of them.
