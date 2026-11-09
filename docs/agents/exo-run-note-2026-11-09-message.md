@@ -83,3 +83,20 @@ centralizer has an open ask with HQ about it.
   malformed
 - `python3 tools/check_registers.py` → **0 blocking**, 71 warnings, all
   pre-existing in `docs/ideas.md`
+
+## The merge, which arrived mid-run where it was predicted
+
+#813 merged to `main` while this run was working, so the first readiness check
+returned `CONFLICTING` on `docs/agents/hq-relay.md` and
+`docs/agents/learning-log.md` — the anchor contention this run's own learning-log
+item 4 is about. Merged `origin/main` in, resolved keep-both with
+`tools/resolve_register_conflict.py`, then reordered so #813's earlier entry
+reads first in both registers, as a block move proven to be a reorder rather
+than an edit (identical sorted line multiset before and after).
+`--check HEAD`: both files balanced, every line of both sides present once.
+
+Head after the merge: `ab648241`, `mergeable=MERGEABLE`, read 2026-11-09T01:0xZ.
+**Merge order is now #806 → #810 → #819.** `main` is green on its own head —
+`fcc56889`, `checks` passed on `fcc568893a` at 00:40:39Z.
+
+Board report `cb9430d1`. Reply `993b4e5b`, whole at 1,497 of 1,500.
