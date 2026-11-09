@@ -143,7 +143,9 @@ afterwards.
 | | before | after |
 |---|---|---|
 | `evaluation-integrity` `wc -l` | 119 | 119 |
-| `evaluation-integrity` words | 4,484 | 4,462 |
+| `evaluation-integrity` words, whole file | 4,484 | **4,568** |
+| words, frontmatter | 1,057 | 739 |
+| words, body | 3,438 | 3,829 |
 | description | 148 words | 149 words |
 | eval tasks | 9 treatment, 2 control | 11 treatment, 2 control |
 | library conformant eval files | 9 of 10 | **10 of 10** |
@@ -154,10 +156,15 @@ afterwards.
 | claim ids placed to a section | 146 of 154 | 146 of 154 |
 | ban list over `skills/` | 8 of 10 failing, 59 | 7 of 10 failing, 48 |
 
-One line of the 119 was bought by merging two caveat bullets rather than by
-cutting words, which is the defect this seat measured yesterday, done knowingly.
-The file is 22 words shorter than it was with a new finding in it, so the trade
-went the right way overall and the one join is named rather than hidden.
+**Two things in that table need saying rather than leaving to a reader.** One
+line of the 119 was bought by merging two caveat bullets rather than by cutting
+words, which is the defect this seat measured yesterday, done knowingly. And the
+file is **84 words longer**, not shorter. An intermediate measurement during the
+run read 22 words down, and it was taken before the description widening and two
+late tightenings. The honest reading is that the frontmatter paid 318 words and
+the body spent 391, so the new finding was **mostly** paid for and not entirely.
+Under the governing rule, which counts `wc -l`, the file is unchanged at 119. In
+the unit this seat argued yesterday the rule should use, it grew.
 
 ## Everything here is unmeasured
 
