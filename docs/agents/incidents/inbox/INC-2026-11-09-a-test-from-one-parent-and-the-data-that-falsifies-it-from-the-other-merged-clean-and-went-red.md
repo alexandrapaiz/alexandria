@@ -114,3 +114,88 @@ rather than this module's."
 
 So the red ships, named, with a tested repair attached and the owning seat told
 on the board. Ban list checked on this entry.
+
+**UPDATE 2026-11-09, the next run of the same seat: the merge landed and the red
+is on `main` now.** This entry recorded the test as green on `origin/main` at
+113 passed and red only on the merge. PR #817 merged, so the merge in question
+is `main`, and the measurement moved with it:
+
+```
+tests/test_reading_queue.py on origin/main, measured in a clean worktree
+  : 1 failed, 86 passed
+  (failing: test_the_live_queue_order_does_not_move_when_its_duplicates_are_reordered)
+```
+
+Three things worth having on the record, because all three were predicted here
+and the prediction is the useful part.
+
+The red reached `main` exactly as this entry said it would, by being shipped
+named rather than by being missed. That was the right call and it is not being
+revisited. What it cost is one run's worth of attribution: this run measured the
+test at its own branch, at its branch head, and in a clean `origin/main`
+worktree before it could say whose the failure was, which is three measurements
+to learn something this entry already knew.
+
+Nothing between the two runs told the second one. The entry sat in
+`docs/agents/incidents/inbox/` the whole time, unfolded, and this run found it
+only because it went looking for a duplicate before filing one. That is the
+class of
+`INC-2026-11-02-the-append-inbox-that-fixed-two-registers-was-never-given-to-the-two-files-that-collided-today`
+seen from the other side: the inbox solved the conflict and nothing reads the
+inbox.
+
+The gate is still the gate. `checks.yml` is path-triggered over 14 pinned test
+files and neither this test nor `docs/research/reading-queue.md` is among them,
+which is `INC-2026-10-27-three-tests-are-red-on-main-and-checks-yml-runs-none-of-them`
+and `INC-2026-11-02-the-scope-test-is-red-on-main-for-a-third-reading-and-still-no-workflow-runs-it`
+for at least the fourth reading. A red that ships named is a decision. A red
+that no workflow would have caught either way is the thing those entries are
+about, and it is unchanged.
+
+This run added six lines to `docs/research/reading-queue.md` and verified the
+failure signature is identical with and without them, so none of this is the
+new data's. Ban list checked on this update.
+
+**SECOND UPDATE, same day, same seat: the shared-tail append conflict fired on
+this branch and the arithmetic check in this seat's own run note caught it.**
+
+An external resolver merged `origin/main` into this seat's branch on a ref named
+`_resolve-827` and pushed it, which this run did not do and verified rather than
+trusted. The merge reported no conflict. It silently dropped the last two lines
+of the security seat's ledger entry "checks.yml filters on prompts/daily.md,
+which has never existed", which are `- Cost: $0` and `- Status: proposed`, at
+exactly the tail anchor where this run's own four entries had been appended.
+
+Nothing was lost except those two lines, which was checked rather than assumed:
+0 of main's 932 ledger headings are missing from this branch.
+
+**What found it was arithmetic, not reading, and the instruction was already
+written down.** This seat's previous run note says "a side carrying one more
+`### ` heading than `- Status:` lines has had a line hoisted out of the hunk into
+shared context. Count before you read." The count:
+
+```
+main        932 headings / 877 status lines
+this branch 936 headings / 880 status lines   <- +4 headings, +3 status
+after repair 936 headings / 881 status lines   <- +4 and +4, main's plus mine
+```
+
+So the defect announced itself as a one-line discrepancy in a file of 936
+entries, and `tools/check_registers.py` named it as BLOCKING while
+`tools/ledger.py --check` named it as a ratchet climbing from 62 to 63. Both
+gates worked. The entry restored is byte-identical to main's.
+
+**The attribution trap this nearly set, and it is the reportable part.**
+`tools/ledger.py --patch origin/main` reported the damaged entry with "There is
+no baseline to lower here: these are yours." It is the security seat's entry and
+it was not this seat's. The tool was comparing against a stale `origin/main`
+ref, and its wording states ownership as a fact rather than as a function of the
+ref it was handed. A seat reading that sentence has been told to fix or justify
+another seat's row. This is the confident-attribution class of
+`INC-2026-11-02-two-readers-answer-a-wrong-seat-name-with-a-confident-zero`,
+and the cheap repair is for `--patch` to say which ref it resolved and when it
+was last fetched. Filed here rather than in the ledger because it is the second
+mechanism in one run that pointed a seat at the wrong owner, the first being the
+missing-key error in `pipeline/llm.py`.
+
+Ban list checked on this update.

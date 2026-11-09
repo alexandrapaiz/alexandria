@@ -6,36 +6,55 @@ proposes, a human approves, and the approved claims are written up as a skill
 or pattern. Since ADR-35 a skill is written from the papers read in full, not
 from claim rows.
 
-Eight skills as of 2026-09-30, none yet passed by the ADR-13 panel, so every
-`provenance.validated` field except harness-engineering's is still empty. Six
-carry `status: active` from before ADR-36. The two newest,
-`agent-containment` and `agent-security-measurement`, carry `status: draft`
-because their eval task sets exist and no harness has run them yet, which is
-what ADR-36 says draft means.
+Ten skills as of 2026-11-09, read straight out of `skills/` rather than
+counted by hand. None has been passed by the ADR-13 panel, so every
+`provenance.validated` field except harness-engineering's is still empty.
 
-All eight completed the ADR-38 retrofit on 2026-09-30 (owner directive), so
-every skill now carries a per-section *Validation:* tag, an "Apply" checklist
-of five to seven lines, caveats that name a floor where one exists, and a
-standing `reviews/` lane referenced from its provenance block. Read the tags
-before quoting a section: seven of the eight skills have no section validated
-by anything stronger than claim provenance and an unrun eval task, and the
-tags say so at each section head rather than leaving it to one empty field in
-the frontmatter.
+**No skill carries `status: active`.** Nine carry `status: provisional` and
+`agent-approval-paths` carries `status: draft`. That is the ADR-38 bar doing
+what it was written to do: `active` is earned on a measured positive delta on
+the benchmark subject, and this seat has no route to either eval arm, so
+nothing can earn it today. The two blockers are `GROQ_API_KEY`, absent from
+`.github/workflows/agent-skill.yml` and from the host, and a benchmark
+provider in `pipeline/budget.py`, which knows moonshot and groq and neither
+serves one. Both are queued in `docs/agents/pending-workflow-changes.md`.
+Until they land, every skill here is **unmeasured** in that word, and a
+`provisional` status is the honest reading of the whole library rather than a
+stage any single skill is passing through.
 
-`agent-containment` is the library's first skill with an empty
-`provenance.claims` list, and that is deliberate rather than a gap. The
-2026-09-30 coverage census found that all 24 claims the corpus attributes to the
-containment thread are keyword artefacts and that no claim in the graph concerns
-an isolation boundary, so the skill is written from six papers read in full
-under ADR-35 and its provenance is the `papers` list. A papers-only provenance
-block cannot pass ADR-36's automatic gate, which is a real conflict between the
-two ADRs and is filed in `docs/ideas.md` rather than worked around here.
+The eight skills that existed on 2026-09-30 completed the ADR-38 retrofit that
+day (owner directive), and the two added since were written to it:
+`agent-memory-selection` on 2026-10-13 and `agent-approval-paths` on
+2026-11-02. So every skill carries a per-section *Validation:* tag, an "Apply"
+checklist, caveats that name a floor where one exists, and a standing
+`reviews/` lane referenced from its provenance block. Read the tags before
+quoting a section: nine of the ten have no section validated by anything
+stronger than claim provenance and an unrun eval task, and the tags say so at
+each section head rather than leaving it to one empty field in the
+frontmatter.
+
+`agent-approval-paths` is the skill with an empty `provenance.claims` list
+today, and that is deliberate rather than a gap: it is written from papers
+read in full under ADR-35 and its provenance is the `papers` list. A
+papers-only provenance block cannot pass ADR-36's automatic gate, which is a
+real conflict between the two ADRs and is filed in `docs/ideas.md` rather
+than worked around here.
+
+`agent-containment` used to be that skill, and this file said so for
+thirty-four days after it stopped being true. The 2026-09-30 coverage census
+found that all 24 claims the corpus attributed to the containment thread were
+keyword artefacts and that no claim in the graph concerned an isolation
+boundary. That census went out of date on 2026-10-06, when commit `d4ca234b`
+filled the block with fifteen claim ids over six papers, because PACE
+(2610.01349) and ToolFence (2609.37196) had landed after the census was taken.
+Do not cite the census as the library's current state. It was a reading of a
+corpus that has grown since.
 
 Two instruments, and they measure different things. Both have to pass.
 
 - **Does the skill fire?** `_validation/trigger_test.py` over each skill's
   `triggers.json`, with the dated bundles in `_validation/results/`. It runs on
-  the pre-registered `lexical/2.1` engine by default; `--engine lexical/3`
+  the pre-registered `lexical/2.2` engine by default; `--engine lexical/3`
   selects the candidate-normalised experiment, which is recorded and not
   adopted. A skill can win its eval and never load, which is the market's
   69-percent problem.
@@ -48,7 +67,13 @@ Two instruments, and they measure different things. Both have to pass.
 
 Under ADR-36 a skill with no eval is `status: draft` and never `active`, and a
 skill whose eval shows no gain is retired with the numbers rather than quietly
-kept. Under ADR-37 a skill is revised when a claim it cites is deprecated or
+kept. ADR-38 adds the third word this library actually uses: `provisional`,
+for a skill whose suite is written and whose delta has not been measured,
+which is nine of the ten. The tenth, `agent-approval-paths`, says `draft` for
+a different reason that is not about measurement at all:
+`tests/skill-provenance.test.mjs` requires `draft` when
+`provenance.claims` is empty and allows exactly one such skill at a time.
+`prompts/skill-extract.md` carries that rule in full. Under ADR-37 a skill is revised when a claim it cites is deprecated or
 refined, when a cited paper's citations move sharply, or when its own eval
 regresses; each skill's `provenance.revisions` records what fired and what
 changed.
