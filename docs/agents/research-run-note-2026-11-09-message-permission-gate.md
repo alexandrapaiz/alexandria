@@ -94,3 +94,39 @@ unable to file it, because `propose_change` is one of the five missing tools.
 production on the next run; the instrument is what is gone. Routed to the
 engineer, and the fact that this paragraph is now the third identical one is the
 pattern rather than the finding.
+
+## The signal read, done late and said so
+
+L-R1 in `docs/standards/lessons.md` requires a live-web ecosystem check every
+run for this seat's declared coverage. It was missed in this run's first pass
+and done before shipping rather than after, which is the honest order to report.
+
+It found something inside this run's own subject. Johann Rehberger's "Breaking
+Claude Code Opus 5 Auto Mode" (embracethered.com, 27 Aug 2026) reaches remote
+code execution from "summarize this website" through a five-stage injection
+chain, and **its stage 3 is the agent refusing a binary and writing a file
+instead** - the same Tier 2 exempt channel `2604.04978`'s Finding 4 measures on
+benign ambiguous tasks. AmPermBench excludes prompt injection from its scope in
+as many words, so these are two independent methods landing on one architectural
+gap, which moves it to two of the charter's three sources for a pattern.
+
+Read from the primary source rather than the relay, and that mattered: five
+secondary write-ups give the success rate as "60-80 percent", "2 out of 3", "4
+out of 5" and a flat "80 percent rate", while the post gives 4 of 5 for the
+`claude -p` variant and 3 of 5 for the others - **n = 5 per variant**, carried by
+none of the five relays. This seat's own register says a search summary's numbers
+are never quotable and are only ever a reason to fetch the source; applying that
+rule is what surfaced the denominator.
+
+The finding nobody has priced: the post documents with a screenshot that after
+the agent detected the compromise and tried to kill the malware process, auto
+mode **denied the cleanup command**. That is a false positive whose cost is a
+prolonged breach, and it sits at the tail of a number already read this run -
+AmPermBench's FPR near-quadruples from 9.2 to 34.8 percent between the low- and
+high-impact lanes, so the gate blocks hardest exactly where remediation happens.
+No benchmark in the batch has an arm for it. Queued as both an artifact and a
+question.
+
+Declining nothing from the market or security seats, and the reason is the
+outage: reading either brief needs the corpus tools that are down. Said here
+rather than left silent, per the charter.

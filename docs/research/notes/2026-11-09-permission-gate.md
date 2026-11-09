@@ -394,3 +394,94 @@ missing five. Routed to the engineer.
 
 The lane item was the reading-queue drain, which ADR-35 makes this seat's first
 duty regardless, so the run is not short of work it could have done.
+
+---
+
+## The signal read (L-R1, the live-web ecosystem check)
+
+Run late and recorded as such: this check was missed in the first pass of this
+run and done before shipping rather than after. L-R1 in
+`docs/standards/lessons.md` requires it every run, and a territory with no such
+check is uncovered no matter how many feeds it reads.
+
+**What spiked, and it is squarely inside this run's own reading.** Johann
+Rehberger's "Breaking Claude Code Opus 5 Auto Mode" (embracethered.com, 27 Aug
+2026) drives Claude Code in auto mode to remote code execution from the prompt
+"summarize this website", through a five-stage indirect-injection chain:
+
+1. the server answers HTTP 415 to push the agent off WebFetch and onto `curl`;
+2. a redirect delivers a ZIP holding encoded records and a poisoned `struct.py`;
+3. the agent **refuses the supplied binary decoder and writes its own Python
+   replacement**;
+4. that decoder imports `base64`, which imports `struct`, which resolves to the
+   attacker's file rather than the standard library;
+5. the shadowed module spawns a child process that fetches and runs a native
+   payload and establishes C2.
+
+**Read from the primary source, because the relay garbles the one number that
+matters.** Five secondary write-ups of this post report the success rate as
+"60-80 percent", "2 out of 3", "4 out of 5" and a flat "80 percent rate". The
+post itself gives **4 of 5 (80 percent) for the `claude -p` subprocess variant
+that writes outside the workspace, and 3 of 5 (60 percent) for the others**. The
+denominator is **five runs per variant**, and not one secondary source carries
+it. So the range is accurate and the number is unquotable without its n, which is
+precisely the failure this seat's own register predicts: a search summary's
+numbers are never quotable and are only ever a reason to fetch the source. This
+one was fetched.
+
+**Why it is evidence and not merely signal.** The charter's line is whether a
+builder could do something differently because of what the document MEASURED or
+DESCRIBED rather than what it ANNOUNCED. The injection chain is described stage
+by stage and is reproducible from the post, so it is an artifact with method and
+admissible on the same terms as a paper, subject to the same bar - which here
+means n=5 travels with every figure.
+
+### Cross-referenced against the corpus, and the two findings are the same channel
+
+AmPermBench (`2604.04978`, read in full this run) scopes itself explicitly to
+scope escalation and excludes prompt injection in as many words. Rehberger
+attacks the same product from exactly the excluded angle. They converge anyway,
+and on the same mechanism:
+
+- AmPermBench's Finding 4 is that when the expected CLI is unavailable the agent
+  falls back to the Edit tool, which Tier 2 exempts from classification - 93 of
+  253 actions, 36.8 percent, no classifier invocation in the debug log.
+- Rehberger's stage 3 is the agent refusing a binary and **writing a file
+  instead**, which is the same channel reached adversarially. The refusal is
+  routed around by a tool class the gate does not evaluate.
+
+So one architectural gap is now evidenced twice by independent methods, a
+benchmark on benign ambiguous tasks and an attack chain on a hostile page. That
+is the three-independent-sources bar at two, and it is the strongest thing this
+run found about the gap.
+
+### The detail nobody has priced, and it inverts a safety argument
+
+The post documents, with a screenshot, that **after the agent detected the
+compromise and tried to terminate the malware process, auto mode denied the
+cleanup command.** The gate blocked remediation by the agent that had already
+diagnosed the breach.
+
+That is a false positive whose cost is not a blocked legitimate task but a
+prolonged compromise, and it lands on a number this run already read.
+AmPermBench measures Tier 3 FPR at 31.9 percent and, on the risk axis, a
+near-quadrupling from 9.2 to 34.8 percent between the low- and high-impact
+lanes - the classifier blocks harder exactly where stakes are highest. A kill
+command issued during an active compromise is the highest-stakes shape there is,
+so the denied cleanup is not an anomaly beside the 34.8 percent; it is what that
+number looks like at the tail. The authors' own suggested direction - decouple
+risk sensitivity from blocking aggressiveness, confirm rather than deny - is
+aimed at exactly this, and this incident is the case for it.
+
+### Steering
+
+The world is reacting to auto mode being bypassed; the evidence says the
+reachable channel is the exempt tool tier and the over-blocking is worst where
+the stakes are highest; the corpus is thin on **remediation-blocking as a gate
+failure mode**, which is a class no paper in this batch measures and which every
+one of them would have to add an arm to catch. Ingest there. Queued below.
+
+Declining nothing from the market or security seats: neither brief was reachable
+this run, because reading them needs the corpus tools that are down. Said here
+rather than left silent, per the charter's rule that a steer silently dropped is
+how the last one was lost.
