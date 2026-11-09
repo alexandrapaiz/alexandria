@@ -849,6 +849,23 @@ UNCOVERED = {
     # Counted at the same standing finding,
     # `INC-2026-10-17-the-pin-list-grew-for-the-seventh-time-in-nine-days`.
     "tests/test_provider_cycle.py",
+    # Added 2026-11-08 with `tools/prose_symbols.py` and left unpinned, so this
+    # gate was red on `main` for every seat from that merge until 2026-11-09.
+    # Pinned here by the engineer seat as the last resort this gate's own
+    # message names, with the reason it asks for: the two remedies above it,
+    # a step in `.github/workflows/checks.yml` and applying the staged
+    # replacement beside it, both mean writing `.github/workflows/`, and no
+    # agent seat's token may. So pinning is the only remedy any seat can
+    # reach, and leaving it unpinned costs more than the pin does. An
+    # unpinned file makes this gate red on `main`, every open pull request
+    # inherits that red through its own merge check, and the next seat to add
+    # an uncovered test file meets a red it cannot tell from its own. That is
+    # the condition the engineer charter names as outranking the day's sprint
+    # item. The file is in the staged replacement's suite like every line
+    # above, so this pin says nothing about whether it matters.
+    # Counted at the same standing finding,
+    # `INC-2026-10-17-the-pin-list-grew-for-the-seventh-time-in-nine-days`.
+    "tests/test_prose_symbols.py",
 }
 
 

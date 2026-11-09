@@ -27106,6 +27106,10 @@ ingestion target rather than a skill target.
   press can refuse. So the scan went to the product that has had the largest
   installed base of this exact problem for a decade: ESLint (eslint.org), the
   JavaScript linter that runs a project's rules over its source in CI.
+- What: give the pre-send gate a per-rule ceiling, so a rule whose target no
+  served edition meets can still be enforced against regression from the day it
+  is written, rather than forcing the choice this run faced between blocking
+  today and warning forever.
 - **What is worth stealing.** ESLint does not make a rule's severity the only
   dial. `--max-warnings <n>` makes the BUILD fail on a count rather than on a
   severity, so a rule can be switched on at `warn` over a codebase that
@@ -27153,6 +27157,15 @@ ingestion target rather than a skill target.
   `.github/workflows/checks.yml` names fourteen test files by hand and names
   neither the gate nor its tests, so a change to the pre-send gate triggers no
   workflow at all and a change that broke it would go green by never running.
+- What: apply the staged replacement that already exists at
+  `.github/workflows-pending/checks.yml`. **This is a correction to this
+  entry's own first reading**, which was that the repair is two path lines.
+  It is not. That staged workflow replaces the fourteen named pytest steps
+  and both `paths` lists with one unfiltered `python3 -m pytest tests/ -q`, so
+  it covers this gate and the other 77 uncovered files in one move, and
+  `tests/test_ci_coverage.py` already asserts that applying it leaves no test
+  file unexecuted. The two path lines are the narrow alternative and they
+  would leave the other 77 exactly as they are.
 - Why this one is worth a row of its own rather than another instance of the
   known 14-of-92 gap. This file is not an ordinary test file. The gate it
   tests is, in the words of `check_voice.py`, "the last thing between a written
@@ -27173,9 +27186,12 @@ ingestion target rather than a skill target.
       - "tools/check_digest_quality.py"
       - "tests/test_digest_quality.py"
   ```
-- First step: those two lines, by a seat that may write `.github/`. The
-  structural fix is the one `docs/ideas.md` already carries in several forms,
-  which is that a hand list of fourteen paths is the same class as every other
-  hand list this run met today.
+- First step: the owner or a chair moves
+  `.github/workflows-pending/checks.yml` into `.github/workflows/`. Nothing
+  else in this entry needs doing, and the move is measured rather than
+  asserted, which is what that staged file was built for. The standing cost
+  until then is `INC-2026-10-17-the-pin-list-grew-for-the-seventh-time-in-nine-days`,
+  and this run added the eighth line to that list and the ninth, for a file
+  another seat left unpinned on 2026-11-08.
 - Cost: $0
 - Status: urgent
