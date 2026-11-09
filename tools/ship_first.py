@@ -132,6 +132,7 @@ from tools import resolve_target  # noqa: E402
 AUDIT = '/srv/asc/state/.epito/audit.jsonl'
 PROJECTS = '/srv/asc/home/.claude/projects'
 DEADLINE = 10         # docs/standards/pm.md §8: "The deadline is turn ten"
+HQ = 'alexandra-systems'  # the one company whose keys the host writes unprefixed
 
 # Six was this file's own reading of "your first few turns" on 2026-10-26, when
 # the clause was prose and no number had ever been counted against it. The
@@ -170,6 +171,77 @@ def fold(name):
     return (name or '').translate(ASCII_LOWER)
 
 
+def owner(agent, roster=None):
+    """The company an agent key names, which for HQ's seats is not in the key.
+
+    **This function is the answer to a question this file used to refuse.** The
+    docstring below `unprefixed` said of the eight bare keys that every one is
+    also an alexandria seat name, "so they are most likely this company's own
+    early runs, and `most likely` is not a thing a measurement gets to act on."
+    That refusal was right. On 2026-11-09 Ursa's ExO seat measured the thing
+    that resolves it, this seat reproduced the measurement, and the answer is
+    that the bare keys are HQ's own, so claiming them for a product company
+    would have imported 3,504 rows of alexandra-systems' work.
+
+    The evidence is the `pr` field rather than the dates. Of the 128 PR-bearing
+    rows on the bare eight, 126 name an `alexandrapaiz/alexandra-systems` pull
+    request, and the two exceptions are HQ seats writing into product
+    repositories, which is what an HQ seat does. The positive control is what
+    makes the absence mean something: all 30 qualified keys that carry a pull
+    request name their own company's repository, every row, no exceptions, from
+    `alexandria-pm` at 132 of 132 to `ursa-okr` at 3 of 3. And three of the
+    eight bare names, `mba`, `yc` and `distribution`, have no qualified
+    counterpart under any company on this host, so they cannot be a product
+    seat in any spelling. Five of eight being alexandria seat names is a
+    coincidence of the roster rather than evidence.
+
+    **So the mechanism is an identity and not an omission.** The host writes a
+    seat's own name and prefixes it with the company only for a product
+    company. For HQ the seat name is the agent name, so there is nothing to
+    prefix.
+
+    Which is why the test is the roster rather than the hyphen. `exo-centralizer`
+    is HQ's ninth key, 859 rows, and all 24 of its PR rows name
+    alexandra-systems, so it is HQ's by the same identity while looking
+    qualified, because that seat's own name carries a hyphen. A hyphen rule
+    files those 859 rows under a company called `exo` that does not exist, which
+    is what this tool printed among its five companies until this change. Over
+    the whole log the roster rule agrees with the `pr` field on 887 of 889
+    PR-bearing rows, and the two it misses are the two HQ cross-writes above.
+
+    Returns `None` for a key that names nothing, which is a key with an empty
+    half. An unreadable roster falls back to the shape rule rather than
+    attributing anything, for the reason
+    `test_an_unreadable_roster_refuses_nothing` already gives: a claim built on
+    an empty roster is worse than the narrower reading it replaces."""
+    key = fold(agent)
+    if not key:
+        return None
+    head, dash, tail = key.partition('-')
+    if dash and (not head or not tail):
+        # `-pm` and `pm-` each split into a pair with an empty half, and neither
+        # half is a name. A key a reader cannot type back names no company.
+        return None
+    if not dash:
+        return HQ
+    if roster is None:
+        roster = known_companies()
+    if head in roster or not roster:
+        return head
+    return HQ
+
+
+def seat_key(company, seat):
+    """The agent key a named seat of a named company is written under.
+
+    One line, and it is the whole repair on the `--seat` side. HQ's seats are
+    written unprefixed, so HQ is the only company whose seat key is the seat
+    name, and a product company's seat key always carries its company."""
+    if fold(company) == HQ:
+        return fold(seat)
+    return fold('%s-%s' % (company, seat))
+
+
 def select(records, company=None, seat=None, session=None, every=False):
     """The runs a selector names, and the selector written back in words.
 
@@ -184,40 +256,68 @@ def select(records, company=None, seat=None, session=None, every=False):
     The exit code is not folded in, and it is worth knowing why the stakes were
     higher than a confusing line. Ursa's record carries ten `lost` runs, so
     `--company ursa` exits 1 and `--company Ursa` exited 0. A gate wired to the
-    capital was green on a fleet that had lost work."""
+    capital was green on a fleet that had lost work.
+
+    **The second repair here is the `--seat` branch, and it ran the other
+    way.** That branch used to match the bare key as a fallback, and the
+    docstring under `unprefixed` called that compensation: one of the two
+    selectors reached the historical rows and the other did not. It was not
+    compensation. `owner` now says whose those rows are, and they are HQ's, so
+    the fallback was importing alexandra-systems' work into every product
+    seat's reading of itself. Measured on this host before the change:
+    `--company alexandria --seat engineer` returned 1,389 rows of which 1,015,
+    or 73.1 per cent, were HQ's engineer seat. Across the five alexandria seats
+    whose names HQ also uses, 3,127 of 6,247 selected rows belonged to another
+    company, so the seat selector was more than half wrong and in the direction
+    that matters least to notice.
+
+    **The report was already contradicting itself about it in print.** Its
+    `BY SEAT` block groups on the raw key, so one run of `--seat engineer` put
+    `engineer` at median 23 and `alexandria-engineer` at median 15, two rows, as
+    two seats, inside a report whose summary had just called them one seat and
+    published their merged median of 17. A seat that reads its own first-push
+    median off this tool was reading a number four turns worse than its own,
+    and the evidence that it was two populations was eleven lines further down
+    the same page."""
     if session:
         return ([r for r in records if r['session'] == session],
                 'session %s' % session)
     if seat:
-        want, bare = fold('%s-%s' % (company, seat)), fold(seat)
-        return ([r for r in records if fold(r['agent']) in (want, bare)],
+        want = seat_key(company, seat)
+        return ([r for r in records if fold(r['agent']) == want],
                 'seat %s of company %s' % (seat, company))
     if every:
         return list(records), 'every seat of every company'
-    prefix = fold(company) + '-'
-    return ([r for r in records if fold(r['agent']).startswith(prefix)],
+    roster = known_companies()
+    return ([r for r in records if owner(r['agent'], roster) == fold(company)],
             'company %s' % company)
 
 
 def unprefixed(records):
-    """The agent keys that name a seat without naming a company, counted.
+    """The agent keys the host writes unprefixed, counted. They are HQ's seats.
 
-    **A company selector cannot match one of these and must say so.** The host
-    has not always written `<company>-<seat>`: on 2026-11-09 the audit log
-    carries 41 distinct agent keys, 8 of which are bare, and those 8 are 659 of
-    3,222 rows. Every bare name is also an alexandria seat name, so they are
-    most likely this company's own early runs, and `most likely` is not a thing
-    a measurement gets to act on. `--company alexandria` is this tool's default
-    invocation and it silently could not consider 659 rows, 138 of them this
-    seat's.
+    **This used to be the open question of this file and it is now a disclosure
+    with an answer attached.** The previous text said the eight bare keys were
+    "most likely this company's own early runs" and refused to act on a most
+    likely, which was the right call: acting on it would have claimed them for
+    `--company alexandria`, this tool's default invocation. `owner` carries the
+    measurement that closed it on 2026-11-09, and the answer went the other
+    way. The bare keys are alexandra-systems' own, so the widening this
+    function was holding the door against would have imported 3,504 rows of
+    HQ's work and reported them as this company's.
 
-    The `--seat` branch of `select` has always matched the bare key as a
-    fallback, which is both the evidence that the convention changed and the
-    reason this was invisible: one of the two selectors compensated and the
-    other did not. Reported rather than claimed, for the reason `unseen`
-    exists. Not having looked and having found nothing are different facts, and
-    guessing which company owns a key the log does not qualify would make the
-    third kind of error this file is built to refuse."""
+    That direction is the part worth keeping in mind for the next version of
+    this question. The error would not have recovered rows the report was
+    missing, it would have manufactured them, and a counter that grades
+    shipping errs expensively when it errs toward a healthier-looking fleet.
+
+    What this function now means is narrower than what it used to mean. It
+    counts the keys with no company in them, which is 8 of HQ's 9 keys and
+    exactly the population whose ownership the key itself does not state. HQ's
+    ninth, `exo-centralizer`, is unprefixed in the same way and does not look
+    it, so it is `owner` and not this count that decides attribution. Nothing
+    here is unreachable any more: `--company alexandra-systems` selects all
+    nine."""
     counts = collections.Counter()
     for r in records:
         agent = fold(r.get('agent'))
@@ -226,30 +326,32 @@ def unprefixed(records):
     return counts
 
 
-def keys_present(records, company=None):
+def keys_present(records, company=None, roster=None):
     """The company keys and seat keys the record actually carries.
 
     Printed when a selector matches nothing, because that is the one moment a
     reader cannot tell a company with no runs from a company spelled another
-    way, and the keys are the only thing that answers it."""
+    way, and the keys are the only thing that answers it.
+
+    Attribution is `owner`'s, which is the fix for two opposite errors this
+    function made while splitting on the hyphen. It offered the bare seat keys
+    to a reader as nine companies, which the comment it replaces describes. And
+    after that was repaired by dropping every bare key, it offered `exo` as the
+    fifth of five companies on this host, which is not a company either: it is
+    the head of `exo-centralizer`, one of HQ's own seats, and 859 rows were
+    filed under it. A reader who typed `--company exo` back got a refusal from
+    the roster, which is the good case. A reader who believed the list learned
+    the portfolio has a company it does not have."""
+    if roster is None:
+        roster = known_companies()
     companies, seats = set(), set()
     for r in records:
-        agent = fold(r.get('agent'))
-        if not agent or '-' not in agent:
-            # A bare key names a seat and not a company, so it is not a company
-            # key and must not be offered to a reader as one. The first draft of
-            # this function split on `-` unconditionally, and the live run
-            # printed `distribution, engineer, exo, finance, frontend, mba, okr,
-            # pm, yc` among the companies, which are the nine bare seat keys
-            # this same change had just finished disclosing as not companies.
-            # `unprefixed` is where they are counted.
+        who = owner(r.get('agent'), roster)
+        if not who:
             continue
-        head, tail = agent.split('-', 1)
-        if not head or not tail:
-            continue
-        companies.add(head)
-        if company is None or head == fold(company):
-            seats.add(agent)
+        companies.add(who)
+        if company is None or who == fold(company):
+            seats.add(fold(r.get('agent')))
     return sorted(companies), sorted(seats)
 
 
@@ -523,9 +625,9 @@ def report(records, deadline, unjoined, selector=None, universe=None, company=No
                                       ', '.join(seats) or '(none)'))
         bare = unprefixed(universe)
         if bare:
-            print('  no company     %s' % ', '.join('%s %d' % kv for kv in bare.most_common()))
-            print('\n  The last row names seats without naming a company. No --company'
-                  ' selector reaches one.')
+            print('  unprefixed     %s' % ', '.join('%s %d' % kv for kv in bare.most_common()))
+            print('\n  The last row names seats with no company in the key. Those are'
+                  ' HQ\'s own, and `--company %s` selects them.' % HQ)
         return
     counts = collections.Counter(r['state'] for r in records)
     print('%d runs selected. A turn is one `user` entry in the transcript; the deadline'
@@ -544,20 +646,19 @@ def report(records, deadline, unjoined, selector=None, universe=None, company=No
 
     # Two disclosures about the selector itself, because a count is only an
     # answer if the reader knows what it could not reach.
-    if company is not None and universe:
+    if company is not None and universe and fold(company) != HQ:
         bare = unprefixed(universe)
         if bare:
             named = ', '.join('%s %d' % kv for kv in bare.most_common())
-            print('\n  %d further rows carry an agent key that names a seat and not a'
-                  ' company (%s). No --company selector can match one, and this one did'
-                  ' not try: the log does not say which company owns them. `--all`'
-                  ' counts them and `--seat <name>` matches the bare key directly.'
-                  % (sum(bare.values()), named))
+            print('\n  %d further rows carry an agent key with no company in it (%s).'
+                  ' Those are HQ\'s own seats rather than this company\'s, so this'
+                  ' selector did not claim them, and `--company %s` is what reads them.'
+                  % (sum(bare.values()), named, HQ))
     claimed = unprefixed(records)
-    if claimed and company is not None:
-        print('\n  %d of the rows above were selected on a bare key (%s), which names'
-              ' this seat without naming a company, so they are included on the seat\'s'
-              ' identity alone.'
+    if claimed and company is not None and fold(company) == HQ:
+        print('\n  %d of the rows above were selected on an unprefixed key (%s). HQ'
+              ' writes its seat name with no company in front of it, so for this one'
+              ' company the seat name is the whole key.'
               % (sum(claimed.values()), ', '.join(sorted(claimed))))
 
     pushed = sorted(r['push'] for r in records if r.get('push'))
