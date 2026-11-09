@@ -346,17 +346,52 @@
             "decoy-incident-response": 0.0
           },
           "rationale": "Routes to the measurement skill. The prompt deliberately opens with a confirmation gate, which is this skill's subject, but the question asked is what an attack-success delta proves and what a static suite misses, which is the measurement skill's whole content. A suite that cannot keep these apart would have this skill answering every question in which an approval gate merely appears, rather than the questions about designing one."
+        },
+        {
+          "id": "ap-pos-4",
+          "kind": "positive",
+          "prompt": "We want to alert whenever our coding agent proposes a new persistent permission rule in the middle of a task. What false positive rate should we budget for, and on what evidence?",
+          "expect": "agent-approval-paths",
+          "got": "agent-containment",
+          "passed": false,
+          "winner": "agent-containment",
+          "winner_is_decoy": false,
+          "library_score": 0.357,
+          "closest_decoy": "decoy-incident-response",
+          "null_margin": 0.2315,
+          "narrow": false,
+          "scores": {
+            "agent-approval-paths": 0.2186,
+            "agent-containment": 0.357,
+            "agent-memory-selection": 0.0311,
+            "agent-security-measurement": 0.1571,
+            "context-window-engineering": 0.2285,
+            "evaluation-integrity": 0.1673,
+            "harness-engineering": 0.0388,
+            "recursive-harness-self-improvement": 0.2167,
+            "self-improving-post-training-loops": 0.1544,
+            "skill-library-engineering": 0.0388,
+            "decoy-frontend-layout": 0.0,
+            "decoy-postgres-tuning": 0.0,
+            "decoy-cluster-capacity": 0.054,
+            "decoy-product-copy": 0.0,
+            "decoy-data-pipeline-ops": 0.0,
+            "decoy-api-integration": 0.0642,
+            "decoy-dependency-management": 0.0,
+            "decoy-incident-response": 0.1255
+          },
+          "rationale": ""
         }
       ],
       "passed": 6,
-      "total": 7,
+      "total": 8,
       "narrow_decisions": 0,
-      "reliability": 0.8571,
+      "reliability": 0.75,
       "reliability_ci95": [
-        0.4213,
-        0.9964
+        0.3491,
+        0.9681
       ],
-      "positive_recall": "3/3",
+      "positive_recall": "3/4",
       "negative_rejection": "1/2",
       "confusion_resolved": "2/2"
     },
@@ -3228,22 +3263,23 @@
     }
   ],
   "passed": 74,
-  "total": 84,
-  "reliability": 0.881,
+  "total": 85,
+  "reliability": 0.8706,
   "reliability_ci95": [
-    0.7919,
-    0.9414
+    0.7802,
+    0.9336
   ],
   "by_kind": {
     "positive": {
       "passed": 37,
-      "total": 39,
-      "rate": 0.9487,
+      "total": 40,
+      "rate": 0.925,
       "ci95": [
-        0.8268,
-        0.9937
+        0.7961,
+        0.9843
       ],
       "failed": [
+        "ap-pos-4",
         "ac-pos-8",
         "ac-pos-7"
       ]

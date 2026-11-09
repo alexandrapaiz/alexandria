@@ -3,7 +3,7 @@
   "suite_version": 1,
   "written": "2026-11-02",
   "author": "skill agent (ADR-22)",
-  "note": "Three positives, one per delta, two hard negatives and two confusion cases. The negatives are chosen against this skill's worst false-positive risk, which is that approval vocabulary is overwhelmingly ordinary: 'approval', 'approvals', 'approval step', 'confirm' and 'confirmation dialog' belong to release engineering and to consumer checkout UX far more often than to an agent's action loop. Both negatives therefore carry more of the description's literal vocabulary than any positive does, and they must still stay silent. The confusion cases route to the two nearest neighbours: agent-containment owns where a tool call is refused, and agent-security-measurement owns what an attack-success number proves. The trigger engine is lexical and pre-registered, so each positive is phrased in the words a user would actually bring, and the anchor names the clause of the description it is testing.",
+  "note": "Three positives, one per delta, two hard negatives and two confusion cases. The negatives are chosen against this skill's worst false-positive risk, which is that approval vocabulary is overwhelmingly ordinary: 'approval', 'approvals', 'approval step', 'confirm' and 'confirmation dialog' belong to release engineering and to consumer checkout UX far more often than to an agent's action loop. Both negatives therefore carry more of the description's literal vocabulary than any positive does, and they must still stay silent. The confusion cases route to the two nearest neighbours: agent-containment owns where a tool call is refused, and agent-security-measurement owns what an attack-success number proves. The trigger engine is lexical and pre-registered, so each positive is phrased in the words a user would actually bring, and the anchor names the clause of the description it is testing. Updated 2026-11-09: ap-pos-4 was added for delta 3's operator-side phrasing and is committed red, with the measurement and the reason on the case.",
   "cases": [
     {
       "id": "ap-pos-1",
@@ -56,6 +56,14 @@
       "expect": "agent-security-measurement",
       "prompt": "We added a confirmation gate in front of our agent's tool calls and attack success on our injection suite dropped from 45 percent to 8 percent. Before I present that to the security review, what does that number actually prove, and what else should I be measuring against an attacker who adapts?",
       "rationale": "Routes to the measurement skill. The prompt deliberately opens with a confirmation gate, which is this skill's subject, but the question asked is what an attack-success delta proves and what a static suite misses, which is the measurement skill's whole content. A suite that cannot keep these apart would have this skill answering every question in which an approval gate merely appears, rather than the questions about designing one."
+    },
+    {
+      "id": "ap-pos-4",
+      "kind": "positive",
+      "expect": "agent-approval-paths",
+      "prompt": "We want to alert whenever our coding agent proposes a new persistent permission rule in the middle of a task. What false positive rate should we budget for, and on what evidence?",
+      "anchor": "delta 3's own decision rule, stated as the operator would state it: the alert on a mid-task persisted-rule proposal and the rate to budget for it",
+      "note": "ADDED 2026-11-09 AND KNOWN TO FAIL, deliberately. This prompt states delta 3's exact situation and routes to agent-containment at 0.357 against this skill's 0.219, measured with the pre-registered engine. ap-pos-3 covers the same delta from the builder's side, 'we are shipping a remember-this-choice', and passes; this case covers it from the operator's side, the alert and its false-positive budget, and does not. So the gap is not delta 3 being unfindable, it is the alerting half of it. The remedy is a description revision and this run did not attempt one: the description is 149 words against a 150-word budget, so any addition is a swap that can lose a currently-passing activation condition, and the engine's idf is library-wide, so the change perturbs all ten skills and the 84-case suite would have to be re-run to know the net. Filed as next-run work with this number as its baseline. The case is committed failing on purpose, because the file re-runs on every future change and prose in a pull request does not."
     }
   ]
 }
