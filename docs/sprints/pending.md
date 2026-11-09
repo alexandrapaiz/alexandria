@@ -103,38 +103,39 @@ check the archive before assuming either.
 - **PR #860 (security), depth-4 supersession chain** (`#834→#839→#848→#852→
   #860`), self-reported by that seat as "blocked on merges." Draft, run was
   live as of this check; re-confirm before acting.
-- **PR #854 (research) and the now-merged #850 (skill) both edited
-  `docs/research/reading-queue.md` at the same original lines (3610-3612).**
-  #850 merged first (this run, `0d873f79`); #854 read `mergeable: UNKNOWN`
-  immediately after and will need a rebase. Not this seat's file to own;
-  named so the next pass checks before merging #854 as though it were
-  still clean.
+- **Resolved since this morning: #854 (research) and #850 (skill), both
+  flagged as a `reading-queue.md` collision risk, are both now `MERGED`**
+  (re-checked 11:16Z via `gh pr view`). No rebase was needed; the file
+  carries no conflict markers. Struck rather than carried forward.
 - **PR #678 (frontend, depth-3 chain, #554→#559→#678) says "this is the
-  one to merge" in its own body, but is not.** Checked live this run:
-  `mergeStateStatus: DIRTY`, `mergeable: CONFLICTING`, and `gh pr checks
-  678` reports no checks at all on the branch. The claim was true when
-  written (2026-11-02) and is not true now, six days of `main` traffic
-  later. Proposed in this run's dispatch queue: frontend rebases and
-  re-pushes rather than this seat guessing at the resolution of a visual
-  design PR's conflict.
+  one to merge" in its own body, but is not.** Checked live again this run
+  (11:16Z, after waiting out a transient `mergeStateStatus: UNKNOWN`):
+  `mergeStateStatus: DIRTY`, `mergeable: CONFLICTING`. The claim was true
+  when written (2026-11-02) and is still not true a week later. Proposed in
+  this run's dispatch queue: frontend rebases and re-pushes rather than
+  this seat guessing at the resolution of a visual design PR's conflict.
 
 ## §22 asks live on the board (48-hour silence-default clock)
 
 - **PR #851 (charter propagation to all twelve `prompts/*-agent.md`
   files).** Posted by this seat's run #856 at 2026-11-09T04:10:55Z,
   deadline 2026-11-11T04:10:55Z, this seat named as the applier on silence.
-  **Needs re-checking before the clock is trusted**: #851 shows as `MERGED`
-  on GitHub, but its content was reverted out of `main` by the tier-sweep
-  correction (`8ebb17c4`, this morning, incident filed) alongside
-  #841/#825/#833, which were merged under the wrong tier and corrected. The
-  revert's own commit message does not say whether #851 was wrongly tiered
-  on the same grounds or caught in the same sweep for an unrelated reason.
-  The next pass should read that incident before letting the 48-hour clock
-  apply itself to a PR that is not currently reflected in `main` either way.
+  **Checked this run, resolved rather than stuck.** #851 shows `MERGED` on
+  GitHub but its content was reverted out of `main` at 04:35:34Z
+  (`8ebb17c4`) alongside #841/#825/#833: a later run of this same seat had
+  merged all four on a tier-checking tool's verdict without first reading
+  its own board inbox, which already held its immediately-prior run's
+  considered decision to hold exactly these four for the owner. The revert
+  is logged **CLOSED** in `docs/agents/incidents/inbox/INC-2026-11-09-the-pm-merged-over-its-own-prior-runs-posted-hold-because-it-ran-a-tool-before-it-read-the-inbox.md`,
+  which states plainly: "The section 22 ask #856 posted is unaffected and
+  still governs." So the clock stands as originally posted: the owner's
+  word, or the 48-hour silence default (2026-11-11T04:10:55Z) naming this
+  seat as the applier, on content not currently in `main`.
 
 ## What ships without waiting on her
 
-Everything else open today is ordinary review-and-merge volume (69-70 open
-pull requests as of this run) rather than a standing ask. See
-`gh pr list --state open` and this run's own PR description for the queue
-gauge; this table only carries items with a genuine, named block.
+Everything else open today is ordinary review-and-merge volume (73 open
+pull requests as of 11:16Z, re-read this ceremony run; was 69-70 six and a
+half hours earlier) rather than a standing ask. See `gh pr list --state
+open` and this run's own PR description for the queue gauge; this table
+only carries items with a genuine, named block.
