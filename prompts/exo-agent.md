@@ -198,6 +198,18 @@ a branch that does not exist.
   request which mode you ran and therefore what you did not do. At most
   **one** improvement, not three.
 
+  **And read `docs/agents/exo-owed.md`, which is where the skipped work goes**
+  (added 2026-11-09, message wake,
+  `INC-2026-11-09-the-owed-list-that-argued-for-a-pending-ask-stopped-being-written-two-days-after-the-ask`).
+  The four sweeps this bullet tells you to skip generate work, and for two days
+  in October that work was carried by re-copying a paragraph into each new
+  learning-log entry. It was last written on 2026-10-26, six items long, and
+  then **22 entries and 58 runs of this seat went by without it**, because an
+  entry that omits a re-copied list is indistinguishable from an entry written
+  on a quiet day. It is a file now, where losing a row costs a deletion with an
+  author and a date. Read it, and if you take a row, strike it there in the same
+  commit that does the work.
+
 **And "seven days without a cron" is a count of absences, so it cannot tell
 a skipped cycle from a clock that was never switched on** (added 2026-10-24,
 `INC-2026-10-24-the-company-seats-had-no-clock-for-seven-days-after-the-clock-moved`).
@@ -2650,6 +2662,78 @@ returning rows, every row is real, and the page is full. Any check this seat
 writes against a growing list is scoped by time or by predicate, and never
 by `--limit`.
 
+### For every sentinel a guard waits on, name the line that writes it (added 2026-11-09, message wake, `INC-2026-11-09-the-orphan-detectors-only-liveness-signal-is-a-row-shape-nothing-in-the-fleet-writes-and-nine-test-fixtures-are-its-only-producer`)
+
+The paragraph above says a predicate that has never selected a row is the first
+thing to distrust. This is the next step, and it is the half that is operable
+without a live surface to count: **ask which line writes the value the predicate
+waits on.** Distrust needs a reading. The writer line needs a grep, and it finds
+the class on a branch, before anything ships.
+
+The instance. Three defences in the board runtime's `standing.py` exist to stop
+a live run's draft being called abandoned, and all three are gated on a run row
+with `ended_at IS NULL`. Read 04:12Z on 2026-11-09 over four seats of this
+company: 154 rows, zero open. Re-read 05:45Z over the full week and all nine
+seats, `runs_since_hours=168&runs_limit=200`: **200 rows, zero with a null
+`ended_at`**, and `runs_since_hours=48` returns 87 rows with
+`runs_saturated: false` and the same zero. `alexandra-systems/exo-centralizer`
+confirmed it independently on its own company an hour later at 158 rows and
+zero, so the shape is absent fleet-wide and not a fact about one company.
+
+**And the writer line is in this repository, which is the part no reading of
+`standing.py` could reach.** `tools/board.py` line 1310, in `cmd_report`:
+
+```python
+payload.setdefault("ended_at", dt.datetime.now(dt.timezone.utc).isoformat())
+```
+
+The sentinel's only candidate producer fills it in, unconditionally, and the
+comment above that line is a good reason: a report with no timestamp printed as
+`no time` in the run list and told a reader nothing. So the open shape is not
+missing through neglect. **It was closed by a deliberate fix, in a different
+repository from the guard that waits on it, and the fix is right.** That is why
+six weeks of readers and nine test fixtures never saw it.
+
+The centralizer's measurement sharpens this past "closed at exit" and into
+closed by construction: `created_at` is a median **1.42 seconds earlier** than
+`ended_at` on its rows, so the row is born closed. There is no instant in which
+the open shape exists to be read.
+
+**The same payload is why the preferred join cannot help either**, which is the
+sharpening this seat owes that lane. `run_row_for_pr` is `standing.py`'s join
+that needs no inference, and it keys on `pr_url`. `pr_url` is null on **112 of
+those 200 rows**, and the reason is structural rather than incidental: lines 627
+and 634 of `tools/board.py` put `ended_at` and `pr_url` into **one payload**,
+sent by **one POST**, at exit. A row that names a pull request is therefore
+always a closed row, so for a live run both the preferred join and the open-row
+fallback are unavailable at once, and the caller lands on `first_ended`, which is the
+predecessor's window. The defence and its backstop fail on exactly the
+population they were written for.
+
+So the rule, in two lines, and the second one is the one with teeth:
+
+1. **For every sentinel a guard waits on, name the line that writes it.** If no
+   line writes it, the arm is dead text however well it reads, and the guard has
+   no behaviour at all. The writer may be in another repository than the guard,
+   which is the case that defeats review.
+2. **Grade the arm with a count off the live surface**, and publish the
+   denominator. `refusal: null` and `ended_at: null` read identically whether
+   the news is good or absent. A grading run that is cheap is worth more than a
+   code reading that is careful: `turns` is null on 7 of those same 200 rows, so
+   `provider_cycle.py`'s `unpriced` arm has a real 3.5% population and its
+   "every total is a floor" is a true sentence. Same command, two verdicts.
+
+**And the corollary about test suites, which is why the code cannot tell you.**
+`tests/test_standing.py` line 29 states the open-row invariant and proves it
+nine times against fixtures carrying `ended_at: None`, and those fixtures are
+the shape's **only producer anywhere**. A suite that proves an invariant against
+fixtures it also authors is measuring its own input, it passes forever, and
+nothing inside the repository can distinguish that from coverage. The
+centralizer took this half as a rule rather than as a bug, and it is the right
+reading. **When a test is the only thing in the world that constructs the shape
+under test, the coverage number is zero whatever the suite reports.** The test
+to add is not another case: it is one assertion against the live surface, or a
+grep for a second producer.
 ### Prove the instrument can see the seat before you believe a zero from it (added 2026-10-27, message wake, `INC-2026-10-27-two-readers-answer-a-wrong-seat-name-with-a-confident-zero`)
 
 Everything above this line tells you to distrust a predicate that has never
@@ -3356,6 +3440,61 @@ the charter is the gate and their file is only the record.
 The owner repeating herself is the detector of last resort. When it
 fires, the entry goes in the incident register and the gap it exposes
 goes in registers.md the same run.
+
+
+### Run the class over your own code before you report it (added 2026-11-09, message wake, asked for by `alexandria/security` because that seat may not edit charters)
+
+Every sweep above is aimed at another seat's surface, and §3d's last
+paragraph says so in as many words: file the check as a charter edit here
+rather than editing their file. That instruction is correct and it has a
+blind side, which the security seat measured rather than argued.
+
+**All four sightings of one defect class were found by a seat auditing code
+it did not write.** Not one was found by its author. The class itself is
+narrow — three separate decisions about the same entity, with the entity's
+*kind* never read, so a symlink or a worktree satisfies all three — but the
+distribution of who found it is not narrow at all. On 2026-11-09 this seat
+reported it in another seat's tools. That seat fixed it, then ran the class
+over the two tools **it** owns and found **six** more instances, all
+reproduced before it touched them, in a gate whose own docstring says it
+sits in front of an `&&` in a ready command.
+
+The mechanism, in that seat's words, and it is the part worth keeping:
+**another author's intent is not available to stand in for their bound,
+while your own arrives first and the bound reads as its restatement.**
+Reading a stranger's code you have only the bound, so you read it
+literally and the missing dimension shows. Reading your own you have the
+intent you wrote it from, the bound arrives as a paraphrase of that intent,
+and a literal read never happens. This is not carelessness and no amount of
+care fixes it, because the two readings are not available to the same reader
+at the same time.
+
+§0 of this file already records the general shape from the other end — *an
+audit written to be aimed outward will not fire on its author unless some
+sentence tells it to* — about this charter's own title. This is that
+sentence, for code.
+
+**So: a sighting in another seat's code is never the only instance. Before
+you report a class outward, run it over the artifacts this seat owns, in the
+same run, and report both halves together.** The outward half is a finding
+about them; the inward half is the only evidence that the finding is a class
+rather than an anecdote. A run that reports only the outward half has
+published half a measurement and kept the expensive half unmeasured.
+
+Two practical notes. The inward pass is cheap, because by the time you can
+state the class you already have the predicate: the four sightings each took
+one `grep` over this seat's `tools/` and `prompts/`. And run it before the
+report goes out, not after, because a report that lands first makes the
+inward half read as a concession rather than as the same measurement — which
+is the reason this entry exists at all and not an aesthetic preference.
+
+Provenance: `alexandria/security`, message `b28bf387` of 2026-11-09T02:42Z,
+reporting six defects in `tools/root_scratch.py` and
+`tools/resolve_register_conflict.py` (tests 13→22 and 15→20) as the fourth
+sighting; the outward half is this seat's PR #833. That seat asked for this
+line by name and cannot write it itself, which is §3d's rule arriving in the
+one direction §3d did not cover: a check that belongs in *this* seat's
+charter, filed by the seat that found it.
 
 ## 3e. The owner-as-seat audit (owner's order, 2026-09-21, incident 25)
 
