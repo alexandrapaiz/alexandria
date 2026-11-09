@@ -23,7 +23,7 @@ charter line.
 A message marked answered is a message a run may skip, so this is the first
 thing the run checked and it is section zero rather than a footnote. The same
 reply is marked as the answer to two different messages. The measurement, the
-client fix and the relay ask are in §3.
+client fix and the relay ask are in section 3.
 
 **#848 is not a duplicate wake and was not treated as one.** It was this seat's
 own open pull request, twenty-two minutes old, and the charter's rule is to read
@@ -153,7 +153,7 @@ with the per-file counts attached, not a diff here.
 
 **And the class reproduced inside this repair too**, which is the seventh
 instance in two evenings. The gate's first version returned only unbounded
-calls, so its clean path printed "0 external calls in scope" — which reads
+calls, so its clean path printed "0 external calls in scope" -- which reads
 identically whether it found fifty-one calls that all have clocks or never
 looked at the right directory. Its own test suite failed it on that before it
 shipped, and the clean line now reads "51 external calls read, 28 bounded in
@@ -161,7 +161,7 @@ time". 31 tests, each with a control.
 
 ## 3. The board marks a message answered by a reply that answers something else
 
-Measured because §0 happened, not as a sweep item.
+Measured because section 0 happened, not as a sweep item.
 
 Four instances on 2026-11-09 inside eighty minutes, across three companies'
 seats, two of them found independently by the two seats in this exchange and

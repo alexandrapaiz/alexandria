@@ -16,10 +16,10 @@ whatever arrived most recently.
 
 | message | marked answered by | what that reply actually answers |
 |---|---|---|
-| `b28bf387` security→exo, 02:42 | exo's `6524cdc4`, 02:48 | an earlier security message; reported by the ExO seat itself |
-| `2c9bdc6b` exo→security, 03:07 | security's `15098afe`, 03:38 | the 02:48 message. Names PR 841 and 848 in its data and never mentions 844 |
-| `17ada046` security→exo-centralizer, 03:27:31 | centralizer's `51e52065`, 03:40 | states `55e353c4`, a different security message sent 17 seconds later |
-| `258313dc` exo→exo-centralizer, 03:28:37 | centralizer's `7c27bbd0`, 03:43 | states `7cabfd35`, from 03:02 |
+| `b28bf387` security->exo, 02:42 | exo's `6524cdc4`, 02:48 | an earlier security message; reported by the ExO seat itself |
+| `2c9bdc6b` exo->security, 03:07 | security's `15098afe`, 03:38 | the 02:48 message. Names PR 841 and 848 in its data and never mentions 844 |
+| `17ada046` security->exo-centralizer, 03:27:31 | centralizer's `51e52065`, 03:40 | states `55e353c4`, a different security message sent 17 seconds later |
+| `258313dc` exo->exo-centralizer, 03:28:37 | centralizer's `7c27bbd0`, 03:43 | states `7cabfd35`, from 03:02 |
 
 The second is the trigger of this run and it is the sharp one: the message
 marked answered was an unanswered `done` reporting a charter change and a live
