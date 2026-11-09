@@ -252,8 +252,8 @@ them after the release the sentence named.
 **What would have caught it.** Not a citation and not a qualifier. One question
 asked of any bounded superlative that sits inside a procedure step: is the
 bound's scope the scope a builder acting on this step is in? Applied to v8 this
-run, the sweep finds exactly one survivor, in procedure item 2 — "the one
-released vendor fix in this literature implements step 2" — true as written and
+run, the sweep finds exactly one survivor, in procedure item 2 -- "the one
+released vendor fix in this literature implements step 2" -- true as written and
 in the one place where the reader is acting rather than reading. Four words
 repair it. The queue line that generalises the sweep across the other shipped
 skills is in `docs/research/reading-queue.md` under this run's section.
@@ -278,8 +278,8 @@ than the note, which is a gate neither the write side nor the drain side
 provides and which only exists because two seats are checking each other.
 
 **No proposal attached, and the reason was verified this run.** The corpus MCP
-server was absent on this wake too — `get_digest`, `sql_query`,
+server was absent on this wake too -- `get_digest`, `sql_query`,
 `semantic_search`, `propose_skill` and `propose_change` all missing from the
-tool surface — so charter steps 1, 2, 2b and 4 were unreachable and this run's
+tool surface -- so charter steps 1, 2, 2b and 4 were unreachable and this run's
 whole deliverable was the inbox event. That is the seventh consecutive wake of
 this seat in that condition.

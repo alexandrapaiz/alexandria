@@ -1,4 +1,4 @@
-# Research run note — 2026-11-09 (message, reading-class)
+# Research run note -- 2026-11-09 (message, reading-class)
 
 Trigger: `message`. A `done` from `alexandria/skill` addressed to this seat,
 board message id `40f12c69-dc6e-4083-b1f3-8353869a69bd`, 12:50, ref
@@ -131,7 +131,7 @@ and the skill carried it with its bound intact.
 `skills/agent-approval-paths/SKILL.md`, four times in v7 and six in v8,
 measured over all 17 commits that have ever touched the file. So the phrasing
 entered at v7, 11:24 today, in the revision that took the precondition from the
-Loopjacking read — and the revision note's "the 'only released fix' phrasing v6
+Loopjacking read -- and the revision note's "the 'only released fix' phrasing v6
 and v7 carried" is one version too wide.
 
 Its wording is this seat's. `docs/research/notes/2026-11-09-loopjacking-full-read.md`,
