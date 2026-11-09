@@ -72,6 +72,13 @@
    "prompt": "Our approval dialog renders the command from the actual argv the mediator is about to run, not from the model's description, and we hash what we display and re-check that hash at dispatch. The only wrinkle is that long commands get truncated with an ellipsis in the dialog. Is that a problem?",
    "anchor": "v7's precondition clause: the approval view collapses or truncates a longer command or argument vector, which is the condition a team reaches after already satisfying items 1 and 2",
    "note": "ADDED 2026-11-09 by the run that shipped v7, and it is the case that justifies the new description clause rather than the clause justifying itself. Phrased the way the team in eval task ap-t9 phrases it, with the truncation offered as a UI wrinkle, because that is how this condition arrives at a reviewer and because the prompt deliberately carries the vocabulary of the two mitigations the team already has. The risk this case is written against is a false negative rather than a sense collision: a prompt whose headline facts are the two things the skill already prescribes could plausibly route to silence or to agent-containment, since nothing in it says the design is broken. Stated plainly for the next run, per charter step 7: a pass here says the skill is FOUND from a prompt in this shape and says nothing whatever about whether its answer helps, which is the measurement this skill still does not have."
+  },
+  {
+   "id": "ap-pos-6",
+   "kind": "positive",
+   "expect": "agent-approval-paths",
+   "prompt": "Our vendor shipped an advisory fix for approval binding: the agent now pins the executable identity of a command with realpath across both approval and execution, so the operator cannot approve one binary and have another run. We have a pentest finding open about a shadowed program earlier on PATH. Can we close the finding when the upgrade lands?",
+   "why": "v8's new decision rule and ap-t10's scenario. The skill is the only place in this library that says a fix of this shape is step 2 of a five-step procedure, that pinning at approval and comparing at execution is the drift shape measured as catching none of its cases, and that a shadow installed before the grant resolves identically at both ends. Added to measure whether the description reaches the prompt that asks the question the revision answers."
   }
  ]
 }

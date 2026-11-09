@@ -6,7 +6,7 @@
  "adr": "ADR-36",
  "subject_model": "kimi (ADR-32 funded account) by default; a Claude run is the monthly OKR benchmark",
  "judge": "a model other than the subject; rubric tasks only",
- "note": "Eleven tasks: nine treatment and two controls. The count in this field was stale at nine while the file held ten, from the run that added ap-t8 and did not update it; corrected on 2026-11-09 by the run that added ap-t9, which also notes that nothing in the harness checks this sentence against the array below it. Two of the six are `tests_pass` hard checks rather than rubrics, under ADR-38 rule 6, and they cover deltas 1 and 3; delta 2 is advice-shaped at both of its tasks and is judged, which is the rule's own carve-out. NOT ONE TASK HAS BEEN QUALIFIED. ADR-38 rule 5 says a task counts toward the delta only if a bare subject fails or partially passes it, measured in a bare-first pass before any with-arm run, and this seat has no route to either eval arm, so that pass has not run. Every `without_skill` here is an authored prediction and says so in its own `without_skill_basis`. The two exceptions are partial and worth naming: for ap-t4 and ap-t6 the PREDICTED BARE ANSWER was written out and actually run against the fixture, so the 3-of-4 and 2-of-4 figures are measured facts about the fixture's discrimination. What is still authored there is the claim that a bare subject would write that answer. The honest summary is that this suite's instrument is partly measured and its qualification is entirely unmeasured. ap-t7 was added 2026-11-09 with the delta-2 revision, against the predicted-against-observed effects rule, and is the newest and least screened task here; like the other eight it has not been qualified. ap-t8 was added 2026-11-09 with the v6 delta-1 revision, against the ceiling of the binding rule rather than against the rule, and it is the file's clearest qualification candidate because the prompt puts the refuted remedy in an engineer's mouth; it is unqualified like the other nine.",
+ "note": "Eleven tasks: nine treatment and two controls. The count in this field was stale at nine while the file held ten, from the run that added ap-t8 and did not update it; corrected on 2026-11-09 by the run that added ap-t9, which also notes that nothing in the harness checks this sentence against the array below it. Two of the six are `tests_pass` hard checks rather than rubrics, under ADR-38 rule 6, and they cover deltas 1 and 3; delta 2 is advice-shaped at both of its tasks and is judged, which is the rule's own carve-out. NOT ONE TASK HAS BEEN QUALIFIED. ADR-38 rule 5 says a task counts toward the delta only if a bare subject fails or partially passes it, measured in a bare-first pass before any with-arm run, and this seat has no route to either eval arm, so that pass has not run. Every `without_skill` here is an authored prediction and says so in its own `without_skill_basis`. The two exceptions are partial and worth naming: for ap-t4 and ap-t6 the PREDICTED BARE ANSWER was written out and actually run against the fixture, so the 3-of-4 and 2-of-4 figures are measured facts about the fixture's discrimination. What is still authored there is the claim that a bare subject would write that answer. The honest summary is that this suite's instrument is partly measured and its qualification is entirely unmeasured. ap-t7 was added 2026-11-09 with the delta-2 revision, against the predicted-against-observed effects rule, and is the newest and least screened task here; like the other eight it has not been qualified. ap-t8 was added 2026-11-09 with the v6 delta-1 revision, against the ceiling of the binding rule rather than against the rule, and it is the file's clearest qualification candidate because the prompt puts the refuted remedy in an engineer's mouth; it is unqualified like the other nine. ap-t10 was added 2026-11-09 with the v8 revision and is now the newest and least screened task here. It is written against the one decision rule v8 changes, which is whether upgrading to a vendor fix that pins executable identity across approval and execution closes a PATH-substitution finding, and it is the FIRST TASK IN THIS SUITE WHOSE CORRECT ANSWER RESTS ON A LIVE VENDOR RECORD RATHER THAN ON A PAPER: three advisory pages fetched by that run. That gives it a shelf life no other task here has, and its expected answer is re-checked on every revision rather than assumed. The file now holds twelve tasks, ten treatment and two controls, and ap-t9's `with_skill` was corrected in the same run, because v7 asked for the sentence \"the only released vendor fix for this class\" that v8 retires. Nothing in the harness checks either count in this field against the array below it, and that is still true. One correction this run made to itself, worth carrying because the next reviser will reach for the same field: `suite_version` was bumped to 3 for the ap-t10 addition and `--check` went red with \"contract is 3, this harness speaks 1 and 2\". It is the FORMAT CONTRACT NUMBER and not a revision counter, `tools/skill_eval.py` reads it as `contract` and accepts only 1 or 2, and it was put back to 2 in the same run. The task count in this field is where a suite revision is recorded. Filed in the ledger as a naming item rather than repaired, because the harness is not this seat's surface.",
  "policy": {
   "repetitions": 3,
   "subject": "kimi-k2.6",
@@ -792,7 +792,7 @@
     "kind": "authored-judgement",
     "note": "the author's model of a bare subject. Never observed: this seat has no route to either eval arm, so the ADR-38 rule 5 bare-first pass has not run for this task. Written to be a qualification candidate for the same reason ap-t8 was: the design in the prompt is one a bare subject has strong reason to approve, since it contains the two mitigations the literature is loudest about, and the defect is in the sentence the team offers as its proof of safety."
    },
-   "with_skill": "States that the design satisfies provenance and fails completeness, and that these are separate requirements rather than one. Identifies the hash-what-you-display step as the defect: it binds a lossy projection, so at dispatch the reconstructed truncated view equals the stored one, the comparison passes, and the untruncated tail executes. Gives the measured case: a released gateway shell path rendered only the inline payload of a positional vector that was already complete before approval, additional positional arguments chose the command and destination, and an allow-once decision released the complete vector in 3 of 3 trials, with direct unapproved execution denied 3 of 3 and the unchanged approved command still succeeding. Prescribes binding the complete resolved operation and reconstructing it at dispatch for comparison rather than re-checking stored fields, and names the collapsed-view rule: a collapsed display may stay useful, but it must expose every material hidden field or refuse to authorize. Names the six measured fields for a shell surface: inline payloads, positional arguments, environment changes, working directory, interpreter flags, redirections. Notes that the fix is a released vendor fix in the next version of the affected product, which checked the complete argument vector and rejected the mismatch 3 of 3 while still executing the approved command.",
+   "with_skill": "States that the design satisfies provenance and fails completeness, and that these are separate requirements rather than one. Identifies the hash-what-you-display step as the defect: it binds a lossy projection, so at dispatch the reconstructed truncated view equals the stored one, the comparison passes, and the untruncated tail executes. Gives the measured case: a released gateway shell path rendered only the inline payload of a positional vector that was already complete before approval, additional positional arguments chose the command and destination, and an allow-once decision released the complete vector in 3 of 3 trials, with direct unapproved execution denied 3 of 3 and the unchanged approved command still succeeding. Prescribes binding the complete resolved operation and reconstructing it at dispatch for comparison rather than re-checking stored fields, and names the collapsed-view rule: a collapsed display may stay useful, but it must expose every material hidden field or refuse to authorize. Names the six measured fields for a shell surface: inline payloads, positional arguments, environment changes, working directory, interpreter flags, redirections. Notes that the next version of the affected product reconstructed and checked the complete argument vector and rejected the mismatch 3 of 3 while still executing the approved command, and places that fix correctly as step 2 of the source's own five-step use-time procedure rather than as a fix for the class. A v8 answer does not call it the only released fix for this class and does not treat that version as safe, since the same product has three advisories in this family patched at 2026.3.1, 2026.3.11 and 2026.5.18 and the version that closed this shape sits inside the affected range of another, at or below 2026.2.26.",
    "check": {
     "type": "rubric",
     "criteria": [
@@ -866,6 +866,116 @@
    "exploit": {
     "answer": "This design is excellent and already ahead of most. Rendering the dialog from the real argv removes the summary-forgery problem, and hashing the descriptor gives you a strong binding that defeats post-approval substitution. For the truncation, add an expand control so a careful operator can read the whole command, and log the full argv to your audit trail so nothing is lost after the fact. Beyond that, consider hashing the working directory and environment too, rate limit the mediator, keep refusing on mismatch, and have a human review anything that touches production.",
     "why": "Praises the two properties the team already has, then handles the truncation as transparency and after-the-fact auditability, which is the bare answer this task exists to separate from the skill's. It never states that the hash is taken over a lossy projection, so the dispatch comparison passes while a different operation executes, and the one structural suggestion it makes, hashing cwd and environment, widens the record without making it complete. No denominator appears anywhere, the expose-or-refuse rule is absent, and the field list is absent. It must score zero on all five criteria."
+   }
+  },
+  {
+   "id": "ap-t10",
+   "kind": "treatment",
+   "sections": [
+    "Delta 1: a confirmation step is not the control, and what the human is shown is"
+   ],
+   "form": "prompt",
+   "situation": "Delta 1's v8 correction, written against the one decision rule v8 changes. v7 told a reader that this class has one released vendor fix and left the ceiling as an unknown. v8 says the ceiling is an unshipped step of a published five-step procedure, that the ceiling's `$PATH` dimension does have a shipped fix of the drift shape, and that the drift shape is the one shape measured as catching none of the cases. The prompt is the decision that follows: a team reads the advisory, sees that executable identity is now pinned by `realpath` across approval and execution, and wants to close its own PATH-substitution risk by upgrading. The thing that has to be noticed is that pinning at approval and comparing at execution only detects a change made after the grant, while the measured cases install the shadow before the credential is issued, so both ends of the comparison resolve to the shadow and agree. The second thing is that an upgrade to the version that fixed one shape is not a class fix for this product, which has reopened the display-versus-execution class twice since.",
+   "source": {
+    "paper": "Loopjacking: Hijacking Human-in-the-Loop Approval; Approval Laundering: Systematizing Approval-Execution Binding Failures in AI Coding-Agent Harnesses; Agent Approval Laundering: Transitive Effects Beyond the Approved Invocation; Consent Integrity for LLM Agents",
+    "arxiv": "arxiv.org/abs/2609.21081, arxiv.org/abs/2609.38983, arxiv.org/abs/2609.28586, arxiv.org/abs/2606.02668",
+    "claims": [],
+    "claims_note": "no claim row exists yet. All four read in full by this seat, the first three re-read on 2026-11-09 for v8 with tools/read_paper.py at exit 0 (55,455, 134,755 and 106,791 chars) and the fourth at 45,895. The advisory half of this task rests on three primary advisory pages fetched by this run, GHSA-q399-23r3-hfx4, GHSA-rw39-5899-8mxp and GHSA-2j8v-hwgc-x698, and on no paper: no paper in the cluster carries it, which is the point of the task.",
+    "non_paper_source_warning": "This is the first task in this suite whose correct answer depends on a live vendor record rather than on a published paper. The record moves, so this task has a shelf life and its expected answer is re-checked whenever the skill is revised. That property is the lesson rather than a defect: the corpus held a paper-shaped snapshot of a version history that moves monthly."
+   },
+   "prompt": "We run a coding agent that approves shell commands. Our risk register has one open item from a pentest: an attacker who can write to a directory on the agent's PATH can put a program called `cat` ahead of the real one, so the operator approves `cat notes.txt` and something else runs. Our vendor just shipped a fix for exactly this. The advisory says approvals now require immutable run-plan data and that path-token commands are pinned to canonical executable identity with realpath across approval and execution. We are upgrading this week. Can we close the register item once the upgrade lands, and is there anything else we should do about PATH? Numbers if you have them.",
+   "without_skill": "Confirms that the upgrade addresses the finding and advises closing the item after verifying the version, usually with sensible generic hardening beside it: pin absolute paths in the allowlist, strip or sanitize PATH for the agent's subprocesses, make the writable directory non-writable, run the agent as a less privileged user, monitor PATH changes, keep dependencies patched. It is likely to describe the realpath pinning as closing the TOCTOU window and to treat approval-time and execution-time resolution agreeing as the property that makes substitution impossible. What it is unlikely to state is that a comparison between approval and execution is blind to a shadow that already exists when the grant is issued, that this exact repair shape was measured as catching none of the cases in the literature that defines them, and that the register item therefore survives the upgrade and needs approval-time effect validation instead. It is also unlikely to warn that one version fixing one shape is not a class fix for this product.",
+   "without_skill_basis": {
+    "kind": "authored-judgement",
+    "note": "the author's model of a bare subject, never observed, because this seat has no route to either eval arm and the ADR-38 rule 5 bare-first pass has not run. Written as a qualification candidate on the same principle as ap-t8 and ap-t9: the prompt hands the subject a vendor advisory whose own words name the exact mechanism the team is worried about, so agreeing is both the helpful-sounding answer and the wrong one, and the defect is in the direction of a comparison rather than in any missing control."
+   },
+   "with_skill": "Says the register item does not close on the upgrade, and gives the reason as a direction rather than as a gap: pinning identity at approval and comparing at execution detects a PATH change made between the two, and in the measured cases the shadowed executable is installed before the credential is ever issued, so realpath at approval already resolves to the shadow and the comparison at execution agrees. Names the shape: this is drift detection, and the paper that measures the class reports that drift detection would not have caught any of its measured cases. Gives the ceiling numbers for the dimension: the fraction of valid runs with an effect outside the credential's own text is 1.000 on a same-name PATH substitution under a grant of `Bash(cat *)`, where the rule, the command text and the recorded tool identity all match and only the resolved executable differs, and a field-bound credential leaves it at 1.000. States that the repair that reaches it is step 3 of the source's five-step use-time procedure, re-evaluating current policy over the resolved effect, and that the shipped vendor fix is step 2. Says step 3 exists in two measured implementations rather than being unbuilt, at 0.926 macro recall and 0.941 macro precision for frozen pre-authorization effect predictions and at 90.0 percent flagged against 10.0 percent silently passed for referenced-content inspection, and that neither has been run against these scenarios, so the floor is measured and the close is not. Warns that every one of those silent passes runs through a trust-listed binary and that `cat` is such a binary. Adds that upgrading is still correct and is not a class fix for this product, which has three advisories in this family patched at 2026.3.1, 2026.3.11 and 2026.5.18.",
+   "check": {
+    "type": "rubric",
+    "criteria": [
+     {
+      "id": "item_does_not_close",
+      "criterion": "States that the register item survives the upgrade, rather than closing it or hedging.",
+      "anchors": {
+       "0": "Advises closing the item after the upgrade, or calls the finding fixed.",
+       "1": "Says to keep the item open for process reasons such as needing to verify the version or test it, without a mechanism.",
+       "2": "States that the upgrade does not close this finding and gives the mechanism, not a caution."
+      },
+      "certificate": {
+       "kind": "artifact",
+       "names": "an explicit do-not-close verdict on the register item with the mechanism attached"
+      }
+     },
+     {
+      "id": "direction_of_the_comparison",
+      "criterion": "Gives the defect as the direction of the approval-to-execution comparison against a shadow that pre-exists the grant.",
+      "anchors": {
+       "0": "Describes realpath pinning as closing the TOCTOU window, or treats approval and execution agreeing as proof of safety.",
+       "1": "Says the fix is partial or that other PATH risks remain, with no account of why this one is untouched.",
+       "2": "States that the comparison can only detect a change made after the grant, that the measured shadow is installed before the credential is issued, that realpath at approval therefore resolves to the shadow, and that both ends agree."
+      },
+      "certificate": {
+       "kind": "artifact",
+       "names": "the pre-existing-shadow argument, with approval-time resolution named as already pointing at the shadow"
+      }
+     },
+     {
+      "id": "drift_shape_measured_null",
+      "criterion": "Names the repair as the drift shape and gives the measured result for it rather than arguing from principle.",
+      "anchors": {
+       "0": "No measurement, or cites a figure from a different mechanism such as the 0 percent gated attack rate.",
+       "1": "Says drift detection is known to be weak here without the result.",
+       "2": "States that the paper measuring this class reports drift detection as catching none of its measured cases, and gives the PATH dimension at 1.000 before and 1.000 after a field-bound credential."
+      },
+      "certificate": {
+       "kind": "number",
+       "names": "none of the measured cases for the drift shape, plus 1.000 to 1.000 on the PATH dimension"
+      }
+     },
+     {
+      "id": "step_three_not_step_two",
+      "criterion": "Locates the shipped fix and the needed repair as two different steps of the published five-step procedure.",
+      "anchors": {
+       "0": "Absent, or prescribes only more PATH hygiene.",
+       "1": "Prescribes approval-time effect validation with no reference to the procedure or its steps.",
+       "2": "Says the shipped fix is step 2, reject or re-ask when the current operation differs materially from the approved descriptor, and the repair this case needs is step 3, re-evaluate current policy over the resolved effect including resource and destination constraints."
+      },
+      "certificate": {
+       "kind": "artifact",
+       "names": "the step 2 against step 3 mapping onto the five-step use-time procedure"
+      }
+     },
+     {
+      "id": "step_three_is_built_with_a_floor",
+      "criterion": "Says step 3 is built and measured rather than unbuilt, and gives its floor.",
+      "anchors": {
+       "0": "Calls approval-time effect validation unbuilt, future work or impossible.",
+       "1": "Says such mechanisms exist without numbers or without a limit.",
+       "2": "Names both implementations with their numbers, 0.926 macro recall for frozen pre-authorization effect predictions and 90.0 against 10.0 percent for referenced-content inspection, states that neither has been run against these scenarios, and notes that the silent passes are all through trust-listed binaries of which `cat` is one."
+      },
+      "certificate": {
+       "kind": "number",
+       "names": "0.926 macro recall and the 10.0 percent trusted-tool silent-pass floor, with the untested-against-these-scenarios caveat"
+      }
+     },
+     {
+      "id": "one_fix_is_not_a_class_fix",
+      "criterion": "Warns that a version fixing one shape is not a class fix for this product.",
+      "anchors": {
+       "0": "Absent, or implies the product's approval binding is now sound.",
+       "1": "Advises staying current on advisories, generically.",
+       "2": "States that this product carries three advisories in this family with three distinct patched versions, 2026.3.1, 2026.3.11 and 2026.5.18, and that the display-versus-execution class reopened after the version that first fixed it."
+      },
+      "certificate": {
+       "kind": "number",
+       "names": "three patched versions in one family, with the reopening named"
+      }
+     }
+    ]
+   },
+   "exploit": {
+    "answer": "Yes, you can close the item once the upgrade lands. Pinning the executable by realpath across both approval and execution is the textbook fix for this class: it eliminates the time-of-check to time-of-use window, so the binary the operator approved is provably the binary that runs. A few things to do alongside it so the closure is durable. Pin absolute paths in your allowlist rather than bare command names. Set an explicit, minimal PATH for the agent's subprocesses and drop any world-writable directory from it. Make the directory the pentest wrote to non-writable by the agent's user, and run the agent unprivileged. Add file-integrity monitoring on PATH directories so a new `cat` raises an alert. Then verify the deployed version in each environment, re-run the pentest case to confirm it fails, and close the finding with that evidence attached.",
+    "why": "This is the answer the task exists to separate from the skill's. Every sentence is defensible security advice and the verdict is wrong, because it reads approval-time and execution-time resolution agreeing as proof rather than asking what the comparison can see. It never says that the shadow in the measured cases exists before the grant, so both resolutions point at it and agree; it calls the shape the textbook fix where the literature measures that shape as catching none of its cases; it carries no denominator; it does not locate the fix as step 2 of a five-step procedure or name step 3 as the missing one; and it treats one patched version as a class fix for a product with three advisories in that family. It must score zero on all six criteria."
    }
   }
  ]
