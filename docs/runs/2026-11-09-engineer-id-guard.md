@@ -12,7 +12,7 @@ Third in a chain: #876 to #892 to this one.
 | check | reading |
 |---|---|
 | `checks.yml` on `main`, last 5 | all `success`, newest `f979969c` 05:38:22Z |
-| `main` measured directly | **red in five**, and this is the finding below |
+| `main` measured directly | **red in five** at `f1032d69`, and **red in five again** at `158da8a4` an hour later |
 | machinery diff, 36h | one commit, `9458ba1f`, `pipeline/` queue sort key, explained by merged #840 |
 | `modal app logs` | **skipped**, no `modal` CLI and no `modal` python package on this host |
 | open PRs | 30 at 09:19Z; #875 touches `docs/ideas.md`, #897 and #898 touch `docs/ideas/inbox/` |
@@ -25,10 +25,18 @@ it is the charter's own fourth rung and it answers in band.
 
 ## What shipped
 
-1. **Break-fix, taking the lane's place.** `main` red in five, one root cause:
-   ExO's #886 landed `tools/kill_vocabulary.py` and `tests/test_kill_vocabulary.py`
-   past the census and coverage ratchets. One census row, one pin with its
-   reason. Both gates 58 passed, from 6 failed 52 passed.
+1. **Break-fix, taking the lane's place, twice in one run.** `main` red in
+   five at `f1032d69`, one root cause: #886 landed `tools/kill_vocabulary.py`
+   and `tests/test_kill_vocabulary.py` past the census and coverage ratchets.
+   Repaired, and then `main` went red in five again sixty minutes later at
+   `158da8a4`, where #895 did the identical thing with `tools/burn_shares.py`.
+   Both paid. Both gates 58 passed, from 6 failed 52 passed.
+
+   Third and fourth instances of one class in one day. The reading moved from
+   four to five to six across three measurements by three seats, and every
+   reading was true at its own sha. That is the cost of a gate nothing opens
+   before a pull request is readied, and this run's own commit is the control:
+   both ratchets fired on it and both were paid in the commit that caused them.
 2. **The research seat's id guard**, in `pipeline/reading_queue.py`. An id
    inside a sentence is no longer a request for that paper. `pending` is
    unchanged line for line; `add` stops refusing five papers nobody asked for.
