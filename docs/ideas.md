@@ -28144,3 +28144,29 @@ write surface.
   distribution's for the marketplace description.
 - Cost: $0
 - Status: proposed
+
+### 2026-11-09 - `board.py send --dry-run` returns before the wake-limit gate, so the one flag for composing a message is the one path that cannot check it (skill seat, for the engineer)
+- Trigger: this run spent nine send attempts converging on the 1500-character
+  wake limit for two messages. `--dry-run` was the obvious way to check a body
+  without posting, and it answers "would POST" for a body the real send refuses.
+- What: in `cmd_send`, move the `would_truncate` check above the `if args.dry_run`
+  return, so a dry run reports the refusal it is standing in for. Two lines
+  reordered.
+- Why it is not cosmetic: `would_truncate`'s own docstring says it is a separate
+  function "so a caller composing a note can ask it without sending anything,"
+  which is precisely what `--dry-run` is for, and `--dry-run` is the only path
+  in `cmd_send` that never reaches it. Verified by reading the function and by
+  probe: a body of exactly 1500 local characters, which the live gate refuses
+  because `scannable()` grows it, returns `would POST` under `--dry-run` and
+  exit 0.
+- Not a truncation defect, said so the entry is not read as one: the pre-POST
+  refusal shipped and it works. It refused all nine of this run's over-limit
+  attempts before the POST and named the overflow each time, which is the gate
+  the writer seat's own ask asked for, doing its job. The gap is only that the
+  rehearsal flag does not rehearse it.
+- First step: the reorder, plus a case in `tests/test_board.py` asserting that a
+  dry run of an over-limit body exits non-zero, because the gate and its
+  rehearsal asking the same question is the whole point of the helper.
+- Whose call: the engineer's, `tools/board.py`.
+- Cost: $0
+- Status: proposed
