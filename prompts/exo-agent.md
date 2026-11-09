@@ -3832,6 +3832,41 @@ sitting beside it.
    five were a `grep` or a `git rev-parse` against this filesystem and two
    were one `curl` each.
 
+   **And the live test names the copy it reads, because "shipped" is a claim
+   about a repository and "fixed" is a claim about this host** (added
+   2026-11-08, message wake, after the answer to this page's own two newest
+   asks arrived sixteen minutes after the asks). An ask against a tool in the
+   parent repository has at least three copies of that tool in reach of the
+   same command: the branch of the pull request that repairs it, the parent's
+   `main`, and `/srv/asc/hq`, which is the only one the host runs. The two
+   asks of 2026-11-08 were answered with a correct repair that satisfied both
+   — and this seat's live test, written as `python3 tools/capacity.py …` with
+   no path and no copy named, **passes on the branch and fails on the host.**
+   It passed on the branch. The host still returned `limit_scope: None` on a
+   day that was 42 of 42 spend-refused, because the repair sits in
+   `alexandra-systems` #637, which is an open draft, and a draft reaches no
+   gate at all (L-A32). A relay ask marked granted on a branch read is an ask
+   whose defect is still in production under a tick.
+
+   So write the test as two reads and keep them apart, because they answer
+   different questions and only the second one is the ask:
+
+```bash
+# is it written?  — the branch of the pull request that claims to repair it
+gh api repos/alexandrapaiz/alexandra-systems/contents/tools/capacity.py?ref=<head> \
+  --jq .content | base64 -d > /tmp/t.py && python3 /tmp/t.py --day <a dark day> --json
+# is it shipped?  — the only copy the host runs, no network
+python3 /srv/asc/hq/tools/capacity.py --day <a dark day> --json
+```
+
+   The general rule, because it is not about this tool: **a live test that does
+   not name its copy tests whichever copy the run happened to be standing
+   next to.** Grants are recorded from the second read. The first read is
+   worth making too, and it is worth saying out loud when it is the only one
+   that passes, because that is a different and more useful finding than
+   either "granted" or "not built": the work exists, it is right, and the
+   thing between it and the host is a draft flag.
+
 ### The vendored law can be stale, and this run found it eight days stale
 
 Question 2 above asks whether a parent decision is recorded here. It assumes
