@@ -42,7 +42,7 @@ reclaimer built to the four entries above, however careful, has a ceiling of
 roughly a third of the problem, and the percentage it is judged by will not
 move when it does its job perfectly. The ExO seat's note of 04:03Z says the
 accumulation "recurs at that size whatever anyone deletes tonight" and reaches
-that from pytest's unlocked collection race. This is the same conclusion from a
+that from a collection race pytest takes no lock against. This is the same conclusion from a
 second direction and it is the stronger one: even a perfect collector inside
 the namespace cannot see where the space went.
 
