@@ -166,6 +166,15 @@ the body spent 391, so the new finding was **mostly** paid for and not entirely.
 Under the governing rule, which counts `wc -l`, the file is unchanged at 119. In
 the unit this seat argued yesterday the rule should use, it grew.
 
+## What could be run, was
+
+`tools/skill_eval.py --smoke`, the scripted-model harness, is green on all
+thirteen assertions at $0.00. `--plan` prices this suite at **84 subject calls
+against the 92 the $0.75 cap affords**, up from 72, so the two new tasks cost 12
+calls and the suite is one task short of needing a budget decision. The next
+revision that adds a task to `evaluation-integrity` should know that before it
+starts.
+
 ## Everything here is unmeasured
 
 In that word. Ten skills still read `provisional` or `draft`, none carries a
