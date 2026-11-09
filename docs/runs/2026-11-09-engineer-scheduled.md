@@ -94,6 +94,35 @@ Three entries, all `proposed`, all as inbox files so they cannot collide:
    and the command that clears it, where ArgoCD's `Unknown` is a bare enum its
    own operator manual never defines operationally.
 
+## Main moved under the branch
+
+`origin/main` advanced 87 commits during the run and the pull request went
+`CONFLICTING`. Both conflicts were in `tools/resolve_register_conflict.py` and
+its tests, because the security seat shipped `a6078af6` to the same tool at
+02:35Z. Both sides belong and both were kept: the balanced message carries this
+branch's stamp clause and main's `absent` report, and the test file carries both
+blocks, 181 lines and 61 lines, for `30 passed` against this branch's 25 plus
+main's 5.
+
+Then the tool audited the merge that carried it, with the stamp-order check this
+branch's predecessor added: three registers balanced on both halves. The clone
+was unshallowed with the refspec widened before anything compared two branches,
+so the conflicts were real rather than the artefact the charter warns about.
+
+## The host took the suite
+
+The first whole-suite attempt on this branch died at 96% with a truncated
+progress bar, no summary line, and exit 0 from the shell. `df -h /tmp` read 43G
+of 45G. That is the signature in
+`INC-2026-11-02-the-shared-45g-host-disk-filled-again-and-a-seats-own-commit-could-not-write`,
+which `prior` returned at 0.856 on the first query, and whose own closing advice
+is to batch. Batched, and the numbers are in the pull request.
+
+The repeat is recorded on that entry with two corrections to the prior filings.
+The threshold is not 99%: this died with 1.9G free where both earlier
+measurements had 529M. And `/tmp/pytest-of-seats` was 73M rather than 556M, so
+the directory both filings name as the mechanism was not the mechanism here.
+
 ## What this run did not do
 
 - **The deploy itself.** It needs a hand holding a Modal token, behind the
