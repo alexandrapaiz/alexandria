@@ -329,7 +329,16 @@ def db(tmp_path_factory):
             pytest.fail(f"db/schema.sql will not load: {loaded.stderr[-800:]}")
         yield psql
     finally:
-        run("pg_ctl", "-D", str(data), "-m", "immediate", "stop")
+        stopped = run("pg_ctl", "-D", str(data), "-m", "immediate", "stop")
+        # The cluster's data directory is 42M and `tmp_path_factory` is outside
+        # `tmp_path_retention_policy`, so a green run used to leave it behind:
+        # measured 2026-11-09, three of these across the suite were 128M of the
+        # 128M a passing run left on a volume twelve seats share. Nothing in it
+        # is a test artifact, because `initdb` rebuilds it and `db/schema.sql`
+        # reloads it every run. Kept when the stop failed, which is the one case
+        # where the server log inside it is the thing you want to read.
+        if stopped.returncode == 0:
+            shutil.rmtree(data.parent, ignore_errors=True)
 
 
 def vec(*leading: float) -> str:
