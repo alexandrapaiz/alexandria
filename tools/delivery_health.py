@@ -2127,7 +2127,17 @@ def undeployed_since(repo_root: Path, app: str, commit: str,
         from pipeline import runtime_sha
         return {"why": f"{runtime_sha.APPS[app]} cannot be read at {ref} here"}
     # `commit^..ref` would drop `commit` itself, and `commit` is undeployed too.
-    status, out = _git(repo_root, "log", f"-{limit}",
+    #
+    # One past the ceiling, for the reason `undeployed_commits` gives at its
+    # own log call, and here the consequence is worse rather than better. That
+    # function returns a refusal when its window runs out, which a reader can
+    # see. This one returns a *count*, so a spent window came back as
+    # "40 undeployed commits since f16e2775" when the true number was any
+    # number above 40, and nothing in the result said which. A wrong number
+    # presented as a measurement is the failure mode this file's own
+    # INC-2026-11-09 entry is about, found by the sweep that entry's ledger
+    # idea proposes and fixed in the same change rather than filed.
+    status, out = _git(repo_root, "log", f"-{limit + 1}",
                        "--format=%H%x1f%h%x1f%s%x1f%cI",
                        f"{commit}~1..{ref}", "--", *paths)
     if status != 0:
@@ -2140,7 +2150,12 @@ def undeployed_since(repo_root: Path, app: str, commit: str,
         parts = line.split("\x1f")
         if len(parts) == 4:
             commits.append({"sha": parts[1], "subject": parts[2], "at": parts[3]})
-    return {"asked_in": commit, "commits": commits, "searched": len(commits)}
+    truncated = len(commits) > limit
+    commits = commits[:limit]
+    found = {"asked_in": commit, "commits": commits, "searched": len(commits)}
+    if truncated:
+        found["truncated"] = True
+    return found
 
 
 def name_unrecorded(found: dict, limit: int = DEPLOY_NAMED_COMMITS) -> str:
@@ -2157,7 +2172,11 @@ def name_unrecorded(found: dict, limit: int = DEPLOY_NAMED_COMMITS) -> str:
     named = ", ".join(f"{c['sha']} {c['subject']}" for c in commits[:limit])
     rest = len(commits) - limit
     plural = "commit" if len(commits) == 1 else "commits"
-    return (f"{len(commits)} undeployed {plural} since {found['asked_in']}: "
+    # "at least" when the listing ran out of window, because the alternative is
+    # printing a floor as though it were the count.
+    count = (f"at least {len(commits)}" if found.get("truncated")
+             else str(len(commits)))
+    return (f"{count} undeployed {plural} since {found['asked_in']}: "
             f"{named}" + (f", and {rest} more" if rest > 0 else ""))
 
 

@@ -1055,6 +1055,44 @@ def test_the_ceiling_clears_every_app_s_real_history():
           f"limit {dh.DEPLOY_HISTORY_LIMIT} vs {where} at {deepest}")
 
 
+def test_a_count_that_ran_out_of_window_says_at_least_rather_than_a_number():
+    """The same ceiling one function over, where it corrupts a number.
+
+    `undeployed_commits` answers a spent window with a refusal, which a reader
+    can see. `undeployed_since` answers with a count, so a spent window used to
+    come back as "3 undeployed commits since <sha>" when the true number was
+    any number above 3, with nothing in the result or the headline saying which.
+
+    Found by the sweep for other count-bounded `git log` calls that this run's
+    own incident entry proposes, and fixed here rather than filed, because the
+    argument of that entry is that fixing one cause of a symptom and citing the
+    class is what let the class survive.
+    """
+    with tempfile.TemporaryDirectory() as tmp:
+        repo = fixture_history(Path(tmp), [
+            ("prompts/triage.md", f"Edit {n}") for n in range(1, 7)
+        ])
+        asked = _shas(repo)[1]
+
+        whole = dh.undeployed_since(repo, "triage", asked)
+        check("the unbounded listing claims no truncation",
+              "truncated" not in whole, str(whole))
+        check("and name_unrecorded states its count plainly",
+              dh.name_unrecorded(whole).startswith(f"{len(whole['commits'])} "),
+              dh.name_unrecorded(whole))
+
+        short = dh.undeployed_since(repo, "triage", asked, limit=3)
+        check("a spent window is flagged on the dict",
+              short.get("truncated") is True, str(short))
+        check("it returns exactly the ceiling and no more",
+              len(short["commits"]) == 3, str(len(short["commits"])))
+        check("and the headline says at least, not a bare number",
+              dh.name_unrecorded(short).startswith("at least 3 undeployed"),
+              dh.name_unrecorded(short))
+        check("the true count really is larger, or this test proves nothing",
+              len(whole["commits"]) > 3, str(len(whole["commits"])))
+
+
 def test_a_git_that_cannot_answer_is_not_called_a_shallow_clone():
     """`_shallow_state` has three outcomes and only True is the shallow case.
 
