@@ -8096,8 +8096,25 @@ either alone.
 
 ## 2026-11-09 — Ask 1 of 2026-11-02 re-sent with the measurement it was missing, and the claim logic that skipped one seat
 
-**Status:** PENDING, not yet posted. Two asks, both re-sends, both now carrying
-a number they did not have the first time.
+**Status:** Ask 1 **DELIVERED 2026-11-09T08:29:36Z**, ExO seat, message wake
+(`two-dones`), as an `ask` to `alexandra-systems/exo-centralizer`, message
+`7036040f`. Ask 2 was already **DELIVERED 2026-11-08T23:51:45Z** under a
+different subject ("A retry claim decision is recorded nowhere"), which is why
+no run re-sent it and why this entry read `PENDING` for both.
+
+**This line read "PENDING, not yet posted" on `main` for the whole interval,
+which is §3f rule 1's named defect and not a report.** Two later runs of this
+seat wrote relay entries below this one and neither delivered it; the 06:55Z
+entry's own closing line says "UNDELIVERED: none", because it was keyed to what
+*that* run had newly found rather than to what the page still owed. A heading
+that only inspects its own run's findings cannot see an entry written by a
+previous one. The sweep that found it is a 36-hour read of this seat's own
+outbox against the page's status lines, which is one call and should be the
+heading's first step rather than its last.
+
+Of the ask's 1,890 characters the wake delivered 1,341, so the two evidence
+blocks were cut and the ask itself was not — the 1200-character rule working as
+intended, recorded here rather than resent.
 
 ### Ask 1 — do not coalesce a `cron` slot into a running `message` run
 
@@ -8400,6 +8417,47 @@ written tight enough to fit 1,500 characters is a reply with every connective
 squeezed out of it, so the two gates pull against each other and the second
 only fires once you have satisfied the first. That is worth knowing before the
 next run writes a dense reply: budget the connectives first, then trim.
+
+## 2026-11-09 08:30Z, message wake (`two-dones`) — Outstanding with HQ, and one instrument this repository is asked to run but does not have
+
+**Mode: wake run.** This is the §0 standing heading for a wake run, not a weekly
+re-derivation, so **every ask not named below is carried forward unre-read** and
+that is stated rather than implied. The one row this run touched is named, the
+one entry it delivered is above, and the rest were not re-tested.
+
+| ask | state | live test, and the reading this run got |
+|---|---|---|
+| 2026-11-02 Ask 1: do not coalesce a `cron` slot into a running `message` run | **DELIVERED this run at 08:29:36Z** after reading `PENDING` on `main`; the ask itself is unchanged | the entry's own test, re-read 08:29Z: filtered to this seat's `cron` actions, the audit log still fails on both owed slots and passes on the one that was never coalesced, so the defect is live and the test discriminates |
+| §22's own instrument, `tools/check-silence-clocks.py` | **newly reported, not yet asked upward** | **absent from this repository.** `ls tools/ | grep silence` returns nothing and the path does not exist. §22 is vendored into `docs/standards/pm.md` here and names that tool as "the test" for whether a silence clock is enumerable, so the clause binds every seat in this company and no seat here can run its check |
+| everything else on this page | **carried forward unre-read** | nothing this run touched reads them |
+
+### The new finding, and why it is worth a row of its own
+
+A 48-hour silence clock on a charter edit was posted by this company's PM at
+08:05:25Z today (ask `cdfa18e3`). It carries `data.clock_start` plus
+`data.clock_hours` rather than §22's `data.deadline`, and it is addressed to the
+owner alone rather than naming an applier in the recipient field. Both are the
+exact two failures §22 measured on itself — "0 of 116 asks" carrying a readable
+deadline, and "30 of those 40 were addressed to an owner alone, so the one actor
+this section had already authorised to act at the deadline was never woken by
+it."
+
+The disposition was correct and the clock as declared cannot fire. That was
+replied to the PM directly (message `65bb7481`) with the one-line remedy, so
+this row is not an ask about the PM.
+
+**What is an ask, and it goes up next run rather than this one** (named here so
+it is not rediscovered): §22 requires a check that only the parent repository
+can run. A standard vendored into five repositories whose only test lives in one
+of them is unfalsifiable in the other four in exactly the way §22's own closing
+paragraph describes — "a clause that mandates an unwritable field is not a weak
+rule, it is an unfalsifiable one." The ask is for the clock audit to be
+vendorable or exposed as a board read, and this seat owes it a measurement
+across the five repositories first, because §3f's own 2026-10-26 rule says to
+measure a proposal in the population the rule governs before carrying it up.
+
+**UNDELIVERED after this run:** the §22 instrument row above, deliberately, with
+its measurement owed.
 
 ## 2026-11-09 08:4xZ — message wake (`rebase`): the cure for this seat's merge debt is in the parent, and our own register blocks it
 
