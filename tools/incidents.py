@@ -204,8 +204,14 @@ def heading_key(heading: str) -> str:
     return heading
 
 
-def split_entries(text: str, source: str = "register") -> list[Entry]:
-    """Every level-two entry, ignoring headings inside fenced code blocks."""
+def split_entries(text: str, source: str = "register",
+                  boundary=None) -> list[Entry]:
+    """Every entry in one file, ignoring headings inside fenced code blocks.
+
+    `boundary` is the pattern that starts a new entry, defaulting to any
+    level-two heading, which is what the register file means by an entry.
+    """
+    boundary = ENTRY if boundary is None else boundary
     entries: list[Entry] = []
     fenced = False
     current: Entry | None = None
@@ -215,7 +221,7 @@ def split_entries(text: str, source: str = "register") -> list[Entry]:
             if current is not None:
                 current.body.append(line)
             continue
-        match = None if fenced else ENTRY.match(line)
+        match = None if fenced else boundary.match(line)
         if match:
             heading = match.group(1)
             current = Entry(heading_key(heading), heading, number, [line], source)
@@ -223,6 +229,44 @@ def split_entries(text: str, source: str = "register") -> list[Entry]:
         elif current is not None:
             current.body.append(line)
     return entries
+
+
+def split_inbox_file(text: str, source: str, name: str) -> list[Entry]:
+    """One inbox file is one entry, which is the inbox's own rule.
+
+    `docs/agents/incidents/inbox/README.md` says "one file per incident", and
+    `check` enforces it by refusing a file that carries two INC ids. The
+    splitter did not honour it: it broke on any level-two heading, so a file
+    that sections itself with `## What was true` and `## Why no run saw it`
+    became one entry per section.
+
+    Measured on this register on 2026-11-09: 264 inbox files produced 272
+    entries, and one file produced seven. Six of those seven were pseudo
+    entries keyed on their own section heading, carrying no id and no date. They
+    were not harmless. `prior` indexes and scores whatever this returns, so a
+    query was ranked against six fragments of one incident instead of against
+    the incident, each fragment holding a sixth of the terms and only the
+    fragment containing the fix section able to answer "and was there a
+    remedy?". The headline count was wrong by the same eight.
+
+    Nothing caught it. `check` asks whether two INC **ids** collide in one file,
+    which is the right question for the fold and blind to this, because a
+    section heading carries no id and so collides with nothing. That is the same
+    shape as the order-blind arithmetic in the register resolver, found the same
+    day: a gate correct about the defect it was built for and silent about a
+    second one in the thing it measures.
+
+    So the boundary for an inbox file is the id heading and not any heading. A
+    file with no id heading is one entry keyed from its filename rather than
+    zero, because `check` already refuses that file by name and a lookup that
+    silently drops an entry is the one failure this corpus must not have.
+    """
+    entries = split_entries(text, source, boundary=INBOX_ID_HEADING)
+    if entries:
+        return entries[:1]
+    stem = name[:-3] if name.endswith(".md") else name
+    lines = text.splitlines()
+    return [Entry(heading_key(stem), stem, 1, lines, source)]
 
 
 def conflict_lines(text: str) -> list[int]:
@@ -709,7 +753,8 @@ def all_entries(register_text: str | None = None, inbox: Path = INBOX) -> list["
         register_text = REGISTER.read_text() if REGISTER.is_file() else ""
     entries = split_entries(register_text, "register")
     for path in inbox_files(inbox):
-        entries.extend(split_entries(path.read_text(), f"inbox/{path.name}"))
+        entries.extend(split_inbox_file(
+            path.read_text(), f"inbox/{path.name}", path.name))
     return entries
 
 

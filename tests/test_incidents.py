@@ -1111,3 +1111,96 @@ def test_the_ranking_is_stable_across_two_calls_on_the_live_register():
     first = inc.prior_art("test_the_uncovered_set_has_not_grown")
     second = inc.prior_art("test_the_uncovered_set_has_not_grown")
     assert [h["id"] for h in first["hits"]] == [h["id"] for h in second["hits"]]
+
+
+# ---------------------------------------------------------------------------
+# One inbox file is one entry.
+#
+# `docs/agents/incidents/inbox/README.md` says "one file per incident" and
+# `check` enforces it on the ids. The splitter broke on any level-two heading,
+# so a file that sections itself became one entry per section. Measured on the
+# live register on 2026-11-09: 264 files, 272 entries, and one file produced
+# seven. The six extras carried no id and no date, and `prior` scored queries
+# against them.
+
+SECTIONED_INBOX = """## INC-2026-11-09-a-sectioned-entry - the frobnitz quuxed twice (2026-11-09, engineer seat)
+
+**What happened.** The frobnitz quuxed.
+
+## What was true
+
+A zorblat, as it turns out.
+
+## Why no run saw it
+
+Nothing opened the file.
+
+## Fixed, and the part that is not
+
+**The fix.** The zorblat is now a frobnitz.
+"""
+
+
+def test_one_inbox_file_is_one_entry_however_it_sections_itself():
+    """Six of the seven entries this file used to produce were its own subheadings."""
+    entries = inc.split_inbox_file(
+        SECTIONED_INBOX, "inbox/INC-2026-11-09-a-sectioned-entry.md",
+        "INC-2026-11-09-a-sectioned-entry.md")
+
+    assert len(entries) == 1, [e.heading for e in entries]
+    entry = entries[0]
+    assert entry.key == "INC-2026-11-09-a-sectioned-entry"
+    assert entry.date == "2026-11-09"
+
+
+def test_the_whole_file_stays_in_the_one_entrys_body_so_the_lookup_can_score_it():
+    """The sections are the entry's content, and that is where its terms live."""
+    entry = inc.split_inbox_file(
+        SECTIONED_INBOX, "inbox/x.md", "INC-2026-11-09-a-sectioned-entry.md")[0]
+    body = "\n".join(entry.body)
+    for section in ("What was true", "Why no run saw it", "zorblat", "frobnitz"):
+        assert section in body, section
+
+
+def test_the_remedy_of_a_sectioned_entry_is_found_rather_than_stranded():
+    """The point of the defect: only the fragment holding the fix could answer
+    "and was there a remedy?", so five sixths of one incident read as remedyless."""
+    entry = inc.split_inbox_file(
+        SECTIONED_INBOX, "inbox/x.md", "INC-2026-11-09-a-sectioned-entry.md")[0]
+    verdict, section = inc.remedy_of(entry)
+    assert verdict == "REMEDY"
+    assert any("frobnitz" in line for line in section)
+
+
+def test_an_inbox_file_with_no_id_heading_is_one_entry_and_not_zero():
+    """`check` refuses this file by name; the lookup must not silently lose it."""
+    entries = inc.split_inbox_file(
+        "# Some note\n\nNo id anywhere.\n", "inbox/stray.md", "stray.md")
+    assert len(entries) == 1
+    assert entries[0].key == "stray"
+    assert "No id anywhere." in "\n".join(entries[0].body)
+
+
+def test_the_register_half_still_splits_on_every_level_two_heading():
+    """The register file really does hold many entries, so only the inbox changed."""
+    entries = inc.split_entries(PRIOR_REGISTER)
+    assert len(entries) > 1
+
+
+def test_every_inbox_file_in_the_live_register_yields_exactly_one_entry():
+    """The measurement that found this, as a gate: 264 files produced 272 entries.
+
+    `check` could not see it, because it asks whether two INC ids collide in one
+    file and a section heading carries no id. This asks the question `check`
+    does not: does the count of entries equal the count of files?
+    """
+    files = inc.inbox_files()
+    if not files:
+        pytest.skip("no inbox on this checkout")
+    entries = [e for e in inc.all_entries() if e.source != "register"]
+    assert len(entries) == len(files), (
+        f"{len(files)} inbox files produced {len(entries)} entries. "
+        f"A file that produces two is being split on its own subheadings."
+    )
+    sources = [e.source for e in entries]
+    assert len(set(sources)) == len(sources), "a file produced more than one entry"
