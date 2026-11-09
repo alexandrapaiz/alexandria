@@ -229,3 +229,45 @@ def test_prose_about_limits_that_is_not_a_limit_sentence_is_not_matched():
             "39 refused, all at turn one, all spend",
             None, ""):
         assert cf.mentions_a_wall(sentence) is False
+
+
+# --- the seat argument, which must never answer about a seat nobody named ----
+
+def test_an_unresolvable_seat_is_refused_rather_than_counted_as_zero(tmp_path, capsys):
+    """`INC-2026-10-27-two-readers-answer-a-wrong-seat-name-with-a-confident-zero`.
+
+    A zero is the right answer to "this seat met no walls" and the wrong answer
+    to "there is no such seat", and nothing in this tool's output distinguishes
+    them. So the resolution happens before any reading, and it exits 2 naming
+    the value it refused — the survivals gate in particular would otherwise
+    report all-clear for a typo.
+    """
+    write_log(tmp_path, "alexandria-exo", "2026-11-01T23-04-44-468Z", "hook",
+              completed(EXO_PROSE_WEEKLY, turns=77), exit_code=0, turns=77)
+    assert we.main(["--root", str(tmp_path), "--seat", "no-such-seat"]) == 2
+    said = capsys.readouterr()
+    assert "no-such-seat" in said.err
+    # And the gate does not report clean on the refusal either.
+    assert we.main(["--root", str(tmp_path), "--seat", "no-such-seat",
+                    "--survivals"]) == 2
+
+
+def test_a_bare_seat_name_resolves_to_the_directory_the_host_wrote(tmp_path, capsys):
+    write_log(tmp_path, "alexandria-exo", "2026-11-01T23-04-44-468Z", "hook",
+              completed(EXO_PROSE_WEEKLY, turns=77), exit_code=0, turns=77)
+    write_log(tmp_path, "alexandria-writer", "2026-11-01T09-00-00-000Z",
+              "message", completed(), exit_code=0, turns=25)
+    assert we.main(["--root", str(tmp_path), "--seat", "exo"]) == 0
+    said = capsys.readouterr()
+    assert "reading alexandria-exo for --seat 'exo'" in said.err
+    assert "1 runs under" in said.out
+
+
+def test_a_seat_that_exists_and_met_nothing_is_a_zero_the_tool_may_report(tmp_path):
+    """The other half, so the refusal above is not read as banning zeroes."""
+    write_log(tmp_path, "alexandria-writer", "2026-11-01T09-00-00-000Z",
+              "message", completed(), exit_code=0, turns=25)
+    found = we.survey(tmp_path, seat="alexandria-writer")
+    assert found["runs"] == 1
+    assert found["counts"][we.MET_A_WALL] == 0
+    assert we.main(["--root", str(tmp_path), "--seat", "alexandria-writer"]) == 0

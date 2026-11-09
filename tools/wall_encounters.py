@@ -90,7 +90,17 @@ def survived(run):
 
 
 def survey(root=cf.LOG_ROOT, seat=None):
-    """Every run under `root`, counted into the three classes."""
+    """Every run under `root`, counted into the three classes.
+
+    `seat` must already be a directory name the roster carries. `main` resolves
+    it through `cron_firing.resolve_seat` before calling here, because an
+    unresolvable seat has to raise rather than return an empty survey: a zero
+    is the right answer to "this seat met no walls" and the wrong answer to
+    "there is no such seat", and the two are indistinguishable in this output
+    (`INC-2026-10-27-two-readers-answer-a-wrong-seat-name-with-a-confident-zero`,
+    and §2b's rule that an instrument must be shown able to see the seat before
+    a zero from it is believed).
+    """
     runs = cf.read_runs(root, seat=seat) if seat else cf.read_runs(root)
     counts = collections.Counter()
     scopes = collections.Counter()
@@ -128,10 +138,21 @@ def main(argv=None):
                         help="exit 1 if any run met a wall and still finished")
     args = parser.parse_args(argv)
 
-    found = survey(Path(args.root), seat=args.seat)
+    root = Path(args.root)
+    # Before any reading, because every count below is about a seat and a count
+    # about a seat that does not exist is worse than no count.
+    try:
+        seat = cf.resolve_seat(args.seat, root)
+    except cf.SeatNotFound as exc:
+        print(f"wall_encounters: {exc}", file=sys.stderr)
+        return 2
+    if seat != args.seat:
+        print(f"note: reading {seat} for --seat {args.seat!r}", file=sys.stderr)
+
+    found = survey(root, seat=seat)
     counts = found["counts"]
-    print(f"{found['runs']} runs under {args.root}"
-          + (f", seat {args.seat}" if args.seat else ""))
+    print(f"{found['runs']} runs under {root}"
+          + (f", seat {seat}" if seat else ""))
     print(f"  met a wall      {counts[MET_A_WALL]}")
     for scope, n in sorted(found["scopes"].items(), key=lambda kv: -kv[1]):
         print(f"      {scope:18s} {n}")
