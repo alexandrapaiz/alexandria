@@ -629,3 +629,327 @@ def test_the_live_branch_files_every_incident_it_adds_through_the_inbox():
     problems, skipped = inc.branch_appends("origin/main", names)
     assert skipped == ""
     assert problems == [], problems
+
+
+# ---------------------------------------------------------------------------
+# The lookup half: `prior`.
+#
+# The claim under test is not "the ranking is good". It is narrower and it is
+# checkable: a seat holding a failure gets back the entry that already filed it,
+# and gets told whether that entry prescribed a remedy. The fixtures pin the
+# mechanism and the live register pins the one case that produced the tool, per
+# `INC-2026-10-24-three-instruments-in-one-day-tested-a-proxy-instead-of-the-mechanism`.
+
+PRIOR_REGISTER = """# Incident register
+
+STANDING RULE: any issue that occurs MORE THAN ONCE is recorded here.
+
+## INC-2026-01-01-the-ranker-ties-on-a-bare-date two bundles one day (2026-01-01, skill seat)
+
+**What happened.** `rank_bundles()` sorts on `generated`, which is a bare date,
+so two bundles written the same day are equal on every key and the winner is
+alphabetical.
+
+**The fix, which is the one already proposed.** Give `generated` a time, or
+tie-break on a recorded timestamp.
+
+## INC-2026-01-02-a-wake-fired-for-a-fixed-red stale wake (2026-01-02, engineer seat)
+
+**What happened.** A `checks` failure woke a run against a commit a later commit
+of the same run had already repaired.
+
+**The fix, or why there is not one yet.** None here, and the repair is not this
+seat's. Routed to the exo seat, which owns the wake path.
+
+## INC-2026-01-03-an-old-entry-with-no-fix-section narrative only (2026-01-03, pm seat)
+
+**What happened.** Something happened and nobody wrote down what was done about
+it, which several of the oldest entries in the live register look like.
+"""
+
+
+def _prior_entries():
+    return inc.split_entries(PRIOR_REGISTER, "register")
+
+
+def test_a_failure_in_hand_finds_the_entry_that_already_filed_it():
+    """The whole point: the query is a failure, not an id."""
+    found = inc.prior_art(
+        "rank_bundles tie: two bundles generated the same day, alphabetical winner",
+        _prior_entries(),
+    )
+    assert found["hits"], "a query quoting the entry's own subject found nothing"
+    assert found["hits"][0]["id"] == "INC-2026-01-01-the-ranker-ties-on-a-bare-date"
+    assert found["hits"][0]["remedy"] == "REMEDY"
+
+
+def test_the_remedy_paragraph_comes_back_and_not_only_the_id():
+    """An id a seat still has to go and open is the step that does not happen."""
+    found = inc.prior_art("rank_bundles bare date tie-break", _prior_entries())
+    body = "\n".join(found["hits"][0]["remedy_lines"])
+    assert "recorded timestamp" in body
+    # The section stops at the next bold lead-in rather than running to the end
+    # of the entry, or every hit prints the whole entry and nothing is read.
+    assert "What happened" not in body
+
+
+def test_a_fix_section_that_says_the_fix_is_owed_is_not_a_remedy():
+    """The skeleton invites "or why there is not one yet", so the heading lies."""
+    found = inc.prior_art("checks failure woke a run for a red already repaired",
+                          _prior_entries())
+    row = next(h for h in found["hits"]
+               if h["id"] == "INC-2026-01-02-a-wake-fired-for-a-fixed-red")
+    assert row["remedy"] == "OPEN"
+
+
+def test_an_entry_with_no_fix_section_says_so_rather_than_claiming_a_remedy():
+    found = inc.prior_art("nobody wrote down what was done about it narrative",
+                          _prior_entries())
+    row = next(h for h in found["hits"]
+               if h["id"] == "INC-2026-01-03-an-old-entry-with-no-fix-section")
+    assert row["remedy"] == "NONE"
+    assert row["remedy_lines"] == []
+
+
+def test_a_rare_identifier_outranks_a_word_the_whole_register_uses():
+    """IDF is the reason there is no stopword list to go stale."""
+    found = inc.prior_art("rank_bundles register entry recorded happened",
+                          _prior_entries())
+    assert found["hits"][0]["id"] == "INC-2026-01-01-the-ranker-ties-on-a-bare-date"
+
+
+def test_a_term_in_every_entry_scores_nothing_and_matches_nothing():
+    """Otherwise the headline reads "632 of 632 entries match", which it did."""
+    found = inc.prior_art("happened", _prior_entries())
+    assert found["matched"] == 0, "a term with zero information produced matches"
+    assert found["close"] == 0
+
+
+def test_the_seat_of_an_entry_is_read_off_its_heading():
+    found = inc.prior_art("rank_bundles bare date", _prior_entries())
+    assert found["hits"][0]["seat"] == "skill"
+
+
+def test_both_halves_of_the_register_are_searched(tmp_path):
+    """41% of the live entries are inbox files, so skipping them reads 59%."""
+    inbox = tmp_path / "inbox"
+    inbox.mkdir()
+    (inbox / "INC-2026-01-04-only-in-the-inbox.md").write_text(
+        "## INC-2026-01-04-only-in-the-inbox a quuxly defect (2026-01-04, writer seat)\n\n"
+        "**What happened.** The quuxifier emitted a zorblat.\n\n"
+        "**The fix.** The zorblat is now a frobnitz.\n"
+    )
+    entries = inc.all_entries(PRIOR_REGISTER, inbox)
+    found = inc.prior_art("quuxifier emitted a zorblat", entries)
+    assert found["inbox_entries"] == 1
+    assert found["hits"][0]["id"] == "INC-2026-01-04-only-in-the-inbox"
+    assert "frobnitz" in "\n".join(found["hits"][0]["remedy_lines"])
+
+
+def test_nothing_matching_says_file_it_as_a_first_instance():
+    """A lookup that hedges on an empty result teaches a seat to ignore it."""
+    import io
+    out = io.StringIO()
+    found = inc.prior_art("zzqqx unrelated nonsense token", _prior_entries())
+    assert found["hits"] == []
+    inc.report_prior(found, stream=out)
+    assert "first instance" in out.getvalue()
+
+
+def test_remedies_only_drops_the_entries_that_cannot_answer_the_question():
+    found = inc.prior_art("a run woke for a red already repaired by its own commit",
+                          _prior_entries(), remedies_only=True)
+    assert all(h["remedy"] == "REMEDY" for h in found["hits"])
+
+
+def test_a_seats_own_prior_entry_is_called_out_as_its_own():
+    import io
+    out = io.StringIO()
+    found = inc.prior_art("rank_bundles tie two bundles generated the same day",
+                          _prior_entries())
+    inc.report_prior(found, seat="skill", stream=out)
+    assert "YOUR OWN SEAT" in out.getvalue()
+    assert "your own seat" in out.getvalue()
+
+
+def test_the_report_never_fails_a_run():
+    """A lookup that can hold a pull request is a lookup a seat stops running."""
+    assert inc.main(["prior", "rank_bundles", "tie"]) == 0
+    assert inc.main(["prior", "zzqqx-nothing-matches-this"]) == 0
+
+
+def test_an_empty_query_is_refused_rather_than_answered():
+    assert inc.main(["prior"]) == 2
+
+
+def test_a_pytest_log_can_be_the_query(tmp_path):
+    """The shape a failure arrives in is not under the reader's control."""
+    log = tmp_path / "pytest.log"
+    log.write_text(
+        "FAILED tests/test_skill_receipts.py::test_every_published_receipt_is_current\n"
+        "E   AssertionError: rank_bundles picked the older of two bundles generated\n"
+        "E   on the same date\n"
+    )
+    assert inc.main(["prior", "--file", str(log), "--limit", "2"]) == 0
+
+
+# --- the live register, which is the case that produced the tool -------------
+
+def test_the_live_register_answers_the_failure_that_was_missed_on_2026_11_09():
+    """The regression this tool is.
+
+    On 2026-11-09 a seat shipped red on the receipt gate having followed "check
+    the register before you ship". The remedy was already written, twice, by
+    that seat, in `INC-2026-10-26-the-library-shows-the-older-of-two-receipts-
+    dated-the-same-day`. If this query stops returning that entry with a remedy,
+    the instrument has stopped answering the only question it was built for.
+    """
+    found = inc.prior_art(
+        "tests/test_skill_receipts.py failed: two bundles on the same date, a "
+        "published receipt reads stale, rank_bundles tie",
+        inc.all_entries(),
+        limit=5,
+    )
+    ids = [h["id"] for h in found["hits"]]
+    wanted = "INC-2026-10-26-the-library-shows-the-older-of-two-receipts-dated-the-same-day"
+    assert wanted in ids, f"the missed remedy is not in the top five: {ids}"
+    row = next(h for h in found["hits"] if h["id"] == wanted)
+    assert row["remedy"] == "REMEDY"
+    assert "timestamp" in "\n".join(row["remedy_lines"])
+
+
+def test_the_live_inbox_holds_entries_the_register_file_does_not():
+    """The measurement that makes grepping docs/agents/incidents.md insufficient.
+
+    This is deliberately an inequality rather than a pinned count. The fold moves
+    entries from one half to the other and both numbers move with it, so pinning
+    either would go red on a bookkeeping step nobody promised to run.
+    """
+    entries = inc.all_entries()
+    inbox_only = [e for e in entries if e.source != "register"]
+    register = [e for e in entries if e.source == "register"]
+    assert register, "the live register parsed to nothing"
+    if inc.inbox_files():
+        assert inbox_only, "the inbox has files and the lookup read none of them"
+
+
+def test_every_live_entry_gets_one_of_three_remedy_verdicts():
+    """No fourth state, and no exception thrown on a real entry's prose."""
+    for entry in inc.all_entries():
+        verdict, section = inc.remedy_of(entry)
+        assert verdict in ("REMEDY", "OPEN", "NONE"), entry.key
+        assert (verdict == "NONE") == (section == []), entry.key
+
+
+def test_an_unreadable_query_file_is_refused_by_name_and_not_searched_empty(tmp_path, capsys):
+    """The census row for `--file` asserts this, so it is pinned here.
+
+    An empty search returns "nothing in the register matches this. File it as a
+    first instance", which is the one wrong answer this tool must never give. So
+    a `--file` that cannot be read has to stop the lookup rather than shrink it.
+    """
+    missing = tmp_path / "no-such.log"
+    assert inc.main(["prior", "--file", str(missing)]) == 2
+    out = capsys.readouterr().out
+    assert str(missing) in out
+    assert "first instance" not in out
+
+
+def test_what_counts_as_close_scales_with_the_length_of_the_query():
+    """A fixed floor means two different things at two query lengths.
+
+    Measured on the live register before this was relative: a short query called
+    32 of 632 entries close and a two-sentence one called 222, which is the case
+    where a seat pastes a failure verbatim and most needs the number.
+    """
+    assert inc.strong_threshold(1.0) == pytest.approx(0.6)
+    assert inc.strong_threshold(0.2) == inc.STRONG_FLOOR, "the floor stops holding"
+    assert inc.strong_threshold(0.0) == inc.STRONG_FLOOR
+
+
+def test_a_long_query_does_not_call_a_third_of_the_register_close():
+    long_query = (
+        "a seat measured main as red against a stale snapshot of the trunk; the "
+        "fix had already merged into main twenty five minutes before the "
+        "measurement was reported"
+    )
+    found = inc.prior_art(long_query, inc.all_entries(), limit=3)
+    assert found["close"] < found["entries_searched"] / 10, (
+        f"{found['close']} of {found['entries_searched']} called close"
+    )
+    assert found["close_threshold"] >= inc.STRONG_FLOOR
+
+
+def test_filing_an_entry_does_not_rank_the_entry_it_just_wrote(tmp_path, capsys, monkeypatch):
+    """Found by running `new` for real: the skeleton scored 1.000 on its own slug.
+
+    A lookup at filing time that ranks the file it just created pushes the real
+    precedent down a rank, which is the one thing it exists not to do.
+    """
+    inbox = tmp_path / "inbox"
+    inbox.mkdir()
+    (inbox / "INC-2026-01-05-the-quuxifier-emitted-a-zorblat.md").write_text(
+        "## INC-2026-01-05-the-quuxifier-emitted-a-zorblat first time (2026-01-05, pm seat)\n\n"
+        "**What happened.** The quuxifier emitted a zorblat.\n\n"
+        "**The fix.** The zorblat became a frobnitz.\n"
+    )
+    monkeypatch.setattr(inc, "INBOX", inbox)
+    monkeypatch.setattr(inc, "REGISTER", tmp_path / "incidents.md")
+    (tmp_path / "incidents.md").write_text(PRIOR_REGISTER)
+    assert inc.main([
+        "new", "--slug", "the-quuxifier-emitted-a-zorblat-again",
+        "--date", "2026-01-06", "--seat", "engineer",
+        "--title", "the quuxifier emitted a zorblat a second time",
+    ]) == 0
+    out = capsys.readouterr().out
+    assert "INC-2026-01-05-the-quuxifier-emitted-a-zorblat\n" in out, (
+        "the prior instance is not in the ranking"
+    )
+    assert "zorblat-again" not in out.split("The closest")[-1], (
+        "the entry just written ranked itself"
+    )
+
+
+def test_a_single_close_match_is_reported_in_the_singular():
+    import io
+    out = io.StringIO()
+    found = inc.prior_art("rank_bundles bare date tie-break alphabetical", _prior_entries())
+    found["close"] = 1
+    found["close_with_remedy"] = 1
+    inc.report_prior(found, stream=out)
+    assert "1 of them is a close match" in out.getvalue()
+
+
+def test_the_report_writes_to_the_stdout_in_use_and_not_the_one_at_import(capsys):
+    """A default of `sys.stdout` in the signature binds the object at import.
+
+    This run shipped that twice in one file, here and in the inbox `new` writes
+    to, and the second one wrote a test fixture into the real register's inbox
+    before it was caught. `tools/target_census.py` already used
+    `stream=None` with `or sys.stdout` in the body, so the convention existed
+    and this code diverged from it inside the same family of tools.
+    """
+    found = inc.prior_art("rank_bundles bare date tie-break", _prior_entries())
+    inc.report_prior(found)
+    assert "INC-2026-01-01-the-ranker-ties-on-a-bare-date" in capsys.readouterr().out
+
+
+def test_a_truncated_list_never_reports_that_nothing_was_filed(capsys):
+    """Found by running `--limit 0`: it said nothing matched while 58 entries did.
+
+    A confident zero off a list that was cut to a limit is the one wrong answer
+    this tool must not give, and it is the same shape as every "a predicate that
+    saw nothing read as a pass" entry in the register.
+    """
+    found = inc.prior_art("rank_bundles bare date tie", _prior_entries(), limit=0)
+    assert found["matched"] > 0
+    assert found["hits"] == []
+    inc.report_prior(found)
+    out = capsys.readouterr().out
+    assert "first instance" not in out
+    assert "Raise --limit" in out
+
+
+def test_a_limit_below_one_is_a_usage_error():
+    assert inc.main(["prior", "rank_bundles", "--limit", "0"]) == 2
+    assert inc.main(["prior", "rank_bundles", "--limit", "-3"]) == 2
