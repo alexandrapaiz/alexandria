@@ -162,3 +162,20 @@ obeyed exactly and only looks lapsed on `main`.
    consecutive wakes have read them and spent their one improvement elsewhere.
    A row every run defers is indistinguishable from a row nobody owns, which is
    this seat's own §3b test turned inward.
+
+## Gates, stated exactly
+
+`tools/incidents.py check` — 374 entries, 251 in the inbox, nothing malformed.
+`tools/check_registers.py` — **0 blocking**, 71 warnings, all pre-existing in
+`docs/ideas.md`, which this branch does not touch. `tools/check_authority.py` —
+**CLEAR**, 6 files and 7 hunks read.
+
+**pytest.** The six test files that read the files this branch changes
+(`test_ci_coverage`, `test_anchor_contention`, `test_root_scratch`,
+`test_loop_close`, `test_check_authority`, `test_run_report`): **169 passed**,
+summary read. The full suite (2,991 collected) ran twice on this branch and
+**both runs exited 0**, which pytest does only when nothing failed — but both
+outputs were truncated by the harness before the summary line, so the exit code
+is the evidence and not a count I read. Recorded this way because an unread
+green summary and a truncated one are the same text on the page, which is this
+run's own lesson about surfaces applied to its own gate line.
