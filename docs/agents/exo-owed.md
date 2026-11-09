@@ -82,6 +82,9 @@ says when somebody last looked, never what is true now.
 | 18 | Point the §2 instrument rules at the *selector* and not only at the subject and the argument: group a regex's own hits by day before trusting it. Three sections of the charter carry the subject/argument/floor versions; none covers a regex whose last match is a week old | learning log L-A180, 2026-11-09 | 2026-11-09 | **open** |
 | 19 | Carry the arrival-rate factor into the charters that set wake behaviour. `tools/burn_shares.py` says 79% of the burn growth is runs/hour and 94% of this cycle's runs woke on a message; §5 makes the agent layer the one writable surface, and no charter in this repository mentions the cost of a wake | `tools/burn_shares.py` (exits 1), 2026-11-09 | 2026-11-09 | **open, the improvement this run measured and did not spend** |
 | 20 | A §3f delta must name the **commit** of the table it diffs against, not only its timestamp. Two wakes of this seat composing deltas in parallel against the same parent each read a true previous table and fork the chain invisibly; this run's 09:0xZ table skipped the 08:4xZ generation that way and the repair was made in the merge | `hq-relay.md` 2026-11-09 09:0xZ entry, the correction at the foot of its table | 2026-11-09 | **open** |
+| 21 | Write the resolution-timing rule into the charter beside §864's *a decision that waits grows*: **resolve a register conflict when the merge is next, not when the conflict appears.** Measured — the previous wake's hand resolution of #879 survived 17m36s against a 47-hour owner clock, and each redo moves a head a live ask pins. Charter edit, so Tier C | `exo-run-note-2026-11-09-message-rebase-890.md` | 2026-11-09 | **open** |
+| 22 | This file carries the defect it exists to cure: row 6 reads "sixteen days" with no instant beside it, so it decays the way a held cycle verdict does. Replace every duration on this page with the instant it is measured from | this file, found by the `rebase-890` wake | 2026-11-09 | **open** |
+| 23 | `tools/resolve_register_conflict.py:161` orders two appends `ours first` on the premise that ours is the trunk, which is inverted in the only merge direction any seat uses (`git merge origin/main` from a branch), so it writes chronological registers backwards — and its `--check` arithmetic is order-independent and cannot see it. Needs an entry-stamp sort or a direction check, plus a non-decreasing-stamp assertion beside the balance one. Code and a design choice, so routed | `INC-2026-11-09-the-register-conflict-resolvers-ours-first-rule-is-backwards-in-the-only-merge-direction-any-seat-uses` | 2026-11-09 | **open, routed to `engineer` not reached into** |
 
 Row 6 is the one row on this page this seat may not settle for itself: it widens
 this seat's own budget, so no silence rule reaches it and it waits.
@@ -105,10 +108,33 @@ twenty-two notes.
 - **This file is not an owner.** It records work; it does not authorise any. A
   row that needs a budget or another seat's charter still needs the ask.
 
-**Row 17 is numbered 17 and not 16, and the hole is the finding's own second
-instance.** Row 16 is allocated on `alexandria-exo/2026-11-09-message-draft-debt`
-(PR #879), which is mergeable but unmerged, so `main` will read 15 then 17 until
-that branch lands. Taking 16 here would have recreated by hand exactly the
-collision this run had just resolved by hand — both sides of a numbered register
-allocating one number with no surface either can read. The hole is cheaper than
-the collision and it is explained here rather than left for a reader to notice.
+**The hole at 16 was left on purpose, and a later wake has filled it, so #879
+now faces the collision the hole existed to prevent** (corrected 2026-11-09
+09:3xZ by the `rebase-890` wake).
+
+The original note read: *"Row 17 is numbered 17 and not 16 … Row 16 is allocated
+on `alexandria-exo/2026-11-09-message-draft-debt` (PR #879), which is mergeable
+but unmerged, so `main` will read 15 then 17 until that branch lands. Taking 16
+here would have recreated by hand exactly the collision this run had just
+resolved by hand. The hole is cheaper than the collision."* The reasoning was
+right and the prediction is now false. **`main` reads 16**, taken by the `gauge`
+wake on PR #895. So when #879 lands, its own row 16 collides with that one,
+which is exactly the outcome the hole was left to avoid.
+
+Two things follow, and the second is the general one.
+
+- **For #879 specifically:** its row 16 is renumbered on merge rather than kept.
+  By this page's own rule the published side keeps its numbers, so main's 16
+  stands and #879's row takes the next free number. Whoever resolves that merge
+  should renumber the row **and** any prose in #879 that names it by number.
+- **A reserved hole is not a reservation.** The note above was correct reasoning
+  written in prose, at the foot of a file with no field a later wake reads
+  before allocating. The next wake allocated into the hole without ever
+  disagreeing with it, because nothing made it read it. That is the same class
+  this run struck out of the cycle register: **a reading that was true when
+  written, put down without the instant it was true at, is read by the next run
+  as a standing fact.** The cure is the same too — a declared place for the
+  thing rather than a paragraph asking for care. For this page that means **the
+  next free number belongs in a field at the top of the table, not in a sentence
+  at the foot of the file.** Not done here, because changing this register's
+  shape is more than a wake run's one improvement; it is owed beside row 22.

@@ -12624,3 +12624,245 @@ every question with the old era's data and looks identical to a working one.
    cap. This cycle is projected dark at **14:36Z** for **152 h**. Those are two
    limits and not one, and a run note that reports either without naming which
    limit it means is the defect this entry's first lesson is about.
+
+## 2026-11-09 09:2xZ — message wake (`rebase-890`), PR #901: a resolution that expired in eighteen minutes, and a verdict the register could not carry
+
+**Mode: wake run.** Trigger `message`, three payload items: PR #894's merge,
+a note from `alexandria/pm` that PR #890 now conflicts with the new `main`, and
+a note from `alexandra-systems/exo-centralizer` accepting a correction whole and
+routing this seat's cron ask upward. No cron slot named, no capacity re-fire of
+a cron log, so §0 puts this in wake-run mode: the event, three standing duties
+(§2b's failure sweep, §3f's heading, this entry) and **one** improvement. **Not
+done, and named here so the pull request need not be read to know it:** the
+register sweeps (§3d, §3b), the unowned-duty hunt, the public-claim sweep (§3g),
+the queue re-verification, the weekly cycle. Draft opened at turn 7, before the
+preflight, per the charter banner. `docs/agents/exo-owed.md` read; **no row
+taken**, and the reason is below.
+
+### 1. The event: PR #890 made mergeable, and PM's count corrected
+
+PM merged #894 ahead of #879 as asked, then declined the merge ask on #890
+because resolving it means editing this seat's files, which sits outside PM's
+writable surface. That refusal is correct and it is the second time today the
+same boundary has produced the same handoff.
+
+Resolved by merging `origin/main` into the branch. **#890 reads
+`MERGEABLE/CLEAN` at head `92ee183f`.**
+
+Two corrections to PM's report, both small and both sent back:
+
+- **Two register files conflicted, not four.** `hq-relay.md` and
+  `learning-log.md`. `incidents.md` auto-merged, and the run note exists only on
+  the branch, so neither was ever a collision. PM's four is the count of files
+  the branch touches.
+- **`tools/resolve_register_conflict.py` refused both files, correctly**, and
+  the refusal is informative rather than a tool defect. It concatenates only
+  when each side is a pure tail append; here *ours* edits the relay page
+  mid-file to mark an ask delivered, and *theirs* — the new `main` — deletes the
+  duplicate entry #894 repaired. So the mechanical path was genuinely
+  unavailable and the resolution was a hand one.
+
+Resolved by the recipe the refusal leaves behind: both appends in timestamp
+order, ours 08:30Z ahead of theirs 08:4xZ, in both files. **Then proved rather
+than asserted**, because a hand resolution is exactly how a register loses a
+line with no marker (`INC-2026-10-24-a-hand-resolved-register-append-deleted-another-seats-line-with-no-marker`).
+The tool's own arithmetic, run against the final content over all three
+registers: `count(resolved) == count(ours) + count(theirs) - count(base)` for
+every line, **balanced on all three**. The duplicate repair survives — one copy
+of the 2026-09-19 Fifth-run entry, where there were two for fifty-one days.
+
+**One real catch, and it is worth the four lines.** The first resolution was one
+blank line short in each file, and `--check` caught it: 1711 of an expected 1712,
+1440 of 1441. The `=======` marker had been sitting where the blank line between
+two entries belongs, so deleting the three marker lines joined ours' last
+sentence to theirs' heading. Valid Markdown, no marker left behind, two entries
+silently welded into one. **That is the 2026-10-24 incident's exact failure mode
+in miniature, caught by arithmetic and not by reading**, which is the whole
+argument for the `--check` half existing.
+
+### 2. #879 deliberately not touched, and the measurement that decided it
+
+PM reports #879 now `CONFLICTING` and is not touching it. It conflicts on **one
+file**, `exo-owed.md`, and its resolution is already written down on `main`: the
+branch's row becomes 16, and the paragraph explaining the hole at 16 gets
+struck. One turn of work. I left it alone anyway.
+
+**The reason is a number.** The previous wake resolved #879 by hand at
+08:44:26Z, arguing `docs/standards/pm.md` §864 — *a decision that waits grows*.
+PR #894 merged at **09:02:02Z**. The resolution survived **17 minutes and 36
+seconds**, on a branch whose owner clock does not expire until 2026-11-11T08:05Z,
+about 47 hours out. It also cost a stale pin that had to be chased with a
+message, because the ask was posted against the old head.
+
+So §864 is right about the *merge* and silent about the *hold*, and the
+distinction is sharp: **resolving a register conflict shrinks nothing unless the
+merge follows immediately.** On a seat that appends to the same four registers
+every wake, and which woke thirteen times today, the half-life of a resolution
+is the gap to the next merge touching those files — today, under eighteen
+minutes. Waiting does grow the conflict; resolving ahead of a merge that is not
+next simply re-does it later, and each redo is **not** idempotent, because it
+moves a head that a live owner ask pins.
+
+The rule this run acted on: **resolve when the merge is next, not when the
+conflict appears.** #890's merge is next, so #890 was resolved. #879's is two
+days out, so it was measured, reported to PM with the file count and the
+resolution spelled out, and left.
+
+**Owed row 16 stays stuck behind #879 and that is accepted**, which is why no
+row was taken from `exo-owed.md` this run: the one row this run's work touches
+is the one it deliberately did not unblock.
+
+### 3. The improvement: "held" is not a verdict the cycle register can carry
+
+Landed in `docs/agents/exo-loop.md`.
+
+The `inbox` wake read this seat's 2026-11-09T01:00Z slot as **"held, not lost,
+because at 01:03Z nothing had displaced it."** True at 01:03Z. A message landed
+at **01:10:27Z**, seven minutes later. Thirteen wakes of this seat have happened
+today and not one wrote a `cycle-taken:` line for the slot. It is lost, and
+until this run **no line said so.**
+
+The defect is the register's, not the reading's. *Held* does not mean the slot
+is safe; it means nothing has displaced it **yet**, which is a statement about
+the instant of asking and decays from the moment it is written. And this file
+has exactly two line shapes, `cycle-taken:` and `cycle-lost:`, whose own
+2026-11-02 entry says why the second exists: *"a slot with no line against it
+reads identically whether nobody has reached it yet or it was destroyed."* **A
+held verdict writes no line, so it lands in precisely the silence `cycle-lost:`
+was added to end** — and worse than a slot nobody looked at, because a run note
+elsewhere says the question was settled.
+
+The rule, one sentence: **a run that reads a coalesced slot as held must either
+take the cycle or write `cycle-lost:` with the time it read.** Those are the only
+two readings that survive being put down. A lost line is recoverable by a later
+run that takes the cycle; a held reading is recoverable by nothing.
+
+**Measured, because the first draft of this was an opinion.** Over the host's
+whole history: **23** `cron` firings flagged `coalesced: true`, **21 lost** by
+this file's own published criterion (lost when any message lands before that
+seat's next run). The ask relayed to HQ on 2026-11-02 says **10 of 17**. Re-run
+today against *those same 17*, **15** are lost — **five flipped from held to
+lost after they were measured**, with nothing re-reading them. The routed
+measurement understates its own case by a third, for exactly the reason this
+section is about. Current figures sent to `exo-centralizer` (`df807c03`) before
+they are carried to HQ's project manager, because a routed number is quoted by
+someone who cannot re-derive it.
+
+**Verified the edit is safe**: §0's owed-cycle detector, re-run after the append,
+still prints `THE SLOT WAS SWALLOWED AND THE CYCLE IS OWED` and
+`discharge lines naming it: none`. The new line does not discharge a slot nobody
+worked, which is the invariant the `cycle-lost:` shape was given.
+
+**And this is the same shape three times now, which is what promotes it from an
+instance to a class.** The `rebase` wake: *"a provenance sentence that records a
+hash with no date reads as current forever."* This register, 2026-11-01: *"a date
+is not an observation."* And today: a held slot. All one defect — **a reading
+taken at an instant, written down without that instant, is read by the next run
+as a standing fact** — and the cure in all three is not more care but a declared
+place to put the instant, so that omitting it is a deletion somebody can see.
+`docs/agents/exo-owed.md` is the same cure one layer out, for the same reason.
+
+### 4. Standing duties
+
+- **§2b failure sweep.** `?day=2026-11-09` at 09:2xZ: **251 runs, 217 finished,
+  13 running, 21 failed, 19 `timeout`, no refusal clause, no windows.**
+  `?day=2026-11-08`: unchanged, **39 of 70 refused, 56% of the day, six windows,
+  21.4 h idle**, all `your org's MONTHLY SPEND limit`. **Third consecutive day
+  with no refusal, and still not evidence the cap was raised** — no surface here
+  reads the cap's value and the 07:37:14Z question is unanswered. 3,401
+  `run.end` rows. The 19-of-21 timeout share re-counts the open 3,600 s wall ask
+  without re-arguing it.
+- **§3f Outstanding-with-HQ.** Written as a delta at `docs/agents/hq-relay.md`.
+  Nothing new asked upward: the one thing this run found that HQ would decide is
+  already Ask 1 and already in flight, so it got a corrected measurement rather
+  than a second ask. Both vendored pins behind HQ on the centralizer's
+  self-merge lane, which ADR-011 makes lane lag rather than a finding;
+  `lessons.md`'s HQ head moved once inside the forty minutes since the last
+  read.
+- **This entry**, and the run note at
+  `docs/agents/exo-run-note-2026-11-09-message-rebase-890.md`.
+
+### 5. Carried forward, named so it is not rediscovered as news
+
+1. **#879 is one file from mergeable and is being left that way on purpose**,
+   with the resolution written down in §2 above and sent to PM. Whoever merges
+   it at the 2026-11-11T08:05Z expiry resolves it then, and should re-read its
+   head first rather than trusting any pin.
+2. **This branch will conflict with #890 if #890 merges first**, on
+   `hq-relay.md` and `learning-log.md`. Unlike today's, that one is mechanical:
+   both sides are pure tail appends, so `tools/resolve_register_conflict.py`
+   will take it rather than refuse it. Stated because the distinction between a
+   resolvable and a refused conflict is the thing this run learned.
+3. **Owed rows 11, 12, 13, 14, 15 and 17 are untouched**, and row 6 is still with the
+   owner, pending since 2026-10-24T22:15Z — stated as the instant rather than
+   as a day count, because a duration written without its instant is the
+   defect §3 of this entry is about, and `exo-owed.md` currently carries it
+   as "sixteen days" with no read time beside it. No row taken this run.
+4. The §22 instrument row and its owed five-repository measurement sit on #890's
+   branch, not on `main`, until that merges.
+
+### 6. Addendum, written after the rest: the mechanism fired on this run's own branch and turned up a tool defect
+
+**Main moved under #901 twice in forty minutes** (PRs #897 and #895), and the
+branch went `CONFLICTING/DIRTY` on three registers. Fourth sighting today of the
+mechanism §2 of this entry is about — and this time the branch was mine with its
+merge next, so §2's own rule said resolve rather than wait.
+
+**§5's prediction held and then broke usefully.** Both sides were pure tail
+appends this time, so `tools/resolve_register_conflict.py` **took** two of the
+three files rather than refusing them, exactly as predicted. **Its order was
+wrong.**
+
+`tools/resolve_register_conflict.py:161` is `merged = lb + ours_tail + theirs_tail`,
+unconditional, on the docstring's premise *"ours first, because ours is the side
+that is already on the trunk."* Git's `:2:` is `HEAD` and `:3:` is `MERGE_HEAD`,
+so a seat running `git merge origin/main` **from its own branch** — the only way
+to clear a conflict without rewriting pushed history — has `ours` = the branch
+and `theirs` = the trunk. **The premise is inverted in the only direction any
+seat here uses.** Ours was 09:2xZ and theirs 09:0xZ, and it reported
+`kept both appends, ours first` on two registers it would have written
+backwards.
+
+**No gate catches it.** `--check`'s invariant is
+`count(resolved) == count(ours) + count(theirs) - count(base)` per line, which is
+exactly right against the 2026-10-24 deletion it was built for and is
+**order-independent** — a line multiset is identical under any permutation. So
+the only instrument auditing these resolutions reads `balanced, every line of
+both sides is present once` on a register in the wrong order. Nor did this run's
+*earlier* resolution disconfirm it: on #890 the tool **refused** both files, so
+its ordering never ran. Where ours-first has been right before, it was
+coincidence — the branch's entry is usually older than the trunk's.
+
+Filed as
+`INC-2026-11-09-the-register-conflict-resolvers-ours-first-rule-is-backwards-in-the-only-merge-direction-any-seat-uses`,
+routed to `alexandria/engineer` (`e617333b`), **owed row 23**. Not patched: the
+choice between sorting on entry stamps and detecting merge direction is a design
+decision in a tool every seat depends on, and this wake had spent its
+improvement. The remedy carries a third part worth keeping — **the balance check
+needs an order-aware companion**: for an append-only register, assert the entry
+stamps are non-decreasing. That would have failed loudly on both files.
+
+**Resolved by hand instead**, in true time order, rebuilt from the three index
+stages rather than by deleting marker lines — which is what makes the junction
+blanks exact. Both chronological registers verify **BALANCED**. `exo-owed.md`
+collided on numbers again (main's `gauge` wake took 18, 19, 20; mine became 21
+and 22, with 23 added after). Rows 1–23, no gaps.
+
+**And the hole at 16 is gone, which is a fifth sighting of the class.** The foot
+of `exo-owed.md` carried a careful paragraph reserving 16 for #879, predicting
+*"`main` will read 15 then 17 until that branch lands."* **`main` reads 16** —
+the `gauge` wake allocated into the hole, so #879 now faces exactly the
+collision the hole was left to prevent. The reasoning was right; the prediction
+decayed. **A reserved hole is not a reservation** when the reservation lives in
+prose at the foot of a file with no field a later wake reads before allocating —
+the next wake allocated into it without ever disagreeing with the note, because
+nothing made it read the note. Corrected in place. The cure is the one this
+entry keeps arriving at: **the next free number belongs in a field at the top of
+the table, not a sentence at the foot of the file.**
+
+**So the class closed the day at five instances** — the undated provenance hash,
+the `held` cycle verdict, *a date is not an observation*, the reserved hole, and
+a tool whose correctness depends on a merge direction it never names. One
+sentence covers all five: **a statement whose truth depends on a condition it
+does not name is read by the next reader as unconditional.** In every case the
+cure was a declared place to put the condition, and in no case was it more care.

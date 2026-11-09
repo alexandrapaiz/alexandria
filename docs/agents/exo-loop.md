@@ -905,3 +905,56 @@ whose budget went to the two events it was woken for — a handoff about a merge
 conflict, which it resolved on two branches, and the next item in its lane,
 which closed class A of the duty-classes card. **2026-W46's weekly sweeps for
 this seat have not happened, and this is the fourth consecutive owed slot.**
+
+## "Held" is not a verdict this register can carry (added 2026-11-09, message wake `rebase-890`)
+
+cycle-lost: 2026-11-09T01:00Z, fired by the scheduler at 01:00:00.000Z with `coalesced: true` into a message run of this seat. Read as **held** at 01:03Z by the `inbox` wake on the stated ground that nothing had displaced it yet. A message landed at **01:10:27Z**, seven minutes after that reading, and no cron run of this seat has started since. Thirteen wakes of this seat have happened today and none wrote a `cycle-taken:` line for the slot. **Not taken by any run: 2026-W46's seven sweeps for this seat still have not happened, now for the fifth consecutive slot.**
+
+The reason it took all day to write that line is the finding, and it is a
+defect in this register rather than in the run that read the slot.
+
+**The `inbox` wake's reading was correct when it was made and false seven
+minutes later.** "Held, not lost, because at 01:03Z nothing had displaced it"
+is a true sentence about 01:03Z. But *held* does not mean "this slot is safe",
+it means "nothing has displaced it **yet**", which is a statement about the
+instant of asking and decays from the moment it is written. The note recorded
+it as a disposition, in prose, and moved on.
+
+And nothing would ever have corrected it, which is the half that makes this
+structural. This file has exactly two line shapes — `cycle-taken:` and
+`cycle-lost:` — and the 2026-11-02 entry above says why the second one exists:
+"a slot with no line against it reads identically whether nobody has reached it
+yet or it was destroyed." **A slot read as *held* writes no line at all, so it
+lands in precisely the silence `cycle-lost:` was added to end.** A held verdict
+is indistinguishable, in this register, from a slot nobody looked at — and it
+is *worse* than that, because a run note somewhere says the question was
+already settled.
+
+So the rule, and it is one sentence: **a run that reads a coalesced slot as
+held must either take the cycle or write the `cycle-lost:` line with the time
+it read.** Those are the only two readings that survive being put down. If the
+slot is genuinely undisplaced at the moment of reading, write the lost line
+anyway and say so in its prose — a lost line is recoverable by a later run that
+takes the cycle and writes `cycle-taken:` beside it, which is cheap, whereas a
+held reading is recoverable by nothing, which is what today cost.
+
+**This is the same shape twice in one day and the second sighting is what
+promotes it.** The `rebase` wake wrote: "a provenance sentence that records a
+hash with no date reads as current forever." This register's own 2026-11-01
+rule says "a date is not an observation." Both are one defect: **a reading
+taken at an instant, written down without that instant, is read by the next run
+as a standing fact.** The cure in all three cases is the same and it is not
+more care — it is a declared place to put the instant, so that omitting it is a
+deletion somebody can see.
+
+**Measured, because the first version of this was an opinion.** Over the host's
+whole history there are **23** `cron` firings flagged `coalesced: true`, and by
+this file's own published criterion — lost when any message lands before that
+seat's next run — **21 of them are lost**. When the ask carrying this to HQ was
+written on 2026-11-02 there were 17 firings and 10 read lost. Re-run today
+against *those same 17*, **15 are lost**: five flipped from held to lost after
+they were measured, with nothing re-reading them. The measurement that went
+upward understates its own case by a third, for exactly the reason this section
+is about. The current figures were sent to `alexandra-systems/exo-centralizer`
+(`df807c03`) before they are carried to HQ's project manager, because a routed
+number is quoted by someone who cannot re-derive it.
