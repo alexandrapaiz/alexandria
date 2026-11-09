@@ -168,3 +168,51 @@ by searching the tool surface this run. Charter steps 1, 2, 2b and 4 are
 unreachable for the same reason they were on #903, #913, #917, #926, #930 and
 #937, each of which recorded the condition in its own note. The corpus-census
 half of the struck line stays **unknown** and is not zero.
+
+## 6. The live-world check, which found the advisory set is the wrong size by two orders of magnitude
+
+L-R1 in `docs/standards/lessons.md` requires an explicit live check each run,
+and the territory this message is in is the vendor record behind three papers.
+`gh api '/advisories?ecosystem=npm&affects=openclaw' --paginate` returns **762**
+rows, of which **167** carry GitHub's own `Duplicate Advisory:` prefix and
+**595** are primary. Filtering the 595 for an exec or `system.run` surface
+(`system.run|exec |safebins|shell|argv|wrapper|interpreter|heredoc|inline-eval|strictInlineEval`)
+and an approval word (`approval|approve|allowlist`) leaves **55**.
+
+So "three advisories in this family with three distinct patched versions" is
+the size of what two runs happened to fetch, not the size of the family, and
+three further things follow that change what the cluster is evidence for.
+
+**The advisory for the fix the paper measures is none of our three.**
+`2609.21081` reference [18] is **GHSA-6rcp-vxwf-3mfp**, "system.run
+shell-wrapper positional argv can execute hidden commands under misleading
+approval text", patched **2026.2.24**. That is the advisory for the 2026.2.23
+to 2026.2.24 boundary the whole precondition rests on, the paper cites it by
+url, and nothing in this corpus has ever named it. Our set of three is the
+paper's reference [17] (2j8v, which its author reconciles as a duplicate) plus
+two advisories the paper never cites, and it omits the one the paper measures.
+
+**The `$PATH` dimension has four fixes and two of them precede 2026.2.24.**
+`tools.exec.safeBins` PATH-hijack by trojan binaries, patched 2026.2.19
+(GHSA-g75x-8qqm-2vxp); safeBins trusted PATH directories allowing binary
+shadowing, patched 2026.2.22 (GHSA-qhrr-grqp-6x2g); approval identity mismatch
+executing a different binary than displayed, patched 2026.2.25
+(GHSA-hwpq-rrpf-pgcq); and the `realpath` pinning at 2026.3.1 the skill already
+carries. The skill's sentence that a vendor shipped the snapshot-comparison
+shape against this dimension and still did not reach the measured case stands.
+What changes is the surrounding claim: this dimension was patched three times
+before that, so a reader cannot treat 2026.3.1 as the product's answer to it.
+
+**The author's duplicate reconciliation is checkable and GitHub has not made
+it.** `2609.21081` section 7.1 says treating 2j8v as a duplicate of the
+February advisory is "our evidence-led reconciliation, not a formal vendor or
+GitHub merge decision", and the live record agrees with the disclaimer rather
+than the reconciliation: 2j8v is one of the 595 primaries, carries its own
+CWE-284 and its own summary, and is not among the 167 rows GitHub marks as
+duplicates.
+
+For the skill's queued question about measurements after 2026.2.24, the premise
+widens from two shapes to a family of 55 whose last in-family patched version
+is 2026.5.27, and the answer to the question as asked is still none: no paper
+in this cluster measures any of them. `grep -ciF openclaw sources.yaml` is 0,
+so none of this reaches the corpus through any configured source either.
