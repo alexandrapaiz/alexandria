@@ -331,31 +331,75 @@ with the gate routed at
 because the predicate has a judgement call in it and is the engineer's work
 rather than an audit run's.
 
-## 9. The suite, and one harness defect this run met
+## 9. The suite, the five reds it found, and two harness defects
 
-Section to be read with its number: the full suite was run over the merged tree
-on the second pass. Result in the pull request body, because it finished after
-this file was written and the body is where a reader looks for it.
+The full suite was run over the merged tree, under `tools/sentinel.py` so that
+the verdict is a line in a file rather than an exit code. First run:
 
-Two things about how it was run are worth a sentence, because both are classes
-this register already carries.
+```
+5 failed, 3268 passed, 6 skipped, 17 warnings in 560.62s (0:09:20)
+SENTINEL run=8443c0dfc009 label=suite COMPLETE exit=1 code=nonzero seconds=566.2
+```
 
-The first attempt backgrounded the suite with a shell `&` and the harness
-reported exit 0 within a second, for the `echo` that followed it. The log file
-was zero bytes and no pytest process existed, so the subshell was reaped when
-the call returned. **An exit 0 that describes a different command than the one
-you meant is the same defect as an exit 0 for a suite still running**, which is
-`INC-2026-11-09-the-harness-reported-exit-0-for-a-suite-that-was-still-running`,
-and it is filed as a repeat. The remedy is the harness's own background mode
-rather than a shell job, and the check that catches it is to read the log's size
-rather than the exit status.
+**All five were this branch's own and none of them were on `main`.** Every one
+was in `tests/test_target_census.py`, and the cause was one file this run's
+first pass shipped: `tools/history_secrets.py` declared `--repo` and
+`--baseline` with no help text at all, so the census had nothing for `ast` to
+read and reported them `UNCLASSIFIED` rather than miscalling them. That is the
+gate working, and it is the second time in one evening the census has caught
+this seat on a tool this seat had just written.
 
-The second is load. Other seats were running the suite with Postgres fixtures on
-this host at the same time, which
-`INC-2026-11-09-two-tests-failed-under-load-and-a-single-suite-run-would-have-been-read-as-a-red-caused-by-this-diff`
-says is enough to redden two cases on its own. A single red case in a loaded run
-is not evidence against a diff, so any red is named with that caveat rather than
-attributed.
+The missing help was the real defect and it is fixed in the tool rather than
+papered over in the census, because a flag with no help is invisible to every
+reader of `--help` and not only to this gate. Both rows are then declared as
+`path`. Census back to 167 of 167 declared, and
+`tests/test_target_census.py` with `tests/test_history_secrets.py` green
+together at 87 cases.
+
+### 9a. The harness said exit 0 for the run that exited 1
+
+The notification for that suite read `completed, exit code 0`. The last line of
+the file it pointed at read `COMPLETE exit=1 code=nonzero`, with pytest's own
+`5 failed, 3268 passed` above it. That is the ninth instance of a class this
+repository has been filing all day, and the repetition is not the interesting
+part, because the seventh instance is the same shape.
+
+What is interesting is that the contradiction was free this time. The seventh
+instance was caught by a reader who happened to compare a summary line against
+a notification. Here the disagreeing number was written into the same file by
+`tools/sentinel.py`, in its own vocabulary, as its declared post-condition. A
+run that reads only the notification still gets the wrong answer. A run that
+reads the file's last line cannot, because the two claims are adjacent and one
+of them carries the run id that produced it.
+
+**Had this run believed the zero it would have readied a pull request carrying
+five reds of its own making**, which is the cost the eight prior instances were
+all lucky enough not to pay.
+
+### 9b. And the first attempt at the same measurement produced no evidence at all
+
+Before the sentinel run, this run backgrounded the suite twice and got nothing
+usable either time, in two different ways, both of them already in the
+register.
+
+A shell `&` was reaped when the tool call returned, so the harness reported exit
+0 for the `echo` that followed it and the log stayed at zero bytes. Then the
+harness's own background mode, which the register prescribes as the fix for
+that, was given `python3 -m pytest tests/ -q 2>&1 | tail -25`, and the output
+file sat at zero bytes for the whole run while nine live processes carried it.
+**`tail` cannot emit a line until its input closes**, so the standing remedy on
+that register entry, which is "read the tool's own last line", had no last line
+to read until the work was already over. The remedy and the commonest idiom for
+keeping a long log short are incompatible, and nothing in eight prior instances
+says so. Filed as the eighth instance.
+
+One note on load, because it bears on how any red here should be read. Other
+seats were running this suite with Postgres fixtures on this host throughout,
+and `INC-2026-11-09-two-tests-failed-under-load-and-a-single-suite-run-would-have-been-read-as-a-red-caused-by-this-diff`
+says that is enough to redden two cases on its own. The five reds above are not
+that case, and the evidence is that they are deterministic and named a specific
+undeclared flag rather than timing out. The repair was verified by re-running
+the two affected files rather than by re-running the suite and hoping.
 
 ## 10. What this run fixed, and what remains
 
@@ -369,6 +413,9 @@ Fixed, on the first pass:
   shipped.
 
 Fixed, on the second pass:
+
+- Five red cases in `tests/test_target_census.py`, caused by this run's own
+  first pass, found by the suite and not by a reader.
 
 - The merge against `main` resolved, with the arithmetic check passing on all
   nine registers.
