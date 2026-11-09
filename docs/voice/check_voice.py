@@ -8101,10 +8101,81 @@ def laws_touched(anchors, changed, message=""):
     return named, nearby, orphan
 
 
-def queued_verdict(label, named, nearby, span):
+#: Laws whose decision does not live in the generator any more, because the
+#: charter's structure-watch step sent it to code. One row per law, and a row
+#: is written here only when the fix is merged on `main`.
+#:
+#: This table exists because the command below reads one file. Its whole input
+#: is the commit list for `prompts/digest.md`, so a law the charter's own step
+#: 4 escalated out of the prompt is invisible to it, and the verdict it prints
+#: for that law is UNNAMED or UNPATCHED: read the span, nothing is coming. The
+#: instrument tells the seat to do the thing step 4 forbids, and the better a
+#: seat obeys the charter the more laws arrive in that state.
+#:
+#: Law 8 is the live instance and it cost a grade on 2026-11-09. `queued 8`
+#: read UNNAMED, the review concluded a prompt diff was owed and named it as
+#: the next run's item, and the fix had been merged seven days earlier in
+#: `pipeline/arxiv_html.py`, which decides the url with a HEAD request instead
+#: of asking a model to rewrite one. The abs-to-html rewrite had been reworded
+#: six times with one revert before that, which is the history the module's own
+#: docstring carries.
+MOVED_LAWS = {
+    "8": {
+        "module": "pipeline/arxiv_html.py",
+        "wired_in": "pipeline/weekly.py",
+        "wiring": "arxiv_html().resolve_payload(",
+        "commit": "3cd597a4",
+        "escalated": "writer run 51 on 2026-10-26, after the fourth wording "
+                     "was written and reverted inside one run",
+    },
+}
+
+
+def moved_fix(label, show=None, delivered=None):
+    """The row for a law whose fix left the generator, and whether it is live.
+
+    A declared row is a claim about another seat's file, so it is checked
+    rather than trusted. The check is the one substring that proves the call
+    is still there on `main`, read off `origin/main` and not off the branch,
+    for the same reason the spans below are. A fix that was escalated, built
+    and then unwired is not a fix, and it must not read as one here: that is
+    the same mistake `drop_reverted` fixes one storey down, where a patch and
+    its own revert counted as two patches.
+
+    `delivered` is the deploy's half and the caller supplies it, because this
+    function knows nothing about the press. Both answers are OK verdicts and
+    they ask for different things: an undelivered fix asks for the deploy, and
+    a delivered one that still fails live is the code's defect and the
+    engineer's. Neither of them asks for a word in the generator.
+    """
+    row = MOVED_LAWS.get(label)
+    if row is None:
+        return None
+    if show is None:
+        def show(path):
+            return "\n".join(_git_lines("show", f"origin/main:{path}"))
+    text = show(row["wired_in"])
+    return dict(row, wired=row["wiring"] in text, delivered=delivered)
+
+
+def queued_verdict(label, named, nearby, span, moved=None):
     """One law's structure-watch answer, from the queue alone.
 
-    Four answers, because the queue supports four and not two.
+    Six answers, because the queue supports six and not two.
+
+    MOVED: the law's decision does not live in the generator at all, because
+    the charter's structure-watch step sent it to code and the code is merged.
+    `MOVED_LAWS` declares it and `moved_fix` checks the call is still there, so
+    the verdict is a reading and not a note. It is first, above every answer
+    the queue can give, because once a law is decided by a function every
+    wording of it in the prompt is the tinker step 4 refuses, and the queue
+    will go on saying UNNAMED about that law for as long as the generator keeps
+    the dead prose. The thing owed is the deploy, or nothing.
+
+    UNWIRED: a law this table declares as moved, whose call is not in the file
+    on `main` any more. The escalated fix was built and then unwired, so no fix
+    is anywhere, and this is the only verdict here that names another seat:
+    restoring the call is the engineer's and a wording would paper over it.
 
     QUEUED: a merged commit the press has not received says in its own message
     that it works this law. A fresh wording is the third tinker the charter's
@@ -8146,6 +8217,22 @@ def queued_verdict(label, named, nearby, span):
     and has not reached the press, which is all a grade can establish before
     the deploy.
     """
+    if moved and moved.get("wired"):
+        press = ("the press has it, so a live failure of this law is the "
+                 "code's and goes to the engineer"
+                 if moved.get("delivered") else
+                 "the press has not received it, so the deploy is the whole "
+                 "of what is owed")
+        return "MOVED", (f"law {label} is decided by {moved['module']} as of "
+                         f"{moved['commit']}, not by the generator, and "
+                         f"{press}: no wording is owed and the queue's answer "
+                         f"about this law is not about its fix")
+    if moved:
+        return "UNWIRED", (f"law {label}'s fix was escalated to "
+                           f"{moved['module']} and {moved['wired_in']} does "
+                           f"not call it on main, so the fix is gone rather "
+                           f"than waiting: restoring the call is the "
+                           f"engineer's and a wording would hide it")
     if named:
         return "QUEUED", (f"law {label} is named by {len(named)} queued "
                           f"commit(s), so a fresh wording is the tinker the "
@@ -8204,6 +8291,17 @@ SPAN_CASES = [
     ([(10, "6")], 100, {"6": 90}),
 ]
 
+#: `moved_fix`'s two readings and the two verdicts they produce, with a stub
+#: `show` so no case touches git. The third case is the one that matters: a
+#: declared row whose call has gone must not read as a fix.
+MOVED_CASES = [
+    ("8", "probe = law8_probe or arxiv_html().resolve_payload(payload)",
+     False, "MOVED"),
+    ("8", "probe = law8_probe or arxiv_html().resolve_payload(payload)",
+     True, "MOVED"),
+    ("8", "# the law 8 step was taken out again", False, "UNWIRED"),
+]
+
 VERDICT_CASES = [
     (["c5a32e4c"], [], 40, "QUEUED"),
     ([], ["2c6ce635", "31d3fb23"], 103, "UNNAMED"),
@@ -8247,6 +8345,20 @@ def queued_cases():
             print(f"  FAIL    law_spans wanted {want} and got {got}")
     print(f"SPAN_CASES                                 "
           f"{len(SPAN_CASES) - bad} of {len(SPAN_CASES)}")
+    rc |= bool(bad)
+    bad = 0
+    for label, wiring, delivered, want in MOVED_CASES:
+        row = moved_fix(label, show=lambda _p, t=wiring: t,
+                        delivered=delivered)
+        got, _ = queued_verdict(label, [], [], 0, moved=row)
+        if got != want:
+            bad += 1
+            print(f"  FAIL    moved law {label} wanted {want} and got {got}")
+    if moved_fix("99", show=lambda _p: "") is not None:
+        bad += 1
+        print("  FAIL    an undeclared law read as moved")
+    print(f"MOVED_CASES                                "
+          f"{len(MOVED_CASES) - bad} of {len(MOVED_CASES)}")
     rc |= bool(bad)
     bad = 0
     for named, nearby, span, want in VERDICT_CASES:
@@ -8387,12 +8499,17 @@ def queued(labels=()):
     if labels:
         print()
         for label in labels:
+            row = MOVED_LAWS.get(label)
+            moved = moved_fix(
+                label,
+                delivered=bool(row) and bool(deployed) and _git_ok(
+                    "merge-base", "--is-ancestor", row["commit"], deployed))
             verdict, why = queued_verdict(label, named_by.get(label, []),
                                           nearby_by.get(label, []),
-                                          spans.get(label, 0))
-            mark = "OK  " if verdict == "QUEUED" else "FAIL"
+                                          spans.get(label, 0), moved=moved)
+            mark = "OK  " if verdict in OK_VERDICTS else "FAIL"
             print(f"  {mark}    {verdict}: {why}")
-            rc |= verdict != "QUEUED"
+            rc |= verdict not in OK_VERDICTS
     print()
     print("A law a queued commit names is fixed and undelivered, so the grade")
     print("that fails it says so and writes nothing. A law nothing reaches")
@@ -8403,12 +8520,39 @@ def queued(labels=()):
     print("charter asks a prompt diff to cite the law it serves and the")
     print("citation has been going into the review rather than the commit,")
     print("which is why four runs rebuilt this fact from memory.")
+    print()
+    print("None of that reaches a law this prompt no longer decides. The")
+    print("queue read here is one file's, so a law the structure-watch step")
+    print("sent to code is MOVED, and the queue's silence about it is not a")
+    print("reading about its fix. Law 8 is that law today.")
     return rc
 
 
 def _git_line(*args):
     out = _git_lines(*args)
     return out[0] if out else None
+
+
+#: The verdicts that ask for no prompt diff. QUEUED and MOVED both mean a fix
+#: exists and the generator is the wrong lever, so a run that reads either one
+#: writes nothing and says which deploy it is waiting on.
+OK_VERDICTS = ("QUEUED", "MOVED")
+
+
+def _git_ok(*args):
+    """A git command's exit status, for the questions whose answer is yes or no.
+
+    `_git_lines` reads stdout and `merge-base --is-ancestor` prints nothing, so
+    reading it through that helper makes every answer look the same. An error
+    is False rather than True: an unreachable git must not report a commit as
+    deployed.
+    """
+    try:
+        r = subprocess.run(["git", "-C", str(ROOT), *args],
+                           capture_output=True, text=True, timeout=120)
+    except (OSError, subprocess.SubprocessError):
+        return False
+    return r.returncode == 0
 
 
 def _git_lines(*args):
