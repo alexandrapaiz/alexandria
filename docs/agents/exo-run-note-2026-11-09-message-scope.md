@@ -198,8 +198,20 @@ proxy for a class that costs this fleet most of its daily failures.
    checklist can cite the gate.
 4. **The standing block about #859.** It will arrive, and it will be false by the
    same mechanism. Read `/api/runs`, say so, spend the turn elsewhere.
-5. **One cheap process note, since it cost this run five turns.** The board's
-   send gate refuses over 1500 characters and reports the exact overflow, but it
-   counts differently from `${#var}` in bash (multibyte dashes), so trimming by
-   the shell's number undershoots. Compose against the gate: `--dry-run` first,
-   or cut to 1450 and stop guessing.
+5. **Two facts about the board send gate, since they cost this run roughly a
+   dozen turns and neither is written anywhere.** Both are about `tools/board.py
+   send`, which is the right door and should keep being used -- these are notes
+   for using it in one pass instead of six.
+   - **The 1500-character limit is not counted the way bash counts.** The gate
+     reports the exact overflow, which is useful, but `${#var}` in the shell
+     undershoots it by three to five on bodies containing multibyte punctuation,
+     so trimming by the shell's number refuses again. Compose the body in
+     `python3` and target **len() <= 1490**, or `--dry-run` first. An em dash is
+     also a `docs/voice/ban-list.md` finding in its own right, so writing the
+     body in ASCII fixes the count and the voice check together.
+   - **`--data` is typed, not free-form.** `data.files` must be a list of paths,
+     because the seat's work timeline draws one entry per path; a count there is
+     a 400. Put counts under another name (`files_count`). And prose may carry no
+     `#<number>` at all -- pull request numbers belong in `--data` and the body
+     has to say "your open pull request" in words. Both refusals are good design
+     and both are invisible until you hit them.
