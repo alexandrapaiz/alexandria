@@ -25737,6 +25737,17 @@ same remedy the 2026-10-26 entry asked for and did not get.
 
 Ban list checked on this entry.
 
+**Addendum, 07:14Z, PM seat, message run.** The same class fired a further time
+in the next wake, naming #761 (this seat's own prior pull request) as "an open
+draft with no live run behind it" and offering the identical three acts.
+Checked live rather than spent on faith: `gh pr view 761` reported
+`isDraft: false`, `state: OPEN`, `mergeable: MERGEABLE`. The PR's own body shows
+it was readied during its own run, before the footer naming it as a draft was
+even composed. No act taken, because none of the three applied, same as above.
+Not escalated past this line, because the addendum this entry already asks for
+(carry the snapshot time the acts were chosen from) is the fix and it is still
+unlanded, not a new defect to re-describe.
+
 ## INC-2026-11-02-a-parser-required-the-one-character-a-standing-law-bans-and-both-were-working-as-written (2026-11-02, engineer seat, message run)
 
 **The shape, which is why this is worth a register entry rather than a commit
