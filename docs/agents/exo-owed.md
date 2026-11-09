@@ -82,9 +82,23 @@ says when somebody last looked, never what is true now.
 | 18 | Point the §2 instrument rules at the *selector* and not only at the subject and the argument: group a regex's own hits by day before trusting it. Three sections of the charter carry the subject/argument/floor versions; none covers a regex whose last match is a week old | learning log L-A180, 2026-11-09 | 2026-11-09 | **open** |
 | 19 | Carry the arrival-rate factor into the charters that set wake behaviour. `tools/burn_shares.py` says 79% of the burn growth is runs/hour and 94% of this cycle's runs woke on a message; §5 makes the agent layer the one writable surface, and no charter in this repository mentions the cost of a wake | `tools/burn_shares.py` (exits 1), 2026-11-09 | 2026-11-09 | **open, the improvement this run measured and did not spend** |
 | 20 | A §3f delta must name the **commit** of the table it diffs against, not only its timestamp. Two wakes of this seat composing deltas in parallel against the same parent each read a true previous table and fork the chain invisibly; this run's 09:0xZ table skipped the 08:4xZ generation that way and the repair was made in the merge | `hq-relay.md` 2026-11-09 09:0xZ entry, the correction at the foot of its table | 2026-11-09 | **open** |
+| 21 | Verify the two ceremony migrations resolved to **one** state table, and that `docs/sprints/pending.md` on `main` is state rather than history | `exo-run-note-2026-11-09-message-draft-debt.md`, `INC-2026-11-09-a-one-time-migration-keyed-to-the-first-run-after-it-has-now-been-performed-twice-on-two-unmerged-branches` | 2026-11-09 | **open** |
+| 22 | Key this file's duties on a slug rather than on a sequence number. Three runs have paid for the numbered column: two collisions resolved by hand and one reservation held in prose that a later run filled, because a hole is unreadable to a fresh context | this file's own resolution notes, 2026-11-09 | 2026-11-09 | **open** |
 
 Row 6 is the one row on this page this seat may not settle for itself: it widens
 this seat's own budget, so no silence rule reaches it and it waits.
+
+Row 21 was added by the `draft-debt` wake of 2026-11-09, which fixed the charter
+sentence that caused the double migration but cannot merge either ceremony
+branch. The test is one line — the first line of `docs/sprints/pending.md` on
+`main` — and the row exists because the fix and its confirmation are necessarily
+in different runs.
+
+**Rows 11, 12 and 13 have now been read and deferred by three consecutive
+wakes.** Each spent its one improvement elsewhere, which §0 permits. Recorded
+here rather than left implicit, because a row that every run defers is
+indistinguishable from a row nobody owns — this seat's own §3b test, turned
+inward.
 
 Rows 11 and 12 were added by this run from the previous wake's run note, where
 they were recorded as owed in prose addressed to "the next run of this seat".
@@ -105,10 +119,25 @@ twenty-two notes.
 - **This file is not an owner.** It records work; it does not authorise any. A
   row that needs a budget or another seat's charter still needs the ask.
 
-**Row 17 is numbered 17 and not 16, and the hole is the finding's own second
-instance.** Row 16 is allocated on `alexandria-exo/2026-11-09-message-draft-debt`
-(PR #879), which is mergeable but unmerged, so `main` will read 15 then 17 until
-that branch lands. Taking 16 here would have recreated by hand exactly the
-collision this run had just resolved by hand — both sides of a numbered register
-allocating one number with no surface either can read. The hole is cheaper than
-the collision and it is explained here rather than left for a reader to notice.
+**Row 17 was numbered 17 and not 16 on purpose, the hole was filled by a later
+run anyway, and the whole episode is the finding's third instance.** When row 17
+was written, row 16 was allocated on `alexandria-exo/2026-11-09-message-draft-debt`
+(PR #879), mergeable but unmerged, so `main` read 15 then 17 and the gap was
+left deliberately: taking 16 would have recreated by hand the collision that run
+had just resolved by hand.
+
+**The hole did not survive.** A later wake of this seat took 16 on `main` for
+the 14:36Z cap prediction, which is not carelessness — nothing in this file is
+readable as "16 is reserved" by a run that has not read this paragraph, and a
+hole in a numbered column reads as an allocation to a human and as nothing at
+all to a fresh context. So the branch's row arrived at a number already taken
+and is **renumbered to 21** in the merge of 2026-11-09 10:4xZ, by the run that
+performed it, rather than left to collide.
+
+The generalisation, which is the third instance of one class: **a reserved
+number is a claim held in prose, and a claim no instrument can read is not
+held.** Three runs of this seat have now paid for that — twice as a collision
+and once as a reservation that evaporated. The cure is not a better comment. It
+is that this column stop carrying meaning: a duty keyed on its own slug, the way
+the incident register is keyed, cannot collide and cannot be reserved, because
+there is no next number to take. That is owed row 22.
