@@ -125,6 +125,10 @@ import re
 import statistics
 import sys
 
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from tools import resolve_target  # noqa: E402
+
 AUDIT = '/srv/asc/state/.epito/audit.jsonl'
 PROJECTS = '/srv/asc/home/.claude/projects'
 DEADLINE = 10         # docs/standards/pm.md §8: "The deadline is turn ten"
@@ -193,6 +197,33 @@ def select(records, company=None, seat=None, session=None, every=False):
     prefix = fold(company) + '-'
     return ([r for r in records if fold(r['agent']).startswith(prefix)],
             'company %s' % company)
+
+
+def unprefixed(records):
+    """The agent keys that name a seat without naming a company, counted.
+
+    **A company selector cannot match one of these and must say so.** The host
+    has not always written `<company>-<seat>`: on 2026-11-09 the audit log
+    carries 41 distinct agent keys, 8 of which are bare, and those 8 are 659 of
+    3,222 rows. Every bare name is also an alexandria seat name, so they are
+    most likely this company's own early runs, and `most likely` is not a thing
+    a measurement gets to act on. `--company alexandria` is this tool's default
+    invocation and it silently could not consider 659 rows, 138 of them this
+    seat's.
+
+    The `--seat` branch of `select` has always matched the bare key as a
+    fallback, which is both the evidence that the convention changed and the
+    reason this was invisible: one of the two selectors compensated and the
+    other did not. Reported rather than claimed, for the reason `unseen`
+    exists. Not having looked and having found nothing are different facts, and
+    guessing which company owns a key the log does not qualify would make the
+    third kind of error this file is built to refuse."""
+    counts = collections.Counter()
+    for r in records:
+        agent = fold(r.get('agent'))
+        if agent and '-' not in agent:
+            counts[agent] += 1
+    return counts
 
 
 def keys_present(records, company=None):
@@ -386,6 +417,29 @@ def self_check(records):
     return all(n == 0 for _, n, _ in lines[:3])
 
 
+def known_companies():
+    """The companies this portfolio declares, folded.
+
+    Taken from `tools/board.py`'s `KNOWN_COMPANIES` rather than from a second
+    list, because `docs/standards/pm.md` §14 makes a company a repository name
+    and that is already written down once. **And that list is itself the
+    evidence for the fold**: it spells five companies lowercase and `Ursa` with
+    a capital, which is the same split between the host's keys and every other
+    route that made this defect.
+
+    Imported lazily and never fatally. `board.py` is standard library only, so
+    the import is safe, and a tool that measures the host's own disk must not
+    stop working because a sibling moved."""
+    try:
+        from tools import board
+    except Exception:
+        try:
+            import board
+        except Exception:
+            return set()
+    return {fold(c) for c in getattr(board, 'KNOWN_COMPANIES', ())}
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.split('\n')[0])
     ap.add_argument('--company', default='alexandria')
@@ -398,6 +452,23 @@ def main(argv=None):
     ap.add_argument('--self-check', action='store_true')
     ap.add_argument('--json', action='store_true')
     args = ap.parse_args(argv)
+
+    # A mistyped company refuses rather than reporting a zero, which is the
+    # repair `tools/resolve_target.py` exists for and the sixth instance of the
+    # class it was built from. Scoped to the company deliberately: the
+    # companies are a closed declared list, and no closed roster of another
+    # company's seats exists in this checkout, so `--seat` discloses instead of
+    # refusing. Skipped when the roster cannot be read, because a refusal built
+    # on an empty roster refuses everything.
+    if not args.all and not args.session:
+        roster = known_companies()
+        if roster:
+            code = resolve_target.check(
+                'company', fold(args.company), roster,
+                hint='The host keys an agent in ascii-lowercase, so the spelling'
+                     ' is not what selects; the name is.')
+            if code is not None:
+                return code
 
     every, unjoined = collect(args.deadline, args.projects, args.audit)
     records, selector = select(every, company=args.company, seat=args.seat,
@@ -455,6 +526,24 @@ def report(records, deadline, unjoined, selector=None, universe=None, company=No
     if unjoined['superseded']:
         print('  %d more share a session id with a later row, which is the only one'
               ' above.' % unjoined['superseded'])
+
+    # Two disclosures about the selector itself, because a count is only an
+    # answer if the reader knows what it could not reach.
+    if company is not None and universe:
+        bare = unprefixed(universe)
+        if bare:
+            named = ', '.join('%s %d' % kv for kv in bare.most_common())
+            print('\n  %d further rows carry an agent key that names a seat and not a'
+                  ' company (%s). No --company selector can match one, and this one did'
+                  ' not try: the log does not say which company owns them. `--all`'
+                  ' counts them and `--seat <name>` matches the bare key directly.'
+                  % (sum(bare.values()), named))
+    claimed = unprefixed(records)
+    if claimed and company is not None:
+        print('\n  %d of the rows above were selected on a bare key (%s), which names'
+              ' this seat without naming a company, so they are included on the seat\'s'
+              ' identity alone.'
+              % (sum(claimed.values()), ', '.join(sorted(claimed))))
 
     pushed = sorted(r['push'] for r in records if r.get('push'))
     if pushed:

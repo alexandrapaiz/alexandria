@@ -313,14 +313,19 @@ def test_an_empty_selection_names_the_selector_and_the_keys_that_exist(tmp_path,
     """"Nothing is claimed about runs this command did not select" is honest and
     it reads as a verdict, so a reader concluded the company had no runs rather
     than that the selector missed. The keys are what tell those apart, and they
-    are free to print because every record is already in hand."""
+    are free to print because every record is already in hand.
+
+    The company here is `epitome`, which the portfolio declares and this
+    fixture has no runs for. That is the case the refusal above deliberately
+    does not cover and the only case left where an empty answer is the true
+    one: a real company, correctly spelled, with nothing on the record."""
     write_audit(tmp_path, [run_row('s1', agent='ursa-exo', turns=30)])
     write_transcript(tmp_path, 'ursa-exo', 's1', {4: 'git push'}, 30)
     args = ['--projects', str(tmp_path / 'projects'),
-            '--audit', str(tmp_path / 'audit.jsonl'), '--company', 'nosuchco']
+            '--audit', str(tmp_path / 'audit.jsonl'), '--company', 'Epitome']
     assert sf.main(args) == 0
     out = capsys.readouterr().out
-    assert 'No run matched company nosuchco' in out
+    assert 'No run matched company Epitome' in out
     assert 'about the selector and not about the company' in out
     assert 'ursa' in out, 'the key that does exist has to be printed'
 
@@ -385,3 +390,101 @@ def test_every_selector_says_in_words_what_it_selected(tmp_path):
     assert sf.select(records, company='Ursa', seat='exo')[1] == 'seat exo of company Ursa'
     assert sf.select(records, every=True)[1] == 'every seat of every company'
     assert sf.select(records, company='Ursa')[1] == 'company Ursa'
+
+
+def test_a_company_the_portfolio_does_not_declare_refuses_instead_of_reporting_zero(tmp_path, capsys):
+    """The sixth instance of the confident-zero class
+    (`INC-2026-11-02-the-confident-zero-class-was-measured-in-three-more-tools-and-two-sweeps-had-covered-four-of-fifty-six`),
+    and the repair that incident shipped is the one used here: exit 4, the
+    value named, the roster printed."""
+    write_audit(tmp_path, [run_row('s1', agent='ursa-exo', turns=30)])
+    write_transcript(tmp_path, 'ursa-exo', 's1', {4: 'git push'}, 30)
+    args = ['--projects', str(tmp_path / 'projects'),
+            '--audit', str(tmp_path / 'audit.jsonl')]
+    assert sf.main(args + ['--company', 'ursa']) == 0
+    assert sf.main(args + ['--company', 'Ursa']) == 0
+    code = sf.main(args + ['--company', 'ursaa'])
+    assert code == sf.resolve_target.EXIT_UNKNOWN_TARGET
+    err = capsys.readouterr().err
+    assert "'ursaa' is not a company this repository carries" in err
+    assert 'ursa' in err, 'the refusal prints the roster'
+
+
+def test_the_roster_the_refusal_uses_is_the_one_the_board_already_declares():
+    """Written down once. §14 makes a company a repository name and
+    `tools/board.py` already carries that list, so a second list here would be
+    a second thing to keep in step. The list is also the evidence for the fold:
+    it spells `Ursa` with a capital and five others lowercase."""
+    from tools import board
+    assert 'Ursa' in board.KNOWN_COMPANIES
+    assert 'alexandria' in board.KNOWN_COMPANIES
+    assert sf.known_companies() == {sf.fold(c) for c in board.KNOWN_COMPANIES}
+    assert 'ursa' in sf.known_companies()
+
+
+def test_a_bare_agent_key_is_disclosed_and_never_claimed_for_a_company(tmp_path, capsys):
+    """The host has not always written `<company>-<seat>`. On 2026-11-09 the
+    audit log carries 8 bare keys over 659 of 3,222 rows, and `--company
+    alexandria`, this tool's default, could not consider one of them. Every
+    bare name is also an alexandria seat name, which is suggestive and is not a
+    fact the log carries, so the count is reported and the rows are not
+    claimed."""
+    write_audit(tmp_path, [run_row('s1', agent='alexandria-pm', turns=30),
+                           run_row('s2', agent='pm', turns=30)])
+    write_transcript(tmp_path, 'alexandria-pm', 's1', {4: 'git push'}, 30)
+    write_transcript(tmp_path, 'pm', 's2', {4: 'git push'}, 30)
+    args = ['--projects', str(tmp_path / 'projects'),
+            '--audit', str(tmp_path / 'audit.jsonl'), '--company', 'alexandria']
+    assert sf.main(args) == 0
+    out = capsys.readouterr().out
+    assert '1 runs selected' in out
+    assert 'names a seat and not a company (pm 1)' in out
+    assert 'No --company selector can match one' in out
+
+
+def test_the_bare_key_a_seat_selector_does_match_is_disclosed_too(tmp_path, capsys):
+    """`--seat` has always matched the bare key as a fallback, which is how the
+    convention change stayed invisible and is also a cross-company claim: `pm`
+    names a seat without naming a company, so it reaches every company's seat
+    filter of that name. Kept, because the historical rows are real, and
+    disclosed, because the claim is not free."""
+    write_audit(tmp_path, [run_row('s1', agent='pm', turns=30)])
+    write_transcript(tmp_path, 'pm', 's1', {4: 'git push'}, 30)
+    args = ['--projects', str(tmp_path / 'projects'),
+            '--audit', str(tmp_path / 'audit.jsonl'),
+            '--company', 'Ursa', '--seat', 'pm']
+    assert sf.main(args) == 0
+    out = capsys.readouterr().out
+    assert 'selected on a bare key (pm)' in out
+    assert "without naming a company" in out
+
+
+def test_unprefixed_counts_only_the_keys_no_company_selector_can_reach():
+    assert sf.unprefixed([{'agent': 'alexandria-pm'}, {'agent': 'pm'},
+                          {'agent': 'PM'}, {'agent': None},
+                          {'agent': 'engineer'}]) == {'pm': 2, 'engineer': 1}
+
+
+def test_all_and_session_are_not_subject_to_the_company_roster(tmp_path):
+    """`--all` names no company and `--session` names a run directly, so
+    neither can be refused for a company it never asked about. The default
+    value of `--company` is still `alexandria` on both paths and must not
+    become a gate on them."""
+    write_audit(tmp_path, [run_row('s1', agent='nosuchco-pm', turns=30)])
+    write_transcript(tmp_path, 'nosuchco-pm', 's1', {4: 'git push'}, 30)
+    args = ['--projects', str(tmp_path / 'projects'),
+            '--audit', str(tmp_path / 'audit.jsonl')]
+    assert sf.main(args + ['--all']) == 0
+    assert sf.main(args + ['--session', 's1']) == 0
+
+
+def test_an_unreadable_roster_refuses_nothing(tmp_path, monkeypatch):
+    """A refusal built on an empty roster refuses every name, which is strictly
+    worse than the confident zero it replaces. So the gate is skipped when the
+    roster cannot be read rather than defaulting closed."""
+    monkeypatch.setattr(sf, 'known_companies', lambda: set())
+    write_audit(tmp_path, [run_row('s1', agent='ursa-exo', turns=30)])
+    write_transcript(tmp_path, 'ursa-exo', 's1', {4: 'git push'}, 30)
+    args = ['--projects', str(tmp_path / 'projects'),
+            '--audit', str(tmp_path / 'audit.jsonl'), '--company', 'anything']
+    assert sf.main(args) == 0
