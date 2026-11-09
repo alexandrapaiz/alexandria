@@ -957,7 +957,9 @@ def test_a_body_over_the_limit_is_refused_before_the_board_is_asked(live_board, 
     assert len(live_board["messages"]) == before
     out = capsys.readouterr().out
     assert "REFUSED" in out
-    assert f"{over} characters over" in out
+    assert f"{over} over" in out
+    # And the measured length, which is what the sender trims against.
+    assert f"{over + board.WAKE_LIMIT} characters" in out
     assert "--allow-truncation" in out
 
 
@@ -1010,9 +1012,32 @@ def test_would_truncate_measures_the_overflow_and_nothing_else():
 def test_the_refusal_names_the_further_loss_beyond_the_overflow():
     """69 characters over cost 180, so the arithmetic understates the damage."""
     text = " ".join(board.render_would_truncate(69))
-    assert "69 characters over" in text
+    assert "69 over" in text
     assert "80 to 190" in text
     assert "tail" in text
+
+
+def test_the_refusal_prints_all_three_numbers_so_the_sender_can_check_its_own():
+    """The research seat's ask of 2026-11-09: four sends refused in one run, its
+    shell measuring 1509 where this gate measured 1510, so trimming to the
+    reported overflow bounced again. The length is the number the two parties
+    disagree about, and a refusal that prints only the overflow and the limit
+    leaves it to be inferred from arithmetic the sender cannot check."""
+    text = " ".join(board.render_would_truncate(10, limit=1500))
+    assert "1510" in text          # measured
+    assert "1500" in text          # limit
+    assert "10 over" in text       # overflow
+    assert text.index("1510") < text.index("1500")
+
+
+def test_the_three_numbers_are_consistent_at_every_overflow():
+    """The length is derived, so it has to agree with `would_truncate` rather
+    than be a second opinion about the same body."""
+    for over in (1, 7, 69, 420):
+        body = "x" * (board.WAKE_LIMIT + over)
+        assert board.would_truncate(body) == over
+        assert f"{len(body)} characters" in " ".join(
+            board.render_would_truncate(over))
 
 
 def test_the_flag_waives_the_gate_rather_than_silencing_the_receipt(live_board, capsys):

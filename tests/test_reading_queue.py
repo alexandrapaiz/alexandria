@@ -101,25 +101,43 @@ def test_the_real_queue_file_parses():
 # --- resolving a line into a row distill can distill -------------------------
 
 class FakeCursor:
-    def __init__(self, row):
-        self._row = row
+    def __init__(self, rows):
+        self._rows = rows
 
     def fetchone(self):
-        return self._row
+        return self._rows[0] if self._rows else None
+
+    def fetchall(self):
+        return list(self._rows)
 
 
 class FakeConn:
-    """Enough of psycopg3 to answer one select and record the writes."""
+    """Enough of psycopg3 to answer one select and record the writes.
+
+    The select `resolve` runs is `where id = %s or id like %s`, and this fake
+    runs both halves rather than the first, because the whole defect of
+    2026-11-09 lived in the half that was missing. A fake that keyed on
+    `params[0]` would pass a broken `resolve` and did.
+    """
 
     def __init__(self, papers=None):
-        self.papers = papers or {}     # id -> (title, abstract, source, distilled_at)
+        # id -> (title, abstract, source, distilled_at). The key is the id the
+        # corpus holds, which is the versioned one for anything the arxiv feed
+        # ingested and the bare one for the reading-queue and hf-daily routes.
+        self.papers = papers or {}
         self.statements = []
 
     def execute(self, sql, params=()):
         self.statements.append((" ".join(sql.split()), params))
-        if sql.strip().lower().startswith("select"):
-            return FakeCursor(self.papers.get(params[0]))
-        return FakeCursor(None)
+        if not sql.strip().lower().startswith("select"):
+            return FakeCursor([])
+        exact, pattern = params[0], params[1] if len(params) > 1 else None
+        rows = []
+        for pid, row in sorted(self.papers.items()):
+            like = pattern is not None and pid.startswith(pattern[:-1])
+            if pid == exact or like:
+                rows.append((pid,) + tuple(row))
+        return FakeCursor(rows)
 
     def commit(self):
         pass
@@ -180,6 +198,98 @@ def test_an_id_arxiv_does_not_know_leaves_the_line_alone(capsys):
     assert rq.resolve(conn, only(1), fetch_metadata=lambda pid: None) == []
     assert not [s for s, _ in conn.statements if s.lower().startswith("insert")]
     assert "unavailable at arXiv, left on the queue" in capsys.readouterr().out
+
+
+# --- the two id shapes, which is INC-2026-10-05's live half ------------------
+
+def test_a_paper_the_firehose_ingested_with_a_version_is_found_not_reingested(capsys):
+    """The defect of 2026-11-09, and the one test that fails against the old query.
+
+    `pipeline/ingest.py` stores `arxiv:2602.12670v1`; the queue line and
+    `normalise_id` both say `arxiv:2602.12670`. An equality join misses it, so
+    the drain took the `ingested` branch for a paper already in the corpus:
+    a second `papers` row, a second `triage_log` row, and claims written against
+    an id the firehose's row does not carry.
+    """
+    conn = FakeConn({"arxiv:2602.12670v1": ("SkillsBench", "an abstract", "arxiv", None)})
+    rows = rq.resolve(conn, only(1),
+                      fetch_metadata=lambda pid: pytest.fail("no fetch needed"))
+    assert rows == [("arxiv:2602.12670v1", "SkillsBench", "an abstract",
+                     "deep_read", "arxiv")]
+    assert not [s for s, _ in conn.statements if s.lower().startswith("insert")]
+    assert "queued as arxiv:2602.12670v1" in capsys.readouterr().out
+
+
+def test_a_versioned_paper_already_distilled_is_not_read_a_second_time(capsys):
+    """`already read` could not fire for any firehose paper, so the corpus paid
+    twice for every re-request of one."""
+    conn = FakeConn({"arxiv:2602.12670v2": ("SkillsBench", "a", "arxiv", "2026-09-01")})
+    assert rq.resolve(conn, only(1), fetch_metadata=lambda pid: None) == []
+    assert "already read 2026-09-01 as arxiv:2602.12670v2" in capsys.readouterr().out
+
+
+def test_the_row_handed_to_distill_carries_the_id_the_corpus_holds():
+    """Not the id the line was written with. A claim has to attach to the row
+    that exists, and `distilled_at` has to be set on it."""
+    conn = FakeConn({"arxiv:2602.12670v3": ("SkillsBench", "a", "arxiv", None)})
+    rows = rq.resolve(conn, only(1), fetch_metadata=lambda pid: None)
+    assert rows[0][0] == "arxiv:2602.12670v3"
+
+
+def test_a_duplicate_pair_is_reported_when_it_is_met_and_repaired_by_nothing(capsys):
+    """322 papers were held twice on 2026-10-05, 73 pairs with contested
+    decisions. A drain is not where that gets resolved, but a drain that meets
+    one and says nothing is how the count stays unknown."""
+    conn = FakeConn({
+        "arxiv:2602.12670": ("SkillsBench", "a", "reading-queue", None),
+        "arxiv:2602.12670v1": ("SkillsBench", "a", "arxiv", None),
+    })
+    rows = rq.resolve(conn, only(1), fetch_metadata=lambda pid: None)
+    out = capsys.readouterr().out
+    assert "is held under 2 ids" in out
+    assert "arxiv:2602.12670, arxiv:2602.12670v1" in out
+    assert "INC-2026-10-05" in out
+    assert len(rows) == 1
+    assert not [s for s, _ in conn.statements if s.lower().startswith("insert")]
+
+
+def test_a_distilled_shape_beats_an_undistilled_one_whichever_way_round():
+    """Rule 1 of `pick_held`, and the reason it is rule 1: if either shape has
+    been read, re-reading pays twice. Asserted both ways round so the answer is
+    not an artefact of dict order."""
+    read = ("arxiv:1v2", "SkillsBench", "a", "arxiv", "2026-09-01")
+    unread = ("arxiv:1", "SkillsBench", "a", "reading-queue", None)
+    assert rq.pick_held([unread, read])[0] == "arxiv:1v2"
+    assert rq.pick_held([read, unread])[0] == "arxiv:1v2"
+
+
+def test_pick_held_orders_versions_on_the_integer_not_the_string():
+    """`order by id` puts v10 before v9, which is why the ordering is not in the
+    query. Nothing in this corpus is at v10 yet; the next one will be."""
+    rows = [(f"arxiv:1v{n}", "t", "a", "arxiv", None) for n in (2, 10, 9)]
+    assert rq.pick_held(rows)[0] == "arxiv:1v10"
+
+
+def test_pick_held_prefers_the_bare_id_among_undistilled_shapes():
+    """Rule 2: a line drained twice resolves to the same row both times."""
+    rows = [("arxiv:1v1", "t", "a", "arxiv", None),
+            ("arxiv:1", "t", "a", "reading-queue", None)]
+    assert rq.pick_held(rows)[0] == "arxiv:1"
+
+
+def test_pick_held_on_nothing_is_nothing():
+    assert rq.pick_held([]) is None
+
+
+def test_the_lookup_matches_both_id_shapes_in_the_sql_itself():
+    """The query and not the fake. A fake can be taught to match both shapes
+    while the statement it runs matches one, which is how the defect survived
+    a passing suite."""
+    conn = FakeConn({"arxiv:2602.12670": ("SkillsBench", "a", "arxiv", None)})
+    rq.resolve(conn, only(1), fetch_metadata=lambda pid: None)
+    select = [(s, p) for s, p in conn.statements if s.lower().startswith("select")][0]
+    assert "id = %s or id like %s" in select[0]
+    assert select[1] == ("arxiv:2602.12670", "arxiv:2602.12670v%")
 
 
 def test_every_line_names_its_id_so_the_research_seat_can_strike_it(capsys):
@@ -1373,3 +1483,42 @@ def test_the_guard_returns_a_value_in_band_when_it_does_nothing():
     assert rq.REQUEST.match("arxiv:2602.12670"), "the pattern matches nothing"
     assert sum(1 for i in items if not i.checked) > 50, (
         "no unchecked request survives the guard")
+
+
+# --- the duplicate check against the real file, measured not reasoned --------
+
+def test_an_id_mentioned_in_prose_does_not_block_a_request_for_it():
+    """The research seat's finding of 2026-11-09, closed by measurement.
+
+    Its claim was that `hits` conflates an id mentioned inside another line's
+    answer with a request for that paper, so a paper named in prose can never
+    get a line of its own. It was true before the leading-token fix and it is
+    not now, and the number is what says so rather than a reading of `parse`.
+
+    Both directions, because a fix in this one usually breaks the other: an
+    over-eager `hits` blocks a legitimate request, and an under-eager one
+    re-admits `INC-2026-10-27`, where a line landed 1,374 lines below a strike
+    of the same id and repeated the mis-attribution the strike existed to
+    correct.
+    """
+    import re
+
+    text = (ROOT / "docs" / "research" / "reading-queue.md").read_text()
+    requested = {rq.normalise_id(i.arxiv_id) for i in rq.parse(text)}
+    mentioned = {rq.normalise_id(m) for m in re.findall(
+        r"(?:arxiv:)?\b[0-9]{4}\.[0-9]{4,5}(?:v[0-9]+)?\b", text)}
+    prose_only = sorted(i for i in mentioned if i and i not in requested)
+
+    # A floor, so this test keeps meaning something as the file grows.
+    assert len(prose_only) >= 50, (
+        f"only {len(prose_only)} ids appear in prose on no request line, so "
+        "this file no longer exercises the conflation it is about")
+    blocked = [i for i in prose_only if rq.hits(text, i)]
+    assert blocked == [], (
+        f"{len(blocked)} id(s) named only inside another line's answer are "
+        f"treated as already requested: {blocked}")
+
+    unfound = [i for i in sorted(requested) if not rq.hits(text, i)]
+    assert unfound == [], (
+        f"{len(unfound)} requested id(s) cannot find their own line, which is "
+        f"the duplicate guard failing open: {unfound}")
