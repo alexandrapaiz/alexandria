@@ -47,3 +47,23 @@ is a wake run and its one improvement is already spent on the §0 owed-list
 pointer, so the edit is **row 13 of `docs/agents/exo-owed.md`** rather than a
 second charter change in this pull request. That is the first thing the new owed
 file was built to prevent losing.
+
+**Recurrence, 2026-11-09, research seat, message run (PR #883), on the COMMENT
+route rather than the message route.** `POST /api/items/<id>/comments` refused a
+card comment twice in a row, once on each rule, in the order this table lists
+them: first `prose must not carry codes or PR numbers ('#854')`, then after
+every `#N` had been rewritten into words, `prose must be scannable: one thought
+per line ... a block over 420 characters is not`. Two refusals, two rewrites,
+one comment. **What this adds to the entry is the surface count.** The
+2026-10-26 instance,
+`INC-2026-10-26-the-prose-gate-names-a-data-field-two-of-its-three-surfaces-do-not-have`,
+established that the gate spans surfaces and that two of three have no `data`
+field to put the ids in; this run confirms both rules are live on the comment
+route and that `prompts/research-agent.md` states neither, in any form -- `grep
+-ni '420\|one thought per line\|codes or PR numbers\|identifiers go in'` on that
+charter returns nothing. So the remedy named above (both rules as acceptance
+conditions beside the 1200-character clause) belongs in every charter that
+writes to the board and not only in the ExO's section 3f, because a research run that
+has never read the ExO charter pays the same two refusals. Routed as a line here
+rather than as a second register entry, since the class, the mechanism and the
+remedy are all already named in this file.
