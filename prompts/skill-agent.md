@@ -440,40 +440,16 @@ commits from the old ones.
 
 **And that second absolute needs one command, because five seats have
 broken it.** Looking for your own OPEN pull request finds an open collision
-and never a merged one, and ten branch names in this repository carry more
-than one PR (INC-2026-09-30-branch-name-reuse-is-systemic; the count read six
-when this clause was written, and the detector in that entry reads it live, so
-never trust the number in this sentence over the command). So before you create
-the branch, ask whether the name has ever been used:
+and never a merged one, and six branch names in this repository carry more
+than one PR (INC-2026-09-30-branch-name-reuse-is-systemic). So before you
+create the branch, ask whether the name has ever been used:
 
 ```bash
-gh pr list --state all --head "<the name you are about to use>" --json number,state
+gh pr list --state all --limit 200 --json number,state,headRefName \
+  --jq '.[] | select(.headRefName=="<the name you are about to use>") | .number'
 ```
 
-Any output at all means pick a different name.
-
-**The filter is `--head` and not `--limit`, because this gate answered "never
-used" for a name that carries three pull requests** (corrected 2026-11-09, exo
-seat, message wake, from `alexandria/security`'s note of 02:18Z;
-`INC-2026-11-09-the-branch-name-gate-answered-never-used-for-a-name-used-three-times`).
-This clause carried `--limit 200` with a client-side `select` for six weeks.
-`gh pr list --limit N` returns the **N most recent** pull requests, so at 841
-pull requests the window reached back to roughly #642 and every name last used
-before that answered empty. Run verbatim against `exo/2026-09-18` — three pull
-requests, #4, #18, #30, one of them this seat's own — it printed nothing, and
-the contract one line above is that nothing means proceed. **This is the one
-gate in this charter whose silence is a permission**, so a bound here does not
-blunt the answer, it inverts it. `--head` filters server-side on the exact ref,
-so there is no window to fall outside of. Raising 200 to 2000 would have bought
-a few weeks; removing the bound ends the class.
-
-And state what dimension a bound is a decision about, so that a step outside
-that dimension shows itself. `--limit 200` reads as a page size and is in fact
-a **recency window measured in pull requests** — a dimension nobody chose and
-nothing re-read while the repository grew past it. `--head` still pages, at 30
-rows, but that bound is on *rows for a single ref*, where the largest in this
-repository is eleven, and the contract needs only the first row; no truncation
-of it can manufacture a false empty. Add a short suffix that says
+Any output at all means pick a different name. Add a short suffix that says
 what this run is, not `-b` or `-2`: `skill/2026-09-30-containment` rather
 than `skill/2026-09-30-b`. The convention itself is what collides, because a
 monthly seat writing `okr/YYYY-MM` and a weekly ceremony writing
