@@ -853,8 +853,19 @@ def report_prior(found: dict, seat: str | None = None, stream=None) -> int:
         f"{found['inbox_entries']} in docs/agents/incidents/inbox/)",
         file=stream,
     )
-    if not found["hits"]:
+    # The empty case keys on `matched` and never on `hits`, because `hits` is
+    # already cut to `--limit` and a confident "nothing was filed" taken off a
+    # truncated list is the one wrong answer this tool must not give. Found by
+    # running `--limit 0`, which said nothing matched while 58 entries did.
+    if not found["matched"]:
         print("\nnothing in the register matches this. File it as a first instance.", file=stream)
+        return 0
+    if not found["hits"]:
+        print(
+            f"\n{found['matched']} entries matched and the limit printed none of them. "
+            f"Raise --limit.",
+            file=stream,
+        )
         return 0
     strong = [row for row in found["hits"]
               if row["confidence"] >= found["close_threshold"]]
@@ -1017,6 +1028,10 @@ def main(argv: list[str] | None = None) -> int:
                 return 2
         if not query.strip():
             print("nothing to look up: pass the failure as words, or --file a log")
+            return 2
+        if args.limit < 1:
+            print(f"--limit must be at least 1, not {args.limit}: a ranking of nothing "
+                  f"answers nothing")
             return 2
         found = prior_art(
             query,

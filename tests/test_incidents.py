@@ -932,3 +932,24 @@ def test_the_report_writes_to_the_stdout_in_use_and_not_the_one_at_import(capsys
     found = inc.prior_art("rank_bundles bare date tie-break", _prior_entries())
     inc.report_prior(found)
     assert "INC-2026-01-01-the-ranker-ties-on-a-bare-date" in capsys.readouterr().out
+
+
+def test_a_truncated_list_never_reports_that_nothing_was_filed(capsys):
+    """Found by running `--limit 0`: it said nothing matched while 58 entries did.
+
+    A confident zero off a list that was cut to a limit is the one wrong answer
+    this tool must not give, and it is the same shape as every "a predicate that
+    saw nothing read as a pass" entry in the register.
+    """
+    found = inc.prior_art("rank_bundles bare date tie", _prior_entries(), limit=0)
+    assert found["matched"] > 0
+    assert found["hits"] == []
+    inc.report_prior(found)
+    out = capsys.readouterr().out
+    assert "first instance" not in out
+    assert "Raise --limit" in out
+
+
+def test_a_limit_below_one_is_a_usage_error():
+    assert inc.main(["prior", "rank_bundles", "--limit", "0"]) == 2
+    assert inc.main(["prior", "rank_bundles", "--limit", "-3"]) == 2
