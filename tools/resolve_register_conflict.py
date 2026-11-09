@@ -61,9 +61,32 @@ marker, so both are counted here rather than looked for.
 That arithmetic is a line multiset, and a multiset is order-independent, so it
 read balanced on both registers the ExO seat found written backwards. It is
 right about the deletion it was built for and blind to the ordering, which is
-why it now has a companion: the stamps of the two appended blocks must be
-non-decreasing in the resolution. Two checks, because the two defects are
-different and the first one cannot see the second.
+why it now has a companion: the resolution must put the two appended blocks in
+the order the register wants. Two checks, because the two defects are different
+and the first one cannot see the second.
+
+**One ordering rule, and both modes run it.** The companion used to compare the
+two stamps on its own, which meant the check answered a narrower question than
+the resolver asked: it read nothing at all when the two blocks tied, and the
+tie is the ordinary case here rather than the rare one (46 stamped register
+headings carry a clock and 1,692 carry a date only, counted 2026-11-09). So the
+trunk fallback, which is the rule that decides the ordinary case, was the one
+rule the auditor never verified. Both now call `order_blocks`, which is the only
+place an order is decided, and `--check` reads the trunk from the merge's own
+two parents rather than from a `MERGE_HEAD` it does not have (both findings:
+ExO seat, 2026-11-09, on PR #921).
+
+**And an ordering the check could not read is its own verdict, never a pass.**
+`--check` used to print "the blocks' stamps do not decrease" on every balanced
+register, including the ones where nothing read the order. That sentence is now
+printed only when a block really was located in the resolution and compared,
+and exit 3 says at least one ordering went unread (L-A21).
+
+Expect exit 3 to be ordinary rather than alarming on a trunk merge. The
+ordering half can only speak about a merge of two appends, and a week of other
+seats' entries folded into the middle of a register is not an append, so the
+honest answer there is that the arithmetic balanced and the order was not read.
+Exit 1 is still the only answer that means something is wrong.
 
 `--check` reads a merge commit rather than an index, so it audits work that is
 already committed and pushed. With no argument it reads `HEAD`, which is the
@@ -71,8 +94,10 @@ useful default in the turn after a merge.
 
 Exit codes: 0 when everything asked for was resolved or verified, 1 when a file
 was refused or an invariant failed, 2 when there was nothing to look at and the
-run therefore says nothing about whether the registers are intact (L-A21: a
-gate that saw nothing must not read as a quiet pass).
+run therefore says nothing about whether the registers are intact, 3 when the
+arithmetic balanced everywhere and at least one register's ordering could not be
+read (L-A21: a gate that saw nothing must not read as a quiet pass, and that
+applies to the half of a gate that saw nothing as much as to the whole of one).
 """
 
 import argparse
@@ -81,13 +106,14 @@ import importlib.util
 import re
 import subprocess
 import sys
+import typing
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 
-RESOLVED, REFUSED, NOTHING = "resolved", "refused", "nothing"
+RESOLVED, REFUSED, NOTHING, UNREAD = "resolved", "refused", "nothing", "unread"
 
-EXIT = {RESOLVED: 0, REFUSED: 1, NOTHING: 2}
+EXIT = {RESOLVED: 0, REFUSED: 1, NOTHING: 2, UNREAD: 3}
 
 
 def _registers() -> list[str]:
@@ -227,6 +253,31 @@ def stamp(block: list[str]) -> tuple[tuple, str] | None:
     return None
 
 
+def stamp_decides(ours_key: tuple, theirs_key: tuple) -> str | None:
+    """Which of two stamps is the earlier one, when they can be compared at all.
+
+    Returns "ours", "theirs", or None for a tie this rule must not break.
+
+    Two stamps on different days compare on the day. Two stamps on one day
+    compare only when both carry a clock. A bare date is not midnight: it is a
+    heading whose author did not record a time, so "the bare date sorts before
+    any time on that day" is a guess wearing a rule's clothes, and guessing an
+    order is the defect this tool was rebuilt to stop. The tie goes to the trunk
+    fallback, which has a reason, instead.
+
+    This matters because of how the registers are actually stamped. Of the
+    stamped headings in the 16 registers, 46 carry a clock and 1,692 carry a
+    date only, so a mixed pair on one day is the shape a same-day conflict here
+    most often takes.
+    """
+    if ours_key[:3] != theirs_key[:3]:
+        return "ours" if ours_key[:3] < theirs_key[:3] else "theirs"
+    clocked = (ours_key[3] >= 0, theirs_key[3] >= 0)
+    if not all(clocked) or ours_key == theirs_key:
+        return None
+    return "ours" if ours_key < theirs_key else "theirs"
+
+
 def trunk_side(repo=ROOT) -> str | None:
     """Which of the two merge heads is the trunk, by ancestry rather than by name.
 
@@ -244,17 +295,41 @@ def trunk_side(repo=ROOT) -> str | None:
 
 
 def _trunk_of(ours_ref: str, theirs_ref: str, repo=ROOT) -> str | None:
+    """Which of two merge parents is the trunk side, along the trunk's own spine.
+
+    Containment is read along `--first-parent` rather than with
+    `merge-base --is-ancestor`, and the difference is the whole of whether
+    `--check` can answer this at all. Plain ancestry works mid-merge, when the
+    branch is not on the trunk yet, and goes degenerate the moment the merge
+    lands: both parents of a merged commit are ancestors of `main`, so the test
+    answers "both" and the rule abstains on exactly the merges a seat asks it
+    about after the fact.
+
+    The trunk's spine does distinguish them, in both shapes this repository
+    produces. A branch-local `git merge origin/main` puts the trunk second, and
+    the trunk's spine holds that parent and not the branch head. A merged pull
+    request puts the trunk first, and the trunk's spine holds the merge itself
+    and so its first parent, never the branch. Returns None when the spine holds
+    both or neither, which is the honest answer for two branches merged
+    off-trunk and for a parent whose branch was force-pushed away.
+    """
     trunk = next((r for r in TRUNK_REFS
                   if git("rev-parse", "--verify", "--quiet", r,
                          repo=repo, check=False).returncode == 0), None)
     if trunk is None:
         return None
 
-    def reachable(ref: str) -> bool:
-        return git("merge-base", "--is-ancestor", ref, trunk,
-                   repo=repo, check=False).returncode == 0
+    spine = set(git("rev-list", "--first-parent", trunk,
+                    repo=repo, check=False).stdout.split())
+    if not spine:
+        return None
 
-    ours, theirs = reachable(ours_ref), reachable(theirs_ref)
+    def on_spine(ref: str) -> bool:
+        full = git("rev-parse", "--verify", "--quiet", f"{ref}^{{commit}}",
+                   repo=repo, check=False).stdout.strip()
+        return bool(full) and full in spine
+
+    ours, theirs = on_spine(ours_ref), on_spine(theirs_ref)
     if ours == theirs:
         return None
     return "ours" if ours else "theirs"
@@ -272,13 +347,20 @@ def order_blocks(ours_tail: list[str], theirs_tail: list[str],
         return ours_tail, theirs_tail, "one side appended nothing"
 
     ours_stamp, theirs_stamp = stamp(ours_tail), stamp(theirs_tail)
-    if ours_stamp and theirs_stamp and ours_stamp[0] != theirs_stamp[0]:
-        if ours_stamp[0] < theirs_stamp[0]:
-            return ours_tail, theirs_tail, "stamp order, ours is the earlier block"
+    decided = (stamp_decides(ours_stamp[0], theirs_stamp[0])
+               if ours_stamp and theirs_stamp else None)
+    if decided == "ours":
+        return ours_tail, theirs_tail, "stamp order, ours is the earlier block"
+    if decided == "theirs":
         return theirs_tail, ours_tail, "stamp order, theirs is the earlier block"
 
-    why = ("both blocks carry the same stamp" if ours_stamp and theirs_stamp
-           else "a block carries no stamp")
+    if not ours_stamp or not theirs_stamp:
+        why = "a block carries no stamp"
+    elif ours_stamp[0] == theirs_stamp[0]:
+        why = f"both blocks carry {_say(ours_stamp[0])}"
+    else:
+        why = (f"both blocks carry {_say(ours_stamp[0][:3] + (-1, -1))} and only "
+               f"one of them carries a clock")
     trunk = trunk_side(repo=repo) if trunk is None else trunk
     if trunk == "ours":
         return ours_tail, theirs_tail, f"{why}, so trunk order, ours is the trunk"
@@ -288,36 +370,106 @@ def order_blocks(ours_tail: list[str], theirs_tail: list[str],
                         f"so no rule here can order them")
 
 
-def order_findings(base: str, ours: str, theirs: str, resolved: str) -> list[str]:
-    """The companion to the arithmetic: the two blocks' stamps must not decrease.
+class OrderVerdict(typing.NamedTuple):
+    """What the ordering check found, and whether it read anything at all.
+
+    `read` is the field the caller must not drop. A `findings` list that is
+    empty because the blocks are in the right order and one that is empty
+    because nothing could be compared are the same value and opposite answers,
+    and printing one sentence for both is how this check spent its first day
+    asserting an order it had never looked at.
+    """
+
+    findings: list[str]
+    said: str
+    read: bool
+
+
+def order_verdict(base: str, ours: str, theirs: str, resolved: str,
+                  repo=ROOT, trunk=None) -> OrderVerdict:
+    """The companion to the arithmetic: the blocks must sit in the register's order.
 
     The line-count audit is a multiset and a multiset is order-independent, so
-    it reads balanced on a register written backwards. This reads the order.
-    Silent when it cannot localise a block in the resolution, because a check
-    that guesses is worse than one that abstains (L-A21).
+    it reads balanced on a register written backwards. This reads the order, and
+    it reads it against `order_blocks`, which is the one place in this tool that
+    decides an order. That is deliberate: an auditor with a rule of its own
+    verifies its own rule rather than the resolver's, and the two drifted apart
+    on the commonest case here for exactly that reason.
+
+    Abstains, rather than guessing, when no rule can order the two blocks or
+    when a block is not in the resolution whole and once (L-A21).
     """
     lb = lines(base)
     ours_tail = trailing_block(lb, lines(ours))
     theirs_tail = trailing_block(lb, lines(theirs))
-    if not ours_tail or not theirs_tail:
-        return []
-
-    ours_stamp, theirs_stamp = stamp(ours_tail), stamp(theirs_tail)
-    if not ours_stamp or not theirs_stamp or ours_stamp[0] == theirs_stamp[0]:
-        return []
-
     body = lines(resolved)
-    places = {}
-    for side, (key, probe) in (("ours", ours_stamp), ("theirs", theirs_stamp)):
-        if body.count(probe) != 1:
-            return []
-        places[side] = (body.index(probe), key, probe)
 
-    first, second = sorted(places.values())
-    if first[1] <= second[1]:
-        return []
-    return [f"out of order: {_say(first[1])} is above {_say(second[1])}, "
-            f"so the newer block landed first: {first[2].strip()[:60]}"]
+    if ours_tail is None or theirs_tail is None:
+        which = "ours" if ours_tail is None else "theirs"
+        return OrderVerdict([], f"{which} changed something that is not the end "
+                                f"of the file, so this is not two appends and "
+                                f"the order was not read", False)
+
+    # One side appended and the other did not, which is most merges. There is no
+    # order between two blocks to read, and there is still something to read:
+    # the one block has to be at the end, and the line arithmetic cannot see
+    # where in the file a block landed.
+    if not ours_tail or not theirs_tail:
+        only = ours_tail or theirs_tail
+        if not only:
+            return OrderVerdict([], "neither side appended, so there is no "
+                                    "order to read", False)
+        at = _locate(body, only)
+        if at is None:
+            return OrderVerdict([], "the one appended block is not in the "
+                                    "resolution whole and once, so the order "
+                                    "was not read", False)
+        if at + len(only) == len(body):
+            return OrderVerdict([], "one side appended and its block is last in "
+                                    "the resolution", True)
+        return OrderVerdict(
+            [f"out of order: the one appended block is not last in the "
+             f"resolution, {len(body) - at - len(only)} lines follow it: "
+             f"{only[0].strip()[:60] or only[min(1, len(only) - 1)].strip()[:60]}"],
+            "one side appended and its block is not last", True)
+
+    first, second, why = order_blocks(ours_tail, theirs_tail, repo=repo, trunk=trunk)
+    if first is None:
+        return OrderVerdict([], f"the order could not be decided, so it was "
+                                f"not read: {why}", False)
+
+    at_first, at_second = _locate(body, first), _locate(body, second)
+    if at_first is None or at_second is None:
+        return OrderVerdict([], "a block is not in the resolution whole and "
+                                "once, so the order was not read", False)
+    if at_first < at_second:
+        return OrderVerdict([], f"the blocks are in order by {why}", True)
+
+    # The resolution leads with the block that should have been second.
+    led, followed = stamp(second), stamp(first)
+    if led and followed and led[0] != followed[0]:
+        detail = (f"{_say(led[0])} is above {_say(followed[0])}, so the newer "
+                  f"block landed first: {led[1].strip()[:60]}")
+    else:
+        detail = (f"the block that leads by {why} is second instead: "
+                  f"{first[0].strip()[:60]}")
+    return OrderVerdict([f"out of order: {detail}"],
+                        f"the blocks are in the other order than {why} gives",
+                        True)
+
+
+def _locate(body: list[str], block: list[str]) -> int | None:
+    """Where a block sits in the resolution, when it sits there whole and once.
+
+    `None` is "I could not find it", which is what the caller turns into an
+    abstention. A block that appears twice is as unlocatable as one that appears
+    never, because picking either copy would be a guess.
+    """
+    if not block:
+        return None
+    hits = [i for i in range(len(body) - len(block) + 1)
+            if body[i:i + len(block)] == block]
+    return hits[0] if len(hits) == 1 else None
 
 
 def _say(key: tuple) -> str:
@@ -367,7 +519,7 @@ def resolve_one(path: str, repo=ROOT, write=True) -> tuple[str, list[str]]:
     merged = lb + first + second
     text = "\n".join(merged) + "\n"
     findings = audit(base, ours, theirs, text) + \
-        order_findings(base, ours, theirs, text)
+        order_verdict(base, ours, theirs, text, repo=repo).findings
     if findings:
         return REFUSED, [f"{path}: refused, the resolution would not balance"] + \
             [f"  {f}" for f in findings]
@@ -391,9 +543,13 @@ def check_commit(ref: str, repo=ROOT, registers=None) -> tuple[str, list[str]]:
                          f"resolution here to audit"]
     _, ours_ref, theirs_ref = parents
     base_ref = git("merge-base", ours_ref, theirs_ref, repo=repo).stdout.strip()
+    # The trunk, from the merge's own two parents. `trunk_side` reads
+    # `MERGE_HEAD`, which exists only mid-merge, so before this the ordering
+    # rule that decides the ordinary case was the one `--check` never ran.
+    trunk = _trunk_of(ours_ref, theirs_ref, repo=repo)
 
     report, state = [], NOTHING
-    absent = []
+    absent, unread = [], []
     for path in registers:
         base, ours, theirs, resolved = (blob(r, path, repo=repo) for r in
                                         (base_ref, ours_ref, theirs_ref, ref))
@@ -406,16 +562,24 @@ def check_commit(ref: str, repo=ROOT, registers=None) -> tuple[str, list[str]]:
             continue
         if ours == theirs == resolved:
             continue
-        state = RESOLVED if state == NOTHING else state
-        findings = audit(base, ours, theirs, resolved) + \
-            order_findings(base, ours, theirs, resolved)
+        state = RESOLVED if state in (NOTHING, UNREAD) else state
+        order = order_verdict(base, ours, theirs, resolved, repo=repo, trunk=trunk)
+        findings = audit(base, ours, theirs, resolved) + order.findings
         if findings:
             state = REFUSED
             report.append(f"{path}: the resolution in {ref[:9]} does not balance")
             report.extend(f"  {f}" for f in findings)
         else:
             report.append(f"{path}: balanced, every line of both sides is present "
-                          f"once and the blocks' stamps do not decrease")
+                          f"once, and {order.said}")
+        if not order.read:
+            unread.append(path)
+    if unread and state != REFUSED:
+        state = UNREAD
+    if unread:
+        report.append(f"{len(unread)} of the audited registers had an ordering "
+                      f"nothing could read, so this run is not a verdict on "
+                      f"their order: {', '.join(unread)}")
     if absent:
         report.append(f"{len(absent)} of {len(registers)} registers are not in "
                       f"all four trees of this merge and were not audited: "

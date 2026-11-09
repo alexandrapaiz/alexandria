@@ -382,12 +382,16 @@ def test_the_order_check_is_not_blind_to_a_register_written_backwards():
     assert rrc.audit(base, ours, theirs, backwards) == [], \
         "the multiset check is supposed to be order-blind; that is the premise here"
 
-    findings = rrc.order_findings(base, ours, theirs, backwards)
-    assert len(findings) == 1
-    assert findings[0].startswith("out of order: 2026-11-09 09:25 is above 2026-11-09 09:05")
+    verdict = rrc.order_verdict(base, ours, theirs, backwards)
+    assert verdict.read, "the stamps differ, so this order was readable"
+    assert len(verdict.findings) == 1
+    assert verdict.findings[0].startswith(
+        "out of order: 2026-11-09 09:25 is above 2026-11-09 09:05")
 
     forwards = BASE + EARLIER_APPEND + LATER_APPEND
-    assert rrc.order_findings(base, ours, theirs, forwards) == []
+    good = rrc.order_verdict(base, ours, theirs, forwards)
+    assert good.findings == [] and good.read
+    assert "in order by stamp order" in good.said
 
 
 def test_check_on_a_committed_merge_reports_the_backwards_order(repo):
@@ -412,7 +416,7 @@ def test_equal_stamps_fall_back_to_the_trunk_side_and_say_so(repo):
     text = (repo / "docs" / "ideas.md").read_text()
     assert text.index("the writer's entry") < text.index("the engineer's entry"), \
         "the trunk's block should lead when the stamps tie"
-    assert "same stamp" in said[0] and "theirs is the trunk" in said[0]
+    assert "both blocks carry 2026-10-24" in said[0] and "theirs is the trunk" in said[0]
 
 
 def test_neither_side_on_the_trunk_and_no_stamp_to_separate_them_is_refused(repo):
@@ -452,20 +456,160 @@ def test_the_stamp_reads_every_heading_shape_the_registers_use():
     assert rrc.stamp(["", "## no date anywhere in this block", "- body"]) is None
 
 
-def test_a_stamped_time_outranks_the_bare_date_it_shares():
-    """Two entries on one day: the one with a clock on it is not equal to the one without."""
-    bare = rrc.stamp(["### 2026-11-09 - no clock"])
-    timed = rrc.stamp(["### 2026-11-09 09:05 - a clock"])
-    assert bare[0] < timed[0], "a bare date sorts before any time on the same day"
+def test_a_bare_date_and_a_clock_on_one_day_is_a_tie_and_not_an_order():
+    """The first version of this rule read a bare date as earlier than any time
+    on its day, which is a guess rather than a reading.
+
+    The heading says nothing about the hour, and 1,692 of the stamped headings
+    in these registers are bare dates against 46 with a clock, so this pair is
+    the shape a same-day conflict here usually takes. A tie hands the decision
+    to the trunk fallback, which has a reason behind it.
+    """
+    bare = rrc.stamp(["### 2026-11-09 - no clock"])[0]
+    timed = rrc.stamp(["### 2026-11-09 09:05 - a clock"])[0]
+    assert rrc.stamp_decides(bare, timed) is None
+    assert rrc.stamp_decides(timed, bare) is None
+
+    # Two clocks on one day do compare, and so do two different days.
+    earlier = rrc.stamp(["### 2026-11-09 08:00 - a clock"])[0]
+    assert rrc.stamp_decides(earlier, timed) == "ours"
+    assert rrc.stamp_decides(timed, earlier) == "theirs"
+    assert rrc.stamp_decides(bare, rrc.stamp(["### 2026-11-10 - the next day"])[0]) \
+        == "ours"
 
 
-def test_order_findings_abstains_when_it_cannot_localise_a_block():
+def test_the_tie_names_the_day_rather_than_claiming_the_stamps_matched():
+    """A bare date against a clock is not the same tie as two equal stamps, and
+    a seat reading the reason has to be able to tell which one it hit."""
+    ours = ["", "### 2026-11-09 - bare", "- body"]
+    theirs = ["", "### 2026-11-09 09:05 - clocked", "- body"]
+    _, _, why = rrc.order_blocks(ours, theirs, trunk="ours")
+    assert "only one of them carries a clock" in why, why
+
+
+def test_order_verdict_abstains_when_it_cannot_localise_a_block():
     """L-A21: a check that cannot see the thing must not vote on it."""
     base = "# Ideas\n\n### 2026-11-09 - repeated heading\n"
     ours = base + "\n### 2026-11-09 - repeated heading\n"
     theirs = base + "\n### 2026-11-10 - the other side\n"
     resolved = base + "\n### 2026-11-09 - repeated heading\n\n### 2026-11-10 - the other side\n"
-    assert rrc.order_findings(base, ours, theirs, resolved) == []
+    verdict = rrc.order_verdict(base, ours, theirs, resolved)
+    assert verdict.findings == []
+    assert not verdict.read, "an abstention that reports itself as a reading is the defect"
+    assert "whole and once" in verdict.said
+
+
+# ---------------- the check runs the same rule the resolver does ----------------
+#
+# Both findings here are the ExO seat's, on PR #921, 2026-11-09. `--check` used
+# to carry an ordering rule of its own: it compared the two stamps and returned
+# nothing when they tied, which is the ordinary case in these registers, and it
+# never ran the trunk fallback at all, because the fallback read `MERGE_HEAD`
+# and a committed merge has none. So the rule that decides the common case was
+# the one the auditor could not verify, and the pass line asserted it anyway.
+
+
+def test_check_catches_a_backwards_same_day_resolution_the_stamps_cannot_order(repo):
+    """The ExO seat's reproduction: two appends on one day, resolved backwards.
+
+    Before this, `--check` printed "the blocks' stamps do not decrease" and
+    exited 0 on exactly this file, because the stamps tie and the old ordering
+    check returned nothing on a tie.
+    """
+    two_appends(repo)  # ours is main, so the trunk block leads
+    file = repo / "docs" / "ideas.md"
+    base = BASE
+    file.write_text(base + THEIRS_APPEND + OURS_APPEND)  # the branch's block first
+    git(repo, "add", "-A")
+    git(repo, "commit", "-qm", "merge, resolved by hand with the branch on top")
+
+    state, report = rrc.check_commit("HEAD", repo=repo, registers=["docs/ideas.md"])
+    assert state == rrc.REFUSED, report
+    joined = "\n".join(report)
+    assert "out of order" in joined, joined
+    assert "trunk" in joined, joined
+    assert "stamps do not decrease" not in joined
+
+
+def test_check_passes_the_same_file_resolved_the_way_the_tool_resolves_it(repo):
+    """The control on the test above, so a REFUSED on everything cannot pass it."""
+    two_appends(repo)
+    rrc.resolve_one("docs/ideas.md", repo=repo)
+    git(repo, "commit", "-qm", "merge, resolved by the tool")
+
+    state, report = rrc.check_commit("HEAD", repo=repo, registers=["docs/ideas.md"])
+    assert state == rrc.RESOLVED, report
+    joined = "\n".join(report)
+    assert "in order by" in joined and "trunk order" in joined, joined
+
+
+def test_an_ordering_nothing_could_read_is_its_own_verdict_and_not_a_pass(repo):
+    """L-A21, applied to half a gate: the arithmetic balanced and the order was
+    never read, so this is not the same answer as both checks passing.
+
+    Two branches merged off the trunk's spine, so neither block can be called
+    the trunk's, and both carry the same day, so the stamp cannot separate them.
+    """
+    file = repo / "docs" / "ideas.md"
+    base = file.read_text()
+    git(repo, "checkout", "-q", "-b", "one")
+    file.write_text(base + OURS_APPEND)
+    git(repo, "commit", "-qam", "one")
+    git(repo, "checkout", "-q", "-b", "two", "main")
+    file.write_text(base + THEIRS_APPEND)
+    git(repo, "commit", "-qam", "two")
+    git(repo, "checkout", "-q", "one")
+    assert git(repo, "merge", "--no-edit", "two", check=False).returncode != 0
+    file.write_text(base + OURS_APPEND + THEIRS_APPEND)
+    git(repo, "add", "-A")
+    git(repo, "commit", "-qm", "merge of two branches, resolved by hand")
+
+    state, report = rrc.check_commit("HEAD", repo=repo, registers=["docs/ideas.md"])
+    joined = "\n".join(report)
+    assert state == rrc.UNREAD, joined
+    assert rrc.EXIT[rrc.UNREAD] == 3
+    assert "was not read" in joined, joined
+    assert "not a verdict on their order" in joined, joined
+    assert "stamps do not decrease" not in joined
+    # The arithmetic half still answered, and says so.
+    assert "balanced, every line of both sides is present once" in joined
+
+
+def test_the_trunk_is_read_from_the_merges_own_parents_in_check_mode(repo):
+    """`trunk_side` reads `MERGE_HEAD` and a committed merge has none, so the
+    check reads the trunk from the two parents `rev-list --parents` already gave
+    it. Without this the ordinary case was unverifiable rather than merely
+    unverified."""
+    two_appends(repo)
+    rrc.resolve_one("docs/ideas.md", repo=repo)
+    git(repo, "commit", "-qm", "merge, resolved by the tool")
+    assert rrc.trunk_side(repo=repo) is None, \
+        "no MERGE_HEAD after the commit, which is the premise of this test"
+
+    parents = git(repo, "rev-list", "--parents", "-n", "1", "HEAD").stdout.split()
+    assert rrc._trunk_of(parents[1], parents[2], repo=repo) == "ours"
+
+
+def test_one_side_appended_and_the_block_has_to_be_last(repo):
+    """Most merges are this shape, and the arithmetic cannot see where a block
+    landed, only that its lines are all present."""
+    base = BASE
+    ours = base
+    theirs = base + THEIRS_APPEND
+
+    good = rrc.order_verdict(base, ours, theirs, base + THEIRS_APPEND)
+    assert good.findings == [] and good.read
+    assert "its block is last" in good.said
+
+    # The same lines, with the appended block moved above the entry it should
+    # follow. Every line is still present exactly once.
+    moved = BASE.split("### 2026-10-20")[0] + THEIRS_APPEND.lstrip("\n") + \
+        "\n### 2026-10-20 - an old entry\n- What: something\n- Status: proposed\n"
+    assert rrc.audit(base, ours, theirs, moved) == [], \
+        "the premise: the multiset is balanced, so only the position is wrong"
+    bad = rrc.order_verdict(base, ours, theirs, moved)
+    assert bad.read
+    assert bad.findings and "not last in the resolution" in bad.findings[0]
 
 
 # ---------------- a question that cannot be asked is not an answer ----------------
