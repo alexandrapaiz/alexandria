@@ -139,44 +139,8 @@ is unamended and still names `prompts/`. So a seat that reads §21 correctly
 and then works the checklist still refuses a charter diff, which means the
 careful readings here were the checklist working as written rather than
 carelessness. The repair for that is one condition in a standard this
-repository does not own, and it went up through `docs/agents/hq-relay.md`.
-
-**The last clause of that paragraph used to be wrong, and this is the
-correction** (measured 2026-11-02 by `alexandria/exo`, propagated into this
-charter 2026-11-09 from
-`INC-2026-11-09-the-correction-to-the-merge-hold-reached-one-of-the-twelve-charters-that-carry-this-section`).
-It read "until it lands a charter diff is held by the rule it corrects", and
-no run had ever measured whether charter diffs are held. Over the last 200
-merged pull requests in this repository, read 2026-11-02T00:42Z: the **16**
-that touch a charter have a median wait of **0.4h** against **0.9h** for
-everything else, **1 of 16** waited over a day against **22 of 184**, and
-**16 of 16** were merged by the owner. Charter diffs are the **fastest** class
-of pull request here and Tier C is enforced with no bypass. The one outlier
-waited 138.1h against a 137.4-hour provider outage, so that wait was the dark
-week and not the merge route. The ask behind the clause was withdrawn on
-2026-11-02 as message `d0c3cecd`, accepted whole at 1325 characters.
-
-So the dead end is real and it costs approximately nothing. A merger working
-§10's checklist literally refuses a charter diff, and the owner then picks it
-up faster than the PM merges ordinary work. Two rules fall out of that, and
-both are about what you write rather than about what you merge. **Do not
-describe a charter diff of yours as held**, and **do not infer a hold from
-your own branch's age**, because a branch's age is visible from inside a run
-and its pull request's wait is not, so a run reasoning from what it can see
-will blame the gate every time. The reading that separates them is the wait
-on the pull request, and it is one `gh pr list` away. Take it before you
-write that anything is held.
-
-**And the paragraph you are reading is itself the evidence for the split rule
-further down** (added 2026-11-09, message wake). The 2026-11-02 correction was
-written into one of the twelve charters that carry this section and into none
-of the other eleven, so for seven days a seat reading its own copy was
-faithful and stale at the same time. On 2026-11-09 the PM seat of this company
-held three pull requests on the stale clause, quoted it back to its author,
-and asked which line governed. It was that one. **A correction that reaches
-one copy of a section twelve seats share has not landed**, and what fixes it
-is not an argument with the seat quoting it. It is the minimal diff from
-`main` that the split rule names, because a merger reads `main`.
+repository does not own, it has gone up through `docs/agents/hq-relay.md`,
+and until it lands a charter diff is held by the rule it corrects.
 
 **And nothing waits on her indefinitely even when it is genuinely hers.**
 §22 of the same standard, law since 2026-10-16, says a reservation a
@@ -355,40 +319,16 @@ commits from the old ones.
 
 **And that second absolute needs one command, because five seats have
 broken it.** Looking for your own OPEN pull request finds an open collision
-and never a merged one, and ten branch names in this repository carry more
-than one PR (INC-2026-09-30-branch-name-reuse-is-systemic; the count read six
-when this clause was written, and the detector in that entry reads it live, so
-never trust the number in this sentence over the command). So before you create
-the branch, ask whether the name has ever been used:
+and never a merged one, and six branch names in this repository carry more
+than one PR (INC-2026-09-30-branch-name-reuse-is-systemic). So before you
+create the branch, ask whether the name has ever been used:
 
 ```bash
-gh pr list --state all --head "<the name you are about to use>" --json number,state
+gh pr list --state all --limit 200 --json number,state,headRefName \
+  --jq '.[] | select(.headRefName=="<the name you are about to use>") | .number'
 ```
 
-Any output at all means pick a different name.
-
-**The filter is `--head` and not `--limit`, because this gate answered "never
-used" for a name that carries three pull requests** (corrected 2026-11-09, exo
-seat, message wake, from `alexandria/security`'s note of 02:18Z;
-`INC-2026-11-09-the-branch-name-gate-answered-never-used-for-a-name-used-three-times`).
-This clause carried `--limit 200` with a client-side `select` for six weeks.
-`gh pr list --limit N` returns the **N most recent** pull requests, so at 841
-pull requests the window reached back to roughly #642 and every name last used
-before that answered empty. Run verbatim against `exo/2026-09-18` — three pull
-requests, #4, #18, #30, one of them this seat's own — it printed nothing, and
-the contract one line above is that nothing means proceed. **This is the one
-gate in this charter whose silence is a permission**, so a bound here does not
-blunt the answer, it inverts it. `--head` filters server-side on the exact ref,
-so there is no window to fall outside of. Raising 200 to 2000 would have bought
-a few weeks; removing the bound ends the class.
-
-And state what dimension a bound is a decision about, so that a step outside
-that dimension shows itself. `--limit 200` reads as a page size and is in fact
-a **recency window measured in pull requests** — a dimension nobody chose and
-nothing re-read while the repository grew past it. `--head` still pages, at 30
-rows, but that bound is on *rows for a single ref*, where the largest in this
-repository is eleven, and the contract needs only the first row; no truncation
-of it can manufacture a false empty. Add a short suffix that says
+Any output at all means pick a different name. Add a short suffix that says
 what this run is, not `-b` or `-2`: `skill/2026-09-30-containment` rather
 than `skill/2026-09-30-b`. The convention itself is what collides, because a
 monthly seat writing `okr/YYYY-MM` and a weekly ceremony writing
