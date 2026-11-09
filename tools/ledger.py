@@ -6,8 +6,13 @@
     python3 tools/ledger.py --check
     python3 tools/ledger.py --patch origin/main
 
-The ledger's entry contract is printed at the bottom of every charter in this
-repository, and three different consumers depend on it. The PM grooms
+The ledger's entry contract is printed at the bottom of one charter in this
+repository, `prompts/engineer-agent.md`, and nine more name this file as a write
+surface and inherit that contract without restating it. This docstring said
+"every charter" until 2026-11-09, when the claim was checked for the first time
+while an entry was being written about those same charters: `grep -l 'Status:
+proposed' prompts/*.md` returns one of twenty. Three different consumers depend
+on the contract. The PM grooms
 `accepted` entries into sprints. The engineer's fallback order looks for
 `accepted` entries no sprint has picked up. Every seat scans for `urgent`. All
 three do it with grep, and the ledger entry of 2026-09-24, "A ledger entry can
@@ -694,10 +699,16 @@ def _uncoded(line: str) -> str:
 
 
 def inbox_files(inbox: Path = INBOX) -> list[Path]:
-    """Every `.md` in the inbox, in name order. Missing directory is empty."""
+    """The inbox, in filename order. `README.md` is documentation, not an entry.
+
+    Everything else is returned, including a file whose name is nothing like a
+    filing, because `check_inbox` has a predicate about exactly that and a
+    directory listing that quietly skipped the badly named files would make it
+    unreachable.
+    """
     if not inbox.is_dir():
         return []
-    return sorted(p for p in inbox.glob("*.md") if p.is_file())
+    return sorted(p for p in inbox.iterdir() if p.is_file() and p.name != "README.md")
 
 
 def read_inbox(inbox: Path = INBOX) -> list[tuple[str, str]]:
