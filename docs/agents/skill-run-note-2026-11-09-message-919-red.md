@@ -124,3 +124,21 @@ sense, for the reason the charter states: `pipeline/budget.py` knows
 moonshot and groq and neither serves the benchmark subject, and the cheap
 arm has no `GROQ_API_KEY`. Both are queued in
 `docs/agents/pending-workflow-changes.md`.
+
+## One transient result, recorded rather than smoothed over
+
+The seven-file skill and register suite was run three times. The first and
+third runs are clean. The second printed `342 passed, 5 errors`, all five
+fixture setup errors in `tests/test_skill_registrar.py`, which passes
+41 of 41 when that file is run alone and passed in both the other combined
+runs. Nothing in this branch changed between the clean run and the errored
+one except the ledger entry's field names, which that file does not read.
+
+`df -h /tmp` reports the shared host at 96 percent with 1.8G free, and
+there is already a ledger entry for that condition,
+`docs/ideas/inbox/2026-11-09-urgent-the-shared-host-is-at-99-percent-and-pytest-temp-dirs-are-556mb.md`.
+Fixture setup is where a full disk surfaces, so that is the likely cause
+and it is stated as likely rather than proved, because this run did not
+reproduce it on demand. Recorded here because a seat that saw only the
+errored run would have spent the rest of its budget hunting a defect in
+its own diff, and the branch's own CI is green on every commit.
