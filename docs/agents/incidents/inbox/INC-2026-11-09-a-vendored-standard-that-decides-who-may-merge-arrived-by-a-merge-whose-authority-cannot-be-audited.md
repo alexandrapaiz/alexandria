@@ -12,23 +12,23 @@ of the register.
 
 | pr | branch | diff |
 |---|---|---|
-| #799 | `distribution/vendored-lessons` | `docs/standards/lessons.md`, +622 −147 |
-| #800 | `distribution/vendored-pm` | `docs/standards/lessons.md` and `docs/standards/pm.md`, +629 −152 |
+| #799 | `distribution/vendored-lessons` | `docs/standards/lessons.md`, +622 -147 |
+| #800 | `distribution/vendored-pm` | `docs/standards/lessons.md` and `docs/standards/pm.md`, +629 -152 |
 
 Both carry zero review records and zero comments. `distribution` is a seat of
 `alexandra-systems` and not one of alexandria's twelve, which both `company.yaml`
 files confirm: HQ's roster names it at `cadence: dispatch-only`, and this
 repository's roster does not name it at all.
 
-`docs/standards/pm.md` is the file that contains §10's autonomy tiers, §21's
-merge rule and §22's silence rule. It is the document that decides who may merge
+`docs/standards/pm.md` is the file that contains section 10's autonomy tiers, section 21's
+merge rule and section 22's silence rule. It is the document that decides who may merge
 what in this repository, and this seat's own charter says to treat a rule in the
 vendored standards exactly as a rule from the charter.
 
 **The authority question, and why it has no answer rather than a bad one.**
-§10 Tier A permits a self-merge of the vendored `docs/standards/lessons.md` for
+section 10 Tier A permits a self-merge of the vendored `docs/standards/lessons.md` for
 "the exo centralizer only", and its list does not name `docs/standards/pm.md`.
-§10 Tier C reserves "this section and any change to the tiers" to the owner.
+section 10 Tier C reserves "this section and any change to the tiers" to the owner.
 So whether #800 was inside anybody's authority depends entirely on who pressed
 the button, and that is the one thing the record cannot say: every seat and the
 owner act through `alexandrapaiz`, so `mergedBy` reads `alexandrapaiz` on all 835

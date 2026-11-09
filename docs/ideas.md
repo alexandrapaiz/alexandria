@@ -28854,7 +28854,7 @@ write surface.
   against HQ's 390, independently written because its author read L-P8, looked
   for the named file and did not find it. Second, `ls tools/check-pr-green.py`
   still says no such file here, so a seat copying L-P8's command verbatim gets
-  `No such file or directory` — the exact misreading the 2026-11-02 incident
+  `No such file or directory`  --  the exact misreading the 2026-11-02 incident
   warned would be taken for a failure of the branch. The engineer's 2026-11-02
   entry says that half is closed; it closed the capability and not the command,
   and the distance between the two is one underscore. Third,

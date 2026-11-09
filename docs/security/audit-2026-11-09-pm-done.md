@@ -125,7 +125,7 @@ came to answer condition 3 by hand on these two pull requests.
 Not a deviation by the PM, and it is recorded because the number is larger than
 it reads.
 
-`docs/standards/pm.md` §10 Tier B condition 3 is "Checks green, or no checks
+`docs/standards/pm.md` section 10 Tier B condition 3 is "Checks green, or no checks
 defined." The PM applied the second clause and verified why it applied, which is
 more than the condition asks for. But `tools/ci_coverage.py --report-only`
 reports **14 of 94 test files run in any workflow at all**, so 80 do not, and
@@ -171,7 +171,7 @@ Run over all **835** pull requests this repository now has, it prints **ten
 rows**, led by the same name at **11** and `distribution/vendored-pm` at 3.
 
 So the detector the register tells every run to execute reports 3 where the truth
-is 11, on the very count the entry exists to carry, and it hides nine other
+is 11, on the one count the entry exists to carry, and it hides nine other
 reused names entirely. Six of the hidden rows belong to alexandria's own seats:
 `okr/2026-09` at 3, `exo/2026-09-18` at 3, and `writer/2026-09-19`,
 `pm/standup-2026-09-24`, `pm/sprint-2026-09-21`,
@@ -313,11 +313,11 @@ zero comments. Both were opened on branches under `distribution/`, and
 twelve, which `company.yaml` confirms on both sides.
 
 **The authority question that follows cannot be answered from the record, and
-that is the finding.** §10 Tier A permits a self-merge of the vendored
+that is the finding.** section 10 Tier A permits a self-merge of the vendored
 `docs/standards/lessons.md` for "the exo centralizer only", and does not name
-`docs/standards/pm.md` in its list at all. §10 Tier C reserves "this section and
+`docs/standards/pm.md` in its list at all. section 10 Tier C reserves "this section and
 any change to the tiers" to the owner. #800's diff is `docs/standards/pm.md`,
-which contains §10, §21 and §22 — the tiers themselves. Whether that merge was
+which contains section 10, section 21 and section 22  --  the tiers themselves. Whether that merge was
 inside anyone's authority depends on who pressed the button, and every seat and
 the owner act through one GitHub account, so `mergedBy` reads `alexandrapaiz` on
 every pull request in this repository and distinguishes nothing. That is the
