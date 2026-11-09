@@ -9,7 +9,8 @@
     python3 tools/host_headroom.py --self-check       # the properties, printed
 
 Exit 0 when the reading was taken, 1 when a `--compose` leaves a residual at
-least as large as its own largest named component, and 2 when the reading
+least as large as its own largest named component, or overcounts, or names one
+path inside another, and 2 when the reading
 cannot be taken at all, which is a refusal to answer rather than an answer of
 "fine".
 
@@ -261,20 +262,49 @@ def compose(path, components):
         })
     total_named = sum(c["bytes"] or 0 for c in named)
     largest = max((c["bytes"] or 0 for c in named), default=0)
+    residual = report["device_used_bytes"] - total_named
     report["composition"] = {
         "components": named,
         "named_bytes": total_named,
-        "residual_bytes": report["device_used_bytes"] - total_named,
+        "residual_bytes": residual,
         "largest_component_bytes": largest,
         "covers_share_of_used": (
             round(1.0 * total_named / report["device_used_bytes"], 3)
             if report["device_used_bytes"] else None
         ),
+        "overcounted": residual < 0,
+        "overlaps": _overlaps(named),
     }
-    report["composition"]["residual_exceeds_largest"] = (
-        report["composition"]["residual_bytes"] >= largest
-    )
+    report["composition"]["residual_exceeds_largest"] = residual >= largest
     return report
+
+
+def _overlaps(named):
+    """Component pairs where one path contains the other, which is an overcount.
+
+    This is the check only the path-taking form of the rule can make. A tool
+    given `NAME=VALUE` sees two numbers and cannot know they count the same
+    bytes; a tool given `NAME=PATH` is holding the evidence. `du -sx` of a
+    parent already includes the child, so naming both adds the child twice,
+    which inflates `named_bytes` and deflates the residual -- the only
+    direction that turns a refusal into an `ok`.
+
+    Identity is the degenerate case and is reported the same way: two names
+    for one directory is a parent containing itself.
+    """
+    out = []
+    for i, a in enumerate(named):
+        for b in named[i + 1:]:
+            if a["bytes"] is None or b["bytes"] is None:
+                continue
+            pa, pb = os.path.realpath(a["path"]), os.path.realpath(b["path"])
+            if pa == pb:
+                out.append({"outer": a["name"], "inner": b["name"], "identical": True})
+            elif pb.startswith(pa.rstrip("/") + "/"):
+                out.append({"outer": a["name"], "inner": b["name"], "identical": False})
+            elif pa.startswith(pb.rstrip("/") + "/"):
+                out.append({"outer": b["name"], "inner": a["name"], "identical": False})
+    return out
 
 
 def _g(n):
@@ -338,8 +368,23 @@ def _print_human(report):
                 print(f"  {c['name']:<16}{_g(c['bytes']):>10}  {c['path']}")
         print(f"  {'named':<16}{_g(comp['named_bytes']):>10}"
               f"  ({comp['covers_share_of_used']:.0%} of what is used)")
-        print(f"  {'RESIDUAL':<16}{_g(comp['residual_bytes']):>10}  not named by anything above")
-        if comp["residual_exceeds_largest"]:
+        if comp["overcounted"]:
+            print(f"  {'OVERCOUNT':<16}{_g(-comp['residual_bytes']):>10}"
+                  "  the named parts exceed the total, so two of them count the same bytes")
+        else:
+            print(f"  {'RESIDUAL':<16}{_g(comp['residual_bytes']):>10}"
+                  "  not named by anything above")
+        for ov in comp["overlaps"]:
+            how = "is the same directory as" if ov["identical"] else "contains"
+            print(f"  OVERLAP          {ov['outer']} {how} {ov['inner']},"
+                  " so its bytes are named twice")
+        if comp["overcounted"]:
+            print("\n  The parts sum above the total, which no residual can absorb, so this")
+            print("  is not an unnamed remainder: two components count one thing. Printed")
+            print("  as OVERCOUNT rather than as a negative residual, taken from")
+            print("  alexandria/engineer's tools/sentinel.py, because the two read nothing")
+            print("  alike and a minus sign invites a reader to shrug at it.")
+        elif comp["residual_exceeds_largest"]:
             print("\n  The residual is at least as large as the largest component named,")
             print("  so the biggest thing in this composition is the thing it does not")
             print("  name. Publish the residual or do not call it a composition.")
@@ -355,6 +400,8 @@ def _self_check():
         "deleted-but-open bytes are ruled in or out rather than assumed, and labelled a floor",
         "the gap is named as off-namespace and never attributed to a seat",
         "--compose fails when the residual reaches the largest component named",
+        "an overcount prints OVERCOUNT and fails, rather than a negative residual passing",
+        "a component path inside another is named as an overlap and fails, because du counts it twice",
         "taken_at is always printed, because this volume swings 2 GiB inside a minute",
         "nothing here deletes, moves or opens for write",
     ]
@@ -394,7 +441,8 @@ def main():
     if not report.get("measured"):
         return 2
     comp = report.get("composition")
-    if comp and comp["residual_exceeds_largest"]:
+    if comp and (comp["residual_exceeds_largest"] or comp["overcounted"]
+                 or comp["overlaps"]):
         return 1
     return 0
 

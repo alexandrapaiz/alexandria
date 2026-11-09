@@ -228,3 +228,131 @@ def test_self_check_lists_the_properties():
     assert any("never attributed to a seat" in line for line in lines)
     assert any("largest component" in line for line in lines)
     assert any("deletes" in line for line in lines)
+
+
+# Added 2026-11-09 06:5xZ, after `alexandria/engineer` built the same rule as
+# `tools/sentinel.py --compose` and named two "deliberate differences" from
+# mine. Both turned out to be repairs to holes in this file's subject rather
+# than variants of it, which is why they arrive here as regression tests.
+
+
+def test_an_overcount_is_not_reported_as_a_residual(monkeypatch):
+    """The hole engineer's `OVERCOUNT` closed, proven against this tool.
+
+    Two names on 24 GiB each, against a 43 GiB total. Before this test the
+    verdict was `residual_exceeds_largest is False` -- because -5 GiB is less
+    than 24 GiB -- so the gate passed a claim covering 112% of its own total,
+    and the human table printed the overcount through `_g`, which falls into
+    its byte branch for any negative number and rendered it `-5368709120 B`.
+    A false `ok` and the one unit that makes the magnitude unreadable.
+    """
+    _stub_headroom(monkeypatch, used=43 * GIB, visible=14 * GIB)
+    sizes = {"/a": 24 * GIB, "/b": 24 * GIB}
+    monkeypatch.setattr(hh, "visible_bytes",
+                        lambda path: ({"bytes": sizes.get(path, 0), "partial": False}, None))
+    comp = hh.compose("/tmp", [("x", "/a"), ("y", "/b")])["composition"]
+    assert comp["residual_bytes"] == -5 * GIB
+    assert comp["overcounted"] is True
+    # and the old predicate still reads False, which is exactly why the exit
+    # code may not be derived from it alone
+    assert comp["residual_exceeds_largest"] is False
+
+
+def test_an_overcount_exits_one_and_prints_the_word(monkeypatch, capsys):
+    _stub_headroom(monkeypatch, used=43 * GIB, visible=14 * GIB)
+    sizes = {"/a": 24 * GIB, "/b": 24 * GIB}
+    monkeypatch.setattr(hh, "visible_bytes",
+                        lambda path: ({"bytes": sizes.get(path, 0), "partial": False}, None))
+    monkeypatch.setattr(sys, "argv",
+                        ["host_headroom.py", "--compose", "x=/a", "y=/b"])
+    assert hh.main() == 1
+    out = capsys.readouterr().out
+    assert "OVERCOUNT" in out
+    assert "5.0 GiB" in out
+    assert "-5368709120 B" not in out
+
+
+def test_a_parent_and_its_child_are_named_as_an_overlap(monkeypatch):
+    """The check only the path-taking form of the rule can make.
+
+    `du -sx` of a parent already includes the child, so naming both counts the
+    child twice: `named_bytes` is inflated and the residual deflated, the one
+    direction that turns a refusal into an `ok`. A tool given `NAME=VALUE`
+    holds two numbers and cannot know; this one holds the paths.
+    """
+    _stub_headroom(monkeypatch, used=43 * GIB, visible=14 * GIB)
+    sizes = {"/srv/asc": 17 * GIB, "/srv/asc/repos": 4 * GIB}
+    monkeypatch.setattr(hh, "visible_bytes",
+                        lambda path: ({"bytes": sizes.get(path, 0), "partial": False}, None))
+    comp = hh.compose("/tmp", [("srv", "/srv/asc"),
+                               ("repos", "/srv/asc/repos")])["composition"]
+    assert comp["overlaps"] == [{"outer": "srv", "inner": "repos", "identical": False}]
+
+
+def test_overlap_is_detected_whichever_order_the_components_arrive(monkeypatch):
+    _stub_headroom(monkeypatch, used=43 * GIB, visible=14 * GIB)
+    sizes = {"/srv/asc": 17 * GIB, "/srv/asc/repos": 4 * GIB}
+    monkeypatch.setattr(hh, "visible_bytes",
+                        lambda path: ({"bytes": sizes.get(path, 0), "partial": False}, None))
+    comp = hh.compose("/tmp", [("repos", "/srv/asc/repos"),
+                               ("srv", "/srv/asc")])["composition"]
+    assert comp["overlaps"] == [{"outer": "srv", "inner": "repos", "identical": False}]
+
+
+def test_two_names_for_one_directory_are_an_overlap_rather_than_two_parts(monkeypatch):
+    _stub_headroom(monkeypatch, used=43 * GIB, visible=14 * GIB)
+    monkeypatch.setattr(hh, "visible_bytes",
+                        lambda path: ({"bytes": 4 * GIB, "partial": False}, None))
+    comp = hh.compose("/tmp", [("x", "/srv/asc"), ("y", "/srv/asc")])["composition"]
+    assert comp["overlaps"] == [{"outer": "x", "inner": "y", "identical": True}]
+    assert comp["named_bytes"] == 8 * GIB  # the double count it is warning about
+
+
+def test_a_sibling_prefix_is_not_an_overlap(monkeypatch):
+    """`/srv/asc-old` is not inside `/srv/asc`, and a bare `startswith` says it is."""
+    _stub_headroom(monkeypatch, used=43 * GIB, visible=14 * GIB)
+    sizes = {"/srv/asc": 17 * GIB, "/srv/asc-old": 4 * GIB}
+    monkeypatch.setattr(hh, "visible_bytes",
+                        lambda path: ({"bytes": sizes.get(path, 0), "partial": False}, None))
+    comp = hh.compose("/tmp", [("srv", "/srv/asc"),
+                               ("old", "/srv/asc-old")])["composition"]
+    assert comp["overlaps"] == []
+
+
+def test_an_overlap_alone_exits_one(monkeypatch, capsys):
+    """An overlap refuses even where the residual rule would have passed.
+
+    30 + 4 against 43 leaves a 9 GiB residual under a 30 GiB largest part, so
+    the published rule says `ok`. It is not ok: the 4 is inside the 30, the
+    real named total is 30 and the real residual 13.
+    """
+    _stub_headroom(monkeypatch, used=43 * GIB, visible=14 * GIB)
+    sizes = {"/srv/asc": 30 * GIB, "/srv/asc/repos": 4 * GIB}
+    monkeypatch.setattr(hh, "visible_bytes",
+                        lambda path: ({"bytes": sizes.get(path, 0), "partial": False}, None))
+    monkeypatch.setattr(sys, "argv",
+                        ["host_headroom.py", "--compose",
+                         "srv=/srv/asc", "repos=/srv/asc/repos"])
+    comp_rc = hh.main()
+    out = capsys.readouterr().out
+    assert comp_rc == 1
+    assert "OVERLAP" in out
+    assert "srv contains repos" in out
+
+
+def test_an_unreadable_component_cannot_raise_in_the_overlap_check(monkeypatch):
+    """`_overlaps` skips a component with no bytes rather than pairing it.
+
+    The unreadable case already has a test for the residual; this is the same
+    input reaching the new code path.
+    """
+    _stub_headroom(monkeypatch, used=43 * GIB, visible=14 * GIB)
+
+    def one_unreadable(path):
+        if path == "/x":
+            return None, "du: cannot read"
+        return {"bytes": 4 * GIB, "partial": False}, None
+
+    monkeypatch.setattr(hh, "visible_bytes", one_unreadable)
+    comp = hh.compose("/tmp", [("x", "/x"), ("y", "/srv/asc")])["composition"]
+    assert comp["overlaps"] == []
