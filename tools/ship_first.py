@@ -200,6 +200,16 @@ def owner(agent, roster=None):
     company. For HQ the seat name is the agent name, so there is nothing to
     prefix.
 
+    **A second surface confirms it, and it is not the audit log.** The host's own
+    working directories under `/tmp` use the identical convention. Live on
+    2026-11-09: `epito-alexandria-engineer`, `epito-ursa-pm` and nine more
+    product seats all carry their company, while `epito-pm`, `epito-engineer`
+    and `epito-exo-centralizer` carry none. That is three of HQ's nine keys
+    reproducing the rule on a surface with no `pr` field in it, which makes it
+    an independent control rather than more of the same evidence. `_agent_of_dir`
+    in this file already parses those names, so the convention was in front of
+    this tool twice over.
+
     Which is why the test is the roster rather than the hyphen. `exo-centralizer`
     is HQ's ninth key, 859 rows, and all 24 of its PR rows name
     alexandra-systems, so it is HQ's by the same identity while looking
