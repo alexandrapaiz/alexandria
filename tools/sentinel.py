@@ -254,13 +254,29 @@ def read_verdict(path: Path, *, label: str | None = None) -> Verdict:
     verdicts = [(i, m) for i, ln in enumerate(content) if (m := _VERDICT.match(ln))]
 
     if not verdicts:
+        # A trailing BEGIN is the commonest absence and it is not damage: the
+        # work started and has not reported. Calling that `truncated` is what
+        # the first version of this file did, found by running it against a
+        # live suite thirty seconds in.
+        if begins:
+            bmatch = begins[-1][1]
+            return Verdict(
+                str(path),
+                False,
+                "absent",
+                f"the work began as run={bmatch.group('run')} and has left no "
+                f"verdict in {len(raw)} bytes. It is running, killed or torn "
+                "down, and nothing in this file says which.",
+                bmatch.group("label"),
+                bmatch.group("run"),
+            )
         if content and content[-1].startswith(MARKER):
             return Verdict(
                 str(path),
                 False,
                 "truncated",
                 f"the last line starts {MARKER!r} and does not parse as a "
-                "verdict, so a write was cut inside it",
+                "verdict or a BEGIN, so a write was cut inside it",
             )
         return Verdict(
             str(path),
@@ -553,8 +569,18 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--part", action="append", type=parse_part, default=[])
     ap.add_argument("--unit", default="")
     ap.add_argument("--smoke", action="store_true")
-    ap.add_argument("cmd", nargs=argparse.REMAINDER, help="-- the command to run")
+    ap.epilog = "everything after a bare -- is the command --out runs."
+
+    # Split on the first bare `--` by hand. `nargs=argparse.REMAINDER` beside a
+    # positional `nargs="*"` loses the command instead of keeping it, which the
+    # first version of this file shipped and the CLI tests caught.
+    argv = list(sys.argv[1:] if argv is None else argv)
+    cmd: list[str] = []
+    if "--" in argv:
+        cut = argv.index("--")
+        argv, cmd = argv[:cut], argv[cut + 1 :]
     args = ap.parse_args(argv)
+    args.cmd = cmd
 
     if args.smoke:
         return smoke()
@@ -566,7 +592,7 @@ def main(argv: list[str] | None = None) -> int:
         return 0 if comp.ok else 1
 
     if args.out:
-        cmd = [a for a in args.cmd if a != "--"]
+        cmd = args.cmd
         if not cmd:
             ap.error("--out needs a command after --")
         status, line = run_guarded(

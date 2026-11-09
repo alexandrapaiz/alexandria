@@ -160,6 +160,39 @@ def test_the_live_instance_a_running_suite_reads_as_absent(tmp_path):
     assert "still running" in verdict.reason
 
 
+def test_a_file_holding_only_a_begin_line_is_absent_and_not_truncated(tmp_path):
+    """Found by running the tool against a live suite rather than by reading it.
+
+    Thirty seconds into a real run the file holds one BEGIN and nothing else,
+    and the first version of this file called that `truncated`, because its
+    damage test was that the last line starts with the marker. A started run
+    with no verdict yet is the commonest absence there is, and naming it
+    damage would send a reader looking for a cut write.
+    """
+    out = tmp_path / "started.txt"
+    out.write_text(sn.begin_line("abc123def456", "suite", ["pytest", "tests/"]))
+    verdict = sn.read_verdict(out)
+    assert verdict.code == "absent"
+    assert verdict.run == "abc123def456"
+    assert "began" in verdict.reason and "no verdict" in verdict.reason
+
+
+def test_a_begin_line_followed_by_output_is_still_absent(tmp_path):
+    out = tmp_path / "midway.txt"
+    with out.open("w") as fh:
+        fh.write(sn.begin_line("abc123def456", "suite", ["pytest"]))
+        fh.write("..... [ 42%]\n")
+    assert sn.read_verdict(out).code == "absent"
+
+
+def test_a_marker_line_that_is_neither_a_begin_nor_a_verdict_is_truncated(
+    tmp_path,
+):
+    out = tmp_path / "cut-begin.txt"
+    out.write_text("SENTINEL run=abc123def456 label=suite BEG")
+    assert sn.read_verdict(out).code == "truncated"
+
+
 def test_a_zero_byte_output_is_absent_and_this_is_what_defeats_a_count_guard(
     tmp_path,
 ):
@@ -219,7 +252,7 @@ def test_a_verdict_cut_mid_write_is_truncated_rather_than_read_as_complete(
     out = tmp_path / "cut.txt"
     run_child(out, "print('work')")
     whole = out.read_text()
-    out.write_text(whole[: whole.index("at=")])
+    out.write_text(whole[: whole.rindex("at=")])
     verdict = sn.read_verdict(out)
     assert verdict.code == "truncated"
     assert "inside it" in verdict.reason
