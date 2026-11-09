@@ -381,6 +381,38 @@ def test_a_colon_separated_heading_still_keys_on_its_id():
     assert entry.date == "2026-11-02"
 
 
+def test_any_separator_keys_on_the_id_because_the_slug_names_its_own_end():
+    """The delimiter list was extended once and the next separator broke it.
+
+    `:` was added to `INC_ID`'s lookahead on 2026-11-02 for one heading that
+    used it. On 2026-11-08 a heading used `, ` instead, the match failed the
+    same way, and `test_the_live_register_ids_all_parse` went red on `main`.
+    Extending the list again would have bought one more separator, so the
+    boundary now comes from the slug's own alphabet.
+
+    Every mark below is prose by construction, because a slug is `[a-z0-9-]`
+    and cannot contain any of them. The comma is the one that was live; the
+    rest are the ones a list would have gone red on next.
+    """
+    for separator in (", ", ": ", " - ", " \u2014 ", " \u2013 ", "; ", ". ", "! ", "? ",
+                      " (", ", and ", " \u2192 "):
+        heading = f"INC-2026-11-02-a-slug{separator}a summary (2026-11-02, engineer seat)"
+        assert inc.heading_key(heading) == "INC-2026-11-02-a-slug", separator
+        entry, = inc.split_entries(f"## {heading}\n\nBody.\n")
+        assert entry.inc_id == "INC-2026-11-02-a-slug", separator
+        assert entry.date == "2026-11-02", separator
+
+
+def test_a_trailing_hyphen_is_not_part_of_the_id():
+    """What the old lookahead bought that the alphabet rule has to keep.
+
+    The slug must end alphanumeric, so greedily eating `[a-z0-9-]` cannot
+    carry a dangling separator hyphen into the id a charter would cite.
+    """
+    assert inc.heading_key("INC-2026-11-02-a-slug-- a summary") == "INC-2026-11-02-a-slug"
+    assert inc.heading_key("INC-2026-11-02-a-slug - a summary") == "INC-2026-11-02-a-slug"
+
+
 def test_the_live_register_ids_all_parse():
     """Every INC heading in the register yields the id a charter would cite."""
     text = (ROOT / "docs" / "agents" / "incidents.md").read_text()

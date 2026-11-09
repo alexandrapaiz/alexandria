@@ -783,6 +783,51 @@ UNCOVERED = {
     # failing on the forbidden name and skipping on another seat's branch, and
     # that hand-run is the only thing standing behind it until item 17 lands.
     "tests/test_branch_prefix.py",
+    # Added 2026-11-02 with `tools/target_census.py`, pinned for the same
+    # structural reason as every line above, and this pin is the sharpest
+    # argument in the set because of what the file is.
+    #
+    # The line above guards three tools by name. This one guards the domain:
+    # it derives every `(file, flag)` pair under `tools/` with `ast` and fails
+    # when one of them is classified by nobody. That is the repair for the
+    # reason the line above was not enough, recorded as
+    # `INC-2026-11-02-the-confident-zero-class-repeated-in-two-adr-13-reviewers-because-the-probe-for-it-was-a-hand-list`:
+    # a hand list cannot tell a tool that refuses from a tool nobody has looked
+    # at, and the probe behind the previous repair was a hand list of three,
+    # which is how instances six, seven and eight survived a sweep aimed at
+    # them four hours earlier. Two of those three were reviewers whose verdicts
+    # gate knowledge promotion under ADR-13.
+    #
+    # So pinning it means the ninth instance lands silently on a pull request
+    # until a seat runs the suite by hand, which is precisely the failure the
+    # file itself was built to end. The step that would fix it goes in
+    # `.github/workflows/checks.yml`, which no seat's token may write, and the
+    # staged replacement runs the whole suite and therefore runs this. Counted
+    # at the same standing finding as the two lines above.
+    "tests/test_target_census.py",
+    # The three below are not this seat's files. They landed on `main` in the
+    # hour this branch was open, from #786 (the social card) and #780 (the wake
+    # budget), and `main` went red on this gate the moment they did: all three
+    # are test files no workflow runs and none was pinned.
+    #
+    # Pinned here rather than only reported, because the engineer charter makes
+    # a red `main` the one finding this seat fixes rather than files, and the
+    # reason it outranks the day's work is not the bug. Every open pull request
+    # inherits a red `main` through its own merge check, so every other seat's
+    # run ends with a red tick it did not cause and cannot tell from its own.
+    # There were 74 open pull requests when this was written.
+    #
+    # The reason is the same structural one as every line above and it is not a
+    # judgement about either seat's work: the step that would run these goes in
+    # `.github/workflows/checks.yml`, which no seat's token may write, so the
+    # gate's preferred fix was not available to the seats that wrote them any
+    # more than it is to this one. The staged replacement runs the whole suite
+    # and therefore runs all three. Counted at the same standing finding,
+    # `INC-2026-10-17-the-pin-list-grew-for-the-seventh-time-in-nine-days`,
+    # which is now three lines further along.
+    "tests/social-card.test.mjs",
+    "tests/test_social_card.py",
+    "tests/test_wake_budget.py",
     # Added 2026-11-02 with `tools/check_pr_green.py`, by this seat's previous
     # run, which opened a draft and never reached `gh pr ready`, so this gate
     # went red on its branch and the pin was never written. Pinned here for
@@ -811,6 +856,20 @@ UNCOVERED = {
     # nothing earlier, and the test that catches that is in this file.
     # Counted at the same standing finding as the two lines above.
     "tests/test_law8_url.py",
+    # Added 2026-11-08 with `tools/provider_cycle.py`, pinned for the same
+    # structural reason as every line above: the step that would run it goes
+    # in `.github/workflows/checks.yml`, which no seat's token may write.
+    #
+    # What it guards is an alarm's lead time, and that is an unusual thing for
+    # a pin to carry. The assertions that matter are the two that say the
+    # alarm fires before the wall rather than after it, and that it stays
+    # quiet on a week that reaches its reset. Both are replayable against the
+    # host's archive and neither is reachable from a pull request, because the
+    # archive is not in the repository. So the file that proves the alarm is
+    # worth leaving switched on is itself the file no pull request runs.
+    # Counted at the same standing finding,
+    # `INC-2026-10-17-the-pin-list-grew-for-the-seventh-time-in-nine-days`.
+    "tests/test_provider_cycle.py",
 }
 
 

@@ -653,3 +653,43 @@ def test_the_reviewer_sha_is_found_the_way_the_image_lays_the_files_out():
 def test_both_reviewers_file_a_sha_rather_than_a_null():
     for module in (adv, __import__("panel_provenance")):
         assert module.reviewer_sha(), f"{module.REVIEWER} files a null sha"
+
+
+# --- a reviewer never clears a skill it did not find (2026-11-02) -----------
+#
+# `tools/target_census.py --probe` handed every roster flag in `tools/` a value
+# nothing carries, and this reviewer's `--skill` answered with an empty verdict
+# list and exit 0. Under ADR-13 that is a knowledge-promotion gate returning a
+# clean sheet about a skill it never found. `panel_validator.py` was repaired
+# for the same defect earlier the same day and its two siblings were not,
+# because the probe behind that repair was a hand list of three.
+
+
+def test_a_skill_slug_nothing_carries_is_refused_rather_than_filtered():
+    import subprocess as _sp
+    done = _sp.run([sys.executable, str(ROOT / "tools" / "panel_adversary.py"),
+                    "--skill", "no-such-skill-xyz"],
+                   capture_output=True, text=True, timeout=120)
+    said = done.stdout + done.stderr
+    assert done.returncode == 4, said[:500]
+    assert "no-such-skill-xyz" in said
+    assert '"verdicts": []' not in said
+
+
+def test_zero_skills_reviewed_is_a_refusal_and_not_a_pass():
+    """The skill seat's denominator rule, in a reviewer rather than in a gate.
+
+    A reviewer that judged nothing has cleared nothing, so an empty verdict set
+    exits non-zero and says what it was computed over. Reached by emptying the
+    skill roster rather than by passing a bad slug, which the refusal above
+    already catches.
+    """
+    import importlib
+    mod = importlib.import_module("panel_adversary")
+    original = mod.registrar.read_skills
+    mod.registrar.read_skills = lambda *a, **k: ([], [])
+    try:
+        code = mod.main(["--json"])
+    finally:
+        mod.registrar.read_skills = original
+    assert code == 2, "an empty verdict set must not exit 0"
