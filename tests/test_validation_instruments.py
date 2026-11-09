@@ -61,6 +61,7 @@ line rather than hidden.
 
 from __future__ import annotations
 
+import functools
 import subprocess
 import sys
 from pathlib import Path
@@ -114,9 +115,26 @@ STANDING = {
 TIMEOUT_SECONDS = 300
 
 
-def verify_flag(path: Path) -> str | None:
-    """The instrument's verification entry point, read off its own --help."""
-    proc = subprocess.run([sys.executable, str(path), "--help"],
+def programs() -> list[str]:
+    """Every program under skills/_validation/. Filesystem only, no subprocess.
+
+    This is what the tests below parametrize over, and it is deliberately not
+    the instrument set. Asking ten programs for their `--help` is ten
+    subprocesses, and doing it at module scope to feed `parametrize` would run
+    them during collection, which is the defect Ursa's exo seat reported on the
+    bus the same morning about a tool of its own: a `main()` at module scope
+    turned an import into sixty live requests. Quoting that lesson in this
+    file's own header and then committing it here would have been the second
+    instance. So collection reads the directory, and the subprocess happens
+    inside the test that needs it.
+    """
+    return sorted(path.name for path in VALIDATION.glob("*.py"))
+
+
+@functools.lru_cache(maxsize=None)
+def verify_flag(name: str) -> str | None:
+    """The program's verification entry point, read off its own --help."""
+    proc = subprocess.run([sys.executable, str(VALIDATION / name), "--help"],
                           cwd=ROOT, capture_output=True, text=True, timeout=120)
     if proc.returncode != 0:
         return None
@@ -126,17 +144,11 @@ def verify_flag(path: Path) -> str | None:
     return None
 
 
-def instruments() -> dict[str, str]:
+@functools.lru_cache(maxsize=None)
+def instruments() -> tuple[tuple[str, str], ...]:
     """Every instrument under skills/_validation/, name to verification flag."""
-    found = {}
-    for path in sorted(VALIDATION.glob("*.py")):
-        flag = verify_flag(path)
-        if flag:
-            found[path.name] = flag
-    return found
-
-
-DISCOVERED = instruments()
+    return tuple((name, flag) for name in programs()
+                 if (flag := verify_flag(name)) is not None)
 
 
 def test_the_validation_directory_exists_and_holds_programs():
@@ -147,29 +159,36 @@ def test_the_validation_directory_exists_and_holds_programs():
 
 def test_discovery_finds_every_instrument_on_disk():
     """The positive control. Without it an empty set reads as a clean run."""
-    missing = KNOWN - set(DISCOVERED)
+    found = dict(instruments())
+    missing = KNOWN - set(found)
     assert not missing, (
         f"{sorted(missing)} offered a verification flag on 2026-11-09 and does "
         "not now. Either the file moved, or its --help stopped listing the "
         "flag, in which case nothing in this repository runs it any more. If "
         "the removal is deliberate, delete the name from KNOWN in the same "
         "commit and say so.")
-    assert len(DISCOVERED) >= len(KNOWN)
+    assert len(found) >= len(KNOWN)
 
 
 def test_every_standing_pin_names_a_real_instrument():
     """A pin for an instrument that no longer exists hides a green instrument."""
-    stale = set(STANDING) - set(DISCOVERED)
+    stale = set(STANDING) - set(dict(instruments()))
     assert not stale, (
         f"{sorted(stale)} is pinned as exiting non-zero and is not discovered. "
         "Delete the line.")
 
 
-@pytest.mark.parametrize("name", sorted(DISCOVERED) or ["none-discovered"])
+@pytest.mark.parametrize("name", programs())
 def test_the_instrument_exits_as_pinned(name):
-    if name == "none-discovered":
-        pytest.fail("discovery found no instrument; see the positive control")
-    flag = DISCOVERED[name]
+    """One test per program, so a failure names the instrument in its own id.
+
+    A program with no verification flag is skipped rather than filtered out of
+    collection, because a skip is visible in the run and an absent test is not.
+    """
+    flag = verify_flag(name)
+    if flag is None:
+        assert name not in KNOWN, "the positive control covers this case"
+        pytest.skip(f"{name} offers none of {VERIFY_FLAGS}, so nothing to run")
     proc = subprocess.run([sys.executable, str(VALIDATION / name), flag],
                           cwd=ROOT, capture_output=True, text=True,
                           timeout=TIMEOUT_SECONDS)
@@ -180,5 +199,5 @@ def test_the_instrument_exits_as_pinned(name):
         f"{expected}.\n"
         "If this is a regression, fix the instrument or the tree it reads. If "
         "the instrument is now correct to exit non-zero, add it to STANDING "
-        "with the reason; if it was pinned and is now green, delete its line.\n"
+        "with the reason. If it was pinned and is now green, delete its line.\n"
         f"Its last words:\n{tail}")
