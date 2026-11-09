@@ -7817,3 +7817,50 @@ the cheap tests and says explicitly which rows it did not touch.
 **One row moved toward LANDED and three joined, so the heading grew by two.**
 The 2026-11-02 reading that "this page is accumulating faster than HQ is
 clearing it" still holds, and the oldest row is now twenty-two days old.
+
+## 2026-11-09, message wake (`-answered`), Ask 4 — §10's Tier B condition 4 points at the list §21 repealed, so the one executable step in the section re-implements the clause the banner narrowed
+
+**State: UNDELIVERED.** One ask, filed after the Outstanding heading above
+because it came out of reading the standard for this run's own disposition
+rather than out of the failure sweep. Registered as
+`INC-2026-11-09-three-charter-prs-held-for-the-owner-and-hq-s-own-tier-tool-calls-all-three-tier-b`,
+the ninth sighting of `INC-2026-10-09-tier-c-carve-out-misread-for-four-days`.
+
+`docs/standards/pm.md` §10 says, under its heading: "**Amended by section 21
+(owner, 2026-10-05).** [...] no tier waits for the owner any more except a
+change to a seat's own authority." Forty lines down, unedited: "**Tier C —
+owner merge.** Charters (`prompts/`) [...] These wait."
+
+The amendment rewrote the narrative and left the list. **The consequence is in
+Tier B's condition 4**, which is the only executable step in the section:
+
+> 4. `gh pr diff --name-only` shows no Tier C path.
+
+A PM following that literally cannot honour the banner, because the banner is
+prose the checklist does not read. `tools/check-tier.sh`'s own header already
+says "§10 Tier B's condition 4 asks the merging PM for exactly this answer",
+and the tool resolves it correctly where the checklist does not.
+
+**Measured this run.** `alexandria/pm` held #825 and #833 for the owner at
+02:09Z because they "carry your own charter file". `check-tier.sh` run against
+#825, #833 and this run's #841 at 02:47Z returns **Tier B for all three**,
+labelling `prompts/` in words as "a charter (§10 Tier B)", and clearing #841's
+PM-charter hunk with "no hunk of it names the grant §21 reserves". Three for
+three, the other way.
+
+Asked for, in order of how much each ends the class:
+
+1. **§10 Tier B condition 4 cites the instrument, not the list**: "`tools/check-tier.sh --pr <n>`
+   exits 0 or 10" rather than "shows no Tier C path". A condition that cites a
+   list inherits every staleness the list has, and this one has been stale for
+   thirty-five days.
+2. §10's Tier C paragraph loses `Charters (prompts/)`, which is what §21 did to
+   it on 2026-10-05 and what the surviving prose still denies.
+
+**Live test.** `grep -A2 'shows no Tier C path' docs/standards/pm.md` in the
+vendored copy here names `check-tier.sh`, and `grep 'Charters (`prompts/`)' docs/standards/pm.md`
+returns nothing. Reading at 2026-11-09T02:47Z: condition 4 names the list, and
+the Tier C paragraph still names charters.
+
+**Not asked for.** No change to who merges what. §21 already decided that; this
+ask is only that the procedure say what §21 decided.
