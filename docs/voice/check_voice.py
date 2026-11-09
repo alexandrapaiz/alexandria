@@ -548,6 +548,7 @@ def links(paths=None):
     unambiguous ahead of it.
     """
     paths = paths or sorted((ROOT / "site/content/issues").glob("*.md"))
+    scope(paths, hidden_weeks())
     retired = hidden_weeks()
     rc = 0
     for p in paths:
@@ -655,6 +656,7 @@ def exempt_character(c):
 def measure(paths=None):
     retired = hidden_weeks()
     paths = paths or sorted((ROOT / "site/content/issues").glob("*.md"))
+    scope(paths, hidden_weeks())
     rc = 0
     for p in paths:
         p = pathlib.Path(p)
@@ -767,6 +769,7 @@ def devices(paths=None):
     """
     retired = hidden_weeks()
     paths = paths or sorted((ROOT / "site/content/issues").glob("*.md"))
+    scope(paths, hidden_weeks())
     rc = 0
     for p in paths:
         p = pathlib.Path(p)
@@ -942,6 +945,7 @@ def figures(paths=None):
     print(f"  the count's own cases          {len(FIGURE_CASES)} pass")
     retired = hidden_weeks()
     paths = paths or sorted((ROOT / "site/content/issues").glob("*.md"))
+    scope(paths, hidden_weeks())
     rc = 0
     for p in paths:
         p = pathlib.Path(p)
@@ -1162,6 +1166,7 @@ def delivery(paths=None):
         print(f"  renderer unavailable, so the delivery path is ungraded: {exc}")
         return 1
     paths = paths or sorted((ROOT / "site/content/issues").glob("*.md"))
+    scope(paths, hidden_weeks())
     rc = 0
     for raw in paths:
         p = pathlib.Path(raw)
@@ -2049,19 +2054,17 @@ READING = re.compile(
     re.I)
 
 
-def shown_path(path):
-    """A hit's path as a reader of this output can act on it.
-
-    Seven gates already wrap `relative_to` in this exact `try`, with the
-    comment at `measure` recording why: it "used to raise rather than measure
-    it (2026-10-06)". `reading` joined the path-taking gates on 2026-10-23,
-    after that repair, and so never received it. That is the whole defect, and
-    it is a repair applied in seven places missing the one caller added next.
-    """
-    try:
-        return str(path.resolve().relative_to(ROOT))
-    except ValueError:
-        return str(path)
+# `shown_path` was defined here and again 1,946 lines below, and the lower
+# definition is the one every caller in this file has ever reached, because
+# Python binds the last one. So this copy was dead for as long as both have
+# existed. It was also the worse of the two: it took `path.resolve()` without
+# coercing, so a string argument raised `AttributeError`, and it returned the
+# path as handed rather than resolved when the artifact sat outside the
+# checkout, which is every artifact `--live` fetches. Its docstring, quoted in
+# full at the live definition, is the one that argues for the helper.
+# Deleted rather than merged: the two bodies agree on every input a caller has
+# ever passed, so nothing moves. `doubles` is the gate that would have found
+# it, and it did not exist either.
 
 
 def reading_domain(paths):
@@ -3390,52 +3393,253 @@ def terms_of(sentences):
     return out
 
 
-def scope(paths, retired, given):
+#: Where the paths a pass grades came from, written once by `main` and read by
+#: `scope`. A global rather than a parameter because the per-call-site version
+#: of this bookkeeping has already produced a bug: `standalone` worked its own
+#: answer out from a path prefix and printed `site/content/issues` for a path
+#: given on the command line, so the one pass that stated its scope stated
+#: somebody else's directory. One writer and eleven readers is the shape that
+#: cannot drift.
+SCOPE_SOURCE = "archive"
+
+
+#: How a pass's scope is read, asserted because the answer is a verdict rather
+#: than a note, and because what it replaces was eleven passes printing clean
+#: counts over a quarter of the product. Each case is
+#: (what was read, what the product serves, what is retired, the source) ->
+#: (code, the served weeks that were not read).
+SCOPE_CASES = (
+    # The default scope on the day this was written. The archive holds two
+    # files, one of them retired, and the product serves four.
+    ((("2026-W37", "2026-W39"),
+      ("2026-W39", "2026-W40", "2026-W42", "2026-W44"), ("2026-W37",),
+      "archive"),
+     ("SHORT", ("2026-W40", "2026-W42", "2026-W44"))),
+    # `--live`. Every served edition was read, so the scope is the product's
+    # and there is no deficit to state.
+    ((("2026-W39", "2026-W40", "2026-W42", "2026-W44"),
+      ("2026-W39", "2026-W40", "2026-W42", "2026-W44"), (), "live"),
+     ("WHOLE", ())),
+    # The product unreached. How short the scope is is not known, and scoring
+    # that as whole is the failure this reading exists to refuse: a gate that
+    # cannot see its own deficit says so rather than reporting it as zero.
+    ((("2026-W39",), None, ("2026-W37",), "archive"), ("UNKNOWN", ())),
+    # Paths named on the command line. The caller chose the scope, so a
+    # deficit against the product is not this pass's to report, and ban list
+    # 91 is the rule that applies to a figure under a named path instead.
+    ((("2026-W42",), ("2026-W39", "2026-W44"), (), "named"), ("NAMED", ())),
+    # A retired edition read beside the served ones is not missed, and it does
+    # not make a short scope whole either. 2026-W37 is both of those here.
+    ((("2026-W37", "2026-W39", "2026-W40", "2026-W42", "2026-W44"),
+      ("2026-W39", "2026-W40", "2026-W42", "2026-W44"), ("2026-W37",),
+      "archive"),
+     ("WHOLE", ())),
+    # The archive holding a week the product does not serve at all. It is not
+    # retired and it is not served, so it is read and it closes no gap.
+    ((("2026-W41",), ("2026-W39", "2026-W44"), (), "archive"),
+     ("SHORT", ("2026-W39", "2026-W44"))),
+)
+
+
+#: What `doubles` has to read, asserted on sources rather than on this file,
+#: so the cases say what the rule is instead of what today's tree happens to
+#: hold. Each case is (source, the names defined more than once).
+DOUBLES_CASES = (
+    # The live shape of the defect it was written for: one name, two
+    # top-level definitions, and the lower one is the only one that runs.
+    ("def a():\n    return 1\n\n\ndef b():\n    return 2\n\n\ndef a():\n"
+     "    return 3\n", ("a",)),
+    # A name defined once and called many times is not a double.
+    ("def a():\n    return 1\n\n\nb = a()\nc = a()\n", ()),
+    # A nested definition shadows nothing at the top level, and a gate that
+    # counted it would fire on every closure and every local helper.
+    ("def a():\n    def a():\n        return 1\n    return a\n", ()),
+    # A module constant rebound at the top level IS a double, and it is the
+    # same defect wearing a different hat: the first value is unreachable and
+    # a reader of the first line has read a lie.
+    ("X = 1\nY = 2\nX = 3\n", ("X",)),
+    # A conditional rebinding is not. One of the two branches runs, which is
+    # a choice the author made rather than a line they forgot.
+    ("import os\nX = 1\nif os.environ.get('Q'):\n    X = 2\n", ()),
+    # Augmented and annotated assignment at the top level, for the same
+    # reason: neither one hides an earlier value a reader could mistake for
+    # the live one.
+    ("X = 1\nX += 1\n", ()),
+    # Two names each doubled, reported in the order the file defines them.
+    ("A = 1\nB = 2\nA = 3\nB = 4\n", ("A", "B")),
+)
+
+
+def doubles_in(src):
+    """Every top-level name this source defines more than once, in file order.
+
+    Top level only, and by plain assignment or `def` or `class` only. The
+    narrowness is the reading: a nested `def` shadows a name inside one scope
+    on purpose, a branch rebinding a constant is a choice, and `+=` needs the
+    earlier value. What this catches is the one shape where a line of a file
+    cannot run and nothing says so.
+    """
+    seen = collections.defaultdict(list)
+    for node in ast.parse(src).body:
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef,
+                             ast.ClassDef)):
+            seen[node.name].append(node.lineno)
+        elif isinstance(node, ast.Assign):
+            for target in node.targets:
+                if isinstance(target, ast.Name):
+                    seen[target.id].append(node.lineno)
+    order = {}
+    for name, lines in seen.items():
+        if len(lines) > 1:
+            order[name] = min(lines)
+    return tuple(sorted(order, key=order.get)), seen
+
+
+def doubles():
+    """Is any name in this seat's own python defined twice?
+
+    The gate for a class this file has already shipped once. `shown_path` was
+    defined at two top levels 1,946 lines apart, the lower one bound every
+    caller, and the upper one was dead from the hour the lower one landed. No
+    check here could see it: `selfcheck` reads the lines a run ADDS, so it
+    sees the second definition arriving and has nothing to compare it to, and
+    `sweep` reads prose. A duplicate definition is silent by construction,
+    exactly like a committed conflict marker: it is wrong once, at the moment
+    it is written, and ordinary text forever after.
+
+    Scoped to `docs/voice/*.py`, which is this seat's own surface. The same
+    reading applies to `tools/*.py` and widening it from here would drop a new
+    red into lanes this seat does not own, which is incident 23's class and
+    the same boundary entry 159's repair drew for the same reason.
+    """
+    bad = [(src, want, doubles_in(src)[0]) for src, want in DOUBLES_CASES
+           if doubles_in(src)[0] != want]
+    if bad:
+        for src, want, got in bad:
+            print(f"  CASE    {src!r}")
+            print(f"            want {want}")
+            print(f"            got  {got}")
+        print()
+        print("DOUBLES_CASES says what this reading has to do. Nothing below")
+        print("was read, because a duplicate check failing its own cases")
+        print("reports a clean file for the wrong reason.")
+        return 1
+    print(f"  the reading's own cases    {len(DOUBLES_CASES)} pass")
+    files = sorted((ROOT / "docs/voice").glob("*.py"))
+    print(f"  python under docs/voice    {len(files)}: "
+          f"{', '.join(p.name for p in files)}")
+    rc = 0
+    for p in files:
+        names, seen = doubles_in(p.read_text(encoding="utf-8"))
+        if not names:
+            continue
+        rc = 1
+        for name in names:
+            where = ", ".join(str(n) for n in seen[name])
+            print(f"  FAIL    {shown_path(p)}  {name} defined "
+                  f"{len(seen[name])} times at lines {where}")
+            print( "            the last one binds every caller, so the")
+            print( "            others are lines that cannot run")
+    if not rc:
+        print("  no name under docs/voice is defined twice at the top level")
+    print()
+    print("A line that cannot run is not an error and not a warning. It")
+    print("reads exactly like a line that can, which is why this needed a")
+    print("command rather than a reader.")
+    return rc
+
+
+def scope_reading(read, served, retired, source):
+    """The verdict on a pass's scope, kept apart from the printing of it.
+
+    `retired` is accepted and never consulted, and that is the reading rather
+    than an oversight. A week retired at the serving layer is not in `served`
+    to begin with, because `served_weeks` reads the product's own library
+    page, so subtracting it a second time would be arithmetic on a set it was
+    never in. It stays in the signature because every caller holds it, and a
+    reader of the cases above needs to see that it was weighed.
+    """
+    if source == "named":
+        return "NAMED", ()
+    if served is None:
+        return "UNKNOWN", ()
+    seen = set(read)
+    missed = tuple(w for w in served if w not in seen)
+    return ("SHORT" if missed else "WHOLE"), missed
+
+
+def scope(paths, retired, given=None):
     """What this pass read, printed before any count it reports.
 
     `L-A47`: an instrument's scope is part of its answer, and a scope it does
-    not state is whatever it happened to be pointed at. This pass globs
-    `site/content/issues/*.md` and calls the result the issues. The site
-    archive is not the send record. 2026-W40 went to readers on 2026-10-05 and
-    never became a file in this repository, so every count this pass has ever
-    printed described the archive while reading as a verdict on what the press
-    sends, which is `INC-2026-10-24-a-gate-grades-a-print-against-rules-written-
-    after-it`. The authority on what was sent is the `digests` table, reachable
-    only with `NEON_RO_URL`, so when that is unset the gap is named here rather
-    than left for a reader to infer from a number.
+    not state is whatever it happened to be pointed at. Eleven passes in this
+    file glob `site/content/issues/*.md` and call the result the issues. That
+    directory holds two files, one of them retired, and the product serves
+    four, which is `INC-2026-10-24-a-gate-grades-a-print-against-rules-
+    written-after-it`.
+
+    This helper was written for that class and was called by one pass of the
+    eleven, so ten of them printed counts with no scope line at all. It also
+    named the gap from a sentence about 2026-W40 written into the code, and
+    said the authority was the `digests` table behind `NEON_RO_URL`. That was
+    true when it was written and stopped being true when `served_weeks`
+    landed: the product's own library page names the served weeks with no
+    credential at all, so the deficit is printed by week here rather than
+    argued in prose.
+
+    The digests table is still the authority on what SENT, and the library
+    page is the authority on what a reader can open today. Those are two
+    questions, and the counts in this file are about the second one, because
+    every law in the canon is a law about a page somebody reads.
+
+    `given` is kept for the one caller that passed it and is ignored. The
+    answer comes from `SCOPE_SOURCE`, which `main` writes.
     """
-    if given:
+    read = [pathlib.Path(x).stem for x in paths]
+    off = [x for x in read if x in retired]
+    on = [x for x in read if x not in retired]
+    code, missed = scope_reading(read, served_weeks_cached(), retired,
+                                 SCOPE_SOURCE)
+    if code == "NAMED":
         print(f"  read from   {len(paths)} path(s) named on the command line")
         print( "              a figure below belongs to the artifact above it")
         print( "              and to no other, which is ban list 91")
         return
-    served = [pathlib.Path(x) for x in paths]
-    off = [x.stem for x in served if x.stem in retired]
-    on = [x.stem for x in served if x.stem not in retired]
-    print(f"  read from   site/content/issues, {len(on)} served: "
+    where = ("the product, un-rendered" if SCOPE_SOURCE == "live"
+             else "site/content/issues")
+    print(f"  read from   {where}, {len(on)} served: "
           f"{', '.join(on) if on else 'none'}")
     if off:
-        print(f"              {len(off)} retired and not served: {', '.join(off)}")
-    print( "  NOT read    the send record. An issue is not a file here when it")
-    print( "              sends: 2026-W40 reached readers on 2026-10-05 and is")
-    print( "              not in the list above. The authority is the digests")
-    if os.environ.get("NEON_RO_URL"):
-        print( "              table, and NEON_RO_URL is set, so a run can check")
-        print( "              this list against it rather than trusting it")
+        print(f"              {len(off)} retired and not served: "
+              f"{', '.join(off)}")
+    if code == "WHOLE":
+        print( "  WHOLE       every edition the product serves was read")
+    elif code == "UNKNOWN":
+        # The verdict is UNKNOWN both ways and the sentence is not, because a
+        # blind spot a run declared and one it walked into are the same size
+        # and not the same kind. `editions` draws that line in its SKIP and
+        # this keeps it drawn where the count is.
+        why = ("this run declared ALEXANDRIA_OFFLINE"
+               if os.environ.get("ALEXANDRIA_OFFLINE")
+               else "the product went unreached")
+        print(f"  SCOPE?      {why}, so how short this")
+        print( "              scope is is unknown. A count below is a verdict")
+        print( "              on the files named above and on nothing else")
     else:
-        print( "              table and NEON_RO_URL is unset, so this pass")
-        print( "              cannot say how many prints it has never seen")
-    print( "              A count below grades this archive. Reading it as a")
-    print( "              grade of the generator needs the date of the print")
-    print( "              and the dates of the rules, which is a review's job")
+        print(f"  SHORT       {len(missed)} served edition(s) not read: "
+              f"{', '.join(missed)}")
+        print( "              `editions` carries the verdict, --live reads them")
 
 
 def firstuse(paths=None):
     retired = hidden_weeks()
-    given = paths is not None
+    # `given` was this pass's own reading of where its paths came from and it
+    # is gone, because `SCOPE_SOURCE` is the one place that knows and `--live`
+    # made the local reading wrong: live paths ARE given, and calling them
+    # named would have hidden the only scope this file can call whole.
     paths = paths or sorted((ROOT / "site/content/issues").glob("*.md"))
+    scope(paths, hidden_weeks())
     rc = 0
-    scope(paths, retired, given)
     for p in paths:
         p = pathlib.Path(p)
         if not p.exists():
@@ -4566,6 +4770,7 @@ def slotheads(paths=None):
           f"{', '.join(repr(d) for d in dress)}")
     retired = hidden_weeks()
     paths = paths or sorted((ROOT / "site/content/issues").glob("*.md"))
+    scope(paths, hidden_weeks())
     rc = 0
     for raw in paths:
         path = pathlib.Path(raw)
@@ -4712,6 +4917,7 @@ def apparatus(paths=None):
           f"{', '.join(repr(a) for a in APPARATUS)}")
     retired = hidden_weeks()
     paths = paths or sorted((ROOT / "site/content/issues").glob("*.md"))
+    scope(paths, hidden_weeks())
     rc = 0
     for raw in paths:
         path = pathlib.Path(raw)
@@ -5239,6 +5445,7 @@ def standalone(paths=None):
         return 1
     print(f"  the detector's own cases   {len(STANDS_ALONE_CASES)} pass")
     paths = paths or sorted((ROOT / "site/content/issues").glob("*.md"))
+    scope(paths, hidden_weeks())
     paths = [pathlib.Path(p) for p in paths]
     hits, exempt = [], []
     for path in paths:
@@ -5249,15 +5456,11 @@ def standalone(paths=None):
             # refinements layer on top of it, never beside it. The exemption is
             # computed from her register for the reason the taste gate gives.
             (exempt if hers(span) else hits).append((path, n, span))
-    # Where the paths came from, and not the directory this pass used to
-    # assume they came from. L-A47 says an instrument's scope is part of its
-    # answer, and this line printed `site/content/issues` for a path given on
-    # the command line, so the one pass that reported its own scope reported
-    # somebody else's directory. Found by pointing it at a served edition.
-    inside = all(str(x).startswith(str(ROOT / "site/content/issues"))
-                 for x in paths)
-    print(f"  read from   {'site/content/issues' if inside else 'paths given'},"
-          f" {len(paths)} issue(s): {', '.join(p.stem for p in paths)}")
+    # The scope line this pass used to work out for itself is `scope`'s now,
+    # printed at the top with every other pass's. Its own version read the
+    # source off a path prefix, which got `--live` wrong in both directions:
+    # a live path is outside `site/content/issues` and is not a path the
+    # caller named, and there was no third answer available to print.
     print(f"  sentences whose subject is 'you' and whose verb is past  "
           f"{len(hits) + len(exempt)}")
     for path, n, span in hits:
@@ -5451,6 +5654,7 @@ def provenance(paths=None):
         return 1
     print(f"  the detector's own cases   {len(PROVENANCE_CASES)} pass")
     paths = paths or sorted((ROOT / "site/content/issues").glob("*.md"))
+    scope(paths, hidden_weeks())
     paths = [pathlib.Path(p) for p in paths]
     retired = hidden_weeks()
     hits = 0
@@ -5617,6 +5821,32 @@ def served_weeks():
     return sorted(set(LIVE_WEEK.findall(page)))
 
 
+#: One reading of the library per process. `_WEEKS` holds the answer and
+#: `_WEEKS_READ` says whether it was asked, because `None` is a real answer
+#: here and means unreached.
+_WEEKS = None
+_WEEKS_READ = False
+
+
+def served_weeks_cached():
+    """`served_weeks`, asked once however many passes want it.
+
+    Eleven passes now state their scope and each of them needs to know what
+    the product serves. Un-memoized that is eleven fetches of one page in one
+    run, and eleven `UNREACHED` lines when the host has no network, which
+    would bury the counts the run exists to print under its own plumbing.
+    """
+    global _WEEKS, _WEEKS_READ
+    if not _WEEKS_READ:
+        # A run that declared it cannot reach the product does not spend a
+        # doomed request to be told so, and it does not print `UNREACHED`
+        # over a blind spot it already owned up to. `editions` draws that
+        # distinction already and this is the same one.
+        _WEEKS = None if os.environ.get("ALEXANDRIA_OFFLINE") else served_weeks()
+        _WEEKS_READ = True
+    return _WEEKS
+
+
 ARTICLE = re.compile(r'<article class="digest issue-body"[^>]*>(.*?)</article>',
                      re.S)
 
@@ -5644,7 +5874,7 @@ def served_issue(week):
 
 def served_paths():
     """Every served edition as a path, for the passes that take paths."""
-    weeks = served_weeks()
+    weeks = served_weeks_cached()
     if weeks is None:
         return None
     paths = [served_issue(w) for w in weeks]
@@ -5661,7 +5891,7 @@ def round_trip():
     page belongs to a document the press did not write, which is ban list 91
     with a longer fuse.
     """
-    weeks = served_weeks()
+    weeks = served_weeks_cached()
     if weeks is None:
         return None, []
     rows = []
@@ -5717,6 +5947,23 @@ def editions():
         python3 docs/voice/check_voice.py editions
         python3 docs/voice/check_voice.py devices --live
     """
+    # The scope reading's cases are asserted here and not inside `scope`,
+    # because eleven passes call that and one pass owns this verdict. A case
+    # table checked eleven times a run prints its own pass eleven times and
+    # says nothing new on ten of them.
+    bad = [(a, want, scope_reading(*a)) for a, want in SCOPE_CASES
+           if scope_reading(*a) != want]
+    if bad:
+        for args, want, got in bad:
+            print(f"  CASE    {args}")
+            print(f"            want {want}")
+            print(f"            got  {got}")
+        print()
+        print("SCOPE_CASES says what a pass's scope line has to say. Nothing")
+        print("below was read, because a scope reading that fails its own")
+        print("cases is the instrument this pass exists to be.")
+        return 1
+    print(f"  the scope reading's cases {len(SCOPE_CASES)} pass")
     if os.environ.get("ALEXANDRIA_OFFLINE"):
         print("  SKIP    ALEXANDRIA_OFFLINE is set, so this run declared that")
         print("          it cannot reach the product. A declared blind spot is")
@@ -5733,7 +5980,7 @@ def editions():
         print("instead of hiding behind it.")
         return 1
     rc = 0
-    weeks = served_weeks()
+    weeks = served_weeks_cached()
     retired = hidden_weeks()
     held = {p.stem for p in (ROOT / "site/content/issues").glob("*.md")}
     unread = [w for w in weeks if w not in held]
@@ -5798,6 +6045,7 @@ def marks(paths=None):
     quotation of a source is the source's, and editing it falsifies the quote.
     """
     paths = paths or sorted((ROOT / "site/content/issues").glob("*.md"))
+    scope(paths, hidden_weeks())
     retired = hidden_weeks()
     rc = 0
     for p in paths:
@@ -7693,7 +7941,7 @@ def cadence():
 
     # The record half, which needs the series and not the reading.
     print()
-    served = served_weeks()
+    served = served_weeks_cached()
     if served is None:
         print("  FAIL    RECORD: the library did not answer, so the record")
         print("          half is unread and this run concludes nothing on it")
@@ -7853,10 +8101,81 @@ def laws_touched(anchors, changed, message=""):
     return named, nearby, orphan
 
 
-def queued_verdict(label, named, nearby, span):
+#: Laws whose decision does not live in the generator any more, because the
+#: charter's structure-watch step sent it to code. One row per law, and a row
+#: is written here only when the fix is merged on `main`.
+#:
+#: This table exists because the command below reads one file. Its whole input
+#: is the commit list for `prompts/digest.md`, so a law the charter's own step
+#: 4 escalated out of the prompt is invisible to it, and the verdict it prints
+#: for that law is UNNAMED or UNPATCHED: read the span, nothing is coming. The
+#: instrument tells the seat to do the thing step 4 forbids, and the better a
+#: seat obeys the charter the more laws arrive in that state.
+#:
+#: Law 8 is the live instance and it cost a grade on 2026-11-09. `queued 8`
+#: read UNNAMED, the review concluded a prompt diff was owed and named it as
+#: the next run's item, and the fix had been merged seven days earlier in
+#: `pipeline/arxiv_html.py`, which decides the url with a HEAD request instead
+#: of asking a model to rewrite one. The abs-to-html rewrite had been reworded
+#: six times with one revert before that, which is the history the module's own
+#: docstring carries.
+MOVED_LAWS = {
+    "8": {
+        "module": "pipeline/arxiv_html.py",
+        "wired_in": "pipeline/weekly.py",
+        "wiring": "arxiv_html().resolve_payload(",
+        "commit": "3cd597a4",
+        "escalated": "writer run 51 on 2026-10-26, after the fourth wording "
+                     "was written and reverted inside one run",
+    },
+}
+
+
+def moved_fix(label, show=None, delivered=None):
+    """The row for a law whose fix left the generator, and whether it is live.
+
+    A declared row is a claim about another seat's file, so it is checked
+    rather than trusted. The check is the one substring that proves the call
+    is still there on `main`, read off `origin/main` and not off the branch,
+    for the same reason the spans below are. A fix that was escalated, built
+    and then unwired is not a fix, and it must not read as one here: that is
+    the same mistake `drop_reverted` fixes one storey down, where a patch and
+    its own revert counted as two patches.
+
+    `delivered` is the deploy's half and the caller supplies it, because this
+    function knows nothing about the press. Both answers are OK verdicts and
+    they ask for different things: an undelivered fix asks for the deploy, and
+    a delivered one that still fails live is the code's defect and the
+    engineer's. Neither of them asks for a word in the generator.
+    """
+    row = MOVED_LAWS.get(label)
+    if row is None:
+        return None
+    if show is None:
+        def show(path):
+            return "\n".join(_git_lines("show", f"origin/main:{path}"))
+    text = show(row["wired_in"])
+    return dict(row, wired=row["wiring"] in text, delivered=delivered)
+
+
+def queued_verdict(label, named, nearby, span, moved=None):
     """One law's structure-watch answer, from the queue alone.
 
-    Four answers, because the queue supports four and not two.
+    Six answers, because the queue supports six and not two.
+
+    MOVED: the law's decision does not live in the generator at all, because
+    the charter's structure-watch step sent it to code and the code is merged.
+    `MOVED_LAWS` declares it and `moved_fix` checks the call is still there, so
+    the verdict is a reading and not a note. It is first, above every answer
+    the queue can give, because once a law is decided by a function every
+    wording of it in the prompt is the tinker step 4 refuses, and the queue
+    will go on saying UNNAMED about that law for as long as the generator keeps
+    the dead prose. The thing owed is the deploy, or nothing.
+
+    UNWIRED: a law this table declares as moved, whose call is not in the file
+    on `main` any more. The escalated fix was built and then unwired, so no fix
+    is anywhere, and this is the only verdict here that names another seat:
+    restoring the call is the engineer's and a wording would paper over it.
 
     QUEUED: a merged commit the press has not received says in its own message
     that it works this law. A fresh wording is the third tinker the charter's
@@ -7898,6 +8217,22 @@ def queued_verdict(label, named, nearby, span):
     and has not reached the press, which is all a grade can establish before
     the deploy.
     """
+    if moved and moved.get("wired"):
+        press = ("the press has it, so a live failure of this law is the "
+                 "code's and goes to the engineer"
+                 if moved.get("delivered") else
+                 "the press has not received it, so the deploy is the whole "
+                 "of what is owed")
+        return "MOVED", (f"law {label} is decided by {moved['module']} as of "
+                         f"{moved['commit']}, not by the generator, and "
+                         f"{press}: no wording is owed and the queue's answer "
+                         f"about this law is not about its fix")
+    if moved:
+        return "UNWIRED", (f"law {label}'s fix was escalated to "
+                           f"{moved['module']} and {moved['wired_in']} does "
+                           f"not call it on main, so the fix is gone rather "
+                           f"than waiting: restoring the call is the "
+                           f"engineer's and a wording would hide it")
     if named:
         return "QUEUED", (f"law {label} is named by {len(named)} queued "
                           f"commit(s), so a fresh wording is the tinker the "
@@ -7956,6 +8291,17 @@ SPAN_CASES = [
     ([(10, "6")], 100, {"6": 90}),
 ]
 
+#: `moved_fix`'s two readings and the two verdicts they produce, with a stub
+#: `show` so no case touches git. The third case is the one that matters: a
+#: declared row whose call has gone must not read as a fix.
+MOVED_CASES = [
+    ("8", "probe = law8_probe or arxiv_html().resolve_payload(payload)",
+     False, "MOVED"),
+    ("8", "probe = law8_probe or arxiv_html().resolve_payload(payload)",
+     True, "MOVED"),
+    ("8", "# the law 8 step was taken out again", False, "UNWIRED"),
+]
+
 VERDICT_CASES = [
     (["c5a32e4c"], [], 40, "QUEUED"),
     ([], ["2c6ce635", "31d3fb23"], 103, "UNNAMED"),
@@ -7999,6 +8345,20 @@ def queued_cases():
             print(f"  FAIL    law_spans wanted {want} and got {got}")
     print(f"SPAN_CASES                                 "
           f"{len(SPAN_CASES) - bad} of {len(SPAN_CASES)}")
+    rc |= bool(bad)
+    bad = 0
+    for label, wiring, delivered, want in MOVED_CASES:
+        row = moved_fix(label, show=lambda _p, t=wiring: t,
+                        delivered=delivered)
+        got, _ = queued_verdict(label, [], [], 0, moved=row)
+        if got != want:
+            bad += 1
+            print(f"  FAIL    moved law {label} wanted {want} and got {got}")
+    if moved_fix("99", show=lambda _p: "") is not None:
+        bad += 1
+        print("  FAIL    an undeclared law read as moved")
+    print(f"MOVED_CASES                                "
+          f"{len(MOVED_CASES) - bad} of {len(MOVED_CASES)}")
     rc |= bool(bad)
     bad = 0
     for named, nearby, span, want in VERDICT_CASES:
@@ -8139,12 +8499,17 @@ def queued(labels=()):
     if labels:
         print()
         for label in labels:
+            row = MOVED_LAWS.get(label)
+            moved = moved_fix(
+                label,
+                delivered=bool(row) and bool(deployed) and _git_ok(
+                    "merge-base", "--is-ancestor", row["commit"], deployed))
             verdict, why = queued_verdict(label, named_by.get(label, []),
                                           nearby_by.get(label, []),
-                                          spans.get(label, 0))
-            mark = "OK  " if verdict == "QUEUED" else "FAIL"
+                                          spans.get(label, 0), moved=moved)
+            mark = "OK  " if verdict in OK_VERDICTS else "FAIL"
             print(f"  {mark}    {verdict}: {why}")
-            rc |= verdict != "QUEUED"
+            rc |= verdict not in OK_VERDICTS
     print()
     print("A law a queued commit names is fixed and undelivered, so the grade")
     print("that fails it says so and writes nothing. A law nothing reaches")
@@ -8155,12 +8520,39 @@ def queued(labels=()):
     print("charter asks a prompt diff to cite the law it serves and the")
     print("citation has been going into the review rather than the commit,")
     print("which is why four runs rebuilt this fact from memory.")
+    print()
+    print("None of that reaches a law this prompt no longer decides. The")
+    print("queue read here is one file's, so a law the structure-watch step")
+    print("sent to code is MOVED, and the queue's silence about it is not a")
+    print("reading about its fix. Law 8 is that law today.")
     return rc
 
 
 def _git_line(*args):
     out = _git_lines(*args)
     return out[0] if out else None
+
+
+#: The verdicts that ask for no prompt diff. QUEUED and MOVED both mean a fix
+#: exists and the generator is the wrong lever, so a run that reads either one
+#: writes nothing and says which deploy it is waiting on.
+OK_VERDICTS = ("QUEUED", "MOVED")
+
+
+def _git_ok(*args):
+    """A git command's exit status, for the questions whose answer is yes or no.
+
+    `_git_lines` reads stdout and `merge-base --is-ancestor` prints nothing, so
+    reading it through that helper makes every answer look the same. An error
+    is False rather than True: an unreachable git must not report a commit as
+    deployed.
+    """
+    try:
+        r = subprocess.run(["git", "-C", str(ROOT), *args],
+                           capture_output=True, text=True, timeout=120)
+    except (OSError, subprocess.SubprocessError):
+        return False
+    return r.returncode == 0
 
 
 def _git_lines(*args):
@@ -9956,6 +10348,7 @@ def main():
     # rather than what somebody committed. Entry 141 named this class on
     # 2026-10-26 and enforced the reading half of it; this is the half that
     # points the commands at the right artifact instead of the run.
+    global SCOPE_SOURCE
     if "--live" in paths:
         paths = [x for x in paths if x != "--live"]
         live = served_paths()
@@ -9965,7 +10358,13 @@ def main():
             print("names, so this exits rather than falling back to the")
             print("archive under the name `live`.")
             return 1
+        # `named` wins a tie, because a caller who hands a path alongside
+        # `--live` has chosen a scope and `scope` must not claim the
+        # product's on their behalf.
+        SCOPE_SOURCE = "named" if paths else "live"
         paths = [str(x) for x in live] + paths
+    elif paths:
+        SCOPE_SOURCE = "named"
     # `enforcements` takes a git ref rather than a path, because ban list 105
     # is about the file the press runs and that file is only reachable through
     # the commit the deploy was built from.
@@ -10013,6 +10412,7 @@ def main():
                 ("apparatus", apparatus),
                 ("captions", captions),
                 ("blockrules", blockrules),
+                ("doubles", doubles),
                 ("dispatch", dispatch),
                 ("columns", columns),
                 ("flags", flags),

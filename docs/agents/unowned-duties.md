@@ -412,9 +412,9 @@ done.
 
 | Duty | Naming seat's cron | Last firing ever | Firing state |
 |---|---|---|---|
-| The org knows what the world knows | market, `0 11 * * 5` | never | **unevidenced**, and class A: the seat itself has not run since 2026-10-17 |
-| Ecosystem events steer what we ingest | research, `30 16 * * 1` | never | **unevidenced**, and class A: the seat itself has not run since 2026-10-17 |
-| Upstream compromise is in the threat model | security, `0 13 1,15 * *` | never | **unevidenced**, and class A: the seat itself has not run since 2026-10-17 |
+| The org knows what the world knows | market, `0 11 * * 5` | **2026-11-06T11:00:10, refused (spend)** | **open, and re-dated a third time, measured 2026-11-08.** Two slots since the host took the clock, both refused at turn one, neither rescued. Next gate 2026-11-13T11:00Z. See the 2026-11-08 section |
+| Ecosystem events steer what we ingest | research, `30 16 * * 1` | **2026-11-02T16:30:13, refused (weekly)** | **closed 2026-10-27** on the 2026-10-26 slot, which HQ's retry rescued; pull request 589 merged. The row stays closed; the 2026-11-02 slot was lost to the dark week |
+| Upstream compromise is in the threat model | security, `0 13 1,15 * *` | **2026-11-01T13:00:27, refused, then rescued** | **closed 2026-11-08**: the re-fire's pull request 657 merged 2026-11-02T01:13:17Z. See the 2026-11-08 section |
 | The repo describes the system it is | exo, `0 14 * * 0` | **2026-10-25T14:00:11, refused** | **fired and produced nothing, measured 2026-10-25.** No longer unevidenced and not firing either. The slot fired on time and the provider refused it at turn one on a weekly limit, which is the third state this column did not have |
 | Approved copy reaches the live site | frontend, `0 12 * * 3` | never | **unevidenced**, on top of the lag this page already accepts |
 | An HQ decision is read against local law | exo, `0 14 * * 0` | **2026-10-25T14:00:11, refused** | **fired and produced nothing, measured 2026-10-25**, on top of the cadence gap already recorded |
@@ -427,10 +427,38 @@ done.
 | A runtime change is smoke-tested before the next cron fires | engineer, `6 11,23 * * *` | 2026-10-24T11:06Z | firing |
 | Reader-facing site copy gets drafted | writer, `0 16 * * *` | 2026-10-24T16:00Z | firing |
 
-**Nine rows are unevidenced and four of those nine name this seat.** None of
-the nine is a new finding about a seat, and that is the point of the state:
-every one of them has been audited as owned, at cadence, every run since it
-was written, and not one of the clocks they rest on has been observed to run.
+**As written on 2026-10-24 this paragraph said: nine rows are unevidenced and
+four of those nine name this seat.** None of the nine was a new finding about a
+seat, and that was the point of the state: every one of them had been audited as
+owned, at cadence, every run since it was written, and not one of the clocks
+they rest on had been observed to run. The count is left here as written, with
+its date, because what happened to it is the finding two blocks down.
+
+**Three have moved since, and none of them moved the way that paragraph
+expected.** `research` closed on 2026-10-27 and `security` on 2026-11-08, both
+on slots that fired, were **refused**, and were rescued by HQ's retry — so what
+closed them was the retry and not the clock. `market` left `unevidenced` in the
+other direction: its clock has now been observed twice and produced nothing
+either time, which is a finding about the row rather than the absence of one.
+
+**Counted off the cells rather than off that sentence, the fourteen rows read
+`open` 1, `closed` 2, `fired and produced nothing` 3, `unevidenced` 3,
+`firing` 5.** So three rows are unevidenced today and exactly one of the three
+names this seat — `frontend`, `skill`, and "a seat's cap and model are what the
+evidence says they are".
+
+**The sentence above was already wrong about its own table before this run
+touched it, and that is worth more than the correction.** It claimed nine
+unevidenced rows with four naming this seat. But the three exo rows it was
+counting had been moved, in this same table, to `fired and produced nothing`
+when the 2026-10-25 slot was measured — correctly, and the refusal there was a
+genuine weekly one. Nobody re-derived the summary when the cells under it
+changed, so the headline count stayed at the number the table no longer
+supported, in the one paragraph a reader in a hurry reads instead of the table.
+**A total written beside a table it was derived from decays silently**, because
+the next run edits the row it came to edit and the prose is not where it is
+looking. Where this page needs a count, count the rows at the moment of
+writing, and say what you counted — as the block above now does.
 Three of the four rows that name this seat already carry a second gap of their
 own, which is a pattern rather than a coincidence: **a duty assigned to a
 seat whose clock has never fired is a duty performed only when something else
@@ -2254,3 +2282,304 @@ is carrying security's cycle right now. The question this page raises, and
 routes rather than answers, is why market's refused log was never claimed when
 security's was. That is HQ's claim logic, not this company's clock, and it goes
 to the relay.
+
+## 2026-11-08: class A ends with two of three rows closed, and the third's gate was refused by a wall this page's own instrument could not name
+
+The 2026-11-01 entry left two readings to "the next run of this seat": whether
+security's rescued cycle shipped, and what market's re-dated gate did. Both are
+readable now, under that entry's restated rule rather than its calendar:
+
+> A class A row is answerable on the seat's **first slot that is not refused**.
+> A slot that fires and is refused at turn one does not consume the gate; it
+> re-dates it to the next slot. A slot rescued by HQ's retry **does** consume
+> the gate, because a re-fire that ships is an observation of the seat.
+
+### Security: the row closes, and the retry is what closed it
+
+| surface | reading |
+| --- | --- |
+| the slot | `2026-11-01T13:00:27Z`, fired on time, refused at turn 1 on the **weekly** wall |
+| HQ's retry | claimed that exact log name, re-fired at `23:04:44Z` |
+| pull request 657 | **merged `2026-11-02T01:13:17Z`**, `+1061`, 8 files, not a draft |
+
+A re-fire that ships consumes the gate, so the row closes. Note what the
+2026-11-01 entry got right by refusing to answer: at 23:34Z that night
+`tools/cron_firing.py` printed `1 cycle(s) lost` about this very run while it
+was alive and committing, and the entry declined to turn that into a verdict
+and left it for today. **The row was closed by waiting one day, and the
+instrument would have closed it as lost on the night.**
+
+### Market: the row stays open, and this is its third re-dating
+
+| surface | reading |
+| --- | --- |
+| the slot | `2026-11-06T11:00:10.855Z`, fired on time, `trigger=cron`, `--max-turns 160` |
+| its result line | `429`, **`You've hit your org's monthly spend limit · ask your admin to raise it at claude.ai/admin-settings/usage · your weekly limit resets Nov 8, 11pm (UTC)`**, 1 turn, 406ms, `exit=1 pr=-` |
+| a re-fire | **none.** The seat's log directory holds no `-hook` log at all, so no re-fire was ever dispatched for it |
+| the next slot | `0 11 * * 5` → **2026-11-13T11:00Z** |
+
+Counting observed slots, this was market's **second** slot and its second
+refusal, both at turn one and neither its own fault. Since the host took the
+clock on 2026-10-23 this seat's clock has produced two slots and nothing from
+either. (The 2026-11-01 entry called 2026-11-06 "its third gate, with two
+refusals recorded against it"; against the record at the time that was one
+ahead on both counts. The refusal count has since caught up to two.)
+
+### The wall was named wrong by the instrument this page prescribes
+
+The card tells its reader to "read each slot with the firing tool". Run on
+market's gate, `tools/cron_firing.py --day 2026-11-06 --seat alexandria-market`
+printed **`weekly-limit`**. The slot's own log says the org's monthly spend cap.
+
+`classify_refusal` tested `"weekly" in text` before anything else, and both
+spend variants on this host carry `your weekly limit resets` in a subordinate
+clause about a different wall. Measured over `/srv/asc/state/.epito/logs` by one
+pass: **257 of 257 spend refusals returned `weekly-limit`** — never
+`unclassified-429`, so it was a confident wrong answer and not a gap — against
+487 genuine weekly and 415 session, 1,159 refusals in total. **Seventy-four of
+the 257 were cron slots**, which is 74 of the 177 slot refusals this module
+exists to name, and matches the count in
+`INC-2026-11-08-the-third-limit-class-shut-the-portfolio-for-six-days-and-the-classifier-that-names-classes-called-it-the-second`
+exactly.
+
+Fixed in this run, with nine tests: `spend-limit` is a third class and it is
+tested **before** `weekly`, which is the entire fix. Both real spend variants
+are quoted into the tests rather than paraphrased, the ordering is pinned by a
+sentence naming both walls, and the three real weekly variants are asserted in
+the other direction so the fix cannot drag weekly rows into spend.
+
+Why it matters to this page and not only to that file: **a weekly wall names its
+own reset and a spend cap has none.** Every remedy that follows from the word
+"weekly" is "wait for the boundary". The remedy for a spend cap is a hand on the
+account. Under the old label market's row read as waiting for a Sunday; under
+the right one it was waiting for the owner, and had been for six days.
+
+That is a **fourth** reader of the same sentence failing in the same direction.
+The incident above fixed §2b's published classifier and named `capacity.py`'s
+two in the parent repository; none of the three knew this file carried the
+identical `if` chain. The rule it leaves: **when a refusal class is added, grep
+the whole repository for the old class's name rather than fixing the reader that
+found it.** A classifier is copied far more often than it is imported.
+
+### The gate rule has no termination condition, and market is where that shows
+
+The restated rule is right about dates and silent about repetition. Market has
+now been re-dated three times on three refusals it did not cause, and the rule
+as worded will re-date it again on 2026-11-13 and every Friday after. Each
+re-dating is individually correct and the row reads, on this page, as *pending*.
+
+But the thing being measured has changed. The question was "is this seat
+alive", and after two slots that fired and were refused the answer on record is
+"no observation has been possible" — which is the state this page spent 2026-10-24
+and 2026-11-01 learning not to mistake for a finding about a seat. The finding
+now available is about the **route**, and it is already half-written in the
+exposure block above: market is one attempt a week, and it is the one class A
+seat HQ's retry has never claimed. Two slots, two refusals, zero re-fires.
+
+So the rule gains a counter rather than another date:
+
+> After a class A row's **second** consecutive slot that fires, is refused, and
+> is **not** claimed by HQ's retry, the row stops being "not yet answerable"
+> and becomes a finding about the re-fire route, carried to the relay. A third
+> re-dating is not a reading. The row is still re-dated — the next slot is
+> still the next chance — but the page stops reporting the wait as the state.
+
+Market crosses that line today, so its row reads `open` in the table above
+rather than `unevidenced`, and the unclaimed-re-fire question goes to the relay
+as an ask with its two slots named. Research and security both closed on
+rescued slots; market is the one class A seat the rescue never reached, and that
+is now the whole of what class A has left to say.
+## 2026-11-09: class B is the card's last open half, and the measurement it argues from stopped being written on day two
+
+Class A closed on 2026-11-09 (two open pull requests of this seat carry the
+closing, #810 and #824) and class C closed twice over on 2026-10-26 and
+2026-10-27. **The card is down to class B**, four rows naming this seat, and
+this section is about the state of the ask rather than about the rows.
+
+### The ask is sixteen days old and nothing has re-asked it
+
+Posted 2026-10-24T22:15Z under §22 of the PM standard. Read on 2026-11-09, the
+inbox this seat can see — `/api/messages?to_seat=exo&to_company=alexandria`,
+100 rows reaching back to 2026-11-02T08:31Z, saturated — **holds no message
+from the owner at all.** Class B has no silence rule by design, because it
+widens this seat's own budget, so it cannot proceed and it cannot expire. It
+has no re-ask cadence either. So it sits.
+
+That is the defect this page should name, and it is the same shape as the one
+it fixed on 2026-11-01. Class A was given three dates and the dates were read
+as observations. Class B was given neither a date nor a cadence, and sixteen
+days of silence read as a pending decision. **A pending ask with no re-ask
+cadence is not a pending decision; it is an unread message**, and the two are
+indistinguishable from this end.
+
+### What was actually lost while it waited
+
+The card's whole case for class B is the depth of this seat's owed list, cited
+as "fourteen consecutive wake runs" deep. That list was carried by re-copying a
+paragraph into each new learning-log entry. It was **last written on
+2026-10-26**, six items long, and then:
+
+| reading | value |
+| --- | --- |
+| learning-log entries of this seat since | **22** |
+| host-recorded runs of this seat since | **58**, of which 36 exited clean |
+| cron runs among them | **0** — every one a wake run |
+| days | 13 |
+
+So the figure the owner is being asked to decide on was frozen on day two of a
+sixteen-day wait, and frozen in the direction that weakens the ask. Worse:
+class B's proposed remedy is "a wake run takes one item from the owed list,
+oldest first", and **had she granted it on any day after 2026-10-26 there would
+have been no list to take an item from.** The proposal's own input was destroyed
+while the proposal waited.
+
+Filed as
+`INC-2026-11-09-the-owed-list-that-argued-for-a-pending-ask-stopped-being-written-two-days-after-the-ask`.
+Fixed in the same run: the list is `docs/agents/exo-owed.md`, twelve rows, one
+file, where losing a row costs a deletion with an author and a date instead of
+an omission nobody can see. §0's wake-run bullet points at it.
+
+### The rule this page takes from it
+
+**When an ask rests on a measurement, the measurement's surface is part of the
+ask.** An ask that is pending is a reason to keep measuring rather than a reason
+to stop, because the decision will be taken against whatever the surface says on
+the day somebody reads it — not against what it said on the day it was written.
+This is the seventh shape on this page: a duty that is discharged into an
+append-only surface, where the discharge and its absence look identical.
+
+### Class B's state is unchanged, and this run did not widen it
+
+No row moves. This run restored the evidence and did not grant itself the
+budget, which is the one thing on this page this seat may not do for itself. The
+ask stands as corrected above, with the depth figure now re-derivable from a
+file rather than from a paragraph nobody re-copied.
+## 2026-11-09: class A closes, and the evidence that closed it was in a file nobody here has ever read
+
+The duty-classes card has been the only row in this seat's lane since
+2026-10-24. The 2026-11-01 entry above left exactly two things open and handed
+both to "the next run of this seat": security's row, answerable on whether
+pull request 657 ships, and market's row, re-dated to its third gate at
+`2026-11-06T11:00Z`. This run is that next run and both are now read.
+
+### Security: the row closes, on a merge
+
+| reading | value | read at |
+| --- | --- | --- |
+| the rescued run's pull request | `alexandrapaiz/alexandria` **#657**, branch `sec/2026-11-01` | 2026-11-09T00:54Z |
+| its state | **MERGED**, `2026-11-02T01:13:17Z` | same |
+
+The restated gate says a slot rescued by HQ's retry consumes the gate, because
+a re-fire that ships is an observation of the seat. It shipped and it merged.
+**Security's class A row is closed.** Its clock, `0 13 1,15 * *`, remains the
+most exposed in the company at one attempt a fortnight, and that is an
+exposure rather than an unevidenced duty; it stays recorded in the note at the
+end of the 2026-11-01 entry and is not a row here.
+
+### Market: the third gate was refused too, and by a different wall
+
+The slot fired on time. `/srv/asc/state/.epito/logs/alexandria-market/2026-11-06T11-00-10-855Z-cron.log`,
+read in full this run: `trigger=cron`, `429`, **1 turn**, 406ms, `exit=1 pr=-`.
+And the refusal sentence is **not** the one the first two gates were refused
+with:
+
+> You've hit your org's monthly spend limit · ask your admin to raise it at
+> claude.ai/admin-settings/usage · your weekly limit resets Nov 8, 11pm (UTC)
+
+That is the monthly spend cap, which is the third refusal class, and it is not
+in the claim list: `capacity-retry.json` holds ten claims this run and market
+is in none of them, for the third gate as for the first two.
+
+**So the re-date rule written on 2026-11-01 does not survive its second
+application, and that is this entry's finding.** The rule says a slot refused
+at turn one re-dates the gate to the next slot. It was written against the
+weekly pool, whose whole character is that it ends on a boundary, so waiting
+for the next slot is a remedy. A monthly spend cap has no boundary — no reset
+raises it, only the owner can — so re-dating a gate past one is not waiting
+for a remedy, it is waiting for nothing in particular. Market has now fired
+three slots, consumed zero gates, and every refusal has come from a wall that
+no act of this company's could have lifted. A gate that re-dates on every
+refusal, in a company that was refused 1,159 times, is a gate that cannot be
+reached by the mechanism it names.
+
+### What actually answered market's row, and where it was
+
+The question class A asks is whether the naming seat works. `audit.jsonl`,
+in the same directory as the logs, has answered it since 2026-09-24:
+
+| `run.end` | trigger | exit | turns |
+| --- | --- | --- | --- |
+| 2026-09-24T15:57:47 | window | **0** | **75** |
+| 2026-09-30T04:01:55 | window | **0** | **118** |
+| 2026-10-05T03:27:13 | window | 143 | - |
+| 2026-10-30T11:00:18 | cron | 1 | 1 |
+| 2026-11-06T11:00:16 | cron | 1 | 1 |
+
+Market has two clean runs of 75 and 118 turns. **The seat works.** What has
+never completed is a slot of the clock the host took on 2026-10-23, and both
+of its attempts were refused by provider walls. That is a fact about the
+clock's exposure and about two provider weeks, and it was never a fact about
+the seat.
+
+**Market's class A row is closed on that evidence**, not on a fourth gate.
+Three of this register's own readings — "the seat has not run since
+2026-10-17", "0 runs and 0 pull requests", "never" — were measured on a
+surface that could not see either of those two runs, and the table above is
+the first time this page has read a source that could.
+
+### Why the page could not see it: the log root is pruned at 31 days
+
+This is the part to carry past this entry, because it quietly expires
+everything this register has ever measured.
+
+| source | earliest record, read 2026-11-09T00:58Z | rows |
+| --- | --- | --- |
+| `/srv/asc/state/.epito/logs/**/*.log` | **2026-10-09T06:20Z**, across all 41 seats | - |
+| `/srv/asc/state/.epito/audit.jsonl` | **2026-09-24T02:57:31Z** | 13,663 |
+
+There is no log file dated earlier than 2026-10-09 anywhere under the log
+root, for any seat of any company, and today is 2026-11-09. That is a
+**31-day rolling window**, and it is not a coincidence of when the seats
+started: the audit log beside it reaches two weeks further back and the window
+runtime's runs are in it.
+
+The 2026-11-01 entry above read market's directory and reported three logs,
+naming `2026-10-05` and `2026-09-30` among them. **Those two files are gone
+now** — the directory holds two logs today, `2026-10-30` and `2026-11-06` —
+and they are the two runs that would have closed market's row eight days ago.
+The entry was right when it was written and is unreproducible today.
+
+So: **a register that measures absence against a pruned source converts its
+own findings into claims nobody can check, and the conversion is silent.**
+`tools/cron_firing.py` reads the log root. §0's owed-cycle detector reads the
+log root for firings and the audit log only for scheduler rows. Every "never"
+and every "has not run since" on this page was measured in a window that
+shortens by one day per day.
+
+The remedy is cheap and is not a new instrument: **`audit.jsonl` is the
+long-lived source and it carries `run.end` with `exit` and `turns` on every
+run.** Any reading on this page of the form "this seat has not run since X"
+must come from it, and a reading taken from the log root must name its floor.
+The log root keeps the refusal *sentence*, which the audit log does not, so
+neither replaces the other — the division is: the audit log says whether a run
+happened and how it ended, the log root says why, for 31 days.
+
+This is the same shape as
+`INC-2026-10-24-the-receipt-we-asked-for-was-built-and-no-charter-was-pointed-at-it`
+and as the board-versus-Actions correction in §2a-0 of the charter: the
+evidence existed, in a readable file, and the surface that needed it was
+pointed somewhere else. Three times now. The general form, which is worth more
+than this instance: **when an instrument reports an absence, read its floor
+before you read its answer.** An instrument with a horizon shorter than the
+question returns "never" and "not in the last month" in the same word.
+
+### The card's state after this run
+
+| class | rows | state |
+| --- | --- | --- |
+| A | market, research, security | **CLOSED, all three.** Research 2026-10-27 on a rescued slot, security 2026-11-09 on #657's merge, market 2026-11-09 on the audit log's two clean runs |
+| B | four rows naming the exo seat | open, and still with the owner: it widens this seat's own budget, so no silence rule reaches it |
+| C | frontend, skill | closed 2026-10-26 on the owner's silence, and closed from the owing side 2026-10-27 |
+
+So the card is down to class B, which is the one half this seat may not
+settle for itself.

@@ -142,11 +142,20 @@ def test_the_seat_filter_reads_one_directory(tmp_path):
 
 #: The monthly sentence exactly as the host's archive carries it, 257 times
 #: across 2026-11-03 to 2026-11-08. Copied rather than paraphrased, because
-#: the defect it pins lives in its closing clause.
+#: the defect it pins lives in its closing clause: it says "your weekly limit
+#: resets", so any reader that tests for the word `weekly` before the word
+#: `monthly` calls the spend cap the weekly wall.
 MONTHLY_SPEND = (
     "You've hit your org's monthly spend limit · ask your admin to raise it "
     "at claude.ai/admin-settings/usage · your weekly limit resets "
     "Nov 8, 11pm (UTC)")
+
+#: The second real form of the same sentence, with no date on the weekly
+#: clause. Between them the two account for all 257; a fix verified against
+#: the dated one alone is verified against part of the population.
+MONTHLY_SPEND_NO_DATE = (
+    "You've hit your org's monthly spend limit · ask your admin to raise it "
+    "at claude.ai/admin-settings/usage · your weekly limit resets 11pm (UTC)")
 
 
 @pytest.mark.parametrize("sentence,expected", [
@@ -155,6 +164,7 @@ MONTHLY_SPEND = (
     ("Your session limit was reached", "session-limit"),
     ("Overloaded", "unclassified-429"),
     (MONTHLY_SPEND, "monthly-spend"),
+    (MONTHLY_SPEND_NO_DATE, "monthly-spend"),
 ])
 def test_the_refusal_sentence_is_the_only_discriminator(sentence, expected):
     assert cf.classify_refusal(sentence, 429) == expected
@@ -201,6 +211,29 @@ def test_a_run_that_was_not_refused_keeps_no_refusal_text(tmp_path):
     run, = cf.read_runs(tmp_path)
     assert run["refusal"] is None
     assert run["refusal_text"] is None
+def test_the_monthly_test_runs_before_the_weekly_test():
+    """Order, not vocabulary, is the fix -- so pin the order itself.
+
+    Both real variants above happen to say `monthly` before `weekly`, so a
+    chain with the branches in the wrong order still passes every test that
+    only feeds it those two. This sentence is synthesised rather than quoted
+    for exactly that reason: it names both walls and the narrower one has to
+    win on the rule and not on the word order.
+    """
+    both = "hit your org's monthly spend limit, and your weekly limit resets"
+    assert cf.classify_refusal(both, 429) == "monthly-spend"
+
+
+def test_a_weekly_refusal_is_still_weekly_after_the_third_class_arrived():
+    """The other direction: the fix must not drag weekly rows into monthly.
+
+    All three real weekly variants, quoted from the same host. 487 refusals
+    take one of these forms and none of them says `monthly` or `spend`.
+    """
+    for sentence in ("You've hit your weekly limit · resets Nov 1, 11pm (UTC)",
+                     "You've hit your weekly limit · resets 11pm (UTC)",
+                     "You've hit your weekly limit · resets Nov 8, 11pm (UTC)"):
+        assert cf.classify_refusal(sentence, 429) == "weekly-limit"
 
 
 def test_the_result_line_is_found_whatever_its_whitespace(tmp_path):
@@ -242,6 +275,27 @@ def test_the_weekly_and_session_limits_do_not_collapse_into_one_word(tmp_path):
     result = cf.judge(cf.read_runs(tmp_path), "2026-10-25", now=NOW)
     assert sorted(f["why"] for f in result["lost"]) == [
         "session-limit", "weekly-limit"]
+
+
+def test_the_three_limits_reach_the_verdict_as_three_words(tmp_path):
+    """End to end, because `classify_refusal` is not where a reader looks.
+
+    The label has to survive `read_runs` and `judge` and arrive in the
+    finding, since what the register quotes is the printed verdict and not
+    the function's return value.
+    """
+    write_log(tmp_path, "alexandria-market", "2026-11-06T11-00-10-855Z",
+              "cron", refused(MONTHLY_SPEND), exit_code=1, turns=1)
+    write_log(tmp_path, "alexandria-engineer", "2026-11-06T12-06-00-000Z",
+              "cron", refused("You've hit your weekly limit · resets 11pm (UTC)"),
+              exit_code=1, turns=1)
+    write_log(tmp_path, "engineer", "2026-11-06T00-06-00-000Z", "cron",
+              refused("You've hit your 5-hour limit · resets 4am"),
+              exit_code=1, turns=1)
+    result = cf.judge(cf.read_runs(tmp_path), "2026-11-06",
+                      now="2026-11-06T23:00:00Z")
+    assert sorted(f["why"] for f in result["lost"]) == [
+        "monthly-spend", "session-limit", "weekly-limit"]
 
 
 # --- the three states ----------------------------------------------------
@@ -729,7 +783,7 @@ def test_the_json_surface_carries_the_cut_state_too(tmp_path, capsys):
 
 
 @pytest.fixture(autouse=True)
-def _no_host_claim_file(tmp_path_factory, monkeypatch):
+def _no_host_claim_file(tmp_path, monkeypatch):
     """Keep this file's promise that no test reads `/srv/asc/state`.
 
     `main` defaults `--claims` to the host's claim file, which exists on the
@@ -737,8 +791,15 @@ def _no_host_claim_file(tmp_path_factory, monkeypatch):
     pass because no claim matched would still be reading the host's disk, so
     the default is pointed at an absent path for every test here and the tests
     that care about claims pass their own.
+
+    `tmp_path` rather than `tmp_path_factory`, because this fixture is autouse
+    and function-scoped, so the factory made one directory per test and left
+    all of them behind: 120 empty directories a run, measured 2026-11-09, since
+    `tmp_path_retention_policy` governs `tmp_path` and not the factory. The
+    path it needs is one that does not exist, and `tmp_path` gives that and is
+    collected.
     """
-    absent = tmp_path_factory.mktemp("no-claims") / "capacity-retry.json"
+    absent = tmp_path / "capacity-retry.json"
     monkeypatch.setattr(cf, "CLAIM_FILE", absent)
 
 

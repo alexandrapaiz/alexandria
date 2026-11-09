@@ -233,6 +233,12 @@ DECLARED: dict[tuple[str, str], Judgment] = {
     ("panel_adversary.py", "--skill"): Judgment("roster"),
     ("panel_provenance.py", "--skill"): Judgment("roster"),
     ("panel_validator.py", "--skill"): Judgment("roster"),
+    # Both of these arrived on `main` with #813 and were unaccounted for there,
+    # so this gate was already failing before this branch added to it. A tree
+    # that reads files takes `path` for both: `--root` is the tree to read and
+    # `paths` narrows it.
+    ("prose_symbols.py", "--root"): Judgment("path"),
+    ("prose_symbols.py", "paths"): Judgment("path"),
     # Both are the same two judgments `cron_firing.py` already carries, and for
     # the same reason: this tool reads that one's log root through that one's
     # reader, so a divergence here would be a second answer to one question.
@@ -305,6 +311,12 @@ DECLARED: dict[tuple[str, str], Judgment] = {
     ("wake_routes.py", "--audit"): Judgment("path"),
     ("wake_routes.py", "--company-yaml"): Judgment("path"),
     ("wake_routes.py", "--seat"): Judgment("roster"),
+    # The same two judgments `cron_firing.py` and `provider_cycle.py` carry,
+    # for the third time and the same reason: this tool walks that one's log
+    # root through that one's reader, so a different answer here would be a
+    # second answer to one question.
+    ("wall_encounters.py", "--root"): Judgment("path"),
+    ("wall_encounters.py", "--seat"): Judgment("roster"),
 }
 
 #: A value nothing carries, for the probe. Spelled so that a tool which happens

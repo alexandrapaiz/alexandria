@@ -548,3 +548,147 @@ def test_no_disposition_names_a_file_this_repository_does_not_have():
     because a fixture holds a deliberate subset.
     """
     assert checker.check(str(REPO))["surfaces"]["missing"] == []
+
+
+# ------------------------------- the status table, a word the count gate cannot see
+
+
+def grade(repo, **statuses) -> None:
+    """Give the fixture's skills a declared grade, as the real ones carry."""
+    for name, value in statuses.items():
+        skill = repo / "skills" / name.replace("_", "-") / "SKILL.md"
+        text = skill.read_text()
+        skill.write_text(
+            text.replace(
+                "description: Use when testing the checker.",
+                f"description: Use when testing the checker.\nstatus: {value}",
+            )
+        )
+
+
+def table(rows, header="| Skill | Status | The decision it is for |", caption="The grades:") -> str:
+    body = "\n".join(
+        f"| `{name}` | {value} | What it decides |" for name, value in rows
+    )
+    return f"\n{caption}\n\n{header}\n| --- | --- | --- |\n{body}\n"
+
+
+def graded_repo(repo, rows=(("alpha-skill", "provisional"), ("beta-skill", "draft")),
+                **kwargs) -> None:
+    """The fixture plus a correct status table on the install page."""
+    grade(repo, alpha_skill="provisional", beta_skill="draft")
+    page = repo / "docs" / "product" / "install.md"
+    page.write_text(page.read_text() + table(rows, **kwargs))
+
+
+def test_a_correct_status_table_passes(repo):
+    graded_repo(repo)
+    report = checker.check(str(repo))
+    assert report["ok"], report["problems"]
+    assert report["surfaces"]["status tables"] == ["docs/product/install.md:14"]
+    assert report["statuses"] == {"alpha-skill": "provisional", "beta-skill": "draft"}
+
+
+def test_a_grade_the_front_matter_does_not_declare(repo):
+    graded_repo(repo, rows=(("alpha-skill", "active"), ("beta-skill", "draft")))
+    found = problems(repo)
+    assert "grades `alpha-skill` 'active'" in found
+    assert "says 'provisional'" in found
+
+
+def test_a_skill_on_disk_with_no_row_is_a_silent_table(repo):
+    graded_repo(repo, rows=(("alpha-skill", "provisional"),))
+    assert "no row for `beta-skill`" in problems(repo)
+
+
+def test_a_row_for_a_skill_that_does_not_ship(repo):
+    graded_repo(repo, rows=(
+        ("alpha-skill", "provisional"),
+        ("beta-skill", "draft"),
+        ("ghost-skill", "provisional"),
+    ))
+    found = problems(repo)
+    assert "grades `ghost-skill`" in found
+    assert "no skills/ghost-skill/SKILL.md" in found
+
+
+def test_a_row_for_a_skill_whose_front_matter_declares_no_grade(repo):
+    """The table becomes the only place the grade exists, so nothing can
+    confirm it and the drift has nowhere to be caught."""
+    page = repo / "docs" / "product" / "install.md"
+    grade(repo, beta_skill="draft")
+    page.write_text(page.read_text() + table(
+        (("alpha-skill", "provisional"), ("beta-skill", "draft"))
+    ))
+    assert "declares no status" in problems(repo)
+
+
+def test_a_grade_outside_the_vocabulary_is_named(repo):
+    graded_repo(repo, rows=(("alpha-skill", "shipped"), ("beta-skill", "draft")))
+    grade_file = repo / "skills" / "alpha-skill" / "SKILL.md"
+    grade_file.write_text(grade_file.read_text().replace(
+        "status: provisional", "status: shipped"))
+    found = problems(repo)
+    assert "declares status 'shipped'" in found
+    assert "draft, provisional, active" in found
+
+
+def test_a_table_under_a_dated_caption_is_a_record(repo):
+    """A reading of the library on a day is right when it is stale, the same
+    exemption a dated count already gets."""
+    graded_repo(
+        repo,
+        rows=(("alpha-skill", "active"), ("beta-skill", "active")),
+        caption="The grades as of 2026-10-18:",
+    )
+    report = checker.check(str(repo))
+    assert report["ok"], report["problems"]
+
+
+def test_a_table_with_no_status_column_is_not_a_status_table(repo):
+    """The install page's own table of commands names no grades, and a gate
+    that read every table would have had to invent a disposition for it."""
+    graded_repo(repo)
+    page = repo / "docs" / "product" / "install.md"
+    page.write_text(page.read_text() + table(
+        (("alpha-skill", "anything"),),
+        header="| Skill | Command | The decision it is for |",
+    ))
+    report = checker.check(str(repo))
+    assert report["ok"], report["problems"]
+    assert len(report["surfaces"]["status tables"]) == 1
+
+
+def test_a_status_table_about_something_else_is_left_alone(repo):
+    """A `Status` header over rows that are not skills is somebody else's
+    table, and failing it would be the gate crying wolf on its first run."""
+    graded_repo(repo)
+    page = repo / "docs" / "product" / "install.md"
+    page.write_text(page.read_text() + table(
+        (("some-adr", "accepted"),), caption="Decisions:",
+    ))
+    report = checker.check(str(repo))
+    assert report["ok"], report["problems"]
+
+
+def test_a_second_page_that_grows_a_table_is_covered_without_being_listed(repo):
+    """The hand list of two manifests is what let a stale count ship through a
+    clean pass. A page is covered by the shape of its table, so this one needs
+    no entry anywhere."""
+    graded_repo(repo)
+    readme = repo / "README.md"
+    readme.write_text(readme.read_text() + table(
+        (("alpha-skill", "active"), ("beta-skill", "draft"))
+    ))
+    found = problems(repo)
+    assert "README.md" in found and "grades `alpha-skill` 'active'" in found
+
+
+def test_this_repositorys_status_table_is_found_and_correct():
+    """The gate against the real tree, which is the artifact it was written
+    for: the table a buyer reads has to equal the ten SKILL.md files."""
+    report = checker.check(str(REPO))
+    assert report["surfaces"]["status tables"] == ["docs/product/install.md:45"]
+    assert report["ok"], report["problems"]
+    assert set(report["statuses"]) == set(report["skills"])
+    assert all(report["statuses"].values()), report["statuses"]
