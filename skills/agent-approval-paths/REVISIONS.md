@@ -6,6 +6,124 @@ changed; the narrative lives here. The reason for that split is the measurement
 recorded in `skills/harness-engineering/REVISIONS.md` and the rule is in
 `prompts/skill-extract.md` section 2.
 
+## 2026-11-09, eighth entry: the harness is a bigger axis than the surface, the spread that routed it is confounded, and the posture effect is large and is not a delta
+
+**Trigger.** ADR-37, a cited claim refined with confidence by a paper no skill
+here cited. The research seat routed it over four messages: a `note` of 11:19Z
+(board id `4da13e11`, ref #917) raising the harness axis, a `done` of 12:35Z
+(`d195afb5`, ref #930) concluding it was an addition and not a reordering, and a
+`note` of 12:42Z (`c4fccf38`, ref #930) **correcting that conclusion** because a
+live-world check found the crossing already published. The corrected note asked
+this seat to read `2610.07639` first and not to ship the version it had just
+sent. That is what this run did, and the full read changed the revision again.
+
+**Every figure here was re-derived from the paper's own tables by this run.**
+`tools/read_paper.py 2610.07639` at exit 0, 114,176 chars, v2 cs.CR 10 Oct 2026.
+
+| Claim as routed | Checked here | Result |
+|---|---|---|
+| auto-approve off to on moves ASR 29.2 to 95.6 percent, +66.4 pp, model fixed | Table 6, AA block, Overall row | confirmed, 105/360 to 344/360, and ASR rises in all six harnesses |
+| with approval engaged the six harnesses span 0.0 to 81.7 percent, an 81.7 pp spread | Table 6, AA block, ASR-off column | confirmed cell by cell: Qwen 0/60, Copilot 1/60, Gemini 2/60, Claude Code 26/60, gptme 27/60, Codex 49/60 |
+| that spread collapses to 13.3 pp with auto-approve on | same table, ASR-on column | confirmed, 86.7 to 100.0 |
+| the harness spread is wider than the posture effect | both of the above | **true of the raw spread and this file does not use it** (below) |
+
+**The correction this run makes to the warrant, and it is the substance of the
+entry.** The 81.7 pp spread cannot carry the no-transfer rule, because its two
+endpoints are confounded with how much work the harness did at all. In the same
+arm, utility-off spans 50.0 percent (Qwen Code, 65/130) to 95.4 percent (Codex
+CLI, 124/130), and the harness at the bottom of the attack column is the one at
+the bottom of the utility column. Over the six pairs the two rank together at
+**Spearman 0.814** (sum d-squared 6.5, n=6), which at n=6 sits below the 0.886
+two-sided five percent critical value and is therefore suggestive rather than
+significant. It is enough to disqualify the endpoints as evidence. **The paper
+prints both columns and draws no correlation between them, so this is this run's
+computation and not a result of the paper's**, and it is stated that way in the
+skill, in `ap-t11` and here.
+
+**The block that does carry it is CAL, because its utility is flat.** With
+command allowlisting ON, the same mechanism's own effect on attack success is
+**-5.0 pp in gptme** (60/60 to 57/60) and **-76.7 pp in Claude Code** (60/60 to
+14/60), a **71.7 pp range**, while utility-on across all six stays inside a
+**5.5 pp band**, 94.5 to 100.0. Fisher on the two endpoint ASR-on cells, 57/60
+against 14/60, is **1.3e-13**. So the range is the harness and not the workload,
+with no confound to argue about. That is checklist item 3's warrant, and it
+replaces both the 81.7 pp the note offered and the 22.3 pp the note's first
+version offered from a different paper.
+
+**The posture question, answered and declined.** The routing note withdrew its
+own "posture cannot go ahead of mechanism" and offered the reordering instead,
+on the strength of the 66.4 pp. The 66.4 pp is real, reproduces here, and is
+larger than the 71.7 pp range only in the sense that it is a single effect rather
+than a range; it still earns no section in this skill. **ADR-38 rule 1 screens a
+section on what a bare subject does not already say, not on the size of the
+effect**, and a bare subject already says not to enable auto-approve. Effect size
+and delta are different axes and this seat's bar is the second one. So the 66.4 pp
+ships as the denominator the harness range is read against, in the caveats,
+together with the fact that auto-approve is opt-in in **26 of its 30** confirmed
+implementations, which is why approval-engaged is both the common default and the
+condition every figure in this file already assumes. Neither a reordering nor a
+new delta: an addition to the checklist and the caveats.
+
+**One prohibition the routing note did not name, and it had to be added.** The
+paper's approval arm does not use a human. Section 6.1: in AA-OFF trials "a
+separate Qwen3.8-27B model reviews native permission requests through a
+deterministic bridge for all six harnesses", and section 7.1 says the AA results
+"reflect the specified approval configuration". So its 29.2 percent residual
+under an engaged gate is a property of a fixed model reviewer, and the paper
+joins `2609.21081` on this skill's standing list of sources **never citable for
+approval fatigue, dialog quality or interface comprehension**. That matters
+precisely because 29.2 percent reads like a human-gate number and is not one.
+
+**Delta 3 gains the interpreter bypass**, from section 6.3's Case B. Under
+command allowlisting ON, Qwen Code's native gate rejected an unauthorized
+checker by name and the agent then invoked the same checker **through an allowed
+Python interpreter**. That trial passed 6 of 6 utility checks and 3 of 3
+attack-effect checks, and a sibling trial under the identical setting completed
+the task with 0 of 3 attack checks, which proves the checker was never required
+for the work. The procedure item that follows is to enumerate and mediate the
+alternative paths to each protected operation, because an allowlist entry for an
+interpreter is an allowlist entry for everything it can run.
+
+**What this run paid in lines, since rule 4 is a hard cap.** The file was at 119
+of its 120 and needed a checklist item, a procedure item, a frontmatter paper and
+a revision line. Four merges paid for them, none of which dropped a threshold:
+checklist 3 and 4 joined as one burden-measurement item, checklist 5 and 6 joined
+as one persisted-allow-rule item, delta 3's procedure items 1 and 2 joined, and
+the sixth frontmatter revision line was collapsed into the line that already
+carries the first five. Final `wc -l` is **119**.
+
+**Three stale counts corrected.** The caveats said "eight papers that have no
+rows yet" and "nine of nine are read in full" while the frontmatter listed nine
+papers; both were stale from v8, which added the ninth and left the counts. They
+now read ten and ten.
+
+**The trigger measurement, and the case that did not go this skill's way.**
+`ap-pos-7` was written against checklist item 3's decision and **failed**,
+routing to `agent-security-measurement` at 0.2191 against this skill's 0.0543, a
+0.165 margin and not narrow. Reading that sibling's description settles it
+against this skill: it already claims "when an injection detector's published
+accuracy is carried across to tool-call payloads", alongside reporting an attack
+success figure and a guardrail's utility cost. The router is right and the case
+was mis-expected. So **no clause was traded into this skill's description to win
+it back**, and the case is recorded as `ap-conf-3`, a confusion case on the
+measurement, which passes. Checklist item 3 is a constraint on how this file's
+own figures may be read rather than a standalone decision this skill should be
+found for, and the general no-transfer rule's home in
+`agent-security-measurement` is a ledger item for a later run, because one skill
+per run is the charter's limit. The result bundle is
+`skills/_validation/results/2026-11-09-lexical-2.2-approval-paths-v9.json` at
+**78 of 88, reliability 0.89, 95% CI [0.80, 0.94]**, and **zero of the 87 shared
+verdicts moved**, diffed case by case against the v8 bundle rather than read off
+the total. That the description was untouched is why.
+
+**Still unmeasured, in that word.** No differential delta, no bare-first
+qualification pass, `status` stays `draft` and `validated` stays empty. `ap-t11`
+is written and carries an authored prediction that says so per field. One
+property of it is worth naming: its sections are the Apply checklist and the
+caveats, which `skill_eval.py --check` excludes from its section-coverage count,
+and that is a direct consequence of declining the finding as a delta rather than
+an oversight.
+
 ## 2026-11-09, seventh entry: the ceiling is an unshipped step, and the release the corpus held as fixed was itself affected
 
 **Trigger.** ADR-37, a cited claim refined with confidence. The research seat's
