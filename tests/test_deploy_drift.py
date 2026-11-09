@@ -914,6 +914,185 @@ def test_a_complete_clone_still_blames_the_deploy_for_an_unplaceable_digest():
               "shallow clone" not in found.get("why", ""), str(found))
 
 
+def test_a_search_that_stopped_at_its_own_ceiling_does_not_blame_the_deploy():
+    """The third cause of a no-match, and the one that had no name for 13 days.
+
+    `INC-2026-10-27-the-deploy-surface-said-not-in-this-history-about-a-commit-forty-three-back`:
+    the walk replayed 40 commits, the deployed commit was at position 43, and
+    the surface reported that the image was built from code not in this
+    history. It was an ancestor of `origin/main` sitting in the checkout the
+    search had just read. A reader who believes that sentence stops looking,
+    and that is the whole cost: the sentence describes a deploy from an
+    unpushed tree, which is a different incident with a different owner.
+
+    The shallow branch above is the same mistake, fixed once for the one cause
+    somebody thought of. Both are "the search was too short".
+    """
+    with tempfile.TemporaryDirectory() as tmp:
+        repo = fixture_history(Path(tmp), [
+            ("prompts/triage.md", f"Edit {n}") for n in range(1, 7)
+        ])
+        found = dh.undeployed_commits(repo, "triage", "0ldc0dec0de", limit=3)
+        check("the ceiling is named as the cause",
+              "the search's own ceiling" in found.get("why", ""), str(found))
+        check("the deploy is explicitly not judged",
+              "has not been judged" in found.get("why", ""), str(found))
+        check("and it does not say the code is not in this history",
+              "not in this history" not in found.get("why", ""), str(found))
+        check("the flag is on the dict, so no caller greps the sentence",
+              found.get("truncated") is True, str(found))
+        check("the shallow sentence is not borrowed for this cause",
+              "shallow clone" not in found.get("why", ""), str(found))
+        check("no commit is named, because none was placed",
+              "commits" not in found, str(found))
+        check("the headline clause stays empty rather than wrong",
+              dh.name_undeployed(found) == "", dh.name_undeployed(found))
+        check("it looked at exactly the ceiling it was given",
+              found.get("searched") == 3, str(found.get("searched")))
+        check("and it says how far back that got it, which is the second ask "
+              "of the ledger entry that routed this repair",
+              found.get("oldest_searched") in _shas(repo),
+              str(found.get("oldest_searched")))
+
+
+def test_an_exhausted_history_says_how_far_it_looked_as_well_as_why():
+    """The deploy keeps the blame, and the refusal becomes checkable.
+
+    A refusal that does not say how far it looked cannot be checked by the
+    reader it is addressed to, which is how the 40-commit ceiling survived
+    three separate diagnoses. The walk reached the end of this app's history
+    here, so the old sentence is the right one and it now carries the oldest
+    commit it reached.
+    """
+    with tempfile.TemporaryDirectory() as tmp:
+        repo = fixture_history(Path(tmp), [("prompts/triage.md", "A change")])
+        found = dh.undeployed_commits(repo, "triage", "0ldc0dec0de")
+        check("the deploy is named as the cause",
+              "not in this history" in found.get("why", ""), str(found))
+        check("the ceiling is not claimed, because it was never reached",
+              "truncated" not in found, str(found))
+        check("the sentence says it walked every commit there is",
+              "every commit this app's files have" in found.get("why", ""),
+              str(found))
+        check("and names the oldest commit it reached",
+              found.get("oldest_searched") == _shas(repo)[0],
+              f"{found.get('oldest_searched')} vs {_shas(repo)[0]}")
+
+
+def test_the_deployed_commit_is_recovered_past_the_old_ceiling():
+    """The incident, as a test: the same digest, two limits, two answers.
+
+    This is the regression the repair exists for. The deployed state is the
+    first commit and 45 commits to the app's files sit on top of it, which is
+    the shape `weekly` was in when the surface gave up on it: one seat editing
+    one mounted file on every run.
+
+    Both halves are asserted on purpose. Raising a ceiling only moves it, so
+    the test that matters most is the one that says what happens when the new
+    ceiling is reached too.
+    """
+    with tempfile.TemporaryDirectory() as tmp:
+        repo = fixture_history(Path(tmp), [
+            ("prompts/triage.md", f"A writer-seat edit, {n} of 45")
+            for n in range(1, 46)
+        ])
+        deployed = _shas(repo)[0]
+        was = _digest_at_commit(repo, "triage", deployed)
+
+        found = dh.undeployed_commits(repo, "triage", was)
+        check("the default ceiling now reaches past commit 40",
+              found.get("deployed_commit") == deployed,
+              found.get("why", str(found)))
+        check("and all 45 commits on top of it are reported as undeployed",
+              len(found.get("commits", [])) == 45,
+              str(len(found.get("commits", []))))
+
+        short = dh.undeployed_commits(repo, "triage", was, limit=40)
+        check("the same digest under the old ceiling is a refusal",
+              "commits" not in short, str(short))
+        check("and the refusal blames the ceiling rather than the deploy",
+              short.get("truncated") is True
+              and "not in this history" not in short.get("why", ""),
+              str(short))
+
+
+def test_the_ceiling_clears_every_app_s_real_history():
+    """The number, measured against this repository rather than reasoned about.
+
+    `DEPLOY_HISTORY_LIMIT` was 40 with a comment calling it "generous for three
+    apps whose file sets change a few times a week". There are five apps, and
+    the unit that spends the window is not the file set: it is whichever seat
+    commits most often to any file in an app's image. On 2026-11-09 the walk
+    needed 238 commits for `weekly` and 222 for `distill`.
+
+    So this asserts headroom rather than a constant, and a failure here is an
+    instruction rather than a bug: raise the limit. It abstains when the
+    history is not in the checkout, because a shallow clone would make this
+    pass for the one reason that proves nothing (company standard L-A21).
+    """
+    if dh._shallow_state(ROOT) is True:
+        print("  skip this checkout is shallow, so no app's history is here "
+              "to measure and a pass would prove nothing")
+        return
+    deepest, where = 0, ""
+    for app in sorted(rs.APPS):
+        paths = dh._paths_at(ROOT, app, "HEAD")
+        if paths is None:
+            continue
+        status, out = dh._git(ROOT, "log", "--format=%h", "HEAD", "--", *paths)
+        if status != 0:
+            continue
+        count = len(out.splitlines())
+        if count > deepest:
+            deepest, where = count, app
+    if not deepest:
+        print("  skip git could not count any app's history here")
+        return
+    check(f"the ceiling clears the deepest app's whole history "
+          f"({where} at {deepest} commits), so no app can walk off the end "
+          f"of it: raise DEPLOY_HISTORY_LIMIT if this fails",
+          dh.DEPLOY_HISTORY_LIMIT > deepest,
+          f"limit {dh.DEPLOY_HISTORY_LIMIT} vs {where} at {deepest}")
+
+
+def test_a_count_that_ran_out_of_window_says_at_least_rather_than_a_number():
+    """The same ceiling one function over, where it corrupts a number.
+
+    `undeployed_commits` answers a spent window with a refusal, which a reader
+    can see. `undeployed_since` answers with a count, so a spent window used to
+    come back as "3 undeployed commits since <sha>" when the true number was
+    any number above 3, with nothing in the result or the headline saying which.
+
+    Found by the sweep for other count-bounded `git log` calls that this run's
+    own incident entry proposes, and fixed here rather than filed, because the
+    argument of that entry is that fixing one cause of a symptom and citing the
+    class is what let the class survive.
+    """
+    with tempfile.TemporaryDirectory() as tmp:
+        repo = fixture_history(Path(tmp), [
+            ("prompts/triage.md", f"Edit {n}") for n in range(1, 7)
+        ])
+        asked = _shas(repo)[1]
+
+        whole = dh.undeployed_since(repo, "triage", asked)
+        check("the unbounded listing claims no truncation",
+              "truncated" not in whole, str(whole))
+        check("and name_unrecorded states its count plainly",
+              dh.name_unrecorded(whole).startswith(f"{len(whole['commits'])} "),
+              dh.name_unrecorded(whole))
+
+        short = dh.undeployed_since(repo, "triage", asked, limit=3)
+        check("a spent window is flagged on the dict",
+              short.get("truncated") is True, str(short))
+        check("it returns exactly the ceiling and no more",
+              len(short["commits"]) == 3, str(len(short["commits"])))
+        check("and the headline says at least, not a bare number",
+              dh.name_unrecorded(short).startswith("at least 3 undeployed"),
+              dh.name_unrecorded(short))
+        check("the true count really is larger, or this test proves nothing",
+              len(whole["commits"]) > 3, str(len(whole["commits"])))
+
+
 def test_a_git_that_cannot_answer_is_not_called_a_shallow_clone():
     """`_shallow_state` has three outcomes and only True is the shallow case.
 

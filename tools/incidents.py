@@ -204,8 +204,14 @@ def heading_key(heading: str) -> str:
     return heading
 
 
-def split_entries(text: str, source: str = "register") -> list[Entry]:
-    """Every level-two entry, ignoring headings inside fenced code blocks."""
+def split_entries(text: str, source: str = "register",
+                  boundary=None) -> list[Entry]:
+    """Every entry in one file, ignoring headings inside fenced code blocks.
+
+    `boundary` is the pattern that starts a new entry, defaulting to any
+    level-two heading, which is what the register file means by an entry.
+    """
+    boundary = ENTRY if boundary is None else boundary
     entries: list[Entry] = []
     fenced = False
     current: Entry | None = None
@@ -215,7 +221,7 @@ def split_entries(text: str, source: str = "register") -> list[Entry]:
             if current is not None:
                 current.body.append(line)
             continue
-        match = None if fenced else ENTRY.match(line)
+        match = None if fenced else boundary.match(line)
         if match:
             heading = match.group(1)
             current = Entry(heading_key(heading), heading, number, [line], source)
@@ -223,6 +229,58 @@ def split_entries(text: str, source: str = "register") -> list[Entry]:
         elif current is not None:
             current.body.append(line)
     return entries
+
+
+def split_inbox_file(text: str, source: str, name: str) -> list[Entry]:
+    """One inbox file is one entry, which is the inbox's own rule.
+
+    `docs/agents/incidents/inbox/README.md` says "one file per incident", and
+    `check` enforces it by refusing a file that carries two INC ids. The
+    splitter did not honour it: it broke on any level-two heading, so a file
+    that sections itself with `## What was true` and `## Why no run saw it`
+    became one entry per section.
+
+    Measured on this register on 2026-11-09: 264 inbox files produced 272
+    entries, and one file produced seven. Six of those seven were pseudo
+    entries keyed on their own section heading, carrying no id and no date. They
+    were not harmless. `prior` indexes and scores whatever this returns, so a
+    query was ranked against six fragments of one incident instead of against
+    the incident, each fragment holding a sixth of the terms and only the
+    fragment containing the fix section able to answer "and was there a
+    remedy?". The headline count was wrong by the same eight.
+
+    Nothing caught it. `check` asks whether two INC **ids** collide in one file,
+    which is the right question for the fold and blind to this, because a
+    section heading carries no id and so collides with nothing. That is the same
+    shape as the order-blind arithmetic in the register resolver, found the same
+    day: a gate correct about the defect it was built for and silent about a
+    second one in the thing it measures.
+
+    So the boundary for an inbox file is the id heading and not any heading. A
+    file with no id heading is one entry keyed from its filename rather than
+    zero, because `check` already refuses that file by name and a lookup that
+    silently drops an entry is the one failure this corpus must not have.
+    """
+    stem = name[:-3] if name.endswith(".md") else name
+    entries = split_entries(text, source, boundary=INBOX_ID_HEADING)
+    if entries and INC_ID.match(entries[0].heading):
+        return entries[:1]
+
+    # The heading is missing, or it leads with `INC-` and is not an id. Both are
+    # rekeyed from the filename, which carries a well-formed id by the inbox's
+    # own naming rule and is the one part of a malformed file still readable.
+    #
+    # This is the real blob the ExO seat filed on 2026-11-09 and repaired on the
+    # trunk an hour later: `# INC-2026-11-09 — the ExO learning log carried ...`,
+    # the id broken off after the date with an em dash where the slug belongs.
+    # Against the old splitter it produced six entries keyed `What was true`,
+    # `Why no run saw it` and four more. Keyed on the heading it produces one
+    # entry whose id is a sentence and whose date is None, which is better and
+    # still wrong: `fold` sorts by that date and `prior` prints that id.
+    entry = entries[0] if entries else None
+    body = entry.body if entry else text.splitlines()
+    line = entry.line if entry else 1
+    return [Entry(heading_key(stem), stem, line, body, source)]
 
 
 def conflict_lines(text: str) -> list[int]:
@@ -709,7 +767,8 @@ def all_entries(register_text: str | None = None, inbox: Path = INBOX) -> list["
         register_text = REGISTER.read_text() if REGISTER.is_file() else ""
     entries = split_entries(register_text, "register")
     for path in inbox_files(inbox):
-        entries.extend(split_entries(path.read_text(), f"inbox/{path.name}"))
+        entries.extend(split_inbox_file(
+            path.read_text(), f"inbox/{path.name}", path.name))
     return entries
 
 
@@ -801,8 +860,6 @@ def prior_art(query: str, entries: list["Entry"] | None = None,
             continue
         score = sum(wanted[term] * idf[term] for term in hits)
         verdict, section = remedy_of(entry)
-        if remedies_only and verdict != "REMEDY":
-            continue
         scored.append({
             "id": entry.key,
             "heading": entry.heading,
@@ -844,8 +901,21 @@ def prior_art(query: str, entries: list["Entry"] | None = None,
     # number a reader can use is `close`, counted over the whole ranking rather
     # than over the printed slice: a seat that passes --limit 3 still needs to
     # know there are nine close matches behind them.
+    # `remedies_only` filters what is PRINTED and never what "close" is measured
+    # against, and that ordering is load-bearing rather than tidy. It used to
+    # `continue` inside the loop above, which dropped the non-remedy entries
+    # before the floor was taken, and the floor is a fraction of the best
+    # surviving hit. So removing entries lowered the bar and the count went up:
+    # measured on 647 entries, `prior "test_the_four_flags_pr_backlog_brought_to
+    # _main_are_declared"` said `5 close matches, 1 with a remedy` and the same
+    # query with `--remedies-only` said `11 close matches, 11 with a remedy`.
+    # A filter that reports more than the unfiltered run is not a filter a reader
+    # can act on, and this flag is about to be named in a charter sentence, so
+    # the two invocations have to agree on the one number the sentence asks for.
     floor = strong_threshold(scored[0]["confidence"] if scored else 0.0)
     close = [row for row in scored if row["confidence"] >= floor]
+    shown = [row for row in scored
+             if not remedies_only or row["remedy"] == "REMEDY"]
     return {
         "query": query,
         "entries_searched": total,
@@ -856,7 +926,31 @@ def prior_art(query: str, entries: list["Entry"] | None = None,
         "close": len(close),
         "close_with_remedy": sum(1 for row in close if row["remedy"] == "REMEDY"),
         "close_threshold": round(floor, 3),
-        "hits": scored[:limit],
+        "remedies_only": remedies_only,
+        "withheld": len(scored) - len(shown),
+        # The best remedy-bearing entry in the WHOLE ranking, which is the one
+        # row a reader needs and the one the headline can hide.
+        #
+        # `close` is a fraction of the best hit, so a long distinctive query
+        # collapses it to a singleton: one entry at 1.000 and the next at 0.420
+        # means a close set of one, and if that one entry is OPEN the headline
+        # reads `0 of those prescribe a remedy` while the governing remedy sits
+        # second. The skill seat reproduced that on this seat's own tree on
+        # 2026-11-09 with the query
+        # `test_every_skill_the_page_receives_shows_a_dated_validation_result`,
+        # and its reading of the cause inverts the premise written above the
+        # tie-break: an assertion name is the most distinctive term this corpus
+        # has, and that distinctiveness is exactly what shrinks the close set,
+        # so the headline is least reliable for the hurried reader pasting the
+        # long name their log just gave them.
+        #
+        # `--remedies-only` appeared to fix it and did so by accident, through
+        # the threshold bug repaired above: filtering lowered the floor and let
+        # more rows in. With that gone the flag reports the same honest counts,
+        # so the headline needs its own answer rather than a flag.
+        "nearest_remedy": next(
+            (row for row in scored if row["remedy"] == "REMEDY"), None),
+        "hits": shown[:limit],
     }
 
 
@@ -931,6 +1025,27 @@ def report_prior(found: dict, seat: str | None = None, stream=None) -> int:
         print(
             "No close match. Nothing here is more than a shared word, so read the "
             "ranking\nas a weak hint rather than as prior art.",
+            file=stream,
+        )
+    nearest = found.get("nearest_remedy")
+    if found["close"] and not found["close_with_remedy"] and nearest:
+        print(
+            f"\nNone of the close matches prescribes a remedy, and that is not the "
+            f"same as\nnothing prescribing one. The nearest that does is at "
+            f"{nearest['confidence']:.3f}, below the\nclose threshold of "
+            f"{found['close_threshold']:.3f}:",
+            file=stream,
+        )
+        print(f"\n  {nearest['id']}", file=stream)
+        print(f"  {nearest['where']}", file=stream)
+        for line in nearest["remedy_lines"][:12]:
+            print(f"    | {line}", file=stream)
+    if found.get("remedies_only"):
+        print(
+            f"\nShowing only entries that prescribe a remedy. "
+            f"{found['withheld']} matching {'entry' if found['withheld'] == 1 else 'entries'} "
+            f"{'is' if found['withheld'] == 1 else 'are'} withheld,\nand the two counts above "
+            f"are over the whole register either way.",
             file=stream,
         )
     print(f"\nThe closest {len(found['hits'])}:", file=stream)

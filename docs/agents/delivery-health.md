@@ -909,3 +909,62 @@ prints is now a command somebody can run.
 `HIDDEN_WEEKS` in `site/lib/content.js` stays the single place the owner
 retires a week, and it is the answer to a gap that is never coming rather than
 a reason to soften the verdict for one that is.
+
+## 2026-11-09 (engineer seat, scheduled run): the undated row had a third cause, and this page named two
+
+The 2026-10-24 section above says the undated row "now say[s] which" of the two
+causes it could have. It lists them as a truncated history, closed by one
+command, and an image matching no commit on the trunk, which is a deploy from
+somewhere that is not the trunk. Both are real. **There was a third, and it was
+the live one for thirteen days on the app that prints the product.**
+
+`undeployed_commits` recovers the deployed commit by replaying the image's
+content digest over the history of the app's own files, bounded by
+`DEPLOY_HISTORY_LIMIT`. That bound was 40. The deployed commit for `weekly` is
+at walk position 238, because `weekly` mounts `prompts/digest.md` and the
+writer seat edits that file on every run, so the window was spent on one seat's
+commits. The surface printed "the deploy was built from code that is not in
+this history" about `f16e2775`, which is an ancestor of `origin/main` and was
+sitting in the checkout the search had just read.
+
+**The phrase "a truncated history" is where the two got confused, and it is
+worth keeping.** A history truncated by the *depth of the clone* and a history
+truncated by the *length of the search* produce the same mismatch, read the
+same way in a result dict, and have different owners and opposite remedies. One
+is the reader's, closed by `git fetch --unshallow`. The other is this tool's
+own ceiling, and no command a reader runs will close it.
+
+So the row now has four untrustworthy outcomes, not two, and only the last of
+them is a statement about the deploy:
+
+| what the walk found | what the row says | whose it is |
+|---|---|---|
+| no digest ever reported | there is no deployed state to diff against | the app, which is not calling `record_runtime` |
+| a shallow clone | the depth is the cause, and `git fetch --unshallow` | the reader's checkout |
+| the ceiling reached, older commits untried | the ceiling is the cause, with the oldest commit reached and the limit to raise | this tool |
+| every commit tried, none matched | built from code that is not in this history | the deploy |
+
+`DEPLOY_HISTORY_LIMIT` is 400, which clears every app's whole file history
+(deepest is `weekly` at 238) with room rather than being tuned to today, and
+`tests/test_deploy_drift.py` asserts that headroom against the real repository
+so the number cannot quietly go stale again. The replay caches content hashes
+per git object, so 400 is nowhere near ten times the cost of 40: the full
+`weekly` walk is 3.5s and `distill` 7.9s, and only a drifted app is walked at
+all.
+
+**Raising a ceiling only moves it, which is why the fork is the real repair.**
+A count is still reachable, and when it is reached the answer is now a refusal
+that names itself as the cause, carries a `truncated` flag so no caller has to
+grep a sentence, and says how far back it looked. This is company standard
+L-A73 in its own case: a catch-all sentence says what the handler knows and
+never asserts a cause it did not establish, and the cost of breaking it is that
+it "named a healthy component as the fault and pointed every reader away from
+the live one".
+
+**What the fix made visible, which is the reason it mattered.** `weekly` is
+24.7 days and 55 undeployed commits behind `origin/main`. `distill` is 24.4
+days and 118 behind. Before this change both read as unmeasurable, in a
+sub-clause under four other apps' verdict, because `exit_code` ranks a measured
+failure above an unmeasured surface. That ranking is now a `proposed` ledger
+entry of its own, against ArgoCD's, which puts `Unknown` below `Degraded` for
+exactly this reason.
