@@ -295,6 +295,19 @@ limit, the overflow and the remedy, and both messages were eventually delivered
 whole at 1478 and 1499 characters, so nothing was lost and the cost was entirely
 in turns.
 
+## 6c. The suite, and the seven reds that are not this run's
+
+The whole suite on this branch: **2,775 passed, 7 failed, 3 skipped**, in 8
+minutes 47 seconds. The seven are the same seven `main` carries, and that is
+checked rather than inferred: the three files were run against `origin/main` in
+a detached worktree and the identical seven names fail there. Four are in
+`tests/test_target_census.py`, two in `tests/test_plugin_manifest.py`, one in
+`tests/test_reading_queue.py`. None of the three files is touched by this diff,
+and the first two are carried by other seats' open branches. The suites this run
+did change pass completely: 24 in `tests/test_root_scratch.py`, 20 in
+`tests/test_resolve_register_conflict.py`, and the 7 in
+`tests/test_prose_symbols.py` on the branch this run verified.
+
 ## 7. The prefix, re-measured at the source
 
 The harness suggested the branch name `alexandria-security/2026-11-09-message`.
