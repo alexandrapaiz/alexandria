@@ -3,17 +3,30 @@
 
 The engineer seat's `check_status_tables` connects a table cell to a `status:`
 field and finds its tables by shape rather than by path. The same facts are
-also written as prose, and prose is invisible to it. `skills/README.md` says
-"**No skill carries `status: active`.** Nine carry `status: provisional` and
-`agent-approval-paths` carries `status: draft`", and every clause of that is a
-claim about frontmatter that no gate reaches. Eight `SKILL.md` files make the
-same kind of claim about themselves, in the form "`status: provisional` says
-exactly that".
+also written as prose, and prose is invisible to it. On 2026-11-09
+`skills/README.md` said "**No skill carries `status: active`.** Nine carry
+`status: provisional` and `agent-approval-paths` carries `status: draft`",
+three claims about frontmatter in one sentence and no gate over any of them.
 
 That page is this seat's surface and the table gate is not. So this is the
 prose half, scoped to the tree this seat may write, and the engineer's entry
 `docs/ideas/inbox/2026-11-09-a-prose-sentence-restates-the-grade-distribution-and-no-gate-reaches-it.md`
 is the proposal it implements.
+
+Measured over `skills/` on 2026-11-09, which is the reach rather than an
+estimate of it: **9 claims checked and 9 agreeing**, being 1 count, 1 negative
+count, 2 named skills, 4 self-claims and 1 negated self-claim, against 779
+dated sentences exempt, 19 size-shaped and 26 read and not resolved. Fourteen
+of those 26 are one sentence repeated in 8 `SKILL.md` files, "`status` moved
+from `active` to `provisional`", which the lone-grade rule below refuses on
+purpose.
+
+This docstring is prose about grades in a `.py` file, and this gate reads
+`.md`, so its own claims are outside its own domain. That is the class of
+`INC-2026-11-09-the-checker-for-prose-that-overclaims-shipped-a-docstring-that-overclaims-about-its-own-fix`,
+so every number above is one this file's own `--check` and `--self-test`
+produced, and the quotation is dated so that it stays a record if the reach
+ever widens to Python.
 
 Nothing here parses English. Four things make the pattern tractable and all
 four are properties of this library rather than of prose:
