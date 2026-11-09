@@ -205,6 +205,16 @@ DECLARED: dict[tuple[str, str], Judgment] = {
     ("incidents.py", "--date"): Judgment("date"),
     ("incidents.py", "--seat"): Judgment("text"),
     ("incidents.py", "--title"): Judgment("text"),
+    # Added 2026-11-09 with `incidents.py prior`, the register's lookup half.
+    # `query` is the failure a seat has in hand, in whatever shape it arrived,
+    # and the tool's own claim is that nothing is required of its shape, so
+    # there is no roster and nothing to refuse. `--file` reads that query out
+    # of a log instead, so it is a path, and an unreadable one is reported by
+    # name with exit 2 rather than being treated as an empty query, because a
+    # lookup that silently searched for nothing would read as "never filed
+    # before", which is the one wrong answer this tool must not give.
+    ("incidents.py", "query"): Judgment("text"),
+    ("incidents.py", "--file"): Judgment("path"),
     ("ledger.py", "--ledger"): Judgment("path"),
     ("ledger.py", "--status"): Judgment("roster"),
     ("ledger.py", "--patch"): Judgment("opaque"),
