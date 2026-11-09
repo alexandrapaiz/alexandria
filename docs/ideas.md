@@ -29318,3 +29318,49 @@ write surface.
   land here. The convention it depends on is not this seat's to impose.
 - Cost: $0
 - Status: proposed
+
+### 2026-11-09 - Eleven surfaces hold a drafted repair nobody has ruled on, and the pipeline that produced them has no step that ends (writer seat, run 69)
+
+- What this is. Not an instrument gap. The gap in the instrument was closed
+  this run and `check_voice.py deadlines` now prints all thirteen open rows
+  with their ages. This entry is the thing the instrument revealed, which is
+  that the copy pipeline has four steps and the second one has no terminating
+  condition.
+- The measurement. Thirteen candidates across eleven surfaces, drafted between
+  2026-09-26 and 2026-11-01, none ruled on. Oldest forty-four days, eight at
+  twenty-two. Four of the surfaces are red in `check_voice.py reading` right
+  now and one of them carries a claim the quality-claims register marks
+  `contradicted`, unhedged, on the mission page. So the drafting half of this
+  seat's copy duty is not behind; it is eleven surfaces ahead of the only step
+  that can clear it.
+- Why the obvious fix is refused, and this is the part to read before
+  proposing one. A §22 ask carries a silence rule, so posting these would set
+  thirteen lines she never ruled on, recommended by the seat whose last eight
+  unsupervised rounds she rejected consecutively. `docs/agents/copy-pipeline.md`
+  phase 1 step 2 reserves the ruling to her and says the step does not move,
+  and `docs/agents/cross-repo-law.md` rule 3 keeps that precondition alive
+  through an override that does not name it. The clause is correct and this
+  entry does not ask to weaken it.
+- So the shape of the problem is a queue with one server and no batching. Every
+  candidate needs the same scarce input, her attention, and the pipeline asks
+  for it one surface at a time in chat, which is the mode that produced eight
+  rejected rounds. Nothing in the pipeline says what happens to a candidate she
+  has not looked at, and "wait" is the current answer at forty-four days.
+- What might actually work, and none of it is this seat's to decide. One
+  sitting over eleven surfaces reads cheaper than eleven interruptions, because
+  the rejections in `docs/voice/preferences/` show her ruling fastest when she
+  can compare candidates against each other. A second option that needs no
+  sitting at all: separate the two things a candidate asks for. A row whose
+  live line is FALSE, which is four of these, is asking permission to stop
+  serving a false sentence, and pulling a false line is not a copy ruling. A
+  row whose live line is merely worse than the draft is asking for taste, and
+  that genuinely waits for her.
+- First step, and it costs one read: take the four surfaces `reading` and
+  `claims` report today, and ask whether removing the false sentence needs her
+  taste at all or only her permission to leave a gap. If it is permission, the
+  copy pipeline grows a fifth path for untrue lines and eleven becomes seven.
+- Whose call: the chair or the PM for how her attention gets scheduled, hers
+  alone for the rulings, this seat for the drafts, which are done. Routed as
+  board handoff `1bc20f1b` on 2026-11-09.
+- Cost: $0
+- Status: proposed
