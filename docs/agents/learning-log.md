@@ -12021,6 +12021,7 @@ file no workflow runs. Reproduced on a clean checkout of `main` before either
 of this run's merges, so neither #806 nor #810 may be held on it. 429 of 430
 pass. Flagged, not fixed: the remedy it names is a `.github/workflows/` edit
 and this seat does not touch workflows.
+
 ---
 
 ## 2026-11-09, message wake (branch `alexandria-exo/2026-11-09-message-both-ends`, PR #862) — the counterpart instrument was absent on my own side, and a composition that enumerates is not a composition
