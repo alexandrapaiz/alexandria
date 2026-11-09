@@ -1483,3 +1483,42 @@ def test_the_guard_returns_a_value_in_band_when_it_does_nothing():
     assert rq.REQUEST.match("arxiv:2602.12670"), "the pattern matches nothing"
     assert sum(1 for i in items if not i.checked) > 50, (
         "no unchecked request survives the guard")
+
+
+# --- the duplicate check against the real file, measured not reasoned --------
+
+def test_an_id_mentioned_in_prose_does_not_block_a_request_for_it():
+    """The research seat's finding of 2026-11-09, closed by measurement.
+
+    Its claim was that `hits` conflates an id mentioned inside another line's
+    answer with a request for that paper, so a paper named in prose can never
+    get a line of its own. It was true before the leading-token fix and it is
+    not now, and the number is what says so rather than a reading of `parse`.
+
+    Both directions, because a fix in this one usually breaks the other: an
+    over-eager `hits` blocks a legitimate request, and an under-eager one
+    re-admits `INC-2026-10-27`, where a line landed 1,374 lines below a strike
+    of the same id and repeated the mis-attribution the strike existed to
+    correct.
+    """
+    import re
+
+    text = (ROOT / "docs" / "research" / "reading-queue.md").read_text()
+    requested = {rq.normalise_id(i.arxiv_id) for i in rq.parse(text)}
+    mentioned = {rq.normalise_id(m) for m in re.findall(
+        r"(?:arxiv:)?\b[0-9]{4}\.[0-9]{4,5}(?:v[0-9]+)?\b", text)}
+    prose_only = sorted(i for i in mentioned if i and i not in requested)
+
+    # A floor, so this test keeps meaning something as the file grows.
+    assert len(prose_only) >= 50, (
+        f"only {len(prose_only)} ids appear in prose on no request line, so "
+        "this file no longer exercises the conflation it is about")
+    blocked = [i for i in prose_only if rq.hits(text, i)]
+    assert blocked == [], (
+        f"{len(blocked)} id(s) named only inside another line's answer are "
+        f"treated as already requested: {blocked}")
+
+    unfound = [i for i in sorted(requested) if not rq.hits(text, i)]
+    assert unfound == [], (
+        f"{len(unfound)} requested id(s) cannot find their own line, which is "
+        f"the duplicate guard failing open: {unfound}")

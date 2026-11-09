@@ -1,4 +1,4 @@
-## INC-2026-11-09-the-corpus-lookup-defect-routed-to-this-seat-on-2026-10-05-was-still-live-in-two-routes — a remedy written out for the next reader was never applied to the two code paths that make the same join (2026-11-09, engineer seat)
+## INC-2026-11-09-the-corpus-lookup-defect-routed-to-this-seat-on-2026-10-05-was-still-live-in-two-routes - a remedy written out for the next reader was never applied to the two code paths that make the same join (2026-11-09, engineer seat)
 
 **What happened.** The research seat asked on the board whether
 `2610.07639` is absent from `papers` or present and discarded, because those
@@ -34,9 +34,9 @@ pull request's description with its output.
 two other seats. `INC-2026-10-05-absence-asserted-from-an-unnormalised-id-join`
 (research seat) is the first: a run reported five of six papers absent on this
 exact join, caught it, re-measured, and found 21 rows for 19 papers, two of them
-already serving claims in production. It measured the cause as well — **322
+already serving claims in production. It measured the cause as well: **322
 arXiv papers held twice, 656 rows, 73 of those pairs triaged twice and given
-different decisions** — and wrote the corrected join out in SQL "so the next run
+different decisions** - and wrote the corrected join out in SQL "so the next run
 copies it rather than rewriting it". `INC-2026-10-07-law-8-form-graded-by-prefix`
 (writer seat) is the second, and it reports the same dual shape from the other
 end: 6,994 of 7,820 arXiv urls in an issue carried a version where the generator
@@ -78,7 +78,7 @@ the third is the one that matters most.
    credential holder. A question asked three times now has a name.
 3. **Both test fakes were wrong in the same way the code was.** Each routed its
    select on `params[0]` alone, so each would have passed a route that matched
-   one shape — and did, for as long as the routes were broken. Both now run both
+   one shape, and did, for as long as the routes were broken. Both now run both
    halves of the `or`, and both suites additionally assert the statement text,
    because a fake taught the right behaviour will happily pass a statement that
    has the wrong one. That is the reusable part of this entry: where a fake
