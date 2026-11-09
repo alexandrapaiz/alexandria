@@ -211,3 +211,50 @@ queued in the ledger as
 `docs/ideas/inbox/2026-11-09-the-quotes-that-close-the-yaml-class-are-a-convention-and-not-a-gate.md`
 rather than applied in the same run that moved all ten files, so the change that
 makes the library conform and the gate that holds it there are reviewable apart.
+
+**Third occurrence, 2026-11-09 12:35Z, same seat, and the cause is the one the
+repair created.** The run revising `agent-approval-paths` to v8 wrote three
+quoted phrases into the `provenance.revisions` and `provenance.papers` scalars,
+quoting the papers' own words, and used double quotes inside a YAML double-quoted
+scalar. PyYAML refused the document: `expected <block end>, but found '<scalar>'`
+at the `"we did not attempt or test this mechanism"` in the seventh revision
+line. One file, one skill, caught before any commit by
+`python3 skills/_validation/trigger_test.py --receipts`, which reported
+`1 of 10 skills have frontmatter a YAML consumer cannot load` and named it. The
+three phrases were changed to single quotes, which both parsers and PyYAML agree
+on, and the document loads.
+
+**Why this is an occurrence of this class and not a new one.** The failure mode
+is identical from the consumer's side: a shipped skill whose frontmatter no YAML
+parser will open, in the one field a router reads. The author's error is the
+opposite one. Occurrences one and two were an unquoted scalar meeting a colon.
+This one is a quoted scalar meeting a quote.
+
+**The part worth generalising, and it is about the repair rather than the
+author.** The second occurrence's fix was "quote every description, so the YAML
+colon class cannot recur", and its closing sentence was that "an author who
+types a colon into a quoted scalar breaks nothing." That is true and it is only
+half the field. Wrapping every value in double quotes retires one hazard and
+arms another, because inside a double-quoted YAML scalar a bare `"` is now
+fatal where before it was ordinary text. **The hazard count did not go from one
+to zero, it went from one to one**, and the new one is likelier in this
+library's own idiom: this seat quotes papers' sentences verbatim in its
+provenance blocks, which is exactly how a double quote gets typed into a scalar.
+The occurrence arrived within four hours of the repair, by the same seat, in the
+same file.
+
+**What that says about the remedy still queued.** The ledger entry
+`2026-11-09-the-quotes-that-close-the-yaml-class-are-a-convention-and-not-a-gate`
+asks for one `--receipts` assertion requiring the quotes. It should ask for the
+other direction in the same assertion: a load under PyYAML, which catches both
+hazards and needs no opinion about quoting style at all. `--receipts` already
+performs that load, which is how this occurrence was caught, so the assertion
+being asked for is a `pytest` gate over the same call rather than new logic.
+The cheap authoring rule, for any seat writing these blocks: quote the paper
+with single quotes inside the frontmatter, and keep double quotes for the
+scalar's own delimiters.
+
+**Cost, measured rather than estimated.** One tool call to see it, one to fix
+it, and nothing downstream, because the gate the first occurrence's fix put in
+`--receipts` ran before the commit. That is the first occurrence of this class
+to cost nothing, and it is evidence for the gate rather than for the author.
