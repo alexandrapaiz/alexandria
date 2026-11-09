@@ -209,20 +209,3 @@ until that lands, not the fix.
   compositions are 72 of 82 and 74 of 84; the two added cases are
   `evaluation-integrity`'s own `ei-pos-4` and `ei-neg-3`, both passing, and the ten
   failures are the same ten in both.
-
-- `2026-11-09-evaluation-integrity-aggregate.json`. Written by the run that took
-  `evaluation-integrity` to v7, which is the run this one supersedes (#845, closed
-  in favour of #850). Moved here by the 2026-11-09 run that replaced the em-dash
-  separator in `provenance.papers` with a comma across seven skills, to clear
-  `tools/ban_list.py` entry 13 on reader-facing text. Both bundles read
-  `generated: 2026-11-09`, so the tie this README describes fired for the **fifth**
-  recorded time, and once again `--receipts` reported the stale receipt before the
-  commit rather than the suite reporting it after.
-  This pair is the cleanest confirmation yet of the invariant the paragraph above
-  records, because the edit was mechanical and touched no prose a reader scores
-  on. Seven `skill_sha256` values differ, exactly the seven skills edited, and
-  **nothing else moved at all**: both bundles are 74 of 84 at reliability 0.881,
-  the case sets are identical, and **zero of the 84 cases changed verdict**. The
-  ten failures are the same ten. So the record now reads: every pair where no
-  description changed moved nothing, across three separate measurements, and the
-  one pair where a description changed moved three cases in two other suites.

@@ -17,10 +17,10 @@ provenance:
     - "2026-10-26 (ADR-38, the quality bar): 370 lines to under 120, seven prose sections to six deltas each ending in a numbered procedure with its thresholds named, and the checklist moved from second-to-last to first. No number, claim or prescription changed: this run had no database and did not re-read the four papers, so the retrofit is a compression and a reordering rather than a re-derivation. Sections 2 and 6 of the old file are merged into delta 2, because stratifying the residual is how you read the curve rather than a separate decision, and section 6's hook-set check moved into delta 4, where the siting decision it belongs to already lives. `status` moved from `draft` to `provisional`: ADR-38 rule 5 makes `provisional` the state of an unmeasured skill, and this one carries fifteen claim ids, four papers and a trigger suite at 7 of 7, which is past draft. It is not `active` and cannot be until a differential delta exists on the benchmark subject. Folded in from the 2026-09-30 entry, which this line now carries: that run added the per-section Validation tags, the Apply checklist and caveats that name their floor, under an owner directive, and changed no claim, number or prescription."
   claims: [166, 167, 168, 169, 170, 306, 307, 308, 309, 310, 742, 743, 744, 745, 746]
   papers:
-    - "Mole: Detecting Insider Threats in AI Agents, arxiv.org/abs/2609.06966"
-    - "EvoSafeHarness: Evolving Model- and Domain-Specific Harnesses for Securing Agents, arxiv.org/abs/2609.05903"
-    - "Shutdown Sabotage Propensities in Multi-Agent Systems, arxiv.org/abs/2609.28274"
-    - "A2M: Trace-Optimized Agent Hijacking in the MCP Ecosystem, arxiv.org/abs/2609.26761"
+    - "Mole: Detecting Insider Threats in AI Agents — arxiv.org/abs/2609.06966"
+    - "EvoSafeHarness: Evolving Model- and Domain-Specific Harnesses for Securing Agents — arxiv.org/abs/2609.05903"
+    - "Shutdown Sabotage Propensities in Multi-Agent Systems — arxiv.org/abs/2609.28274"
+    - "A2M: Trace-Optimized Agent Hijacking in the MCP Ecosystem — arxiv.org/abs/2609.26761"
     - "CaMeL: Defeating Prompt Injections by Design (arxiv.org/abs/2503.18813), read in full 2026-10-27, the backbone span behind delta 2"
     - "Fides: Information-Flow Control for Agent Planners (arxiv.org/abs/2505.23643), read in full 2026-10-27, the two primitives and both costs in delta 4"
     - "Firewalls at the Agent-Tool Boundary, with a Three-Stage Adaptive Cascade (arxiv.org/abs/2510.05244), read in full 2026-10-27, delta 4's regenerate-versus-score ordering and the benchmark-defect caveat"

@@ -13,8 +13,8 @@ provenance:
     - "2026-10-26 (ADR-37 maintenance, the relayed-citation repair, ADR-35 the paper wins): the engineer seat landed a fifth evidence grade, `relayed`, for a claim whose subject is another work's result, and the research seat's rule with it, that a source's account of a third paper is a reading-queue line and not a fact. This seat swept its own nine shipped skills by hand for the shape rather than waiting for the grade, because the grade is written at distill and reaches no claim this library already cites. The sweep (skills/_validation/results/2026-10-26-relay-sweep.md) found one open instance and it is here. Delta 2's heading asserted that whether ranking matters is a property of the budget and not of your pipeline, which is the cross-paper generalisation its own source declines to make: When Does Selection Replace Extraction says in as many words that the reconciliation is an interpretation across pipelines that differ in retrievers, rerankers, answer models and judges, and not a tested claim across papers. The heading now carries the within-study decision rule, the reconciliation sentence names both works and both arXiv ids as second-hand, and both works are queued for reading. No number in this file changed and no claim id is filed, because the defect was in what this file generalised and not in what it measured."
   claims: [982, 983, 984, 985, 986, 721, 722, 723, 724]
   papers:
-    - "When Does Selection Replace Extraction? A Pre-Registered Test of Agent Memory with a Typed Decision Model, arxiv.org/abs/2609.34227"
-    - "Jev-Mem: System-One-Controlled Agentic Memory for Efficient AI Agents, arxiv.org/abs/2609.23986"
+    - "When Does Selection Replace Extraction? A Pre-Registered Test of Agent Memory with a Typed Decision Model — arxiv.org/abs/2609.34227"
+    - "Jev-Mem: System-One-Controlled Agentic Memory for Efficient AI Agents — arxiv.org/abs/2609.23986"
 ---
 
 # Agent memory selection

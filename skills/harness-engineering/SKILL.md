@@ -18,11 +18,11 @@ provenance:
     - "2026-09-30 (ADR-38, the quality bar): rewritten to deltas only, 164 lines to under 120. Cut the order-of-operations section entire (action interface, feedback enrichment, feedback consistency) because the bare subject gave all of it unprompted on he-c1, including the step-count arithmetic; cut the localisation half of the debugging section for the same reason. Claims 199, 136, 140, 190 and 243 leave the provenance with the sections they supported. No surviving sentence changed its meaning."
   claims: [200, 201, 202, 203, 244, 102, 103, 1119]
   papers:
-    - "Co-Evolving Harnesses and Models, arxiv.org/abs/2609.09134"
-    - "Better Harnesses, Smaller Models (read in full 2026-10-27, the suite every delta-1 number is measured on and the failure-mode census), arxiv.org/abs/2607.08938"
-    - "AgentGrad: Intervention-guided Prompt Optimization for Multi Agent Systems, arxiv.org/abs/2609.08572"
-    - "What Else Needs Fixing? Cost-Effective Test-Time Compute, arxiv.org/abs/2609.03254"
-    - "RLTL;DR: Self-improvement by Internalizing Self-generated Feedback, arxiv.org/abs/2609.37633"
+    - "Co-Evolving Harnesses and Models — arxiv.org/abs/2609.09134"
+    - "Better Harnesses, Smaller Models (read in full 2026-10-27, the suite every delta-1 number is measured on and the failure-mode census) — arxiv.org/abs/2607.08938"
+    - "AgentGrad: Intervention-guided Prompt Optimization for Multi Agent Systems — arxiv.org/abs/2609.08572"
+    - "What Else Needs Fixing? Cost-Effective Test-Time Compute — arxiv.org/abs/2609.03254"
+    - "RLTL;DR: Self-improvement by Internalizing Self-generated Feedback — arxiv.org/abs/2609.37633"
 ---
 
 # Harness engineering

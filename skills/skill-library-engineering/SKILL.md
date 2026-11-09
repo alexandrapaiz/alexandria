@@ -19,13 +19,13 @@ provenance:
     - "2026-09-30 (ADR-38 retrofit, owner directive): per-section Validation tags, an Apply checklist, and caveats that name their floor. No claim, number or prescription changed."
   claims: [320, 321, 322, 328, 329, 396, 397, 398, 399, 400, 565, 566, 567, 568, 569, 625, 626, 627, 628, 629]
   papers:
-    - "Beyond Top-k Skill Retrieval: Diversity-Aware Skill Routing for LLM Agents, arxiv.org/abs/2609.05824"
-    - "COBRA-Skills: Contextual Bandit-Guided Evolution for Agent Skill Optimization, arxiv.org/abs/2609.11682"
-    - "The Router Within: Eliciting Native Skill Routing from a Frozen LLM, arxiv.org/abs/2609.15982"
-    - "Skill-Use: Can LLMs Actually Use Skills in Agentic Harnesses?, arxiv.org/abs/2608.04828"
-    - "Reflect, Revise, Reuse: Training-Free Skill Evolution for GUI Agents, arxiv.org/abs/2609.17653"
-    - "GraphSkillEvo: Evolutionary Optimization of Graph-Structured Agent Skills, arxiv.org/abs/2609.21749"
-    - "Is Progressive Disclosure All You Need for Long-Context Agents?, arxiv.org/abs/2607.17598"
+    - "Beyond Top-k Skill Retrieval: Diversity-Aware Skill Routing for LLM Agents — arxiv.org/abs/2609.05824"
+    - "COBRA-Skills: Contextual Bandit-Guided Evolution for Agent Skill Optimization — arxiv.org/abs/2609.11682"
+    - "The Router Within: Eliciting Native Skill Routing from a Frozen LLM — arxiv.org/abs/2609.15982"
+    - "Skill-Use: Can LLMs Actually Use Skills in Agentic Harnesses? — arxiv.org/abs/2608.04828"
+    - "Reflect, Revise, Reuse: Training-Free Skill Evolution for GUI Agents — arxiv.org/abs/2609.17653"
+    - "GraphSkillEvo: Evolutionary Optimization of Graph-Structured Agent Skills — arxiv.org/abs/2609.21749"
+    - "Is Progressive Disclosure All You Need for Long-Context Agents? — arxiv.org/abs/2607.17598"
 ---
 
 # Skill library engineering

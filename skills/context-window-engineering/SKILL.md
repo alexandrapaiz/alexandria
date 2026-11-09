@@ -16,19 +16,19 @@ provenance:
     - "2026-09-30 (ADR-38, the quality bar): 403 lines to under 120. Cut the read-once-state section and the planner-executor section because the bare subject gave both unprompted and in more useful form (cwe-c2, cwe-c4); cut the streaming-ingestion section because both its papers are multimodal video and nothing in it has ever been measured on a text agent. Claims 85, 265-268, 111, 112, 115 and 68-71 leave the provenance with those sections. Claim 85 is in deprecated_claims and this skill no longer cites it, which resolves the ADR-37 trigger by removing the citation and not by accepting the deprecation: the resolution stands in docs/ideas.md and the two rows still do not contradict each other."
   claims: [78, 79, 80, 280, 291, 292, 293, 295]
   papers:
-    - "Random Attention: Rethinking KV Cache Eviction for Efficient Reasoning, arxiv.org/abs/2609.03430"
-    - "Protection Is (Nearly) All You Need: Structural Protection Dominates Scoring in Globally Capped KV Eviction, arxiv.org/abs/2605.18053"
-    - "Hold Onto That Thought: Assessing KV Cache Compression on Reasoning, arxiv.org/abs/2512.12008"
-    - "Not All Thoughts Need HBM: Semantics-Aware Memory Hierarchy for LLM Reasoning, arxiv.org/abs/2605.09490"
-    - "Prefix Sliding for Efficient Test-Time Scaling, arxiv.org/abs/2608.26070"
-    - "Coverage-Driven KV Cache Eviction for Efficient and Improved Inference of LLM, arxiv.org/abs/2606.29563"
-    - "How Much Cache Does Reasoning Need? Depth-Cache Tradeoffs in KV-Compressed Transformers, arxiv.org/abs/2604.17935"
-    - "PARSER: Read in Parallel, Reason in Depth for Long-Context LLM Agents, arxiv.org/abs/2609.06702"
-    - "When Does Divide and Conquer Work for Long Context LLM? A Noise Decomposition Framework, arxiv.org/abs/2506.16411"
-    - "Long Context Scaling: Divide and Conquer via Multi-Agent Question-driven Collaboration (XpandA), arxiv.org/abs/2505.20625"
-    - "Is Grep All You Need? How Agent Harnesses Reshape Agentic Search, arxiv.org/abs/2605.15184"
-    - "Revisiting Complete Reasoning Traces for Post-Training (abstract only, no HTML), arxiv.org/abs/2609.07103"
-    - "When to Memorize and When to Stop: gated recurrent memory with early exit (abstract only, no HTML), arxiv.org/abs/2602.10560"
+    - "Random Attention: Rethinking KV Cache Eviction for Efficient Reasoning — arxiv.org/abs/2609.03430"
+    - "Protection Is (Nearly) All You Need: Structural Protection Dominates Scoring in Globally Capped KV Eviction — arxiv.org/abs/2605.18053"
+    - "Hold Onto That Thought: Assessing KV Cache Compression on Reasoning — arxiv.org/abs/2512.12008"
+    - "Not All Thoughts Need HBM: Semantics-Aware Memory Hierarchy for LLM Reasoning — arxiv.org/abs/2605.09490"
+    - "Prefix Sliding for Efficient Test-Time Scaling — arxiv.org/abs/2608.26070"
+    - "Coverage-Driven KV Cache Eviction for Efficient and Improved Inference of LLM — arxiv.org/abs/2606.29563"
+    - "How Much Cache Does Reasoning Need? Depth-Cache Tradeoffs in KV-Compressed Transformers — arxiv.org/abs/2604.17935"
+    - "PARSER: Read in Parallel, Reason in Depth for Long-Context LLM Agents — arxiv.org/abs/2609.06702"
+    - "When Does Divide and Conquer Work for Long Context LLM? A Noise Decomposition Framework — arxiv.org/abs/2506.16411"
+    - "Long Context Scaling: Divide and Conquer via Multi-Agent Question-driven Collaboration (XpandA) — arxiv.org/abs/2505.20625"
+    - "Is Grep All You Need? How Agent Harnesses Reshape Agentic Search — arxiv.org/abs/2605.15184"
+    - "Revisiting Complete Reasoning Traces for Post-Training (abstract only, no HTML) — arxiv.org/abs/2609.07103"
+    - "When to Memorize and When to Stop: gated recurrent memory with early exit (abstract only, no HTML) — arxiv.org/abs/2602.10560"
 ---
 
 # Context window engineering
