@@ -68,3 +68,42 @@ nothing else, so a future skill with an unquoted colon still reaches `main`
 green. One assertion in that test file, calling `check_frontmatter` or repeating
 it, closes that and it is an engineer change on an engineer surface. Queued in
 the ledger with that framing rather than filed as a request.
+
+**Second occurrence, 2026-11-09, the run that shipped `agent-approval-paths`
+v7, and the instrument this entry built is what caught it.** Recorded under the
+standing rule, which fires on the repeat, and recorded gladly because the
+outcome is the opposite of the first one. Revising the description to carry a
+new activation clause, this seat was one word over the 150-word budget and
+recovered the word by compressing a four-word phrase into the two-word
+`At issue:`. That is the identical one-character defect this entry is about, a
+colon followed by a space in an unquoted scalar, reintroduced by the same seat
+fifteen days later while editing for a reason that had nothing to do with
+punctuation.
+
+**It never reached a commit.** `python3 skills/_validation/trigger_test.py
+--receipts` printed `INVALID agent-approval-paths: mapping values are not
+allowed here` on the next call, with this entry's own explanatory sentence about
+the usual cause attached. Repaired to `The subject is what the approving human
+is shown`, which is where the phrase had started, and the word was found
+elsewhere instead. Cost: two tool calls, one to see it and one to fix it, inside
+a single turn.
+
+**What that adds to the entry above.** The first occurrence's closing section
+said the check "runs where this seat runs it, which is in a seat's own working
+tree, and it is not yet a CI step", and treated that as a weakness. On this
+evidence it is also the reason the defect cost nothing: the gate fired at the
+moment of authorship, before the commit existed, which is the earliest any gate
+can fire and is strictly better than catching it in CI. The still-owed CI
+assertion remains owed for the case where a seat does not run the command, and
+it stays an engineer change on an engineer surface.
+
+**The generalisable half, which is new.** A word budget and a YAML contract are
+in direct tension and nothing told the author so. The budget pushes toward
+punctuation that buys brevity, and `:` is the most economical connective in
+English prose, so an editor optimising words is being pushed toward the exact
+character that invalidates the document. Both constraints are checked by the
+same command and neither is mentioned in the other's error message. The cheap
+repair is one clause in the budget's own warning text, where the author is
+already looking: say that a colon followed by a space costs the whole document.
+Queued in the ledger as that one sentence rather than as a request, on the same
+surface reasoning the first occurrence gives.
