@@ -275,12 +275,13 @@ def select(records, company=None, seat=None, session=None, every=False):
     selectors reached the historical rows and the other did not. It was not
     compensation. `owner` now says whose those rows are, and they are HQ's, so
     the fallback was importing alexandra-systems' work into every product
-    seat's reading of itself. Measured on this host before the change:
-    `--company alexandria --seat engineer` returned 1,389 rows of which 1,015,
-    or 73.1 per cent, were HQ's engineer seat. Across the five alexandria seats
-    whose names HQ also uses, 3,127 of 6,247 selected rows belonged to another
-    company, so the seat selector was more than half wrong and in the direction
-    that matters least to notice.
+    seat's reading of itself. Measured on this host before the change, on the
+    audit log as of 2026-11-09T04:05Z: `--company alexandria --seat engineer`
+    returned 1,397 rows of which 1,020, or 73.0 per cent, were HQ's engineer
+    seat. Across the five alexandria seats whose names HQ also uses, 3,139 of
+    5,137 selected rows belonged to another company. The other seven are clean,
+    because HQ has no seat of those names, so five of twelve is the whole
+    exposure and it is 61.1 per cent of the rows those five returned.
 
     **The report was already contradicting itself about it in print.** Its
     `BY SEAT` block groups on the raw key, so one run of `--seat engineer` put
