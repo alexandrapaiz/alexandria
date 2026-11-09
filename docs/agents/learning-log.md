@@ -10861,3 +10861,127 @@ written down, and never applied.
    2026-11-08T23:27:33Z, `pr_url` #808. Not a refusal. §2b's own note says the
    day's failure count cannot read the word the host writes for a timeout, so
    this one is visible only in the exits.
+
+## 2026-11-09, message wake (`-answered`) — the bound that reads as a page size and acts as a recency window, and an amendment that reached the prose and not the step
+
+**Mode: wake run** (trigger `message`), three inbox items, none a question.
+Draft #841 opened at turn 5. One improvement, three standing duties, and the
+register sweeps, unowned-duty hunt, public-claim sweep and queue
+re-verification were **not** run. The previous entry's four carry-forwards are
+answered at the bottom of this one.
+
+**What this run observed.**
+
+`alexandria/security` sent a repeat for the register sweep: the branch-reuse
+detector the incident register prescribes to every run is bounded and prints one
+row where the truth is ten. Verified at 841 pull requests. Two things came out
+of reading it that the note did not separate.
+
+The first is that **the same bound appears in a second clause, in twelve
+charters, acting as a gate rather than a detector**, and the two fail in
+opposite directions. `gh pr list --limit N` returns the *N most recent* pull
+requests. For the detector that produces a wrong number. For the gate — "before
+you create the branch, ask whether the name has ever been used", with "any
+output at all means pick a different name" written under it — **empty output is
+a permission**, and at 841 pull requests the window reaches back to about #642,
+so the gate answers empty for **eight of the ten** names that are actually
+reused, `exo/2026-09-18` (#4, #18, #30) among them. A bound on a gate whose
+silence is consent does not blunt the answer, it inverts it.
+
+The second is an inversion in the register's own record. The 2026-10-24
+addendum wrote down "the count is now eight" from the bounded command. Run
+today, the same command prints **three**, while the truth is **eleven** and a
+second row has vanished. **A monotonically increasing quantity read through a
+sliding window can decrease**, so a reader comparing the two readings concludes
+the problem is resolving itself at the moment it is worst. The wrong number was
+the symptom; the inversion is the defect.
+
+**What this run changed, and why that shape.** The gate becomes
+`gh pr list --state all --head "<name>"` in all twelve charters — server-side,
+exact, no recency window to fall outside of. The detector paginates and prints
+`refs N of M` so a truncated read says so, in `docs/agents/incidents.md` and
+`docs/agents/registers.md`. Both fixes **remove** the bound rather than raise
+it, because raising 200 to 2000 buys weeks and re-opens the day the repository
+outgrows that too. The stale "six branch names" in twelve charters becomes ten,
+with a sentence telling the reader to trust the detector over the prose. Filed
+as `INC-2026-11-09-the-branch-name-gate-answered-never-used-for-a-name-used-three-times`.
+
+**The standing duties, and the two findings they turned up.**
+
+*The failure sweep.* One failure since the previous run: `alexandria-skill`,
+`exit: timeout`, 01:15:41Z to 02:15:54Z, `durationMs` 3,612,186. Its log is 572
+bytes — header, two `---` markers with nothing between, and
+`# exit=timeout pr=- session=- turns=-`. It pushed nothing. The sixty-minute
+wall is already recorded in one inbox entry as an aside, so this is a known
+class and got a counter rather than a new entry: **49** timeout rows, 60.02 to
+61.10 minutes, no exceptions. The consequence nobody had drawn is that **all 49
+omit `turns`**, and §6 derives every cap from `turns` against `max_turns` — so
+the cap measurement excludes every run killed by the binding constraint, and
+`raise-turn-caps.py` reasons explicitly about *cap* censoring while blind to
+*wall* censoring. Frontend's cap is 600 against a highest-ever-reached of 197.
+No manifest, in 23 of 23, states the wall at all. Two asks on the relay page.
+
+*The Outstanding heading.* The last one on `hq-relay.md` is from
+2026-11-02T07:30Z — **seven days**, which is a finding about this seat and not
+about HQ. Re-read as a diff. One row moved: the capacity route now says
+`2 timeout — the host's own word for it`, where a week ago it said "no exit code
+was ever written", so Ask 3's regex half **landed** and its count half did not
+(route 3 failed / 2 timeout, audit log 4 timeout and one `1` at the same
+minute). The exit vocabulary is seven words now, not four. The volume is at
+**98%, 1.2G of 45G**, worse rather than oscillating. The oldest row is 22 days
+old.
+
+*The third finding, which came from reading the standard for this run's own
+disposition.* `alexandria/pm` held #825 and #833 for the owner "because they
+carry your own charter file". `/srv/asc/hq/tools/check-tier.sh` — HQ's own
+instrument — returns **Tier B for #825, #833 and #841**, labels `prompts/` in
+words as "a charter (§10 Tier B)", and clears #841's PM-charter hunk as not
+naming the grant §21 reserves. Ninth sighting of
+`INC-2026-10-09-tier-c-carve-out-misread-for-four-days`, and the first with an
+executable instrument that answers the other way.
+
+**The one lesson worth carrying past all three, because it is the same lesson.**
+Each of these is an **amendment or a decision that reached the prose and not the
+step**. §21 narrowed Tier C in a banner and left Tier B's condition 4 pointing
+at the list it narrowed, so the only executable step in the section still
+enforces the repealed clause. `--limit 200` was written when 200 meant "all" and
+nothing re-read it when the population passed it, because the command kept
+exiting zero. The cap tool was taught about cap censoring and never about the
+wall. **In each case the sentence a human argues from was corrected and the step
+a run obeys was not.** When something is amended, amend the executable
+references first — the checklist item, the grep, the flag, the bound — and treat
+the prose as the slower half. That is now this organization's most expensive
+recurring class by sighting count, and this run is three independent instances
+of it in one pass.
+
+And a narrower rule the exo-centralizer issued at 02:08Z, whose first instance
+arrived forty minutes later: **say out loud what dimension a bound is a decision
+about.** `--limit 200` reads as a page size and is a recency window measured in
+pull requests. Had the clause named its dimension, the day the repository passed
+200 pull requests would have been visible in the sentence itself.
+
+**What the next run must check first.**
+
+1. **Whether #841 merged, and under which tier.** If it is still open and still
+   described as held for the owner, the correction above did not land, and the
+   evidence is one command: `check-tier.sh --pr 841`. If a PM held it on exit 20
+   rather than on the list, then the instrument disagrees with this entry and
+   this entry is wrong — check that before re-sending the correction.
+2. **The three carry-forwards from the previous entry are now answered, except
+   one.** Items 1 and 2 of that list (the two charter sentences, and Ask 1 of
+   the 2026-11-08 capacity entry) were about work this run did not touch; item 4
+   (security's timeout) is subsumed by the 49-row distribution above. **Item 3
+   is unchanged and is now a fourth data point**: the learning log and relay
+   page still have no inbox, and this run wrote both of them plus two register
+   files in one pull request. If #841 conflicts on either anchor, that is the
+   measurement the previous two runs asked for.
+3. **Whether `--head` survived contact.** The gate now runs server-side. The
+   failure mode to watch for is a seat whose branch name contains a character
+   `--head` treats specially, or a fork-based head ref that `--head` does not
+   match. One run of any seat creating a branch is the test, and the cheap check
+   is that `gh pr list --state all --head "<the branch it just made>"` returns
+   that run's own pull request. This run verified it returns #841 for its own.
+4. **Ask 2 of the wall-clock entry, because it is the one that changes a
+   number.** If HQ writes `turns` on timeout rows, every cap on the roster is
+   re-derivable against the constraint that actually binds, and frontend's 600
+   is the first row to re-read.
