@@ -10785,3 +10785,79 @@ accepted at 23:27:19Z.
    spent it on the tool above. It is the strongest candidate for the next
    weekly cycle, and the next run should not re-derive the number -- it should
    read it off the tool and decide.
+
+## 2026-11-09, message wake (branch `alexandria-exo/2026-11-09-message-order`, PR #830) — a `done` was right about the disposition and wrong about the cause, and both of this run's findings are this seat's own rules
+
+**Mode.** Wake run, on a `done` from `alexandria/pm`. Not the weekly cycle and
+not the `week.started` doorbell: the wake text describes a disposition and a
+reopened conflict, and §0 says a run that cannot tell from its wake text that
+it is the doorbell is not the doorbell. So: the event's own work, the §2b
+failure sweep, the §3f **Outstanding with HQ** heading, this entry, and at most
+one improvement. **Not done, and named rather than skipped silently:** the
+register sweeps, the unowned-duty hunt, the public-claim sweep, the queue
+re-verification, and the turn-cap re-derivation.
+
+**What the event asked and what it got.** PM held this seat's two conflicts
+Tier C for the owner, correctly — resolving a conflict does not change which
+path a pull request touches, and both still carry `prompts/exo-agent.md`. She
+reported #810 conflicting again and named the cause as security's pull request
+that she merged that pass. Two of security's merged twenty-eight seconds apart
+and her description fitted both; only the earlier one touches
+`tools/cron_firing.py`. #810 is resolved and pushed: head `91e0e5b2`,
+`MERGEABLE`/`CLEAN` read at 2026-11-09T01:37:21Z, one conflicted path, both
+docstring blocks kept, 216 tests green.
+
+**The two findings, both filed in the incidents inbox.**
+
+1. **A conflict claim needs two heads, and this seat's rule asks for one.**
+   #810's head was `e75ef9b9` at its resolution and still `e75ef9b9` when PM
+   read it as conflicting. Nothing about the pull request changed; `main` moved.
+   So a verdict obeying §"Every verdict about a pull request names the head
+   commit and the clock it was read at" to the letter is honest, correct, and
+   still unrecoverable by its receiver. The missing field is already in the
+   artifact — a resolution's merge commit records the `main` head it was taken
+   against as its second parent — and nobody reads it.
+2. **A no is an answer and the relay page can only record yes.** §3f's four
+   states have no terminal state for a declined ask. HQ declined Ask 2 of the
+   2026-11-08 capacity entry four hours ago, with a reason this seat could not
+   have derived: the reading it asked to have removed is what recovered the
+   portfolio. The entry still reads DELIVERED and there is nowhere to move it.
+   Second instance of the class that produced the four states in the first
+   place.
+
+**The improvement this run did not spend.** Both fixes are charter sentences,
+both are written verbatim in their entries, and neither is applied here. Four
+of this seat's open pull requests already carry `prompts/exo-agent.md`, PM
+holds all four Tier C, and she asked this seat for a three-way merge order
+tonight. A fifth concurrent edit to that file conflicts with its four siblings
+and delays the order it would be documenting. The previous entry measured the
+same contention from the other side: 12 open pull requests write the relay
+page, 10 write the learning log. **This is the first run of this seat to decline
+its one improvement on throughput grounds rather than on budget grounds**, and
+the next run should check whether that was right, because the failure mode it
+risks is the one this whole file exists to stop — a finding that was correct,
+written down, and never applied.
+
+**What the next run must check first.**
+
+1. **Whether either charter sentence landed.** Both are quoted verbatim in
+   their inbox entries, ready to paste. The test is one `grep` of
+   `prompts/exo-agent.md` on `main` for "mergeability is not a property of one
+   branch" and for "DECLINED". If `main` has neither and more than a day has
+   passed, the deferral above was wrong and this entry is the evidence.
+2. **Ask 1 of the 2026-11-08 capacity entry has LANDED and the relay page does
+   not say so.** This run live-tested it by accident during the failure sweep —
+   the capacity route now names the monthly spend cap correctly for 2026-11-08.
+   §3f says the run that moves an entry to LANDED rewrites the sentences written
+   around its absence, in the same run. This run did not touch `hq-relay.md`,
+   for the contention reason above, so that is owed.
+3. **The learning log and relay page still have no inbox.** The previous entry
+   named this the strongest candidate for the next weekly cycle with the number
+   already measured. It is unchanged, this run did not re-derive it, and this
+   run is itself a third data point: it avoided touching both registers purely
+   to stay mergeable, which means the contention is now shaping what work gets
+   done rather than only what gets conflicted.
+4. **Today's one failure is security's, exit 124, a timeout.** The run starting
+   2026-11-08T23:27:33Z, `pr_url` #808. Not a refusal. §2b's own note says the
+   day's failure count cannot read the word the host writes for a timeout, so
+   this one is visible only in the exits.
