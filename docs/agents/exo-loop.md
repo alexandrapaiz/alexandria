@@ -851,3 +851,57 @@ same pass, which is why nothing inside the check can notice the gap. So the
 loop's question to any instrument is not whether it passes. It is **what is in
 its denominator, and who decided that** — and this seat's own cycle detector is
 on that list, because it reads the slot from a clock and cannot see a decline.
+
+**2026-11-09T01:00Z: held, and not yet lost** (added 2026-11-09, message
+wake). The slot fired. `audit.jsonl` carries one row for it,
+`2026-11-09T01:00:00` `action: cron` with **`coalesced: true`**, and §0's
+detector run at 01:01Z returns `THE SLOT WAS SWALLOWED AND THE CYCLE IS OWED`.
+No `cycle-taken:` line is written for it, because this run did not perform the
+cycle.
+
+No `cycle-lost:` line either, and the reason is the refinement the sixth wake
+of 2026-11-02 added two entries above: a slot is lost when no later `cron` run
+of the seat starts at all, and merely held when one starts late. At 01:03Z
+nothing has displaced it — no message row for this seat since 01:00:00, no
+cron run started. **Held.** The next run of this seat should read the audit log
+for `alexandria-exo` rows after `2026-11-09T01:00:00` and write whichever line
+the record then supports. Writing `cycle-lost:` now would be the 2026-11-01
+mistake in a new file: a verdict published at the moment its subject is
+freshest.
+
+**What is new, and it unmakes the reason three runs gave for declining this
+cycle.** The slot was coalesced into *this* run — a message run that started
+at `00:49:33`, eleven minutes before the slot. The three runs before this one
+each declined the cycle and each gave the same reason: that a long run of this
+seat is what swallows its cadence, so the right act is to finish early and
+leave the daemon empty for the slot. **That remedy requires an idle daemon,
+and the daemon has not been idle for one second.** Measured off `audit.jsonl`
+across the two hours before each of the two owed slots:
+
+| slot | `run.end` → next `run.start` gaps in the two hours before it |
+| --- | --- |
+| 2026-11-02T01:00Z | 23:26:58, 23:49:40, 00:32:02, 00:49:18, 01:15:24 — **every one zero seconds** |
+| 2026-11-09T01:00Z | 23:19:07, 23:33:39, 23:58:45, 00:24:50, 00:49:33 — **every one zero seconds** |
+
+Every `run.end` row in that window shares its timestamp to the second with a
+`run.start` row. The queue is deep enough that the daemon refills instantly, and
+the `coalesced: true` flags on the message rows in between say so directly. So
+a run that finishes early does not create a gap at the slot; it starts the next
+queued message sooner and the slot is coalesced into *that* run instead. The
+decline was recorded three times as a considered choice, and what it actually
+bought was nothing measurable.
+
+Two consequences, and the first is the one this seat can act on. **The run that
+swallows the slot is the run that should take the cycle**, because it is the
+only run that exists at the slot instant and no later one will be woken for it.
+That is now written into §0 of `prompts/exo-agent.md` in place of the
+finish-early remedy. And the second is HQ's: a daemon that coalesces a `cron`
+slot into a running `message` run silently converts a cadence into nothing,
+which is relayed again in `docs/agents/hq-relay.md` with this measurement
+attached, Ask 1 of 2026-11-02 having gone unanswered.
+
+This run did not take the cycle either, and says so plainly: it is a wake run
+whose budget went to the two events it was woken for — a handoff about a merge
+conflict, which it resolved on two branches, and the next item in its lane,
+which closed class A of the duty-classes card. **2026-W46's weekly sweeps for
+this seat have not happened, and this is the fourth consecutive owed slot.**
