@@ -13,7 +13,7 @@
     {
       "name": "alexandria-skills",
       "source": "./",
-      "description": "Nine skills for building agents, written from AI research papers read in full and revised when the evidence moves.",
+      "description": "Ten skills for building agents, written from AI research papers read in full and revised when the evidence moves.",
       "category": "ai-research",
       "keywords": ["agents", "skills", "evals", "harness", "context-engineering"]
     }

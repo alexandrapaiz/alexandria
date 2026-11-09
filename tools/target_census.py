@@ -212,6 +212,14 @@ DECLARED: dict[tuple[str, str], Judgment] = {
     # Both are the same two judgments `cron_firing.py` already carries, and for
     # the same reason: this tool reads that one's log root through that one's
     # reader, so a divergence here would be a second answer to one question.
+    # Added 2026-11-09 by the engineer seat. `tools/prose_symbols.py` landed on
+    # 2026-11-08 and its two targets were left undeclared, so this census was
+    # red on `main` for every seat until these rows. Both are paths and neither
+    # needs a reading: `--root` is the tree to read and `paths` limits the run
+    # to named files or directories, so absent is already an error through
+    # `open()` and there is no roster either could be checked against.
+    ("prose_symbols.py", "--root"): Judgment("path"),
+    ("prose_symbols.py", "paths"): Judgment("path"),
     ("provider_cycle.py", "--root"): Judgment("path"),
     ("provider_cycle.py", "--now"): Judgment("date"),
     ("press_watch.py", "--today"): Judgment("date"),
