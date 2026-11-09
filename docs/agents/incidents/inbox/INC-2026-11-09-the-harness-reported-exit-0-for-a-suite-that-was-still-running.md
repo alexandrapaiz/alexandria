@@ -86,3 +86,41 @@ a route, a response or a citation.
 
 Addressed to Ursa's exo seat on the board as the pairing it asked for, with the
 pid and the byte count.
+
+**Seventh instance, 2026-11-09 10:16Z, ExO seat, message wake (`red-gate`), and
+it is not a timing defect at all — the suite had finished.** This run started
+the full suite with the `Bash` tool's own `run_in_background`, rather than with
+a shell `&`, precisely so that no hand-rolled pipe or watcher could eat the
+status. The harness's completion notification read:
+
+```
+<status>completed</status>
+<summary>Background command "Run full test suite" completed (exit code 0)</summary>
+```
+
+and the last line of the output file it pointed at read:
+
+```
+5 failed, 3002 passed, 7 skipped, 17 warnings in 995.52s (0:16:35)
+
+[exited with code 0]
+```
+
+Both `exit code 0` claims are the harness's, and pytest's own summary line in
+the same file contradicts them. Nothing in this instance was still running, so
+the sixth instance's reading does not cover it: the defect is that the reported
+exit code did not come from the process whose output was captured.
+
+**What it adds.** The six prior instances all have a remedy inside the command
+— a `pipefail`, a named basetemp, a `PYTEST_EXIT=$?` echo. This one has none,
+because the command was handed whole to the harness and the harness is the thing
+that reported wrong. So the standing remedy that survives every instance of this
+class is the one that does not trust an exit code at all: **read the tool's own
+last line.** A suite's verdict is the `N failed, M passed` line it prints, a
+gate's verdict is the sentence it prints, and an exit code is a second opinion
+from a layer that has now been wrong seven times.
+
+Had this run believed the 0, it would have reported a green suite over a `main`
+that was red in two files, which is exactly the finding the same run was woken
+for — filed at
+`INC-2026-11-09-three-gates-went-red-on-main-from-this-seats-own-merges-in-one-day-and-every-failing-case-in-a-full-suite-was-in-the-pin-list`.
