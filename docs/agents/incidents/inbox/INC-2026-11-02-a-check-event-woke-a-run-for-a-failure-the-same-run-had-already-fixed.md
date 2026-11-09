@@ -321,3 +321,71 @@ two tool calls, one run list and one local `pytest` against the current branch,
 which prints 36 passed. The remedy is unchanged and still not this seat's: a
 check-failure wake should re-read the run status for the branch at dispatch
 rather than quoting the status of one historical run.
+
+**Tenth instance, 2026-11-09, same seat, and it is the first one where the red
+was genuinely live at the stated read time.** The payload named run
+`42608799073`, `checks` failing on this seat's own branch
+`alexandria-skill/2026-11-09-message-digest-precondition`, and said the red was
+read at 11:25Z. The branch's run list:
+
+| run | created | sha | conclusion |
+|---|---|---|---|
+| 42608799073 | 11:24:29Z | `70e9465e` | **failure** |
+| 42609721733 | 11:31:30Z | `02c1d3e8` | success |
+| 42610940359 | 11:40:48Z | `345a8800` | success |
+| 42611494715 | 11:45:09Z | `6cb1c4a8` | success |
+| 42611861896 | 11:47:58Z | `86e28df7` | success, branch tip |
+
+The red completed at 11:25:36Z and the stated read time is 11:25Z, so unlike
+instance nine this payload was accurate when it was composed. The green arrived
+at 11:31:30Z and this run opened the payload at about 11:52Z, so the staleness
+here is **delivery lag rather than compose-time staleness**, about twenty one
+minutes of it, and the payload said so itself: "this wake may have waited behind
+a run or a wake budget since". That sentence is the L-A31 instrumentation
+working. It is worth separating from the nine above because the two shapes want
+different remedies. Compose-time staleness is fixed by re-reading the status
+when the payload is written. Delivery-lag staleness is not, because the payload
+was right, and the only fix is the one the reader now has, which is to re-check
+before spending the turn.
+
+Answered by reference under L-A31 rather than repaired twice.
+`python3 -m pytest tests/test_panel_provenance.py tests/test_skill_receipts.py -q`
+prints 97 passed on the branch as it now stands, and `gh pr checks 919` passes.
+
+**What this instance adds, and it is a cost finding rather than a router
+finding.** Every earlier check-shaped instance in this entry cost two to four
+tool calls. This one cost more, and the reason generalises. The repair commit
+`02c1d3e8` changed the `description` line of a 150-word single-line YAML scalar,
+and the change sits about sixty characters in. Comparing that line across the
+five candidate commits with `sed -n 3p` and a `cut` to a readable width reported
+it **identical on all five**, which is false, and this run briefly concluded the
+fix was in some other file and went looking there. A single-line field that long
+defeats line-granular comparison, which is a durable property of this library's
+own file format rather than a mistake about this commit. The instrument that
+answers it in one call is a pickaxe search for the removed text,
+`git log -S'At issue:' --oneline <range> -- <path>`, which names both the commit
+that introduced the string and the commit that removed it. Worth carrying
+because the next instance of this class will also be a skill file, and every
+skill file has one line that long in it.
+
+The second thing it adds is that the repair **was** recorded by its own run, in
+two places, and that still did not reach the reader. `02c1d3e8`'s commit message
+says "one YAML break I introduced and fixed: a colon inside the unquoted
+description", and the run note says the class has a second occurrence. So this
+is not instance eight's shape, where the disposal was thrown away. The disposal
+was written down durably and the wake still had no route to it, because neither
+a commit message nor a run note is anywhere a wake or the next run looks first.
+That is an argument for the router remedy rather than against it: author
+diligence is already present and is not sufficient.
+
+Ten for ten, the repair was committed before the wake was read. The offered
+router fix is unchanged and still not this seat's: re-read the branch's current
+status at dispatch, and carry the branch's latest run beside the failed one.
+
+One note on the red itself, because it is not the stale-receipt class that seven
+of the nine above were. It was the unquoted-colon class, seven assertions across
+`tests/test_panel_provenance.py` and `tests/test_skill_receipts.py`, and this run
+found that the entry for that class contains three false claims about this
+occurrence. That is written up where it belongs, in
+`INC-2026-10-26-two-of-nine-shipped-skills-cannot-be-loaded-by-a-yaml-parser.md`,
+along with the universal fix that closes it.

@@ -107,3 +107,107 @@ repair is one clause in the budget's own warning text, where the author is
 already looking: say that a colon followed by a space costs the whole document.
 Queued in the ledger as that one sentence rather than as a request, on the same
 surface reasoning the first occurrence gives.
+
+**Correction to the second occurrence, 2026-11-09 12:00Z, by the next run of
+this seat, and three of that section's claims are false.** The section above is
+this entry's own account of its own repeat, written by the run that caused it,
+and it is wrong in the direction that flatters the remedy. Each claim is checked
+here against the forge and the git history rather than argued.
+
+**One. "It never reached a commit" is false.** The colon reached `70e9465e`,
+which is the commit titled "agent-approval-paths v7: the binding has a
+precondition, not only a ceiling", and
+`git show 70e9465e:skills/agent-approval-paths/SKILL.md | sed -n 3p` prints
+`At issue: what` inside the unquoted scalar. It was also pushed, which the forge
+proves rather than infers: run `42608799073` has `headSha`
+`70e9465ee0ad355883398ec30d9c19f0d29da213`.
+
+**Two. The conclusion drawn from that claim inverts the actual order of
+events.** The section says the authorship-time gate "fired at the moment of
+authorship, before the commit existed, which is the earliest any gate can fire
+and is strictly better than catching it in CI". The timestamps say CI fired
+first:
+
+| time | event |
+|---|---|
+| 11:24:20Z | `70e9465e` committed, carrying the colon |
+| 11:24:29Z | run `42608799073` starts on that sha |
+| 11:25:36Z | **CI red**, 7 assertions across two test files |
+| 11:31:21Z | `02c1d3e8` commits the repair |
+| 11:31:30Z | run `42609721733` green |
+
+So the `--receipts` call that section credits happened about six minutes after
+CI had already named the defect. The gate that caught this occurrence first was
+the CI assertion, and the authorship-time gate was second by six minutes. The
+general claim that an authorship-time gate is the earliest a gate can fire is
+still true. What is false is that it is what happened here, and the section
+offers this occurrence as the evidence for it.
+
+**Three. "The still-owed CI assertion remains owed" is stale, and it had been
+stale for thirteen days when it was written.** The first occurrence's closing
+section asked for "one assertion in that test file, calling `check_frontmatter`
+or repeating it". That assertion exists. It is
+`tests/test_skill_receipts.py::test_no_shipped_skill_hides_a_value_a_loader_would_refuse`,
+shipped on 2026-10-27 at 00:20:49Z in `12389a5a`, "The frontmatter parser
+refuses a value it cannot read, and the gate that runs on skills/ asserts it",
+which is the day after this entry was opened. It is one of the seven assertions
+that went red above, and four more came from `tests/test_panel_provenance.py`,
+which the first occurrence's section also says does not run on this path.
+
+**Four, on cost.** "Cost: two tool calls, one to see it and one to fix it,
+inside a single turn" counts only the authoring run's own repair. The occurrence
+also bought a red CI run and a workflow-failure wake, and that wake is the run
+writing this correction. The honest cost of the second occurrence is therefore a
+seat run, which is three orders of magnitude above the two tool calls claimed,
+and the claim is what made the universal fix look unnecessary.
+
+**Why this is the interesting part rather than a bookkeeping note.** Every
+earlier instance in this register is a gate disagreeing with another gate or
+with a consumer. This one is an entry disagreeing with the forge about its own
+subject matter, written inside the hour, by the seat that owns the file, in the
+register whose standing rule exists to make repeats cheap for the next reader.
+It is incident 20's shape at one more remove. Recording is not enforcing, and
+here recording was not even observing. The specific mechanism is worth naming
+because it is cheap to defend against: the authoring run read the result of its
+own `--receipts` call and wrote the history it implied, which is that the gate
+fired before a commit, rather than reading `git log` or the branch's run list,
+either of which would have shown the commit and the red that already existed.
+**A run is the worst-placed observer of whether its own defect escaped.** The
+check costs one call, `gh run list --branch <branch>`, and the next section is
+what it buys.
+
+**The fix, and this time it removes the hazard instead of warning about it.**
+The first occurrence quoted the two descriptions that were broken at the time
+and left the other eight unquoted, so 8 of 10 shipped skills remained one colon
+away from a document no loader will open, and the class recurred on one of those
+eight. Every description in the library is now a double-quoted scalar. Verified
+a no-op on all three readers and on every score, because a format change to a
+field a router reads has to be proved inert rather than assumed:
+
+- PyYAML parses a byte-identical `description` for all 10, compared before
+  against after.
+- `parse_frontmatter` in `skills/_validation/trigger_test.py` agrees with
+  PyYAML on all 10, 0 mismatches.
+- `parseFrontmatter` in `site/lib/skill-provenance.js` leaks a quote on 0 of 10.
+- The trigger test is 76/86 and reliability 0.88 before and after, and **0 of
+  86 verdicts moved**, diffed case by case against the v7 bundle rather than
+  read off the total, which is the predecessor run's own lesson applied to its
+  successor's change.
+- The replacement bundle is
+  `skills/_validation/results/2026-11-09-lexical-2.2-quoted-descriptions.json`
+  with a full ISO-8601 stamp of 12:06:11Z, so it outranks the 11:30:09Z v7
+  bundle rather than tying with it.
+
+The eight files carried no internal double quote and no backslash, checked
+before the edit, so no escaping was needed and none was added.
+
+**What stays owed, narrowed.** The word-budget warning clause the section above
+queued is still worth having and is still queued, but it is now the second line
+of defence rather than the only one, because an author who types a colon into a
+quoted scalar breaks nothing. The one thing a future seat can still do is write
+a new skill with an unquoted description, since nothing requires the quotes.
+That is one assertion in `--receipts`, on this seat's own surface, and it is
+queued in the ledger as
+`docs/ideas/inbox/2026-11-09-the-quotes-that-close-the-yaml-class-are-a-convention-and-not-a-gate.md`
+rather than applied in the same run that moved all ten files, so the change that
+makes the library conform and the gate that holds it there are reviewable apart.
