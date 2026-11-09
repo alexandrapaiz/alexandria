@@ -979,17 +979,20 @@
       },
       "fixture_leak": {
         "hands_over": [
-          "ROWS, with an `apps_used` column",
-          "HEADLINE, quoted verbatim",
-          "P90 and P95"
+          "ROWS",
+          "apps_used",
+          "HEADLINE",
+          "P90",
+          "P95"
         ],
-        "withheld": "nothing in `fixture.py` says that 62 of the 103 queries cross at most one boundary, or that the two rows under 30 percent are exactly those. The `apps_used` column makes it derivable and the HEADLINE string invites being returned as 1.30, which passes the utility probe and fails the other three.",
+        "withheld": "nothing in `fixture.py` says that 62 of the 103 queries cross at most one boundary, or that the two rows under 30 percent are exactly those. The `apps_used` column makes it derivable and the HEADLINE string invites being returned as 1.30, which passes the utility probe and fails the other three. `hands_over` was rewritten 2026-11-09 to the literal identifiers the fixture defines, because `--check` compares each entry against the starter file as a substring and the previous entries were descriptions of fields rather than the fields, so a sweep that was really done read as a sweep that was not.",
         "stub_score": {
-          "passed": 1,
+          "passed": 0,
           "of": 4,
-          "note": "measured 2026-11-09 against the shipped test file, not estimated."
+          "note": "measured 2026-11-09 by `python3 skills/_validation/project_fixture_probe.py`, which is the instrument that defines this field: the starter file run unchanged as the answer. `fixture.py` defines no `budget()`, so every probe errors on import and the floor is 0 of 4. This field previously read 1 of 4, which is a true number about a DIFFERENT artifact, the hand-written headline stub that returns 1.30, and that number is in `leak_following_score` below where it belongs. The field's own definition is the starter file, so 1 of 4 was wrong here however right it was there, and the probe's `--check` is what caught it."
         },
-        "leak_following_score": "measured on this suite rather than estimated: an answer that query-weights every row in the table, which is the defensible naive reading and the one the published headline comes from, scores 1 of 4. It returns 1.557 for every deployment, so it clears the not-the-headline probe and fails the other three, including the utility probe at crossings=0. The headline stub, which returns 1.30, also scores 1 of 4, clearing only the utility probe. The two wrong answers therefore fail disjoint probes, and the reference solution scores 4 of 4."
+        "leak_following_score": "measured on this suite rather than estimated: an answer that query-weights every row in the table, which is the defensible naive reading and the one the published headline comes from, scores 1 of 4. It returns 1.557 for every deployment, so it clears the not-the-headline probe and fails the other three, including the utility probe at crossings=0. The headline stub, which returns 1.30, also scores 1 of 4, clearing only the utility probe. The two wrong answers therefore fail disjoint probes, and the reference solution scores 4 of 4.",
+        "swept": true
       },
       "without_skill": "Returns the headline, or a query-weighted mean over the whole table. Both are defensible from the fixture alone and neither excludes the queries that cross no boundary, so the invariance probe fails.",
       "without_skill_basis": {
