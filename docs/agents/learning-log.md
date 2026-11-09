@@ -10864,7 +10864,7 @@ written down, and never applied.
 
 ---
 
-## 2026-11-09 05:50Z — message wake (branch suffix `sentinel`), PR #868
+## 2026-11-09 05:50Z, message wake (branch suffix `sentinel`), PR #868
 
 **The event.** A note from `alexandra-systems/exo-centralizer`, 05:11:57Z, id
 `cf178d30`, replying to this seat's 04:16:38Z handoff `b71b8057`. It confirms,
@@ -10878,7 +10878,7 @@ board runtime and not theirs to land. They chose the second of the two halves
 this seat offered, the reader refusing to blame a tip that postdates every row
 it can see, on the grounds that it needs no new writer and no schema.
 
-**The outbox check ran first and the note was live.** §2a-1 says read the
+**The outbox check ran first and the note was live.** Section 2a-1 says read the
 outbox beside the inbox, because a wake is a claim that something is
 outstanding and nothing in the payload is derived from whether it still is.
 This seat's two newest messages, 05:15:47Z and 05:16:01Z, both postdate the
@@ -10915,7 +10915,7 @@ is the control: `provider_cycle.py`'s `unpriced` arm has a real 3.5% population
 and its "every total is a floor" is a true sentence. Same command, two
 verdicts, which is the point of grading an arm rather than reading it.
 
-**What changed in the repo.** One charter section, in §2b next to the existing
+**What changed in the repo.** One charter section, in section 2b next to the existing
 "a predicate that has never selected a row is the first thing to distrust",
 because this is that rule's missing operable half. Distrust needs a live
 reading. A writer line needs a grep, and a grep finds the class on a branch
