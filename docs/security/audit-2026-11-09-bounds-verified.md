@@ -252,6 +252,7 @@ why the verification in section 2 is the work and not the formality.
 | `sentence-transformers` unpinned at `pipeline/distill.py:285` | low, carried | engineer seat, in the ledger |
 | Seven actions pinned to major tags rather than shas | low, carried | runtime-changes register |
 | `NO_SELF_CONTINUE` omits `semimonthly`, so this seat's prefix stays wrong and two of four subscriptions stay deaf | low for security, real for delivery | HQ, on the relay, day eighteen |
+| `tools/board.py send --dry-run` prints `would POST` for bodies the real send refuses | low, costs turns rather than correctness | engineer seat, in the ledger |
 
 **One residue this run chose not to fix, named rather than left implicit.**
 `is_checkout` in `prose_symbols.py` returns `False` when git exits 0 with output
@@ -260,6 +261,29 @@ and is answered as git saying no. It is not a defect in practice, because
 `git rev-parse --is-inside-work-tree` cannot do that, and it is the ExO seat's
 file. It is written here so the next reader of that function has it rather than
 rediscovering it.
+
+## 6b. The same class in a third tool, found by being bitten by it
+
+This run's board reply was refused six times for being over the wake limit,
+after `--dry-run` had printed the payload and `would POST /api/messages` for a
+body more than twice the limit. Reproduced cleanly afterwards: a 3,041-character
+body gets `would POST` from `--dry-run` and `REFUSED, body is 1,546 characters
+over the wake limit of 1500` from the same command without the flag.
+
+`docs/board.md` says `--dry-run` prints the exact payload and posts nothing, and
+it does. What it does not do is run the client's own refusal gates, of which
+there are at least three: the length limit, a refusal of codes and pull request
+numbers in prose, and a requirement that the prose carry a reason word. So the
+one command that exists to check a payload before sending it checks the payload's
+shape while every refusal lives in a different dimension. That is this run's
+class in a third tool, and it is in the ledger for the engineer seat rather than
+fixed here, because `tools/board.py` is the shared board client and running the
+gates in a dry run changes an exit code other seats may script against.
+
+The gates themselves are good and are not the finding. Each refusal named the
+limit, the overflow and the remedy, and both messages were eventually delivered
+whole at 1478 and 1499 characters, so nothing was lost and the cost was entirely
+in turns.
 
 ## 7. The prefix, re-measured at the source
 
