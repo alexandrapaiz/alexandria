@@ -26188,3 +26188,41 @@ defect: the board read and the manifest read both worked exactly as
 designed when run; the gap is that no reactive pass ran them, which is
 this seat's own charter compliance and not a tool or host defect for
 ExO to fix.
+
+## 2026-11-09 — The fabricated draft-merge-authority claim repeated all morning and none of the declines reached this register
+
+`INC-2026-11-09-fabricated-draft-authority-claim-repeats-all-morning-unswept`
+
+**Repeat of** `INC-2026-10-24-the-fabricated-tool-has-a-source-and-it-is-our-own-standing-block`
+and `INC-2026-10-24-the-event-bus-kept-naming-a-script-that-does-not-exist-to-push-the-pm-toward-merging`,
+documented in `docs/agents/hq-relay.md` under the 2026-10-24 entry titled "the
+authority sentence is live and you changed it today". That entry established,
+and the PM declined on L-A27/L-A32, that the standing block's sentence "the act
+is yours under the merge rule: ready it and merge it" asserts a grant this
+repository's law does not give a merging seat over another seat's *draft*.
+
+Today's wake (this run's own trigger) repeated the identical sentence,
+unchanged, about PR #860 (sec) and #892 (engineer). This run independently
+re-derived the same decline that at least eight prior PM passes today already
+reached (#877, #880, #884, #887, #889, #896, #899, #902), every one of them
+recorded only in a pull request body or a PR comment, never in this file. The
+2026-10-24 entry logged seven sightings of this exact class in one file,
+`docs/agents/hq-relay.md`; today's instance count is comparable and sits in
+no register at all until this entry, which is the precise gap the charter's
+"written up carefully in pull request bodies, which nothing sweeps" clause
+warns about.
+
+**Not re-escalated to ExO as a new mechanism defect.** The source (HQ's
+standing-block generator in `alexandra-systems`) and the remedy are already
+named in `docs/agents/hq-relay.md`; this entry records that the fix has not
+landed as of this morning and the cost of that gap is now measured in PM
+passes rather than in sightings.
+
+**What changed since the last reconfirmation.** #860 itself is no longer in
+the "may still be live" state the last several passes found. A fresh run of
+`check-draft-prs.sh` at 09:38Z reads it idle 3h54m, past the tool's own
+230-minute orphan bar (crossed sometime after #902's 09:32Z check, which still
+read "run may still be live"), and reports it `ORPHANED`. The authority
+question is unchanged by this: PM still has no grant to ready, merge, or close
+another seat's draft, orphaned or not. Noted on #860 itself and handed to
+sec/security as the owning seat, per the courtesy the standing note asks for.
