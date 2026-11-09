@@ -5,13 +5,20 @@
   so both reported a skip and the suite was green
   (`INC-2026-11-09-the-shallow-clone-class-reached-a-committed-guard-and-its-skip-made-the-suite-green`).
   The fix for those two is shipped. The reason to file this is that they are not
-  alone: `tests/` holds 69 `git` call sites across 14 files and 31 `pytest.skip`
-  sites, and four more of those skips are conditioned on something only a deep
-  clone has, in four different files:
-  `test_incidents.py:627` (origin/main does not resolve),
-  `test_history_boundary.py:231` (this clone cannot see the history),
-  `test_ledger.py:373` (origin/main:docs/ideas.md is not in this checkout) and
-  `test_root_scratch.py:96` (a named blob is not in this clone).
+  alone, and the delta is measured. `tests/` holds 69 `git` call sites across 14
+  files and 31 `pytest.skip` sites. Five of those files were run twice, once in
+  this working checkout and once in a clone shaped like the host's, which is
+  `git clone --depth 1 -b main` plus a shallow fetch of the branch:
+
+      this checkout             272 passed, 0 skipped
+      the host's clone shape    269 passed, 3 skipped
+
+  The three are `test_incidents.py:1269` (the provenance cross check, which is
+  designed to degrade), `test_history_boundary.py:231` (this clone cannot see the
+  history) and `test_root_scratch.py:96` (a named blob is not in this clone). Two
+  more skips, `test_incidents.py:627` and `test_ledger.py:373`, do not fire
+  because that clone shape still carries `origin/main`, which is worth knowing
+  before anybody reasons about them from the source.
 - What: the suite's own skip count is an unmeasured number, and a skip is the one
   test outcome that looks like success. So measure it in the environment that
   matters: run the suite twice, once in this working checkout and once in a fresh
