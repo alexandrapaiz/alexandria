@@ -796,7 +796,8 @@ def prior_art(query: str, entries: list["Entry"] | None = None,
     # number a reader can use is `close`, counted over the whole ranking rather
     # than over the printed slice: a seat that passes --limit 3 still needs to
     # know there are nine close matches behind them.
-    close = [row for row in scored if row["confidence"] >= STRONG]
+    floor = strong_threshold(scored[0]["confidence"] if scored else 0.0)
+    close = [row for row in scored if row["confidence"] >= floor]
     return {
         "query": query,
         "entries_searched": total,
@@ -806,20 +807,46 @@ def prior_art(query: str, entries: list["Entry"] | None = None,
         "with_remedy": sum(1 for row in scored if row["remedy"] == "REMEDY"),
         "close": len(close),
         "close_with_remedy": sum(1 for row in close if row["remedy"] == "REMEDY"),
+        "close_threshold": round(floor, 3),
         "hits": scored[:limit],
     }
 
 
-# A hit this strong is worth the reader's attention even when they were sure
-# nothing had been filed. Below it the ranking is still useful and the headline
-# stops claiming a class, because a lookup that cries repeat at every query
-# trains a seat to skip it, which is the failure mode this tool was built to
-# answer rather than to reproduce.
-STRONG = 0.25
+# What counts as a close match, and why it cannot be one number.
+#
+# Confidence is a fraction of the best score the query could get, so it falls as
+# the query gets longer: a four-word query puts everything it has into one entry
+# and a two-sentence one spreads itself over fifty. A fixed floor therefore means
+# two different things at two query lengths. Measured on this register: at a
+# fixed 0.25, a short query about a receipt tie called 32 of 632 entries close
+# and a two-sentence one about a stale measurement called 222, which makes the
+# word useless in exactly the case where a seat pastes a failure verbatim.
+#
+# So the test is relative to the best hit, with an absolute floor underneath it.
+# A lookup that cries repeat at every query trains a seat to skip it, and an
+# unrun lookup is the failure this tool was built to answer rather than to
+# reproduce.
+STRONG_FRACTION_OF_BEST = 0.6
+STRONG_FLOOR = 0.2
 
 
-def report_prior(found: dict, seat: str | None = None, stream=sys.stdout) -> int:
-    """Print the lookup for a person, and return the count of strong hits."""
+def strong_threshold(best: float) -> float:
+    """The confidence a hit must clear to be called close, given the best hit."""
+    return max(STRONG_FLOOR, best * STRONG_FRACTION_OF_BEST)
+
+
+def report_prior(found: dict, seat: str | None = None, stream=None) -> int:
+    """Print the lookup for a person, and return the count of strong hits.
+
+    `stream` defaults inside the body and not in the signature. A default of
+    `sys.stdout` binds the object at import, so anything that replaces stdout
+    afterwards, `capsys` in these tests being the ordinary case, is written past
+    rather than written to. This run shipped that defect twice in this one file
+    before noticing it, here and in `new_entry`'s inbox, which is the same
+    mistake wearing two hats: a default argument is evaluated once, at import,
+    and never again.
+    """
+    stream = sys.stdout if stream is None else stream
     print(
         f"searched {found['entries_searched']} entries "
         f"({found['register_entries']} in docs/agents/incidents.md, "
@@ -829,12 +856,16 @@ def report_prior(found: dict, seat: str | None = None, stream=sys.stdout) -> int
     if not found["hits"]:
         print("\nnothing in the register matches this. File it as a first instance.", file=stream)
         return 0
-    strong = [row for row in found["hits"] if row["confidence"] >= STRONG]
+    strong = [row for row in found["hits"]
+              if row["confidence"] >= found["close_threshold"]]
     remedies = [row for row in strong if row["remedy"] == "REMEDY"]
     if found["close"]:
+        count = found["close"]
+        with_remedy = found["close_with_remedy"]
         print(
-            f"{found['close']} of them are close matches and "
-            f"{found['close_with_remedy']} of those prescribe a remedy.",
+            f"{count} of them {'is a close match' if count == 1 else 'are close matches'} "
+            f"and {with_remedy} of those "
+            f"{'prescribes' if with_remedy == 1 else 'prescribe'} a remedy.",
             file=stream,
         )
     else:
@@ -864,10 +895,11 @@ def report_prior(found: dict, seat: str | None = None, stream=sys.stdout) -> int
             file=stream,
         )
     if remedies:
+        clause = "One close match already prescribes a remedy" if len(remedies) == 1 else \
+            f"{len(remedies)} close matches already prescribe a remedy"
         print(
-            f"\n{len(remedies)} close match(es) already prescribe a remedy. Read it before you "
-            f"write a\nnew one: a remedy that exists and goes unread is how this lookup came "
-            f"to be built.",
+            f"\n{clause}. Read it before you write a\nnew one: a remedy that exists and goes "
+            f"unread is how this lookup came to be built.",
             file=stream,
         )
     own = [row for row in strong if seat and row["seat"] == seat]
@@ -1003,21 +1035,35 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.command == "new":
         try:
-            path = new_entry(args.slug, args.date, args.seat, args.title)
+            # `INBOX` is read here rather than taken from `new_entry`'s default,
+            # because a default argument binds at import and a test that
+            # redirects the inbox would otherwise write into the real one. This
+            # run did exactly that before the line was changed.
+            path = new_entry(args.slug, args.date, args.seat, args.title, INBOX)
         except FileExistsError as exc:
             print(exc)
             return 1
-        print(path.relative_to(ROOT))
+        # Repository-relative when it is under the repository, which is the form
+        # a reader pastes into a commit, and absolute when the inbox has been
+        # redirected, because `relative_to` raises rather than falling back.
+        try:
+            print(path.relative_to(ROOT))
+        except ValueError:
+            print(path)
         if not args.no_prior:
             # The repeat question, asked where the standing rule applies rather
             # than where a charter remembers to tell a seat to ask it. Filing is
             # the one moment every seat passes through, and it is the moment the
             # seat has the failure in hand and the register still unread.
             print()
+            # Everything but the file just written. The skeleton matches its own
+            # slug perfectly, so including it scores 1.000 and pushes the real
+            # precedent down a rank, which is the one thing a lookup run at
+            # filing time must not do.
+            others = [e for e in all_entries(register_text, INBOX)
+                      if e.source != f"inbox/{path.name}"]
             found = prior_art(
-                f"{args.slug.replace('-', ' ')} {args.title}",
-                all_entries(register_text, INBOX),
-                limit=3,
+                f"{args.slug.replace('-', ' ')} {args.title}", others, limit=3
             )
             report_prior(found, seat=args.seat)
         return 0

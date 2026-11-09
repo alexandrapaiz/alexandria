@@ -853,3 +853,82 @@ def test_an_unreadable_query_file_is_refused_by_name_and_not_searched_empty(tmp_
     out = capsys.readouterr().out
     assert str(missing) in out
     assert "first instance" not in out
+
+
+def test_what_counts_as_close_scales_with_the_length_of_the_query():
+    """A fixed floor means two different things at two query lengths.
+
+    Measured on the live register before this was relative: a short query called
+    32 of 632 entries close and a two-sentence one called 222, which is the case
+    where a seat pastes a failure verbatim and most needs the number.
+    """
+    assert inc.strong_threshold(1.0) == pytest.approx(0.6)
+    assert inc.strong_threshold(0.2) == inc.STRONG_FLOOR, "the floor stops holding"
+    assert inc.strong_threshold(0.0) == inc.STRONG_FLOOR
+
+
+def test_a_long_query_does_not_call_a_third_of_the_register_close():
+    long_query = (
+        "a seat measured main as red against a stale snapshot of the trunk; the "
+        "fix had already merged into main twenty five minutes before the "
+        "measurement was reported"
+    )
+    found = inc.prior_art(long_query, inc.all_entries(), limit=3)
+    assert found["close"] < found["entries_searched"] / 10, (
+        f"{found['close']} of {found['entries_searched']} called close"
+    )
+    assert found["close_threshold"] >= inc.STRONG_FLOOR
+
+
+def test_filing_an_entry_does_not_rank_the_entry_it_just_wrote(tmp_path, capsys, monkeypatch):
+    """Found by running `new` for real: the skeleton scored 1.000 on its own slug.
+
+    A lookup at filing time that ranks the file it just created pushes the real
+    precedent down a rank, which is the one thing it exists not to do.
+    """
+    inbox = tmp_path / "inbox"
+    inbox.mkdir()
+    (inbox / "INC-2026-01-05-the-quuxifier-emitted-a-zorblat.md").write_text(
+        "## INC-2026-01-05-the-quuxifier-emitted-a-zorblat first time (2026-01-05, pm seat)\n\n"
+        "**What happened.** The quuxifier emitted a zorblat.\n\n"
+        "**The fix.** The zorblat became a frobnitz.\n"
+    )
+    monkeypatch.setattr(inc, "INBOX", inbox)
+    monkeypatch.setattr(inc, "REGISTER", tmp_path / "incidents.md")
+    (tmp_path / "incidents.md").write_text(PRIOR_REGISTER)
+    assert inc.main([
+        "new", "--slug", "the-quuxifier-emitted-a-zorblat-again",
+        "--date", "2026-01-06", "--seat", "engineer",
+        "--title", "the quuxifier emitted a zorblat a second time",
+    ]) == 0
+    out = capsys.readouterr().out
+    assert "INC-2026-01-05-the-quuxifier-emitted-a-zorblat\n" in out, (
+        "the prior instance is not in the ranking"
+    )
+    assert "zorblat-again" not in out.split("The closest")[-1], (
+        "the entry just written ranked itself"
+    )
+
+
+def test_a_single_close_match_is_reported_in_the_singular():
+    import io
+    out = io.StringIO()
+    found = inc.prior_art("rank_bundles bare date tie-break alphabetical", _prior_entries())
+    found["close"] = 1
+    found["close_with_remedy"] = 1
+    inc.report_prior(found, stream=out)
+    assert "1 of them is a close match" in out.getvalue()
+
+
+def test_the_report_writes_to_the_stdout_in_use_and_not_the_one_at_import(capsys):
+    """A default of `sys.stdout` in the signature binds the object at import.
+
+    This run shipped that twice in one file, here and in the inbox `new` writes
+    to, and the second one wrote a test fixture into the real register's inbox
+    before it was caught. `tools/target_census.py` already used
+    `stream=None` with `or sys.stdout` in the body, so the convention existed
+    and this code diverged from it inside the same family of tools.
+    """
+    found = inc.prior_art("rank_bundles bare date tie-break", _prior_entries())
+    inc.report_prior(found)
+    assert "INC-2026-01-01-the-ranker-ties-on-a-bare-date" in capsys.readouterr().out
