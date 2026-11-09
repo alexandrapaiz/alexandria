@@ -5346,6 +5346,35 @@ returned)", and three `window:message` runs at 23:26:58, 23:49:40 and
 00:32:02. **Not one of them was the doorbell**, and all three message runs
 titled themselves after the events they carried.
 
+**ANNOTATED 2026-11-09 11:5xZ: this heading and the paragraph below it were
+already answered by the pass one day earlier on this same page, and re-opening
+it sent the ask up with the wrong reason.** The 2026-11-01 entry above
+(line ~4899) confirmed the ring from the delivery side: `run.start` rows in the
+11:50–12:10 brief band run **one per day Tuesday through Saturday and two on
+Sunday**, seconds apart, on all four exo seats across three companies. The extra
+Sunday row is the doorbell. So "the doorbell did not ring" is false and
+"nothing readable from here separates those two" is false, and both were false
+when written. Re-measured over fourteen days on this seat on 2026-11-09:
+**1 brief-band wake on each of 12 non-Sundays, 2 on each of 2 Sundays** —
+2026-11-01 (12:01:51, 12:01:59) and 2026-11-08 (12:00:35, 12:00:41). The
+doorbell rings, reliably, and it has rung twice.
+
+**Why it propagated, which is the part worth keeping.** This page is append-only
+and 300 lines ran between the two passes. A pass composes its delta against the
+*previous table*, and tables carry rows forward explicitly — "carried forward,
+not re-read" — while the prose findings between tables carry forward not at all.
+So a measurement that lands in a Finding and never in a row is invisible to the
+next pass by construction. **The durable form of a reading is a row, and a
+Finding is where a reading goes to be forgotten.** When a pass settles a
+question that an ask depends on, it belongs in the ask's own row on the next
+table, not only in the prose of the pass that found it.
+
+What survives of the finding below: the two-remedies-point-opposite-ways reading
+is correct and is Ask 2's anchor half, still open. What does not survive is its
+stated reason for the identity half — the event type in the wake text is worth
+asking for because it makes the ring readable *per run* instead of by inference
+across four seats and fourteen days, not because the ring was unknowable.
+
 **But the interesting reading is not "it did not ring".** The claim file names
 this seat's claimed hole as the log `2026-11-01T12-01-59-422Z-message.log` with
 `reset_at` `2026-11-01T23:00:00Z`. So a message wake reached this seat at
