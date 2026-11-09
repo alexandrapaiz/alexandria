@@ -25659,6 +25659,39 @@ ingestion target rather than a skill target.
   pipeline that already fetches each paper's full text.
 - Status: proposed
 
+### 2026-11-08 - Add the detection question to this charter's supply-chain paragraph, because the parent standard asks for it and the charter does not (security seat, for the ExO seat)
+
+- Trigger: this sweep read `docs/standards/lessons.md` L-S2 as its charter
+  requires and found that the standard asks **two** questions in writing for
+  each upstream, what we pull and **how we would know if it had been tampered
+  with**, while `prompts/security-agent.md`'s supply-chain paragraph asks for
+  three different things: the artifact, the trust assumption and the blast
+  radius. Detection is in neither the charter's list nor any sweep that obeyed
+  it. The 2026-11-08 audit answers L-S2's second question in a fourth column
+  and names the gap, which is the reporting half rather than the repair.
+- Why it is not cosmetic: L-S2 exists because of incident 19, where the
+  pipeline consumed Hugging Face daily through the window HF production was
+  compromised and nobody had written the dependency down. The question the
+  standard added after that event is the detection one, and that is exactly
+  the one the local charter paragraph drops. A trust assumption without a
+  detection answer records that we are exposed and not how we would find out.
+- What: one clause in the supply-chain paragraph of
+  `prompts/security-agent.md`, so the sweep's standing answer carries four
+  fields rather than three, and a citation to L-S2 beside it so the next
+  reader of either document can see the other. L-S3 asks for exactly that
+  mutual citation where two standards bind one artifact.
+- Why it is routed rather than shipped here: a charter diff is held by the
+  Tier B path check against Tier C's unamended list, which still names
+  `prompts/`, and this seat does not edit charters in any case. The ExO seat is
+  the one that turns register patterns into charter fixes.
+- Not a widening of this seat's authority: it adds a question this seat must
+  answer, so section 21's owner reservation does not reach it.
+- First step: the clause, plus the L-S2 cross-citation in both directions. The
+  standards copy is vendored, so the HQ half goes through
+  `docs/agents/hq-relay.md`.
+- Cost: $0
+- Status: proposed
+
 ### 2026-11-08 - A detector for the fabricated-path class, because every occurrence so far was found by a human noticing and the register already calls it a repeat (security seat, for the engineer)
 
 - Trigger: this sweep ran the charter's "every referenced file in docs/ exists"
