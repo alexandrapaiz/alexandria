@@ -23,10 +23,28 @@ this seat) asked for this file and named its recipe. Two modes, because the
 **Resolve.** For each conflicted register, read the three stages git already
 holds: the merge base, ours, theirs. When ours is the base plus a trailing block
 and theirs is the base plus a trailing block, the answer is the base plus both
-blocks, ours first, because ours is the side that is already on the trunk. When
-either side changed anything that is not the end of the file, this refuses the
-file and leaves it for a hand. Concatenating a change that is not an append is
-how a resolution damages a record.
+blocks. When either side changed anything that is not the end of the file, this
+refuses the file and leaves it for a hand. Concatenating a change that is not an
+append is how a resolution damages a record.
+
+**Which block goes first is decided by the stamp the block carries, not by which
+side git calls ours.** This tool's first version concatenated ours then theirs
+unconditionally, on the premise that ours is already on the trunk. That premise
+holds in one merge direction and the seats use the other: a seat clearing a
+conflict runs `git merge origin/main` from its own branch, because that is how
+you do it without rewriting pushed history, so ours is the branch and theirs is
+the trunk. In a register ordered by time that put the newer entry above the
+older one, measured on two real registers by the ExO seat on 2026-11-09 and
+resolved by hand both times
+(`INC-2026-11-09-the-register-resolver-orders-two-appends-backwards-in-the-only-merge-direction-we-use`).
+
+So the order comes from the register's own content. Every register entry heading
+carries a date, often a time with it, and the block with the earlier stamp goes
+first. When both blocks carry the same stamp, or when one carries none, the
+stamp cannot decide it and the tool falls back to putting the trunk side first,
+labelling the trunk from ancestry against `origin/main` rather than from the
+word "ours". When neither rule can speak, the file is refused. Guessing an order
+is what the first version did.
 
 **Check.** The arithmetic that makes the claim testable, which is the half a
 recipe usually lacks. For an append-only file, every line's count in the
@@ -39,6 +57,13 @@ Fewer means the resolution deleted a line that one side had, which is the
 does on the shared trailing lines of two appended entries and the measured
 reason L-A49 forbids that attribute. Both are findings and neither leaves a
 marker, so both are counted here rather than looked for.
+
+That arithmetic is a line multiset, and a multiset is order-independent, so it
+read balanced on both registers the ExO seat found written backwards. It is
+right about the deletion it was built for and blind to the ordering, which is
+why it now has a companion: the stamps of the two appended blocks must be
+non-decreasing in the resolution. Two checks, because the two defects are
+different and the first one cannot see the second.
 
 `--check` reads a merge commit rather than an index, so it audits work that is
 already committed and pushed. With no argument it reads `HEAD`, which is the
@@ -53,6 +78,7 @@ gate that saw nothing must not read as a quiet pass).
 import argparse
 import collections
 import importlib.util
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -124,6 +150,136 @@ def trailing_block(base: list[str], side: list[str]) -> list[str] | None:
     return side[len(base):]
 
 
+STAMP = re.compile(r"(\d{4})-(\d{2})-(\d{2})(?:[ T](\d{2}):(\d{2}))?")
+
+TRUNK_REFS = ("refs/remotes/origin/main", "refs/heads/main")
+
+
+def stamp(block: list[str]) -> tuple[tuple, str] | None:
+    """The ordering key an appended block carries, and the line it was read from.
+
+    Every shape a register entry heading takes in this repository leads with a
+    date, and that is the only part of the heading the shapes agree on:
+
+        ### 2026-11-09 - Idea name                      (docs/ideas.md)
+        ## INC-2026-11-09-slug - what happened (...)    (docs/agents/incidents.md)
+        ## 2026-11-09 09:12Z - message wake             (docs/agents/learning-log.md)
+        ## Queued 2026-11-09 by the skill seat          (docs/research/reading-queue.md)
+
+    So the key is the first date in the block, with the time beside it when
+    there is one, and the line it came from is returned with it because the
+    ordering check needs to find that line again in the resolution. A block with
+    no date at all returns None, and a None is refused rather than guessed.
+    """
+    for line in block:
+        found = STAMP.search(line)
+        if found:
+            year, month, day, hour, minute = found.groups()
+            key = (int(year), int(month), int(day),
+                   int(hour) if hour else -1, int(minute) if minute else -1)
+            return key, line
+    return None
+
+
+def trunk_side(repo=ROOT) -> str | None:
+    """Which of the two merge heads is the trunk, by ancestry rather than by name.
+
+    `ours` and `theirs` are a fact about the direction somebody typed the merge
+    in, not about the repository, which is the whole defect this answers. The
+    trunk is a fact about the repository: it is the side already reachable from
+    `main`. Returns "ours", "theirs", or None when neither side or both sides
+    are reachable, which is the honest answer for two branches merged off-trunk.
+    """
+    head = git("rev-parse", "HEAD", repo=repo, check=False)
+    other = git("rev-parse", "MERGE_HEAD", repo=repo, check=False)
+    if head.returncode != 0 or other.returncode != 0:
+        return None
+    return _trunk_of(head.stdout.strip(), other.stdout.strip(), repo=repo)
+
+
+def _trunk_of(ours_ref: str, theirs_ref: str, repo=ROOT) -> str | None:
+    trunk = next((r for r in TRUNK_REFS
+                  if git("rev-parse", "--verify", "--quiet", r,
+                         repo=repo, check=False).returncode == 0), None)
+    if trunk is None:
+        return None
+
+    def reachable(ref: str) -> bool:
+        return git("merge-base", "--is-ancestor", ref, trunk,
+                   repo=repo, check=False).returncode == 0
+
+    ours, theirs = reachable(ours_ref), reachable(theirs_ref)
+    if ours == theirs:
+        return None
+    return "ours" if ours else "theirs"
+
+
+def order_blocks(ours_tail: list[str], theirs_tail: list[str],
+                 repo=ROOT, trunk=None) -> tuple[list[str], list[str], str] | tuple[None, None, str]:
+    """The two appended blocks in the order the register wants, and why.
+
+    Returns `(first, second, reason)`, or `(None, None, refusal)` when no rule
+    can decide it. An empty block is not an append and sorts before anything,
+    since there is nothing of it to be out of order.
+    """
+    if not ours_tail or not theirs_tail:
+        return ours_tail, theirs_tail, "one side appended nothing"
+
+    ours_stamp, theirs_stamp = stamp(ours_tail), stamp(theirs_tail)
+    if ours_stamp and theirs_stamp and ours_stamp[0] != theirs_stamp[0]:
+        if ours_stamp[0] < theirs_stamp[0]:
+            return ours_tail, theirs_tail, "stamp order, ours is the earlier block"
+        return theirs_tail, ours_tail, "stamp order, theirs is the earlier block"
+
+    why = ("both blocks carry the same stamp" if ours_stamp and theirs_stamp
+           else "a block carries no stamp")
+    trunk = trunk_side(repo=repo) if trunk is None else trunk
+    if trunk == "ours":
+        return ours_tail, theirs_tail, f"{why}, so trunk order, ours is the trunk"
+    if trunk == "theirs":
+        return theirs_tail, ours_tail, f"{why}, so trunk order, theirs is the trunk"
+    return None, None, (f"{why} and neither side is reachable from the trunk, "
+                        f"so no rule here can order them")
+
+
+def order_findings(base: str, ours: str, theirs: str, resolved: str) -> list[str]:
+    """The companion to the arithmetic: the two blocks' stamps must not decrease.
+
+    The line-count audit is a multiset and a multiset is order-independent, so
+    it reads balanced on a register written backwards. This reads the order.
+    Silent when it cannot localise a block in the resolution, because a check
+    that guesses is worse than one that abstains (L-A21).
+    """
+    lb = lines(base)
+    ours_tail = trailing_block(lb, lines(ours))
+    theirs_tail = trailing_block(lb, lines(theirs))
+    if not ours_tail or not theirs_tail:
+        return []
+
+    ours_stamp, theirs_stamp = stamp(ours_tail), stamp(theirs_tail)
+    if not ours_stamp or not theirs_stamp or ours_stamp[0] == theirs_stamp[0]:
+        return []
+
+    body = lines(resolved)
+    places = {}
+    for side, (key, probe) in (("ours", ours_stamp), ("theirs", theirs_stamp)):
+        if body.count(probe) != 1:
+            return []
+        places[side] = (body.index(probe), key, probe)
+
+    first, second = sorted(places.values())
+    if first[1] <= second[1]:
+        return []
+    return [f"out of order: {_say(first[1])} is above {_say(second[1])}, "
+            f"so the newer block landed first: {first[2].strip()[:60]}"]
+
+
+def _say(key: tuple) -> str:
+    year, month, day, hour, minute = key
+    clock = f" {hour:02d}:{minute:02d}" if hour >= 0 else ""
+    return f"{year:04d}-{month:02d}-{day:02d}{clock}"
+
+
 def counts(text: str) -> collections.Counter:
     return collections.Counter(lines(text))
 
@@ -158,18 +314,26 @@ def resolve_one(path: str, repo=ROOT, write=True) -> tuple[str, list[str]]:
         return REFUSED, [f"{path}: refused, {which} changed something that is not "
                          f"the end of the file, so this is not two appends"]
 
-    merged = lb + ours_tail + theirs_tail
+    first, second, why = order_blocks(ours_tail, theirs_tail, repo=repo)
+    if first is None:
+        return REFUSED, [f"{path}: refused, {why}"]
+
+    merged = lb + first + second
     text = "\n".join(merged) + "\n"
-    findings = audit(base, ours, theirs, text)
+    findings = audit(base, ours, theirs, text) + \
+        order_findings(base, ours, theirs, text)
     if findings:
         return REFUSED, [f"{path}: refused, the resolution would not balance"] + \
             [f"  {f}" for f in findings]
 
+    lead = "ours" if first is ours_tail else "theirs"
+    trail = "theirs" if first is ours_tail else "ours"
     if write:
         (Path(repo) / path).write_text(text)
         git("add", "--", path, repo=repo)
-    return RESOLVED, [f"{path}: kept both appends, ours first "
-                      f"({len(ours_tail)} lines) then theirs ({len(theirs_tail)} lines)"]
+    return RESOLVED, [f"{path}: kept both appends, {lead} first "
+                      f"({len(first)} lines) then {trail} "
+                      f"({len(second)} lines), by {why}"]
 
 
 def check_commit(ref: str, repo=ROOT, registers=None) -> tuple[str, list[str]]:
@@ -191,13 +355,15 @@ def check_commit(ref: str, repo=ROOT, registers=None) -> tuple[str, list[str]]:
         if ours == theirs == resolved:
             continue
         state = RESOLVED if state == NOTHING else state
-        findings = audit(base, ours, theirs, resolved)
+        findings = audit(base, ours, theirs, resolved) + \
+            order_findings(base, ours, theirs, resolved)
         if findings:
             state = REFUSED
             report.append(f"{path}: the resolution in {ref[:9]} does not balance")
             report.extend(f"  {f}" for f in findings)
         else:
-            report.append(f"{path}: balanced, every line of both sides is present once")
+            report.append(f"{path}: balanced, every line of both sides is present "
+                          f"once and the blocks' stamps do not decrease")
     if state == NOTHING:
         report.append(f"{ref[:9]} merged no register, so this run is not a "
                       f"verdict on the registers")
