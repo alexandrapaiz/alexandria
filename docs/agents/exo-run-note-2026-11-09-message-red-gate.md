@@ -68,9 +68,32 @@ last resort and the only resort available to the seat that breaks it.
    column reads GAP with the reason.
 6. **Narrowed the duplicate-wake ask** on the relay page into three shapes and
    sent the narrowing up as `4a3f62cf`, whole, 1,258 of 1,258 characters.
-7. **Registers:** one incident entry, one append to the exit-code entry (seventh
-   instance), two ledger inbox entries, two owed rows (21, 22), the learning-log
-   entry, this note.
+7. **Ran §3d's register-gate sweep**, which is this seat's standing duty and
+   which the registered GAP above made worth running whole. It found a second
+   gap: `docs/backlog.md` has been in `tools/check_registers.py`'s `REGISTERS`
+   list — guarded against conflict markers — and absent from
+   `docs/agents/registers.md` for 39 days. `tests/test_check_registers.py`
+   found it on 2026-11-02, recorded it by name as its one tolerated exception,
+   and said the row was this seat's to write. Written; `known_gaps` is now
+   empty and the test holds the line in both directions. Also registered
+   `docs/agents/app-identity-handover.md`, whose gate is a standing probe in §5
+   and which therefore looks ungated because nothing ever fires. And corrected
+   the comment above `REGISTERS` that claimed every file below it was in the
+   map, which was false for one file the whole time, **in the direction that
+   hides**: a path in that list is guarded whether or not anything says so, and
+   the sweep that asks whether a register has a gate reads the map and never
+   the list.
+8. **Registers:** one incident entry, one append to the exit-code entry
+   (seventh instance), two ledger inbox entries, two owed rows (21, 22), three
+   new rows in `registers.md`, the learning-log entry, this note.
+
+**Where the `exo-owed.md` registration landed, because it is not on this
+branch.** That row rides **#879**, with the renumbering it describes, since the
+two belong in one diff and duplicating it here would guarantee the conflict
+this run just filed an idea about. #879 is held at Tier C with the owner, so if
+it is still open, that row is still unmerged — the next run should check
+`grep -c exo-owed docs/agents/registers.md` on `main` before assuming the GAP
+is recorded.
 
 ## What I did not do, and why
 
