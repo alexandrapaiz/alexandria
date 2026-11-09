@@ -6,6 +6,182 @@ changed; the narrative lives here. The reason for that split is the measurement
 recorded in `skills/harness-engineering/REVISIONS.md` and the rule is in
 `prompts/skill-extract.md` section 2.
 
+## 2026-11-09, fifth entry: the prescription had a ceiling and the file did not say so
+
+**Trigger.** ADR-37, a cited prescription narrowed by papers read in full. The
+research seat's `done` of 09:48Z (board id `e6764735`, ref #903) reported both
+approval-laundering papers read in full, corrected two premises in this skill's
+own queue lines, and asked this seat to say which paper each delta rests on. The
+reading below is this seat's own, not the note's.
+
+**What this seat did before writing anything.** Fetched both full texts with
+`python3 tools/read_paper.py`, exit 0 both, 132,653 and 105,779 characters,
+matching the research seat's counts exactly. Then read, in the texts rather
+than in the note, section IX of `2609.38983` for the class-level claim and the
+ruled-out repair, Table I for what each grant's own text excludes, the benign
+example in section I for the argument mechanism, and sections III-C and the
+Table III note of `2609.28586` for the four responses and the no-added-effect
+ASK definition and count. Every figure quoted below was read in the paper.
+
+### The finding: the half this file told a builder to ship is measured at zero on two of six classes
+
+Checklist item 2 and delta 1's procedure item 2 said, in substance, bind the
+approval to the one concrete action and re-verify it at dispatch, and said
+nothing about what that does not reach. Three independent lines reach the
+construction, which is why v4 called it a pattern, and none of the three
+measured its ceiling. `2609.38983` does.
+
+Its Bound-Gap Rate is the fraction of valid runs in which a per-scenario canary
+effect outside the credential's own text occurs. Table III, Claude Code
+2.1.197, Wilson 95 percent:
+
+| class | N | BGR | 95% CI |
+|---|---|---|---|
+| Scope | 20 | 1.000 | [0.839, 1.000] |
+| Temporal | 20 | 1.000 | [0.839, 1.000] |
+| Tool, cross-tool identity | 19 | 0.000 | [0.000, 0.168] |
+| Tool, same-name `$PATH` | 20 | 1.000 | [0.839, 1.000] |
+| Argument | 20 | 0.450 | [0.258, 0.658] |
+| Delegation | 19 | 0.947 | [0.754, 0.991] |
+| Semantic (proxy) | 20 | 0.100 | [0.028, 0.301] |
+
+Its defense is an HMAC credential over principal, agent id, session id, tool,
+argument hash, scope and expiry, minted by a mediator and held server-side,
+which is a strictly stronger version of what checklist item 2 asks for. Table V
+replays it paired over the 118 runs of the six replayed scenarios, McNemar
+exact:
+
+| class | baseline | with defense | discordant | p |
+|---|---|---|---|---|
+| Delegation | 0.947 | 0.000 | 18/0 | 7.6e-6 |
+| Temporal | 1.000 | 0.000 | 20/0 | 1.9e-6 |
+| Argument | 0.450 | 0.400 | 1/0 | 1 |
+| Scope | 1.000 | 1.000 | 0/0 | 1 |
+| Semantic | 0.100 | 0.100 | 0/0 | 1 |
+| Tool (cross-tool) | 0.000 | 0.000 | 0/0 | 1 |
+
+**So the binding eliminates the two classes where a field diverges and moves
+nothing where no field diverges.** The paper's own section IX sentence is that
+`"Tool Laundering is blocked" is false as a class-level statement`, and the
+mechanism it gives is structural rather than contingent: `$PATH` resolution
+happens inside the dispatched process, below the `PreToolUse` mediation point,
+and no field the hook receives can be made to reveal it. The three mechanisms,
+from Table I:
+
+- **Scope.** A grant of `Bash(npm run test *)` never names the canary read that
+  a `package.json` script's child process performs.
+- **Argument.** A grant of the literal `git commit -m "wip"` never names the
+  unstaged edit a repository `pre-commit` hook running `git add -A` sweeps in.
+  Eight of the nine successes issue the approved literal unmodified, so this is
+  not the model widening its own arguments, and the ten failures attempt a
+  *narrower* command which the allowlist correctly denies.
+- **Tool, same-name `$PATH`.** The approved rule `Bash(cat *)`, the literal
+  command text and the recorded tool identity all match what was granted, and
+  only which executable `$PATH` resolves `cat` to differs.
+
+### Why the obvious repair is in the file as a refusal rather than as an option
+
+This is the part that makes the revision a decision-rule change rather than a
+caveat. An engineer told that the binding has a ceiling reaches next for
+re-approval on environment change, which the literature calls drift detection.
+The paper measured it and says it `would not have caught any of our measured
+cases`, because in every scenario the hook or shadowed executable is installed
+before the credential is ever issued, so the snapshot is identical at approval
+and at dispatch. Finer matching on the argument or scope field cannot help
+either, and the paper's reason is the one to carry: there is no delta to match
+against, since the field never changes.
+
+What it names instead is *initial effect validation*, inspecting at approval
+time what the already-present environment would make the credential produce and
+refusing a grant whose own text excludes an effect the environment is already
+configured to produce. **It did not build or test that**, and says so, calling
+it the paper's most concrete open problem. Delta 1's procedure item 2 now
+prescribes it and the file says it is unbuilt in the source, because
+prescribing an untested mechanism as though it were a measured one is the
+overstatement this library's provenance reviewer exists to catch.
+
+### The second paper's half, and it lands in delta 2 rather than delta 1
+
+`2609.28586` derives an information limit: if two validly bound executions
+project to the same policy-visible record and need different effect-specific
+decisions, no record-only rule can decide both. v5 of this file had no sentence
+resting on that paper, and the queue line that asked for it claimed the limit
+was `the strongest available argument for why delta 1 must read the resolved
+object`. Read against Lemma 1 that is wrong twice, and the research seat caught
+both: it is an information requirement rather than a hardness result, and it
+licenses four responses rather than one. The paper's own words are that the
+decision path `must conservatively represent the union, re-mediate, reject, or
+contain the unresolved effects`, and its recommendation is the union, meaning
+bind a source-backed prediction of the transitive effect boundary into the
+approval object before authorizing. Reading the resolved object is one of the
+four and is the one that needs the separating information to exist.
+
+So the sentence lands in delta 2's procedure item 6, which is the item about
+consulting effects, and it arrives with its price. **The cost figure the
+abstract omits is the one a builder needs**, and it is in the note under Table
+III: of the 17 reached cases in the frozen confirmatory holdout, **9 are
+no-added-effect ASK**, which the paper defines as a reached case routed to ASK
+whose realized trace exercises no effect class the command-only record had not
+already disclosed. Positive stratum 4 of 9, controls 5 of 8. Against that, the
+frozen predictions raise macro recall 0.770 to 0.926 at 0.941 precision, case
+coverage 0.755 to 0.922, and cut residual effect instances 10 to 3, with all
+seven newly disclosed effects in the positive stratum and control disclosure
+unchanged. Over half the extra prompts bought nothing, and that ratio belongs
+beside the coverage gain rather than under it.
+
+### Which paper each new sentence rests on, because the research seat asked
+
+The two are not interchangeable and the file now says which carries which.
+
+**Delta 1's ceiling rests on `2609.38983` alone.** Single author. A working
+draft dated 2026-09-22, target venue IEEE TDSC, stated in its own manuscript
+line as not yet submitted. One harness, one pinned model version. A Codex CLI
+replication was attempted and blocked because `codex exec` exposes no
+observable per-call approval checkpoint. And the paper disqualifies its own
+point estimates as harness-intrinsic: the runner forks the full parent
+environment and all 138 valid traces load extra plugin instructions and a
+previous-session summary on top of the published prompt, so in its own words the
+repetitions `are not independent draws from a minimal, hermetic harness
+configuration`. The kappa of 1.0 is an unblinded author cross-check re-measured
+on the same 15 runs used to find the analyzer bug it is reported after, and
+Scope's BGR is 0.80 before that fix and 1.00 after. **So take the direction and
+the two zeros, not the rates**, which is what the validation tag now says.
+
+**Delta 2's four responses and the 9-of-17 price rest on `2609.28586` alone**,
+and its warrant is a different kind rather than a weaker one. It reports no
+population dispersion anywhere, and the one interval it draws is labelled in its
+own caption as a fixed-cohort case-resampling stability interval. What stands in
+its place is freeze discipline: a parser frozen before a disjoint, prespecified
+holdout of 18 workflows from 18 previously unseen fixed-SHA repositories, an
+independent re-implementation that hash-checks 109 artifacts, six three-run
+repeats at mean pairwise Jaccard 1.000, and a four-profile denominator
+sensitivity. One predeclared target loses its margin under one of those
+profiles, executed-control precision 0.875 primary and 0.778 when
+`NOT_EXECUTED` is treated as empty, against a predeclared bar of 0.80. The
+primary profile is the pre-registered one, so that is a boundary rather than a
+miss, and it is the thinnest margin in the paper.
+
+### What this run did not do, and why
+
+**The queue lines were not corrected here.** Both carried premises this seat
+wrote from abstracts, and both are wrong: the papers posted a week apart rather
+than three weeks, `2609.28586` is the earlier of the two rather than the second,
+there is a third independent naming thirteen days wide that neither of them
+cites, and the information-limit sentence overstates Lemma 1. The research seat
+corrected all four in place on #903, so correcting them again here would be the
+same two lines written twice at one anchor. That file already conflicts between
+the two branches, proved with `git merge-tree --write-tree`, and the resolution
+is to keep both tail sections. Named in the pull request with the merge order
+rather than resolved on this branch.
+
+**Loopjacking is not cited.** `arxiv:2609.21081` is the first of the three
+namings by posting date and this seat has not read it, so it appears nowhere in
+`SKILL.md`. The research seat queued it on #903.
+
+**Nothing moved on status.** `status: draft` stands, `validated` stays empty,
+and no delta was measured, because neither eval arm has a route from this seat.
+ap-t8 is written and unqualified like the other nine.
+
 ## 2026-11-09, fourth entry: the right number was on the wrong baseline, and the paper prints it twice
 
 **Trigger.** ADR-37, a cited result refined again. The research seat read

@@ -81,3 +81,40 @@ pull the seat's own outbound messages and read their `reasoning` fields against
 the note's content. Had it been trusted, the run would have reported nothing
 owed and closed, which is what instance seven's own remedy would have made the
 router do on its behalf.
+
+## Third occurrence, 2026-11-09, the run that produced PR #908
+
+Appended rather than filed new, per the standing rule, because it is the same
+field and the same mechanism. What it adds is the shape, which neither earlier
+instance could see from one mismatch.
+
+The research seat's `done` of 09:48:19Z, the wake this run was given, carries
+`answered_by` naming this seat's `done` of 10:08:00Z, whose subject is "Your
+finding is right and shipped as v5: prediction is free against the approver it
+replaces, and the 60.8 is text's price". That message answers the 09:16 note
+about Table 11. Nothing in it touches approval laundering, which is the 09:48
+done's entire subject.
+
+**The chain is the new evidence.** Printing `answered_by` for every message in
+this seat's inbox gives, in order:
+
+| incoming | its `answered_by` | what that reply actually answers |
+|---|---|---|
+| 09:48 `done`, approval laundering | 10:08 `done`, "prediction is free" | the 09:16 note |
+| 09:16 `note`, Table 11 | 09:30 `done`, "all six items are in version four" | the 08:29 note |
+| 08:52 `note`, the lookup | 09:30 `done`, "your lookup found this run's answer" | the 08:52 note, correctly |
+
+So the field is not wrong at random. A seat that answers its inbox in arrival
+order gets each incoming message attributed to the reply for the previous one,
+and the error walks down the list. The second instance looked like one bad cell.
+Two consecutive cells wrong in the same direction is a join on time, confirmed
+from the data rather than from the diagnosis.
+
+**It also means the defect compounds with throughput.** The faster a seat
+answers, the more of its inbox is mislabelled, because every reply is in flight
+as the next note lands. The three mislabelled items above span 32 minutes.
+
+**The rule that holds today is unchanged and it worked again**: when
+`answered_by` is present, open the message it names and check its subject
+answers that note. Cost this time, three tool calls, and the run would otherwise
+have closed reporting nothing owed on a live correction to a shipped skill.
