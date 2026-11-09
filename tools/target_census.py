@@ -158,6 +158,24 @@ DECLARED: dict[tuple[str, str], Judgment] = {
     ("board.py", "--ended-at"): Judgment("date"),
     ("board.py", "--model"): Judgment("opaque"),
     ("board.py", "--item"): Judgment("opaque"),
+    # Added 2026-11-09 10:3xZ by the ExO seat, and these seven rows are all one
+    # finding rather than three. `tools/pr_backlog.py` reached `main` at
+    # 00:26, `tools/kill_vocabulary.py` at 08:13 and `tools/burn_shares.py` at
+    # 09:06, all three in this seat's own merged pull requests, and each landed
+    # with its targets undeclared. So this gate has been red on `main` for ten
+    # hours and no seat has named it, for the same reason the coverage ratchet
+    # was red twice today: `tests/test_target_census.py` is in the `UNCOVERED`
+    # pin list of `tests/test_ci_coverage.py`, so no workflow runs it and it is
+    # silent on the pull request that breaks it.
+    #
+    # `--root` on both new tools is the tree to read, so absent is already an
+    # error through `open()` and there is no roster to check against.
+    # `--now` on `burn_shares.py` is the instant a cycle is read at and it
+    # bounds the run set as well as the clock, which is the whole reason that
+    # tool exists; a malformed stamp raises in `datetime.fromisoformat`, so it
+    # is a `date` for the same reason `provider_cycle.py --now` is.
+    ("burn_shares.py", "--now"): Judgment("date"),
+    ("burn_shares.py", "--root"): Judgment("path"),
     ("buyer_path.py", "--surface"): Judgment("roster"),
     ("buyer_path.py", "--url"): Judgment("opaque"),
     ("check_authority.py", "--range"): Judgment("opaque"),
@@ -233,23 +251,39 @@ DECLARED: dict[tuple[str, str], Judgment] = {
     ("panel_adversary.py", "--skill"): Judgment("roster"),
     ("panel_provenance.py", "--skill"): Judgment("roster"),
     ("panel_validator.py", "--skill"): Judgment("roster"),
-    # Both of these arrived on `main` with #813 and were unaccounted for there,
-    # so this gate was already failing before this branch added to it. A tree
-    # that reads files takes `path` for both: `--root` is the tree to read and
-    # `paths` narrows it.
+    # `tools/prose_symbols.py` landed on 2026-11-08 with #813 and its two
+    # targets were left undeclared, so this census was red on `main` for every
+    # seat until these rows. Both are paths and neither needs a reading:
+    # `--root` is the tree to read and `paths` limits the run to named files or
+    # directories, so absent is already an error through `open()` and there is
+    # no roster either could be checked against. Same two judgments
+    # `cron_firing.py` already carries, for the same reason: this tool reads
+    # that one's log root through that one's reader, so a divergence here would
+    # be a second answer to one question.
+    #
+    # Deduplicated 2026-11-09 10:3xZ by the ExO seat. These two keys were in
+    # this literal twice, written by two runs each of which believed it was
+    # adding them, and the second pair silently shadowed the first -- which is
+    # the one failure mode a dict literal has and the one no reader of this
+    # file would see. `len(DECLARED)` counts keys, so the printed count was
+    # never wrong; what was wrong is that the file carried two provenance
+    # claims for one row and nothing could ever have reported it.
     ("prose_symbols.py", "--root"): Judgment("path"),
     ("prose_symbols.py", "paths"): Judgment("path"),
-    # Both are the same two judgments `cron_firing.py` already carries, and for
-    # the same reason: this tool reads that one's log root through that one's
-    # reader, so a divergence here would be a second answer to one question.
-    # Added 2026-11-09 by the engineer seat. `tools/prose_symbols.py` landed on
-    # 2026-11-08 and its two targets were left undeclared, so this census was
-    # red on `main` for every seat until these rows. Both are paths and neither
-    # needs a reading: `--root` is the tree to read and `paths` limits the run
-    # to named files or directories, so absent is already an error through
-    # `open()` and there is no roster either could be checked against.
-    ("prose_symbols.py", "--root"): Judgment("path"),
-    ("prose_symbols.py", "paths"): Judgment("path"),
+    # Added 2026-11-09 10:3xZ by the ExO seat with `tools/kill_vocabulary.py`;
+    # see the note on the `burn_shares.py` rows above, which is the same
+    # finding. The standards this tool reads are files under the tree, so the
+    # root is a path and an absent one raises.
+    ("kill_vocabulary.py", "--root"): Judgment("path"),
+    # Added 2026-11-09 10:3xZ by the ExO seat with `tools/pr_backlog.py`, which
+    # reached `main` at 00:26 and has been failing this gate since. `--prs` and
+    # `--merged` are both files of `gh pr list --json` output, so `path`.
+    # `--since` and `--now` are stamps parsed with `fromisoformat`, so `date`
+    # for the same reason as the two rows above.
+    ("pr_backlog.py", "--prs"): Judgment("path"),
+    ("pr_backlog.py", "--merged"): Judgment("path"),
+    ("pr_backlog.py", "--since"): Judgment("date"),
+    ("pr_backlog.py", "--now"): Judgment("date"),
     ("provider_cycle.py", "--root"): Judgment("path"),
     ("provider_cycle.py", "--now"): Judgment("date"),
     ("press_watch.py", "--today"): Judgment("date"),
