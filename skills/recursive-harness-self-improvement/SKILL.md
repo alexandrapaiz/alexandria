@@ -16,16 +16,16 @@ provenance:
     - "2026-09-30 (ADR-35, the paper wins): re-read arxiv.org/abs/2609.09219 in full while revising evaluation-integrity, and narrowed section 9. The third gate is optional in the protocol and returned Inconclusive on both of its real-data audits, which the section had presented as a gate to adopt alongside the other two. No claim this skill cites is deprecated."
   claims: [411, 412, 413, 414, 415, 335, 336, 337, 338, 392, 393, 395, 535, 537, 538, 539, 354, 355, 147, 148, 150, 593, 594, 597, 462, 465, 466, 286]
   papers:
-    - "ModularRSI: Modular and Generalizable Recursive Harness Self-Improvement — arxiv.org/abs/2609.14857"
-    - "RSIAgent: Autonomous Exploration for Recursive Self-improvement in New Environments — arxiv.org/abs/2609.15364"
-    - "ScienceBuddy: Recursive-in-Recursive Self-Improvement for Interactive Scientific Agents — arxiv.org/abs/2609.17523"
-    - "SoL-Pi: Recursively Scaling Auto-Research Loops for Efficient Agent Harness — arxiv.org/abs/2609.20519"
-    - "Dream-RSI: Recursive Self-Improvement through Evolving Worlds — arxiv.org/abs/2609.14858"
-    - "Procedural Graphs: Self-Evolving Execution Structures for LLM Agents — arxiv.org/abs/2609.09153"
-    - "Root-Cause Attribution Is a Search Problem: Continual Search for Long-Horizon Agent Failures — arxiv.org/abs/2609.13463"
-    - "Agora: Git as Shared Memory for Collective AutoResearch (cited by section 8 until the 2026-11-02 retrofit cut it; kept here because the claim ids it backs are still in this provenance block) — arxiv.org/abs/2609.18094"
-    - "OSWorld: Benchmarking Multimodal Agents for Open-Ended Tasks in Real Computer Environments (read 2026-10-27 for the reward definition behind RSIAgent's OSWorld columns) — arxiv.org/abs/2404.07972"
-    - "Scores Alone Do Not Prove Discovery: The Discovery Certification Protocol for Auditing AI Research Agents — arxiv.org/abs/2609.09219"
+    - "ModularRSI: Modular and Generalizable Recursive Harness Self-Improvement, arxiv.org/abs/2609.14857"
+    - "RSIAgent: Autonomous Exploration for Recursive Self-improvement in New Environments, arxiv.org/abs/2609.15364"
+    - "ScienceBuddy: Recursive-in-Recursive Self-Improvement for Interactive Scientific Agents, arxiv.org/abs/2609.17523"
+    - "SoL-Pi: Recursively Scaling Auto-Research Loops for Efficient Agent Harness, arxiv.org/abs/2609.20519"
+    - "Dream-RSI: Recursive Self-Improvement through Evolving Worlds, arxiv.org/abs/2609.14858"
+    - "Procedural Graphs: Self-Evolving Execution Structures for LLM Agents, arxiv.org/abs/2609.09153"
+    - "Root-Cause Attribution Is a Search Problem: Continual Search for Long-Horizon Agent Failures, arxiv.org/abs/2609.13463"
+    - "Agora: Git as Shared Memory for Collective AutoResearch (cited by section 8 until the 2026-11-02 retrofit cut it; kept here because the claim ids it backs are still in this provenance block), arxiv.org/abs/2609.18094"
+    - "OSWorld: Benchmarking Multimodal Agents for Open-Ended Tasks in Real Computer Environments (read 2026-10-27 for the reward definition behind RSIAgent's OSWorld columns), arxiv.org/abs/2404.07972"
+    - "Scores Alone Do Not Prove Discovery: The Discovery Certification Protocol for Auditing AI Research Agents, arxiv.org/abs/2609.09219"
 ---
 
 # Recursive harness self-improvement
