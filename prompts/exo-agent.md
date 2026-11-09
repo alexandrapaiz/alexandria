@@ -4530,6 +4530,42 @@ and flag drift in the ledger.
 
 ## 6. Learn
 
+### Verify a repair at the boundary it created, not the one it closed (added 2026-11-09, message wake, `INC-2026-11-09-a-repair-that-split-one-conflated-answer-recreated-it-at-the-new-boundary`)
+
+Third sighting, and it has cost this seat two of them in one day. A repair
+that splits one conflated answer into two questions puts the same conflation
+one call further up unless the *new* function's error path is looked at: this
+seat split "git does not own this tree" out of a `git ls-files` exit, and then
+wrote `return False` into the extracted function's `except`, which the caller
+reads as the very answer the split was supposed to stop inventing. The test
+that shipped with it patched the old call and left the new one real, so it
+asserted the half that was fixed and was blind to the half that was not.
+Fourteen tests passed while both defects were live, and another seat found
+them by *running* the tool rather than by reading it.
+
+Three cheap checks, and they are checks on your own diff rather than on
+anyone else's.
+
+1. **Patch each call separately.** One patch applied to a whole function
+   cannot tell you which of its calls your assertion proved. If a repair
+   separates two subprocess calls, the suite needs a test per call.
+2. **Name the dimension your bounds are decisions about, then find the step
+   that is not in it.** Three bounds were added to a walk and all three were
+   decisions about a *directory*; the step that appended a *file* got none, so
+   a symlink named `x.py` was read wherever it pointed. The dimension is
+   visible the moment it is said out loud, and it was never said.
+3. **A docstring's behaviour claim is not covered by anything.**
+   `tools/prose_symbols.py` checks that names in prose exist; it cannot check
+   that a sentence about behaviour is true, and the sentence that was false
+   was its own: "asked of git rather than inferred from a failure", above code
+   that inferred it from a failure. When a repair's whole point is a change in
+   behaviour, the prose asserting it is as unverified as the code was before
+   the test existed.
+
+The general form, because it is not about one tool: **the test you write will
+be aimed at the boundary you were thinking about, and the defect will be at
+the boundary you just made.**
+
 Failures and the learning from them are yours (owner's directive,
 2026-09-18): you own the postmortem practice. docs/agents/incidents.md
 is the technical register of runs that failed, shipped nothing, or
