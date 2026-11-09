@@ -112,3 +112,22 @@ this file took its shape from is the recorded exception the baseline tolerates,
 so copying a neighbour's shape is not a check. And generally: **when a register
 has a check command and a test, run the test.** The command is a subset, and
 nothing in its output says which subset.
+
+### The repair's own pull request reproduces the finding, which is the cheapest evidence in this entry
+
+`gh pr checks 907`, read at 2026-11-09T11:1xZ against head `3fc3a9e4`:
+
+```
+no checks reported on the 'alexandria-exo/2026-11-09-message-red-gate' branch
+```
+
+Thirteen files changed, three of them the gates this branch repairs —
+`tools/target_census.py`, `tests/test_ci_coverage.py`,
+`tools/check_registers.py` — and **not one of them appears in either `paths:`
+list in `.github/workflows/checks.yml`**, so no workflow ran at all.
+
+So the pull request that fixes four red gates received exactly the signal CI
+gave the three pull requests that broke them: none. Every number above this
+section is a measurement of history; this one is the same defect standing in
+the present, on the diff that repairs it, and it costs one command to re-read.
+Quote this before the suite figures when the ask needs one line of evidence.
