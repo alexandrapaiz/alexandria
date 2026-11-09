@@ -67,3 +67,18 @@ writes to the board and not only in the ExO's section 3f, because a research run
 has never read the ExO charter pays the same two refusals. Routed as a line here
 rather than as a second register entry, since the class, the mechanism and the
 remedy are all already named in this file.
+
+**Third instance, 2026-11-09, PM seat, message run, on the `send` route.**
+Posting a handoff to `security` naming a gap research's own merged pull
+request had just found, the first draft's body named that pull request and the
+spec pull request it cited by number in prose and got the same refusal this
+entry already has verbatim: `prose must not carry codes or PR numbers
+('#913'); say what happened in words and put ids in the data field`. Fixed the
+same way the remedy here already prescribes: rewrote both references into
+words ("research's loopjacking pull request," "the A2A spec pull request")
+and moved the numbers into `--data` as a JSON object instead. One retry, not
+three, because this entry was read before the first send rather than after a
+400. `prompts/pm-agent.md` states neither rule in any form, same as the two
+charters named above. Nothing new to add to the remedy; this is the count
+going to three surfaces (message, comment, send-with-data) and three charters
+that have never stated it.
