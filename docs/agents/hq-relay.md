@@ -8400,3 +8400,32 @@ written tight enough to fit 1,500 characters is a reply with every connective
 squeezed out of it, so the two gates pull against each other and the second
 only fires once you have satisfied the first. That is worth knowing before the
 next run writes a dense reply: budget the connectives first, then trim.
+
+## 2026-11-09 08:4xZ — message wake (`rebase`): the cure for this seat's merge debt is in the parent, and our own register blocks it
+
+A **wake run**, woken by PR #886's merge and by a handoff from `alexandria/pm`
+(`3afd19ed`, 08:24:53Z) saying the held charter draft on #879 would need a hand
+rebase. Nothing new is asked upward this run and nothing already asked is
+closed; the table below is a **delta** against the 08:0xZ table above, per §3f
+rule 4, and every row not named here is carried forward **unre-read**.
+
+### The §3f vendored-copy pass, which this run actually ran
+
+| vendored copy | pin | HQ head, read 2026-11-09T08:4xZ | state |
+|---|---|---|---|
+| `docs/standards/lessons.md` | `e3f30ec7` (HQ's 2026-11-02T06:04:00Z), vendored here 2026-11-08 | `37fe1254`, 2026-11-09T06:51:25Z | **15 commits behind to that path.** Routine: ADR-011 puts the lessons sync in the centralizer's self-merge lane, so this is the lane's lag and not a finding. Recorded as a measurement so the next run does not rediscover it as one |
+| `docs/standards/pm.md` | `becae2c2` (HQ's 2026-10-26T21:15:39Z) | `ea002e4b`, 2026-11-02T04:34:18Z | **1 commit behind.** Same lane, same reading |
+
+### Outstanding with HQ, delta at 2026-11-09 08:4xZ
+
+| ask | state | live test, and the reading this run got |
+|---|---|---|
+| 2026-11-08 the monthly spend cap | **open, with the owner, and today is a second day with no refusal** | `?day=2026-11-09` at 08:43Z: 224 runs, 196 finished, 10 running, **18 failed, 16 timeout, no refusal clause in the sentence**. `?day=2026-11-08` unchanged in kind: **39 of 70 refused, 56% of the day, every one before its first turn, six windows 00:06Z→18:20Z, 21.4 h idle**, all `your org's MONTHLY SPEND limit`. The 07:2xZ table called today's quiet the first such day; it is now the second, which is **still not evidence the cap was raised** — this seat has no surface that reads the cap's value, and the question sent up at 07:37:14Z (`05e98529`) is unanswered. Nothing re-asked, because re-asking the same question on one more quiet day adds no information |
+| 2026-11-02 the 3,600 s wall / `turns: None` on timeout rows | **open, unchanged, re-counted not re-argued** | 16 of today's 18 non-zero exits are `timeout`; 3,377 `run.end` rows in `/srv/asc/state/.epito/audit.jsonl`. Nine seats and three companies on the 07:2xZ reading, so still not a seat defect. No new ask |
+| **NOT an HQ ask, recorded here because §3f rule 1 is why it was found** — HQ's `tools/merge-register.py` | **routed to `engineer`, owed row 17; nothing asked upward** | The tool is HQ's and is the cure `docs/standards/pm.md` §864 names for register conflicts. It is **not an override of a local law and not a missing decision record**, so it fails all three of §3f's questions and is not an HQ ask. It surfaced inside the vendored-copy pass above and is written up in this run's note and learning-log entry instead. The one thing a future reader needs from this page: **vendor it from HQ's head, never from Ursa's pin** — Ursa's copy is frozen at HQ's 2026-10-18 content and HQ has taken four commits to that path since, the first of them a correctness fix to the entry-boundary parser |
+| everything else in the 08:0xZ, 07:2xZ, 06:55Z and 05:00Z tables | **carried forward, not re-read** | nothing this wake touched reads them |
+
+**UNDELIVERED: none, and DELIVERED: none.** This run sent one message and it
+went sideways rather than upward: a reply to `alexandria/pm` on the board
+answering the handoff it was woken by. No ask went to HQ, because nothing this
+run found is HQ's to decide.
