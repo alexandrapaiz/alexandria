@@ -1,0 +1,264 @@
+{
+  "what_this_is": "The accepted set for tools/unbounded_calls.py. An accepted row silences one unbounded call at one path and line. The tool's clean path still prints how many unbounded calls it read and how many of them this file accepted, so a green run names this debt out loud rather than hiding it.",
+  "accepted_is_not_blessed": "Every row below is status 'debt', which means the call should get a clock and has not got one yet. No row here is a call that genuinely wants no bound, and status 'wants-no-clock' is the word for that case when one arrives. The distinction is the whole point of the field: a reader who cannot tell a deliberate exemption from an unpaid debt cannot tell whether green means safe.",
+  "the_ratchet": "This file is what makes the count able only to go down. A twenty-fifth unbounded call is not in here, so it fails. A call that gets its clock leaves its row matching nothing, and the tool names that row as stale so it gets pruned rather than left to accumulate. The count went 23 to 24 on 2026-11-09 and not by a payment: merging main brought in HQ's vendored tools/merge_register.py with one unbounded call. A ratchet only ratchets where something runs it, and tests/test_unbounded_calls.py sits in the pin list of tests/test_ci_coverage.py, which no workflow runs. So this set is honest about every row and mute on every pull request.",
+  "line_numbers_drift": "Rows are keyed on path and line, so an edit above a call moves it and the row goes stale. That is measured rather than feared: tools/board.py's two calls moved from 844 and 857 to 981 and 994 inside one evening of edits to that file. Drift is loud, never silent, because a moved call is reported as a finding and its old row as stale. Measured a second time on 2026-11-09, by a merge rather than by edits: one merge of main moved five accepted calls at once, tools/check_pr_green.py by one line, tools/incidents.py by two and tools/skill_gate.py by 21, 43 and 43. Every one was reported as a fresh finding beside a stale row, which is the loudness the paragraph above claims, and re-keying them is bookkeeping with no change in the world.",
+  "generated_from": {
+    "tool": "tools/unbounded_calls.py --json",
+    "scanned": [
+      "tools",
+      "pipeline",
+      "mcp"
+    ],
+    "commit": "0cad247daf90491bba0d6d252963b750ce42428d",
+    "date": "2026-11-09",
+    "by": "security seat, message wake; re-keyed on the 2026-11-09 handoff run after the merge of main moved five calls and added one"
+  },
+  "assigned": "docs/ideas/inbox/2026-11-09-twenty-three-external-calls-in-tools-have-no-clock-and-eight-of-them-leave-the-machine.md",
+  "accepted": [
+    {
+      "path": "tools/anchor_contention.py",
+      "line": 82,
+      "call": "subprocess.run",
+      "binary": "gh",
+      "reach": "network",
+      "handlers": [],
+      "status": "debt",
+      "why": "No bound and no deliberate exemption. Pay it down per the ledger entry in 'assigned', then prune this row."
+    },
+    {
+      "path": "tools/anchor_contention.py",
+      "line": 89,
+      "call": "subprocess.run",
+      "binary": "gh",
+      "reach": "network",
+      "handlers": [],
+      "status": "debt",
+      "why": "No bound and no deliberate exemption. Pay it down per the ledger entry in 'assigned', then prune this row."
+    },
+    {
+      "path": "tools/board.py",
+      "line": 981,
+      "call": "subprocess.run",
+      "binary": "git",
+      "reach": "unknown",
+      "handlers": [],
+      "status": "debt",
+      "why": "No bound and no deliberate exemption. Pay it down per the ledger entry in 'assigned', then prune this row."
+    },
+    {
+      "path": "tools/board.py",
+      "line": 994,
+      "call": "subprocess.run",
+      "binary": "gh",
+      "reach": "network",
+      "handlers": [],
+      "status": "debt",
+      "why": "No bound and no deliberate exemption. Pay it down per the ledger entry in 'assigned', then prune this row."
+    },
+    {
+      "path": "tools/check_authority.py",
+      "line": 396,
+      "call": "subprocess.run",
+      "binary": "git",
+      "reach": "local",
+      "handlers": [],
+      "status": "debt",
+      "why": "No bound and no deliberate exemption. Pay it down per the ledger entry in 'assigned', then prune this row."
+    },
+    {
+      "path": "tools/check_authority.py",
+      "line": 706,
+      "call": "subprocess.run",
+      "binary": "gh",
+      "reach": "network",
+      "handlers": [],
+      "status": "debt",
+      "why": "No bound and no deliberate exemption. Pay it down per the ledger entry in 'assigned', then prune this row."
+    },
+    {
+      "path": "tools/check_authority.py",
+      "line": 713,
+      "call": "subprocess.run",
+      "binary": "git",
+      "reach": "local",
+      "handlers": [],
+      "status": "debt",
+      "why": "No bound and no deliberate exemption. Pay it down per the ledger entry in 'assigned', then prune this row."
+    },
+    {
+      "path": "tools/check_authority.py",
+      "line": 721,
+      "call": "subprocess.run",
+      "binary": "git",
+      "reach": "local",
+      "handlers": [],
+      "status": "debt",
+      "why": "No bound and no deliberate exemption. Pay it down per the ledger entry in 'assigned', then prune this row."
+    },
+    {
+      "path": "tools/check_pr_green.py",
+      "line": 201,
+      "call": "subprocess.run",
+      "binary": "gh",
+      "reach": "network",
+      "handlers": [],
+      "status": "debt",
+      "why": "No bound and no deliberate exemption. Pay it down per the ledger entry in 'assigned', then prune this row."
+    },
+    {
+      "path": "tools/deploy_gate.py",
+      "line": 217,
+      "call": "subprocess.run",
+      "binary": "unreadable",
+      "reach": "unknown",
+      "handlers": [],
+      "status": "debt",
+      "why": "No bound and no deliberate exemption. Pay it down per the ledger entry in 'assigned', then prune this row."
+    },
+    {
+      "path": "tools/incidents.py",
+      "line": 261,
+      "call": "subprocess.run",
+      "binary": "git",
+      "reach": "unknown",
+      "handlers": [],
+      "status": "debt",
+      "why": "No bound and no deliberate exemption. Pay it down per the ledger entry in 'assigned', then prune this row."
+    },
+    {
+      "path": "tools/ledger.py",
+      "line": 959,
+      "call": "subprocess.run",
+      "binary": "git",
+      "reach": "unknown",
+      "handlers": [],
+      "status": "debt",
+      "why": "No bound and no deliberate exemption. Pay it down per the ledger entry in 'assigned', then prune this row."
+    },
+    {
+      "path": "tools/merge_order.py",
+      "line": 81,
+      "call": "subprocess.run",
+      "binary": "git",
+      "reach": "unknown",
+      "handlers": [],
+      "status": "debt",
+      "why": "No bound and no deliberate exemption. Pay it down per the ledger entry in 'assigned', then prune this row."
+    },
+    {
+      "path": "tools/merge_order.py",
+      "line": 102,
+      "call": "subprocess.run",
+      "binary": "gh",
+      "reach": "network",
+      "handlers": [],
+      "status": "debt",
+      "why": "No bound and no deliberate exemption. Pay it down per the ledger entry in 'assigned', then prune this row."
+    },
+    {
+      "path": "tools/merge_register.py",
+      "line": 564,
+      "call": "subprocess.run",
+      "binary": "git",
+      "reach": "local",
+      "handlers": [],
+      "status": "debt",
+      "why": "Arrived on `main` after this set was generated, inside `tools/merge_register.py`, which is HQ's entry-keyed register merger vendored at commit 0cfd7867 rather than written here. The call is `git merge-file` over three files in a TemporaryDirectory, so it cannot wait on a network, and it is debt rather than a deliberate exemption because nothing bounds a local binary either. Correcting a vendored file here would diverge it from HQ head, so this row is the honest place for it and the fix is an ask on docs/agents/hq-relay.md."
+    },
+    {
+      "path": "tools/panel_merge.py",
+      "line": 479,
+      "call": "subprocess.run",
+      "binary": "git",
+      "reach": "network",
+      "handlers": [],
+      "status": "debt",
+      "why": "No bound and no deliberate exemption. Pay it down per the ledger entry in 'assigned', then prune this row."
+    },
+    {
+      "path": "tools/panel_merge.py",
+      "line": 481,
+      "call": "subprocess.run",
+      "binary": "git",
+      "reach": "local",
+      "handlers": [],
+      "status": "debt",
+      "why": "No bound and no deliberate exemption. Pay it down per the ledger entry in 'assigned', then prune this row."
+    },
+    {
+      "path": "tools/run_report.py",
+      "line": 131,
+      "call": "subprocess.run",
+      "binary": "git",
+      "reach": "local",
+      "handlers": [],
+      "status": "debt",
+      "why": "No bound and no deliberate exemption. Pay it down per the ledger entry in 'assigned', then prune this row."
+    },
+    {
+      "path": "tools/run_report.py",
+      "line": 141,
+      "call": "subprocess.run",
+      "binary": "gh",
+      "reach": "network",
+      "handlers": [],
+      "status": "debt",
+      "why": "No bound and no deliberate exemption. Pay it down per the ledger entry in 'assigned', then prune this row."
+    },
+    {
+      "path": "tools/skill_gate.py",
+      "line": 150,
+      "call": "subprocess.run",
+      "binary": "git",
+      "reach": "unknown",
+      "handlers": [],
+      "status": "debt",
+      "why": "No bound and no deliberate exemption. Pay it down per the ledger entry in 'assigned', then prune this row."
+    },
+    {
+      "path": "tools/skill_gate.py",
+      "line": 724,
+      "call": "subprocess.run",
+      "binary": "unreadable",
+      "reach": "unknown",
+      "handlers": [],
+      "status": "debt",
+      "why": "No bound and no deliberate exemption. Pay it down per the ledger entry in 'assigned', then prune this row."
+    },
+    {
+      "path": "tools/skill_gate.py",
+      "line": 738,
+      "call": "subprocess.run",
+      "binary": "unreadable",
+      "reach": "unknown",
+      "handlers": [],
+      "status": "debt",
+      "why": "No bound and no deliberate exemption. Pay it down per the ledger entry in 'assigned', then prune this row."
+    },
+    {
+      "path": "tools/skill_registrar.py",
+      "line": 658,
+      "call": "subprocess.run",
+      "binary": "git",
+      "reach": "local",
+      "handlers": [
+        "(OSError, subprocess.CalledProcessError)"
+      ],
+      "status": "debt",
+      "why": "No bound and no deliberate exemption. Pay it down per the ledger entry in 'assigned', then prune this row."
+    },
+    {
+      "path": "tools/skill_registrar.py",
+      "line": 661,
+      "call": "subprocess.run",
+      "binary": "git",
+      "reach": "local",
+      "handlers": [
+        "(OSError, subprocess.CalledProcessError)"
+      ],
+      "status": "debt",
+      "why": "No bound and no deliberate exemption. Pay it down per the ledger entry in 'assigned', then prune this row."
+    }
+  ]
+}

@@ -12922,6 +12922,177 @@ exactly one such gate here, and it is silent on every pull request.
    found out only by remembering the gate existed.
 4. **Owed rows 11, 12, 13, 18, 19, 20 and 21**, none taken by this run.
 
+## 2026-11-09 11:3xZ — message wake (`stamp`), branch `alexandria-exo/2026-11-09-message-stamp`, PR #921: the convergence claim did not survive being run, and the owed row that asked for the vendoring was the thing with the defect
+
+### What woke this run, and what I took
+
+Two payload items: my own PR #907 merged, with an instruction to continue with
+the next item in my lane and say what I took; and a `done` from
+`alexandria/engineer` answering my ask about merge ordering. They chose the
+heading stamp as the primary rule, kept my trunk label as the fallback, put the
+companion check in both modes, and corrected me on one point: they did **not**
+vendor HQ's entry-keyed merger, so **owed row 17 is still open and unclaimed**.
+
+So the lane item and the inbox item are the same item. I took **row 17**, and I
+did not discharge it — I found that it cannot be taken as written, which is
+recorded on the row with the evidence rather than left as a verdict in a note.
+The two board backlog cards in my lane are both blocked on the owner (the
+one-command pin-list fix is not a seat's to run; class B of the duty-classes
+card widens this seat's own budget), so the owed list is where this seat's
+actionable work actually is, which is the thing that file was created for this
+morning.
+
+### 1. I verified the engineer's work rather than reading it, and the claim that failed was the one about somebody else's tool
+
+Their own half holds, measured rather than taken: both test files pass at 120
+cases, and the two appends resolve to a **byte-identical blob** (`b12f7c9f`) in
+both merge directions, built in a scratch clone with a real `origin` so the
+ancestry test had something true to read. The companion refuses a backwards
+resolution with the right sentence and exits 1.
+
+What failed was one sentence about a tool neither of us owns: "it also agrees
+with the parent's entry-keyed merger your row seventeen asks to vendor, so the
+two converge later." HQ's `merge-register.py`, at blob `49d7a2ff`, orders a
+date-keyed register by **theirs' order verbatim, then the entries only ours
+has**. That is my trunk-label *fallback*, not the stamp rule, and its docstring
+gives a measured reason for it (a one-entry branch producing a 113-insertion,
+107-deletion diff when rebuilt from the base, compounding into the next merge).
+
+Reproduced in nine lines: ours the earlier entry, theirs the later. Ours-first
+by stamp from our tool; theirs-first from HQ's. And our own new check companion,
+asked about HQ's output, **refuses it as out of order**.
+
+**Lesson L-A181.** A claim that two tools agree is not a claim about either
+tool; it is a claim about a third artifact, and the two authors who make it are
+usually the two people who have not run it. Both of us had read HQ's docstring
+and both of us had read it for what it does to *entries*, not for what it does
+to *order* — the order paragraph is forty lines further down and argues from a
+diff statistic, which reads as a performance note until you need the ordering.
+**When a convergence claim is offered, run the third tool before you accept it,
+because neither party to the claim has a stake in its being false.**
+
+### 2. The defect was in my own row, and the general shape is about vendoring
+
+Row 17 said: vendor HQ's merger, at HQ's head and not at Ursa's pin. That names
+a source, a head and a provenance rule, and it reads like a complete
+instruction. It names **no precedence** against the tool we already have, and
+once both are in one repository the first seat to hit a two-append conflict gets
+a file one tool resolves and the other refuses.
+
+**Lesson L-A182.** A vendoring row that names provenance but not precedence has
+not described the work. Source, head and provenance answer *which bytes*; they
+say nothing about *which rule governs* when the vendored tool overlaps one we
+already run. Every vendoring row on this seat's owed list should carry the
+overlap set and the precedence, or carry the sentence that there is no overlap.
+
+I did not vendor and I did not decide the precedence. It is a judgement about
+which order this repository's registers want, `alexandria/engineer` owns the
+tool on this side, and reaching into a file that is in flight on an open draft
+is the register conflict I have spent the morning undoing. Routed in message
+`b6cf776d`, with the reproduction.
+
+### 3. Two findings in their work, and the inward half ran before the report went out
+
+**The pass line asserts a check that abstained.** In check mode the report says
+"balanced, every line of both sides is present once **and the blocks' stamps do
+not decrease**" whenever the ordering check returned nothing — and it returns
+nothing when both blocks carry the same stamp. That is the ordinary case, not
+the rare one: of the 1,738 stamped register headings in this repository, **46
+carry a time and 1,692 carry a date only**, so two appends on one day tie. A
+backwards same-day resolution, built by hand, audits as checked and exits 0.
+
+**The fallback is unreachable in the mode that audits.** `trunk_side()` is the
+only caller of `_trunk_of()`, and only `resolve_one()` calls `order_blocks()`,
+so `check_commit()` never reaches the trunk rule although it already binds both
+parents of the merge from `rev-list --parents`. So the rule that decides the
+ordinary case is the one the auditor never verifies, and "one rule for both
+modes" is one call away rather than impossible.
+
+**And the inward half, per §3d's "run the class over your own code before you
+report it", run before the messages went out rather than after.** Predicate: *a
+report line asserts a condition some code path did not evaluate.* Over this
+seat's four likeliest instruments — `cron_firing.py` (raises on an unresolvable
+seat rather than returning an empty list), `kill_vocabulary.py` ("Unreadable
+surfaces, N — this run proves nothing about them", exit 2), `incidents.py`
+("does not exist, so this run says nothing about the register") and
+`target_census.py` ("refused: nothing to probe, so there is nothing to pass",
+its own `EXIT_EMPTY`) — **zero inward instances.**
+
+**Lesson L-A183.** Zero inward instances is the stronger report, not the weaker
+one, provided you name the predicate and the files. Four gates here already say
+"this run proves nothing about X", in four wordings and one with its own exit
+code. That turns the outward finding from "a gate forgot a caveat" into "a gate
+deviates from a convention four of this repository's own gates follow", which is
+an argument the author can check in one grep instead of taking on my word.
+
+### 4. The failure sweep (§2b), and the wall changed shape overnight
+
+123 rows in the 24 hours to 11:3xZ, `runs_saturated: false`. 103 clean, **20
+not**: 8 exit 1 and 12 exit 124.
+
+| class | count | spread |
+|---|---|---|
+| exit 1, monthly spend cap at turn 1 | 8 | `exo` 2, `pm` 5, `writer` 1 — **all before 2026-11-08T18:20Z, none since** |
+| exit 124, host timeout, `turns: null`, `refusal: null` | 12 | `skill` 4, `engineer` 3, `security` 3, `exo` 2 — **11 of them today** |
+
+So yesterday's failures were provider refusals that named themselves in a field,
+and today's are host timeouts that name nothing: `refusal` is null on all twelve
+and `turns` is null on all twelve. The spend-cap wall stopped at 18:20Z
+yesterday, consistent with the weekly reset the refusal sentence itself
+advertises for Nov 8, 11pm UTC, and the failure mode did not stop — it moved.
+
+**The part worth carrying.** §2b's third predicate and §6's cap re-derivation
+both read `turns`, and a timeout writes no turn count, so the twelve most
+expensive failures of the day are invisible to both. That is the 2026-11-02
+finding (`the day's failure count cannot read the word the host writes for a
+timeout`) arriving a second time with a bigger number, and it is now the
+**majority** of the day's failures rather than a tail. Four seats of six hit it.
+
+### 5. Outstanding with HQ
+
+The delta is on the relay page at 11:3xZ, diffed against the 10:3xZ table at
+commit `39653d8b`. No new ask: this run's finding is about HQ's tool but is not
+a defect of HQ's tool, because theirs'-order-verbatim is right for a register
+maintained by inserting in date order. Owed row 16 — the 14:36Z spend-cap
+prediction — is **not yet answerable at 11:3xZ** and has an answer at 15:00Z.
+
+### 6. My own merge reproduced both halves of today's register class, twenty minutes after I reported them
+
+The pull request went `CONFLICTING` the minute it was readied, against three
+registers, and both of the morning's defects turned up in my own resolution.
+
+**The number, not the append.** `main` had taken row 21 of the owed list for the
+reply-link row from this seat's own earlier merge, and I had allocated 21 and 22
+on this branch. Same page, same hour, same seat, two branches. My rows became
+**22 and 23**, each carrying the number it came from, per L-A18. The owed file
+already explains a *hole* at 16 left for exactly this reason this morning; this
+is the collision the hole was avoiding, arriving on the next pair of numbers.
+
+**The ordering, and main's own copy of the tool would have got it backwards.**
+`origin/main` has no stamp rule yet — the engineer's fix is unmerged — so
+`resolve_register_conflict.py` there still concatenates ours-first, and ours is
+the branch. I resolved by content stamp instead, trunk block first, which is
+what the unmerged version would have done.
+
+**And the gate caught me editing inside the merge.** My first attempt added an
+editorial paragraph to the relay delta in the merge commit itself, and
+`--check` exited **1** on it: eleven lines "duplicated: 1 of an expected 0" in
+`hq-relay.md`, which is the arithmetic correctly reporting prose that is in
+neither side, plus one blank line short in `learning-log.md` from my own
+join. I redid the merge as a pure concatenation and put the paragraph in the
+commit after it. **The line-count audit earns its keep here on exactly the case
+it was not built for**, and the lesson is narrow enough to state: a merge commit
+that also edits is unauditable by any arithmetic over the three stages, so the
+editorial commit goes after the merge and never inside it.
+
+### What I did not do, and this was a wake run
+
+Skipped, per §0's wake-run list: the register sweeps, the unowned-duty hunt, the
+public-claim sweep and the dispatch-queue re-verification. One improvement, not
+three, and it was taking row 17. I added two rows to the owed list — 22 and 23
+after the merge renumbered them — rather than fixing the two findings myself,
+because the file is another seat's and it is in flight.
+
 ## 2026-11-09 11:5xZ — wake run (message, `lane-pick`), PR #924: the instrument a charter publishes is not the instrument a run gets, and a card that cost six wakes a reading was closed by checking what its remaining ask still rested on
 
 **Mode: wake run.** The payload carried a merged pull request (914) and a `done`

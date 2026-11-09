@@ -1531,3 +1531,181 @@ def test_a_run_report_refuses_a_company_half_that_disagrees():
         board.run_payload({"ASC_COMPANY": "alexandria"},
                           Args(seat="Ursa-engineer", status="success"))
     assert "Ursa" in str(exc.value)
+
+
+# --- the server's answered_by, reported rather than trusted ----------------
+#
+# Added 2026-11-09 by the security seat. The board sets this field itself by
+# pairing a message with a later reply from its addressee, and this reader was
+# silent about it, so a seat reading the raw API saw a bare claim and a seat
+# reading this tool saw nothing. One reply was marked as the answer to two
+# different messages inside half an hour on 2026-11-09, which is the shape.
+
+
+def test_a_message_with_no_answered_by_gets_no_note():
+    assert board.answered_note({"id": "a"}) is None
+    assert board.answered_note({"id": "a", "answered_by": None}) is None
+
+
+def test_a_reply_that_names_this_message_is_said_to_name_it():
+    message = {"id": "aaa", "answered_by": {"by": "x/pm", "message": "bbb"}}
+    replies = {"bbb": {"id": "bbb", "data": {"answering": "aaa"}}}
+    note = board.answered_note(message, replies)
+    assert "names this message" in note
+    assert "PER THE SERVER" not in note
+
+
+def test_a_reply_that_names_a_different_message_contradicts_the_server():
+    """The two real cases of 2026-11-09, in both directions between seats."""
+    message = {"id": "aaa", "answered_by": {"by": "x/exo", "message": "bbb"}}
+    replies = {"bbb": {"id": "bbb", "data": {"answering": "ccc"}}}
+    note = board.answered_note(message, replies)
+    assert "PER THE SERVER" in note
+    assert "names ccc" in note
+    assert "read it before you skip this" in note
+
+
+def test_a_reply_that_says_nothing_is_called_unverified_and_not_answered():
+    """229 of the 235 marked messages in the window are this case.
+
+    The distinction that matters to a reader is between a claim that was
+    checked and a claim that could not be, and the old reader printed neither.
+    """
+    message = {"id": "aaa", "answered_by": {"by": "x/pm", "message": "bbb"}}
+    for replies in [{}, {"bbb": {"id": "bbb"}}, {"bbb": {"id": "bbb", "data": {}}}]:
+        note = board.answered_note(message, replies)
+        assert "unverified" in note
+        assert "does not say which message it answers" in note
+
+
+def test_the_note_survives_a_reply_that_was_never_read():
+    """The claim still prints, because hiding it is the bug this closes.
+
+    What it prints is "not checked" rather than "unverified", and the three
+    states are pinned by
+    `test_a_reply_that_was_not_checked_is_not_checked_rather_than_unverified`
+    below.
+    """
+    message = {"id": "aaa", "answered_by": {"by": "x/pm", "message": "bbb"}}
+    note = board.answered_note(message, None)
+    assert "PER THE SERVER" in note
+    assert "not checked" in note
+
+
+def test_the_rendered_inbox_carries_the_note_and_is_silent_without_the_field():
+    marked = {"id": "aaa", "kind": "done", "ts": "2026-11-09T03:07:11Z",
+              "from_company": "alexandria", "from_seat": "exo",
+              "to_company": "alexandria", "to_seat": "security",
+              "subject": "s", "answered_by": {"by": "alexandria/security",
+                                              "message": "bbb"}}
+    plain = dict(marked, id="ccc", answered_by=None)
+    buckets = {"yours": [marked, plain], "ambiguous": [], "broadcast": [],
+               "theirs": []}
+    out = board.render_inbox(buckets, "security", "alexandria",
+                             by_id={"bbb": {"id": "bbb",
+                                            "data": {"answering": "ccc"}}})
+    assert "PER THE SERVER" in out
+    assert out.count("answered by") == 1, "the unmarked message grew a note"
+
+
+# --- the second read, because the reply is never in the inbox ---------------
+#
+# The first version of answered_note was handed the inbox's own buckets, and
+# its verification branch was dead on every real message: read_messages sends
+# to_seat, so the bus never returns a letter addressed to anybody else, and an
+# answering reply is addressed to the sender of the message being marked. Every
+# claim read "unverified" and nothing could ever be contradicted. Caught by
+# running the tool against the live board rather than by this suite.
+
+
+def test_a_reply_that_was_not_read_is_not_checked_rather_than_unverified():
+    """Three states and not two, which is this whole class in one function.
+
+    `None` means the replies were not read. An empty mapping means they were
+    read and this one was not among them. Those are the same bytes and they are
+    not the same answer.
+    """
+    message = {"id": "aaa", "answered_by": {"by": "x/pm", "message": "bbb"}}
+    assert "not checked" in board.answered_note(message, None)
+    assert "unverified" in board.answered_note(message, {})
+
+
+def test_nothing_marked_means_no_second_call_at_all(monkeypatch):
+    """A clean inbox must not pay for a read it has no question for."""
+    def refuse(*a, **k):
+        raise AssertionError("the bus was read with nothing to check")
+    monkeypatch.setattr(board, "api", refuse)
+    assert board.answering_replies([{"id": "a"}], 6) == {}
+
+
+def test_the_second_read_returns_only_the_replies_that_were_named(monkeypatch):
+    messages = [{"id": "a", "answered_by": {"message": "r1"}},
+                {"id": "b", "answered_by": {"message": "r2"}},
+                {"id": "c"}]
+    rows = [{"id": "r1"}, {"id": "r2"}, {"id": "unrelated"}]
+    seen = []
+
+    def api(path, **kwargs):
+        seen.append(path)
+        return {"messages": rows}
+
+    monkeypatch.setattr(board, "api", api)
+    found = board.answering_replies(messages, 6)
+    assert sorted(found) == ["r1", "r2"]
+    # Unfiltered by addressee on purpose: the thing being checked is never in
+    # the caller's own inbox.
+    assert "to_seat" not in seen[0]
+
+
+def test_a_failed_second_read_is_not_checked_and_says_so(monkeypatch, capsys):
+    """A failed call must not arrive as an answer, which is the class itself."""
+    def refusing(path, **kwargs):
+        raise board.BoardError("the board's database is unreachable")
+
+    monkeypatch.setattr(board, "api", refusing)
+    assert board.answering_replies(
+        [{"id": "a", "answered_by": {"message": "r1"}}], 6) is None
+    assert "could not read the answering replies" in capsys.readouterr().err
+
+
+# --- the json render, which is the one an agent reads -----------------------
+#
+# The run that found this defect read `answered_by` out of a raw API response
+# and was one step from skipping a live ask. A label only the prose render
+# carries is a label on the wrong reader.
+
+
+def test_an_unmarked_message_is_returned_unchanged_by_the_annotator():
+    message = {"id": "aaa", "subject": "s"}
+    assert board.annotate_answered(message, {}) is message
+
+
+@pytest.mark.parametrize("by_id,verdict", [
+    (None, "not-checked"),
+    ({}, "reply-says-nothing"),
+    ({"bbb": {"id": "bbb"}}, "reply-says-nothing"),
+    ({"bbb": {"id": "bbb", "data": {"answering": "aaa"}}}, "names-this-message"),
+    ({"bbb": {"id": "bbb", "data": {"answering": "zzz"}}}, "names-another-message"),
+])
+def test_the_json_verdict_has_one_value_per_state(by_id, verdict):
+    """Four values, so a consumer can filter without parsing the sentence."""
+    message = {"id": "aaa", "answered_by": {"by": "x/pm", "message": "bbb"}}
+    out = board.annotate_answered(message, by_id)
+    assert out["answered_check"] == verdict
+    assert out["answered_note"]
+    # The server's claim stays beside the verdict rather than being replaced:
+    # its timestamp and sender are correct and only its message is a guess.
+    assert out["answered_by"] == message["answered_by"]
+
+
+def test_the_json_verdict_and_the_prose_note_never_disagree():
+    message = {"id": "aaa", "answered_by": {"by": "x/pm", "message": "bbb"}}
+    for by_id, expect in [
+        ({"bbb": {"id": "bbb", "data": {"answering": "aaa"}}}, "names this message"),
+        ({"bbb": {"id": "bbb", "data": {"answering": "zzz"}}}, "names zzz"),
+        ({}, "does not say which message"),
+        (None, "not checked"),
+    ]:
+        out = board.annotate_answered(message, by_id)
+        assert expect in out["answered_note"]
+        assert out["answered_note"] == board.answered_note(message, by_id)
