@@ -50,7 +50,7 @@ filled the block with fifteen claim ids over six papers, because PACE
 Do not cite the census as the library's current state. It was a reading of a
 corpus that has grown since.
 
-Two instruments, and they measure different things. Both have to pass.
+Three instruments, and they measure different things. All three have to pass.
 
 - **Does the skill fire?** `_validation/trigger_test.py` over each skill's
   `triggers.json`, with the dated bundles in `_validation/results/`. It runs on
@@ -64,6 +64,18 @@ Two instruments, and they measure different things. Both have to pass.
   contract is `_validation/evals/README.md`. The harness that runs them is the
   engineer's build, so the task files are here and the measured deltas are not
   yet. A skill can fire perfectly and teach nothing.
+- **Does this page still say what the frontmatter says?**
+  `_validation/prose_distribution.py`, added 2026-11-09. The grades above are
+  restated in prose rather than in a table, and the engineer's
+  `check_status_tables` finds status tables by shape and reads straight past a
+  sentence. This checks every sentence in `skills/` that puts a backticked
+  grade next to a count, a skill name or nothing, which on the day it shipped
+  was nine claims, four on this page and five in four `SKILL.md` files.
+  `--check` exits non-zero on one that disagrees with the frontmatter on disk. A sentence carrying a
+  date is a dated reading and stays exempt, which is the same exemption the
+  table gate grants a dated caption. Nothing in `tests/` or
+  `.github/workflows/` runs it yet, so it is a gate this seat can write and
+  cannot arm, and that half is filed for the engineer.
 
 Under ADR-36 a skill with no eval is `status: draft` and never `active`, and a
 skill whose eval shows no gain is retired with the numbers rather than quietly

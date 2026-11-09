@@ -123,7 +123,7 @@
       "id": "ei-t2",
       "kind": "treatment",
       "sections": [
-        "Delta 2: a pass-or-fail verdict is provably blind on exactly the pairs a reward signal keeps meeting"
+        "Delta 2: the statistic you gate on is constant across the distinction you care about, provably for a verdict and measurably for an aggregate"
       ],
       "form": "project",
       "situation": "Beyond Solver Verdicts' training-set construction, which the paper notes works as an audit even if nothing is trained: mutate known-correct artifacts, keep only the mutants the checker still accepts but which are provably not equivalent, and those are the answers the verdict gate cannot see.",
@@ -180,7 +180,7 @@
       "id": "ei-t3",
       "kind": "treatment",
       "sections": [
-        "Delta 2: a pass-or-fail verdict is provably blind on exactly the pairs a reward signal keeps meeting"
+        "Delta 2: the statistic you gate on is constant across the distinction you care about, provably for a verdict and measurably for an aggregate"
       ],
       "form": "prompt",
       "situation": "Beyond Solver Verdicts' provable result: any scoring function depending only on a binary verdict scores AUROC 0.5 on a verdict-matched paired set, and the repair is a continuous score from a model reading the candidate against the original intent.",
@@ -956,9 +956,151 @@
         "why": "A control's exploit is the useful one, because it shows the rubric is not merely rewarding the absence of intrusion. This answer imports nothing from evaluation integrity and so passes `no_intrusion` honestly, and it still carries no per-arm sample size, no power or significance level and no written stopping rule, so `sizing` and `peeking` must score zero. A rubric that scores this is paying for staying on topic.",
         "ceiling": 0.0
       }
+    },
+    {
+      "id": "ei-t12",
+      "kind": "treatment",
+      "sections": [
+        "Delta 2: the statistic you gate on is constant across the distinction you care about, provably for a verdict and measurably for an aggregate"
+      ],
+      "form": "project",
+      "situation": "ACE's Table II, where matching and execution rates are each conditioned on execution reaching that phase, so overall is their product. Two of its four configurations land 0.5 points apart on the product while failing in opposite phases: 87.9/68.5 for 60.2 against 66.6/91.2 for 60.7. The digits here are changed and the arithmetic is not, so recalling the paper cannot substitute for reading the table.",
+      "source": {
+        "paper": "ACE: A Security Architecture for LLM-Integrated App Systems",
+        "arxiv": "arxiv.org/abs/2504.20984",
+        "claims": []
+      },
+      "prompt": "results.json holds last week's eval of our two-phase agent in four configurations. The agent first matches the request to an installed tool and then executes against it, and both rates are conditioned on the run reaching that phase, so overall is the product of the two. Our dashboard shows overall only. A and B scored the same, so the team's read is that it does not matter which we keep, and we have one engineer-month to spend. Write answer.json with: \"bottleneck\", an object mapping each of A, B, C and D to \"matching\" or \"execution\", whichever phase is holding that configuration back; \"a_and_b_equivalent\", a boolean; \"aggregate_reportable_alone\", a boolean saying whether overall on its own is a sound comparison between two configurations; and \"work\", an object mapping A and B each to a one-line statement of what the engineer-month should buy. Output answer.json only.",
+      "files": {
+        "results.json": "{\n \"A\": {\n  \"matching\": 91.0,\n  \"execution\": 62.0,\n  \"overall\": 56.4\n },\n \"B\": {\n  \"matching\": 63.0,\n  \"execution\": 90.0,\n  \"overall\": 56.7\n },\n \"C\": {\n  \"matching\": 85.0,\n  \"execution\": 97.0,\n  \"overall\": 82.5\n },\n \"D\": {\n  \"matching\": 88.0,\n  \"execution\": 98.0,\n  \"overall\": 86.2\n }\n}\n"
+      },
+      "without_skill": "Reads 56.4 against 56.7 as a tie, calls A and B equivalent, and spends the engineer-month on whichever is cheaper or on the same generic improvement for both, or recommends more repetitions to break the tie, which measures the aggregate more precisely rather than measuring the thing that differs.",
+      "without_skill_basis": {
+        "kind": "authored-judgement",
+        "note": "the author's model of what a bare subject would answer. Never observed: this seat has no route to either eval arm on 2026-11-09, so no bare-first pass has run and this task has not qualified under ADR-38 rule 5."
+      },
+      "with_skill": "Decomposes the product, names A's bottleneck as execution and B's as matching, refuses the equivalence, says the aggregate is not reportable as a comparison, and spends the engineer-month on a better executor for A and a better matcher for B.",
+      "check": {
+        "type": "parses",
+        "format": "json",
+        "assertions": [
+          {
+            "id": "schema",
+            "statement": "answer.json parses and carries all four keys: \"bottleneck\" with exactly A, B, C and D, each \"matching\" or \"execution\"; \"a_and_b_equivalent\" a boolean; \"aggregate_reportable_alone\" a boolean; \"work\" with A and B, each a non-empty string."
+          },
+          {
+            "id": "bottlenecks",
+            "statement": "Scored as agreement with the key {A: execution, B: matching, C: matching, D: matching}, as a fraction of four. The key is mechanical: the bottleneck is the lower of the two conditional rates, 62.0 against 91.0 for A and 63.0 against 90.0 for B."
+          },
+          {
+            "id": "refuses_the_tie",
+            "statement": "\"a_and_b_equivalent\" is false AND \"aggregate_reportable_alone\" is false. This is the one assertion the whole task is for: 0.3 points apart on the product, 28 points apart on matching and 28 on execution, in opposite directions."
+          },
+          {
+            "id": "opposite_work",
+            "statement": "\"work\" for A names execution, the executor, or the second phase, and \"work\" for B names matching, the matcher, or the first phase. Naming the same work for both fails this assertion even if both strings are sensible, because one score producing two opposite remedies is the finding."
+          },
+          {
+            "id": "no_more_repetitions",
+            "statement": "The answer does not propose resolving A against B by running more repetitions, tightening the interval, or collecting more data on the overall score. More precision on a statistic that is constant across the distinction buys nothing, and this is the plausible wrong answer."
+          }
+        ]
+      }
+    },
+    {
+      "id": "ei-t13",
+      "kind": "treatment",
+      "sections": [
+        "Delta 2: the statistic you gate on is constant across the distinction you care about, provably for a verdict and measurably for an aggregate"
+      ],
+      "form": "prompt",
+      "situation": "IsolateGPT's functionality evaluation (Tables II and III, section VI-B): an isolated and a non-isolated system tie exactly on both reported axes, 0.76 on intermediate steps and 0.95 on final output, while their step-failure classes differ, an unexpected app called at 28.57 percent of errors against 14.29 and an expected app never called at 14.29 against 28.57. Four of the five classes are plan deviations whose final output was correct, and those four are the signature of the three attacks ACE later demonstrated on that same public implementation.",
+      "source": {
+        "paper": "IsolateGPT: An Execution Isolation Architecture for LLM-Based Agentic Systems",
+        "arxiv": "arxiv.org/abs/2403.04960",
+        "claims": []
+      },
+      "prompt": "We shipped a change that routes each tool call through a per-tool sandbox instead of one shared context. I ran our tool-use benchmark before and after. Step correctness is 0.76 both times and final-output correctness is 0.95 both times, identical to two decimal places, so I am writing it up as no functional regression and shipping it. The per-error breakdown is in the appendix and I have not read it. Is the write-up sound?",
+      "without_skill": "Accepts the identical scores as evidence of no regression, perhaps suggesting more benchmark items or a confidence interval, and treats the unread appendix as a completeness detail rather than as the place the answer is.",
+      "without_skill_basis": {
+        "kind": "authored-judgement",
+        "note": "the author's model of what a bare subject would answer. Never observed, same blocker as ei-t12, so this task has not qualified under ADR-38 rule 5."
+      },
+      "with_skill": "Refuses the write-up: identical aggregates over error classes do not mean identical behaviour, the appendix is where the profile lives, and the deviation classes a final-output axis forgives are the ones an induced deviation hides in, so plan conformance needs its own axis.",
+      "check": {
+        "type": "rubric",
+        "criteria": [
+          {
+            "id": "profile_not_aggregate",
+            "criterion": "Says the identical aggregates are not evidence of identical behaviour, and sends the reader to the per-error-class breakdown before the write-up ships.",
+            "anchors": {
+              "0": "Accepts the write-up, or asks only for more items or an interval.",
+              "1": "Hedges about sample size without naming the breakdown.",
+              "2": "Names the error-class profile as the thing that can move while both aggregates hold, with the reference case of two systems tying at 0.76 and 0.95 while two of their error classes swap 28.57 against 14.29."
+            },
+            "certificate": {
+              "kind": "number",
+              "names": "two systems tying on 0.76 steps and 0.95 output while an unexpected app called runs 28.57 percent of one system's errors against 14.29 of the other's, quoted as a case where both aggregates held and the profile moved"
+            }
+          },
+          {
+            "id": "output_axis_forgives",
+            "criterion": "Identifies that a final-output axis counts a correct answer reached by an unauthorised plan as correct, so plan deviation is invisible on that axis by construction rather than by sample size.",
+            "anchors": {
+              "0": "Absent, or treats it as a coverage problem fixable with more tests.",
+              "1": "Mentions that trajectory and output can differ.",
+              "2": "States it structurally, and notes that four of the five reference error classes are deviations whose final output was correct."
+            },
+            "certificate": {
+              "kind": "number",
+              "names": "four of five error classes being plan deviations whose final output was correct, named as the reason the output axis cannot see them"
+            }
+          },
+          {
+            "id": "deviation_is_attack_signature",
+            "criterion": "Connects the forgiven deviation classes to the induced ones: an unexpected tool called and a tool called out of order are both the benign-replan mode and the attack signature, so the axis that tolerates one cannot separate the other.",
+            "anchors": {
+              "0": "Absent.",
+              "1": "Mentions security generally, or asks for a separate security test with no link to the metric.",
+              "2": "Names the overlap: the same classes a later paper's demonstrated attacks produce on this kind of system are the classes the output axis scores correct."
+            },
+            "certificate": {
+              "kind": "artifact",
+              "names": "the named overlap between the deviation classes an output-correctness metric forgives and the deviation classes an induced attack produces"
+            }
+          },
+          {
+            "id": "separate_axis",
+            "criterion": "Prescribes scoring trajectory conformance against an authorised plan as its own reported axis, rather than inferring conformance from output correctness or from an aggregate of the two.",
+            "anchors": {
+              "0": "No prescription.",
+              "1": "Says to look at trajectories, with no axis and no reporting rule.",
+              "2": "Prescribes a conformance axis reported beside the output axis, with the error-class profile published, and says an aggregate of the two is not a substitute."
+            },
+            "certificate": {
+              "kind": "artifact",
+              "names": "a plan-conformance axis reported beside the output axis, with the error-class profile published rather than summarised"
+            }
+          },
+          {
+            "id": "opposite_profiles_test",
+            "criterion": "Generalises to the check: before publishing any aggregate, construct two systems with opposite profiles and see whether they tie on it.",
+            "anchors": {
+              "0": "Absent.",
+              "1": "Says to report breakdowns, with no test.",
+              "2": "States the test as a precondition on publishing the statistic, not as a nice-to-have."
+            },
+            "certificate": {
+              "kind": "artifact",
+              "names": "the two-opposite-profiles construction named as a precondition on publishing an aggregate"
+            }
+          }
+        ]
+      },
+      "exploit": "An answer that praises the rigour of reporting two axes, repeats that both held, recommends publishing the appendix for completeness, and never says that the profile can move while the aggregates hold. It names the right artifacts and reaches the wrong decision, which is the shape a rubric tied to vocabulary rather than to the decision would score full marks."
     }
   ],
-  "revision": "2026-11-01 (ADR-37 maintenance of the SKILL.md, ADR-38 rule 4). Three changes, and no rubric criterion, anchor or check was edited. The library's certificate numerator held at exactly 190 across the change and the denominator fell from 288 to 283, which is ei-t8's five criteria leaving with it, so nothing here improved the coverage ratio by writing a certificate and nothing regressed it. (1) Every surviving task's `sections` was repointed at the five delta headings the retrofit wrote, because all ten of the old headings were rewritten: ei-t1 to delta 1, ei-t2 and ei-t3 to delta 2, ei-t4 and ei-t5 to delta 3, ei-t6, ei-t7 and ei-t11 to delta 4, ei-t9 and ei-t10 to delta 5. The grouping is the one the SKILL.md's own per-section Validation tags name, so the two files agree by construction rather than by coincidence. (2) ei-t8 moved to `retired_tasks` with its reason, because its section was cut. (3) Controls ei-c1 and ei-c2 keep their empty `sections` list, which the suite contract reads as a deliberate statement rather than a missing one. Nine treatment tasks and two controls remain. The suite still has no results.json: this seat has no route to either eval arm, so the bare-first differential pass that ADR-38 rule 5 requires has not been run and no task here has qualified or been excluded yet.",
+  "revision": "2026-11-09 (ADR-37 maintenance, delta 2 gains its aggregate half). `suite_version` is NOT bumped: it is the contract version and not a revision counter, which this library has twice read the wrong way (INC-2026-10-27-suite-version-is-a-contract-version-and-two-runs-read-it-as-a-revision-counter). Three changes. (1) ei-t2 and ei-t3 were repointed at delta 2's new heading, which widened from the verdict case to the general one; `tools/skill_eval.py --check` caught the stale reference on this branch before the commit, which is what that check is for. (2) ei-t12 and ei-t13 are new, one per half of the new material, both written against the one decision the section changes rather than against the topic. ei-t12 is a `parses` check with a mechanical key, because ADR-38 rule 6 puts a hard check above a rubric and the bottleneck phase is simply the lower of two conditional rates. ei-t13 is a rubric, because the question it asks is advice, and it ships an `exploit` answer that names every right artifact and reaches the wrong decision. (3) ei-t12's digits are changed from ACE's Table II while its arithmetic is preserved, so a subject that has read the paper cannot answer from recall instead of from the table; the real figures stay in the task's `situation` for provenance. Eleven treatment tasks and two controls. Still no results.json: GROQ_API_KEY and NEON_RO_URL are both absent from this seat's host environment on 2026-11-09, so the bare-first differential pass ADR-38 rule 5 requires has not run and neither new task has qualified or been excluded. Both carry `authored-judgement` bases and say so. 2026-11-01 (ADR-37 maintenance of the SKILL.md, ADR-38 rule 4). Three changes, and no rubric criterion, anchor or check was edited. The library's certificate numerator held at exactly 190 across the change and the denominator fell from 288 to 283, which is ei-t8's five criteria leaving with it, so nothing here improved the coverage ratio by writing a certificate and nothing regressed it. (1) Every surviving task's `sections` was repointed at the five delta headings the retrofit wrote, because all ten of the old headings were rewritten: ei-t1 to delta 1, ei-t2 and ei-t3 to delta 2, ei-t4 and ei-t5 to delta 3, ei-t6, ei-t7 and ei-t11 to delta 4, ei-t9 and ei-t10 to delta 5. The grouping is the one the SKILL.md's own per-section Validation tags name, so the two files agree by construction rather than by coincidence. (2) ei-t8 moved to `retired_tasks` with its reason, because its section was cut. (3) Controls ei-c1 and ei-c2 keep their empty `sections` list, which the suite contract reads as a deliberate statement rather than a missing one. Nine treatment tasks and two controls remain. The suite still has no results.json: this seat has no route to either eval arm, so the bare-first differential pass that ADR-38 rule 5 requires has not been run and no task here has qualified or been excluded yet.",
   "retired_tasks": [
     {
       "id": "ei-t8",
