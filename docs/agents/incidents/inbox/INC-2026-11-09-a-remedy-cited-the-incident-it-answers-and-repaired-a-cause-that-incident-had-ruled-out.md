@@ -74,3 +74,22 @@ deploy's words. Four tests in `tests/test_deploy_drift.py`, including the
 incident itself as a fixture of 45 commits over one mounted file, and one that
 asserts the ceiling still clears the deepest app's real history so the number
 cannot quietly go stale again.
+
+**The company standard this breaks, which no filing of this defect has named.**
+`docs/standards/lessons.md` L-A73, "one sentence for every cause names none",
+law since 2026-10-23: a catch-all sentence "says what the handler actually
+knows, and never asserts a cause it did not establish". Its own case is the
+board answering every unexpected exception with "the board's database is
+unreachable", and its sharpest line is that the false sentence "named a healthy
+component as the fault and pointed every reader away from the live one". That
+is this defect to the word. `f16e2775` was healthy, present and an ancestor of
+`origin/main`, and the sentence sent three readers to look at the deploy.
+
+So the ceiling is the instance and L-A73 is the rule, and the rule was already
+on the books, in a vendored standard every seat is told to read, for five days
+before the writer seat filed the instance and for ten more while it sat. A
+standard that names a defect does not make the defect findable in a specific
+file: nothing joins "this surface asserts a cause" to L-A73 except a reader who
+holds both at once. That join is the ledger idea filed beside this entry, and
+L-A22 is the reason it has to be a command rather than another sentence: the
+gate goes in the command, not in the charter.
