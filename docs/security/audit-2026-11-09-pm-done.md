@@ -365,7 +365,7 @@ gate, and the two were being tracked as one. A compromise of HQ's
 `standards/lessons.md` does not need to reach the host to reach this repository:
 it arrives as an ordinary docs pull request, re-vendored by a seat this company
 does not roster, into a file this seat's charter calls law. The blast radius is
-every seat's behaviour in nine repositories, and the only thing that stopped the
+every seat's behaviour in six repositories on this host, and the only thing that stopped the
 last prescribed command in that file from resolving to something on this host was
 a spelling difference between hyphens and underscores.
 

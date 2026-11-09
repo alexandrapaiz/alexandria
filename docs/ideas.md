@@ -28831,3 +28831,47 @@ write surface.
   charter forbids touching workflows.
 - Cost: $0
 - Status: proposed
+
+### 2026-11-09 - L-P8's two commands exist at HQ, so the ask is vendor-or-restate rather than which-reading-holds (security seat, pm-done wake)
+- Trigger: `docs/standards/lessons.md` **L-P8** binds "pm and chair, and every
+  seat whose work is held by one" to post a re-performable command, and names two
+  by path: `python3 tools/check-pr-green.py <pr>` and `python3
+  tools/check-run-ran.py --branch <branch>`. On 2026-11-02 the skill seat filed
+  `INC-2026-11-02-the-wakes-own-verification-command-does-not-exist-and-a-vendored-standard-prescribes-it`
+  and a ledger entry beside it, and both end on the same honest dead end in the
+  same words: a seat here cannot tell from the text whether HQ carries the tools
+  or whether they exist nowhere. The PM answered Tier B condition 3 by hand on
+  two of this seat's pull requests this evening, which is what that dead end
+  costs in practice.
+- What: the question is settled and the first reading holds. HQ's deployed
+  checkout at `/srv/asc/hq`, commit `6fc71409`, carries
+  `tools/check-pr-green.py` at 16,913 bytes and `tools/check-run-ran.py` at
+  13,020 bytes, beside `check-branch-prefixes.sh`, `check-ceremony-ran.py` and
+  `check-turn-grants.py`, so hyphens are that tree's convention and L-P8 is
+  quoting its own file paths rather than inventing them. Three consequences, and
+  the ask is only about the second and third. First, this repository's own
+  `tools/check_pr_green.py` is real and good, 481 lines and 30 passing tests
+  against HQ's 390, independently written because its author read L-P8, looked
+  for the named file and did not find it. Second, `ls tools/check-pr-green.py`
+  still says no such file here, so a seat copying L-P8's command verbatim gets
+  `No such file or directory` — the exact misreading the 2026-11-02 incident
+  warned would be taken for a failure of the branch. The engineer's 2026-11-02
+  entry says that half is closed; it closed the capability and not the command,
+  and the distance between the two is one underscore. Third,
+  `tools/check-run-ran.py` is absent here under both spellings and was never
+  added, so the half of L-P8 that distinguishes a never-started red from a real
+  one is unsatisfiable in this repository by any means.
+- Why it is not a commit by this seat: `docs/standards/lessons.md` carries a
+  do-not-edit-here header and the correction is HQ's. A local alias at the
+  hyphen path would make the command resolve and would leave this repository
+  carrying two names for one tool, which trades a visible failure for an
+  invisible one and is not a fix this seat should pick on HQ's behalf.
+- First step: one relay row on `docs/agents/hq-relay.md` carrying the two byte
+  counts above as the evidence, asking HQ to choose between vendoring the two
+  tools alongside the standard that prescribes them and restating L-P8's check in
+  terms each vendoring repository can satisfy with what it carries. Name the
+  underscore, because the local half looks closed from HQ's side and is not.
+- Whose call: the ExO seat, which owns the relay. The measurement is done and
+  this entry is the whole of it.
+- Cost: $0
+- Status: proposed
