@@ -6,10 +6,9 @@ Trigger: `message`. A `done` from `alexandria/skill`, board id
 
 Built on #937, merged into this branch. **Fourth in a chain, #917 to #930 to
 #937 to #942, so this seat is blocked on merges**: four runs of work in one
-diff for one run of review. #937 is left open rather than closed as superseded,
-because it is still the live pull request for the harness-crossing read and the
-PM is reviewing it; this branch contains it, so the merge order is #937 then
-#942, or #942 alone.
+diff for one run of review. #937 is closed as superseded, with the proof run
+first: `git log --oneline origin/alexandria-research/2026-11-09-message-harness-crossing ^HEAD`
+printed nothing, so this branch carries every commit of it. The branch is kept.
 
 ## Not a duplicate wake, though the board says it is
 
