@@ -225,6 +225,11 @@ DECLARED: dict[tuple[str, str], Judgment] = {
     ("rehearse_email.py", "--token"): Judgment("opaque"),
     ("resolve_register_conflict.py", "--check"): Judgment("opaque"),
     ("resolve_register_conflict.py", "--repo"): Judgment("path"),
+    # A root path. It is compared as a name against git's own list of
+    # additions rather than opened, so `path`'s "absent is already an error"
+    # does not hold by `open()` raising. The tool says so itself instead: an
+    # `--allow` value that matched no stray is printed as unused.
+    ("root_scratch.py", "--allow"): Judgment("path"),
     ("run_report.py", "--workflow"): Judgment("text"),
     ("run_report.py", "--status"): Judgment("text"),
     ("run_report.py", "--branch"): Judgment("opaque"),

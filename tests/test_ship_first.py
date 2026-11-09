@@ -235,3 +235,33 @@ def test_a_seat_filter_claims_nothing_about_runs_it_did_not_select(tmp_path):
     args = ['--projects', str(tmp_path / 'projects'), '--audit', str(tmp_path / 'audit.jsonl')]
     assert sf.main(args + ['--company', 'alexandria']) == 0
     assert sf.main(args + ['--all']) == 1
+
+
+def test_every_end_row_is_either_used_or_counted(tmp_path):
+    """The report's two numbers are its whole account of the log, so a row that
+    is neither selected nor counted is a row a reader cannot reconcile.
+
+    Three rows, one session id shared by two of them. The survivor is joined
+    and classified, the sessionless row is counted as before, and the row the
+    overwrite buried is counted as `superseded`. Before this, the buried row
+    left both numbers untouched and the arithmetic against the log was short by
+    one with nothing to explain it. On the host that was 13 rows across 9
+    session ids."""
+    rows = [run_row('s1', turns=16), run_row('s1', turns=2), run_row('s2', turns=10)]
+    del rows[2]['session']
+    write_audit(tmp_path, rows)
+    write_transcript(tmp_path, 'alexandria-exo', 's1', {3: 'git push'}, 2)
+    records, unjoined = sf.collect(projects=str(tmp_path / 'projects'),
+                                   audit=str(tmp_path / 'audit.jsonl'))
+    assert unjoined == {'sessionless': 1, 'superseded': 1}
+    assert len(records) + unjoined['sessionless'] + unjoined['superseded'] == len(rows)
+    assert [r['turns'] for r in records] == [2], 'the later row is the one kept'
+
+
+def test_the_report_says_so_rather_than_leaving_the_reader_to_subtract(tmp_path, capsys):
+    write_audit(tmp_path, [run_row('s1', turns=16), run_row('s1', turns=2)])
+    write_transcript(tmp_path, 'alexandria-exo', 's1', {3: 'git push'}, 2)
+    records, unjoined = sf.collect(projects=str(tmp_path / 'projects'),
+                                   audit=str(tmp_path / 'audit.jsonl'))
+    sf.report(records, 6, unjoined)
+    assert 'share a session id with a later row' in capsys.readouterr().out
