@@ -781,3 +781,24 @@ def test_the_short_edition_is_still_held_by_the_rules_it_can_break():
              f"{gate.SHORT_EDITION_NOTE}\n\n"
              "We delve into the tapestry of the realm.\n")
     assert "slop-lexicon" in rules(blocking(short))
+
+
+def test_the_ban_reaches_the_h1_too_and_that_is_deliberate():
+    """Scoped to match the canon exactly, which reads `^#{1,6} `.
+
+    This is worth a test because it is the one way this rule can hold a send on
+    something that is not a section heading. A title that opens on `What` and
+    breaks to a colon is caught, and it should be: `prompts/digest.md` says the
+    title is the week's strongest finding and "not a label for the issue", and
+    this file already carries a `colon-title` warning saying the same thing
+    about shape. Neither issue the repository serves has such a title, so the
+    reading costs nothing live.
+    """
+    assert "slot-heading" in rules(blocking(
+        "# What this week changed: three papers\n\nsome body text here.\n"))
+    # And the titles that are actually serving stay clean of this rule.
+    for issue in sorted((REPO / "site" / "content" / "issues").glob("*.md")):
+        body = issue.read_text(encoding="utf-8")
+        title = next(l for l in body.splitlines() if l.startswith("# "))
+        assert [f for f in blocking(f"{title}\n\nsome body text here.\n")
+                if f.rule == "slot-heading"] == [], title
