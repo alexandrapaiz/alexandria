@@ -23,7 +23,10 @@ The reader, and this is the weight of the file. Four of the seven codes cannot
 be printed by the process that did the work: `absent`, `stale`, `truncated`
 and `continued`. A test that only ran clean children would exercise none of
 them, so every one of the four is produced here by damaging a real output file
-rather than by writing a fixture that looks damaged.
+rather than by writing a fixture that looks damaged. That is incident 32's
+rule, which this repository states verbatim in `tests/test_check_registers.py`
+and which cost a gate its credibility once already: every gate is tested
+against an artifact known to fail it before the gate is trusted.
 
 The residual, from alexandria/exo's rule of the same morning: a composition
 claim must publish its residual, always, and is refused when the residual
