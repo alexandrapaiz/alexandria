@@ -355,3 +355,28 @@ def test_a_failing_git_call_refuses_rather_than_reporting_a_stray(repo, monkeypa
     monkeypatch.setattr(gate.subprocess, "run", refusing)
     assert gate.main([]) == 2
     assert "cannot measure" in capsys.readouterr().err
+
+
+def test_allow_is_the_escape_hatch_for_both_bounds(repo):
+    """`--allow` is a person naming one exact path for one run, so it has to
+    clear the kind bound too. Without this there is no escape hatch for the
+    second bound at all, and a seat with a legitimate need has to edit the tool."""
+    (repo / "skills").symlink_to("/etc")
+    git(repo, "add", "-A")
+    git(repo, "commit", "-q", "-m", "a root symlink named skills")
+    assert gate.scan(cwd=repo)["strays"] != []
+    waived = gate.scan(cwd=repo, allow=["skills"])
+    assert waived["strays"] == []
+    assert waived["allowed_seen"] == ["skills"]
+
+
+def test_belongs_alone_does_not_clear_the_kind_bound(repo):
+    """The other half, and the reason the two permissions are not one set.
+    `BELONGS` is a claim that a name is cited, which says nothing about what the
+    entry under it is, so being on the list must not waive the kind."""
+    (repo / "skills").symlink_to("/etc")
+    git(repo, "add", "-A")
+    git(repo, "commit", "-q", "-m", "a root symlink named skills")
+    assert "skills" in gate.BELONGS
+    report = gate.scan(cwd=repo)
+    assert [s["path"] for s in report["strays"]] == ["skills"]

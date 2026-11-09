@@ -310,7 +310,15 @@ def _tracked_strays(cwd=None):
 
 def scan(staged=True, branch=True, allow=(), cwd=None):
     """The report, as a dict. `strays` empty means there is nothing to say."""
-    allowed = set(BELONGS) | set(allow)
+    # `--allow` and `BELONGS` are deliberately not the same permission, and the
+    # difference only appeared once there were two bounds. `BELONGS` says a name
+    # is cited, which is a claim about the name and nothing else, so an entry
+    # under a cited name still has to be the kind of thing that name means.
+    # `--allow` is a person at a terminal saying "this exact path, this run,"
+    # which is the escape hatch, and it has to cover both bounds or there is no
+    # escape hatch for the second one at all.
+    waived = set(allow)
+    cited = set(BELONGS) | waived
     ref = _baseline_ref(cwd=cwd)
     if ref is None:
         return {"measured": False, "reason": "no main or origin/main in this clone"}
@@ -326,9 +334,11 @@ def scan(staged=True, branch=True, allow=(), cwd=None):
     for where, adds in sources:
         for path, mode in adds:
             root_adds.add(path)
-            # Two bounds and they are asked in this order, because the name is
-            # the cheaper question and a name nobody cites needs no second one.
-            if path not in allowed:
+            if path in waived:
+                continue
+            # Two bounds, asked in this order, because the name is the cheaper
+            # question and a name nobody cites needs no second one.
+            if path not in cited:
                 why = "nothing at the root cites this name"
             else:
                 why = _kind_problem(mode)
@@ -443,9 +453,12 @@ def _run(args):
             print(f"  {stray['path']}  ({', '.join(stray['where'])})")
             print(f"    {stray['why']}")
         print("Move them under a mktemp -d and drop them from the branch, or add")
-        print("the name to BELONGS with its citation. A cited name of the wrong")
-        print("kind is the second case, and no entry in BELONGS is a symlink or a")
-        print("submodule, so adding one is a deliberate act that needs saying.")
+        print("the name to BELONGS with its citation.")
+        print("A cited name of the wrong kind is the second case, and BELONGS")
+        print("will not clear it, because BELONGS is a claim about the name. Pass")
+        print("--allow for one run, or widen ROOT_MODES if the root genuinely")
+        print("needs to carry that kind from now on. No entry at this root is a")
+        print("symlink or a submodule today, so either is a deliberate act.")
     return 1
 
 
