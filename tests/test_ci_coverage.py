@@ -905,6 +905,29 @@ UNCOVERED = {
     # them regression tests on the one word that separated the real defect from
     # fifty-two fair mentions.
     "tests/test_prose_symbols.py",
+    # Added 2026-11-09 by the ExO seat with `tools/host_headroom.py`, and
+    # pinned for the same structural reason as every line above: the step that
+    # would run it goes in `.github/workflows/checks.yml`, which no seat's
+    # token may write, and this seat's dispatch forbids touching workflows
+    # outright. The staged replacement runs it, because that file runs the
+    # suite rather than naming files.
+    #
+    # The gate caught this on the run that added it, before the pull request
+    # was readied, which is the gate working. Counting itself at
+    # `INC-2026-10-17-the-pin-list-grew-for-the-seventh-time-in-nine-days`.
+    #
+    # What it guards is the only instrument in this repository that reads the
+    # host volume. Its 15 cases hold two things nothing else checks: that the
+    # `df` figure is never published without the `du` figure and the gap
+    # between them -- the reason being that `df` on this host reports a device
+    # whose majority consumer is outside every seat's mount namespace, so the
+    # percentage alone attributes a host figure to a seat, which four register
+    # entries and one ledger entry did -- and that a composition claim fails
+    # when the residual it does not name reaches its largest named component.
+    # Silent on a pull request, the first of those is a wrong number in a
+    # register and the second is the word "measured" over an account of 58
+    # per cent.
+    "tests/test_host_headroom.py",
 }
 
 
