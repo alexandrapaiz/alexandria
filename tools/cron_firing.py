@@ -312,6 +312,32 @@ def classify_refusal(result_text, api_error_status, stop_reason=None):
     three whose sentence names another limit inside itself. The order is the
     fix, and a test pins it.
 
+    **It was a confident wrong answer and not a gap, which is why nothing
+    caught it** (measured on this branch, 2026-11-08, and kept here when this
+    branch's own duplicate of the fix gave way to the one above). The old
+    chain returned `weekly-limit` for **257 of 257** spend refusals across
+    `/srv/asc/state/.epito/logs` and `unclassified-429` for none of them, so
+    no surface anywhere had a row to be curious about. Seventy-four of the 257
+    were cron slots, which is 74 of the 177 slot refusals this file exists to
+    name, and `alexandria-market`'s 2026-11-06T11:00Z slot is the one that
+    found it: the register asked which wall took the slot, the slot's own log
+    said the monthly spend cap, and this function said the weekly limit.
+
+    **And the sentence has a second real variant**, quoted in the tests
+    alongside the one above: the same text ending `your weekly limit resets
+    11pm (UTC)`, with no date. Both forms account for all 257.
+
+    **The general rule, because this was the fourth reader of the same
+    sentence to get it wrong in the same direction and the second independent
+    fix for it:** when a refusal class is added, grep the whole repository for
+    the old class's name rather than fixing the reader that found it. A
+    classifier is copied far more often than it is imported --
+    `INC-2026-11-08-the-third-limit-class-shut-the-portfolio-for-six-days-and-the-classifier-that-names-classes-called-it-the-second`
+    fixed the charter's published chain and named `tools/capacity.py`'s two in
+    the parent, and did not know this file carried the identical `if` chain.
+    Two branches then fixed this file at the same time under two different
+    class names, which is the same lesson arriving one layer up.
+
     The third is not a limit and it is why `stop_reason` is read here
     (security seat, 2026-11-02,
     `INC-2026-11-02-a-content-safeguard-refusal-is-not-capacity-and-waiting-for-it-to-clear-waits-forever`).
@@ -340,6 +366,36 @@ def classify_refusal(result_text, api_error_status, stop_reason=None):
     if "session" in text or "5-hour" in text or "5 hour" in text:
         return "session-limit"
     return "unclassified-429"
+
+
+# The provider's limit sentences, as text, for the one question
+# `classify_refusal` deliberately cannot answer: did this log *mention* a wall.
+#
+# Keep the two uses apart, because collapsing them is a measured defect rather
+# than a tidiness argument
+# (`INC-2026-11-09-the-three-runs-that-closed-the-corpus-question-never-met-a-wall`).
+# A refusal is the error record — `api_error_status: 429` — and the sentence is
+# only its discriminator. The sentence *on its own* is prose, and the seats most
+# likely to write it are the ones whose job is to report on refusals: all three
+# logs on this host that carry a limit sentence without an error record are exo
+# seats quoting other runs' walls, at 77, 98 and 118 turns, every one exit zero.
+# Counted as refusals they read as runs that met a wall mid-run and survived it,
+# which is the opposite of what they are, and of the 1,159 genuine walls on this
+# host not one was survived.
+WALL_SENTENCE = re.compile(
+    r"You've hit your (?:session|weekly) limit"
+    r"|You've hit your org's monthly spend limit",
+    re.IGNORECASE)
+
+
+def mentions_a_wall(result_text):
+    """Does this prose quote a limit sentence, refusal or not.
+
+    Never a substitute for `classify_refusal`. This is the needle a corpus
+    grep finds, and `tools/wall_encounters.py` exists to report the two
+    answers side by side so neither is read as the other.
+    """
+    return bool(WALL_SENTENCE.search(result_text or ""))
 
 
 def parse_run(path):
@@ -372,6 +428,7 @@ def parse_run(path):
         "api_error_status": None,
         "refusal": None,
         "refusal_text": None,
+        "wall_prose": False,
         "truncated": True,
         "retry_claimed": False,
         "retried_by": None,
@@ -440,6 +497,15 @@ def parse_run(path):
             # it rather than assuming the Sunday rule.
             if run["refusal"]:
                 run["refusal_text"] = result.get("result")
+            # A limit sentence with no error record beside it. Kept rather
+            # than dropped because its absence is what sent the corpus
+            # question to a grep: `refusal` is correctly None for such a run,
+            # so nothing downstream could tell it from a quiet run, and a
+            # file-wide grep is the only reading left — which counts it as a
+            # refusal. Three runs on this host are this, and they were read
+            # as proof that an in-run retry survives a wall.
+            run["wall_prose"] = (run["refusal"] is None
+                                 and mentions_a_wall(result.get("result")))
 
     return run
 

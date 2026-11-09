@@ -61,6 +61,19 @@ REGISTERS = [
     # contention incidents 6, 25 and 29 are all made of. Every file below is in
     # docs/agents/registers.md's own table with a writer and a reader that are
     # different seats.
+    #
+    # That last sentence was false for `docs/backlog.md` from the day it was
+    # written until 2026-11-09. `tests/test_check_registers.py` found the gap on
+    # 2026-11-02, recorded it as the one tolerated exception, and said writing
+    # the row was the ExO seat's call. The ExO seat's §3d sweep wrote it on
+    # 2026-11-09 and the exception is gone, so the sentence above is true again
+    # and the test now holds the line in both directions.
+    #
+    # The direction that hid it is worth naming: a file in this list is guarded
+    # whether or not anything says so, and the sweep that asks "does this
+    # register have a gate" reads the table and never this list. So a file can
+    # be protected and unregistered at the same time, and look fine from either
+    # side. If you add a path here, add its row there in the same commit.
     "docs/agents/turn-caps.md",
     "docs/agents/pending-workflow-changes.md",
     "docs/agents/unowned-duties.md",

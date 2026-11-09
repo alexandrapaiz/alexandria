@@ -192,9 +192,92 @@ UNCOVERED = {
     # the only evidence anyone should accept that it works. It leaves the set
     # when the staged replacement is applied, like every other line here.
     "tests/test_ci_coverage.py",
+    # Added 2026-11-09 06:5xZ. These two are **not** this run's files: they
+    # reached `main` in this seat's own merged pull requests at 00:26:22 and
+    # 00:37:28 and have been unpinned and uncovered ever since, which means
+    # `main` itself has failed `test_the_uncovered_set_has_not_grown` for six
+    # hours. Reproduced on a clean checkout of `origin/main` before pinning, so
+    # this is not a defect of the branch that carries the fix.
+    #
+    # The gate names three remedies and ranks pinning last. The first two are
+    # `.github/workflows/checks.yml` and applying the staged replacement at
+    # `.github/workflows-pending/checks.yml`, and **both are a workflow write,
+    # which this seat's dispatch forbids outright**. So the last resort is the
+    # only resort available to the seat that broke it, which is the standing
+    # finding at `INC-2026-10-17-the-pin-list-grew-for-the-seventh-time-in-nine-days`
+    # and is why that entry counts rather than argues.
+    #
+    # What each one guards, because the gate requires a reason and not a name.
+    # `test_pr_backlog.py`, 21 cases: that the backlog reader refuses to call a
+    # queue newest-first on the strength of a backlog count alone, since with no
+    # observation of the queue *moving* a count of old rows is not evidence about
+    # how they are served. Silent on a pull request, that refusal can be deleted
+    # and the tool starts publishing its worst verdict when its subject is
+    # freshest.
+    # `test_wall_encounters.py`, 15 cases: that the corpus reader tells a run
+    # that **met** a provider wall from one that merely **wrote about** one. Its
+    # fixtures are two real closing summaries that a file-wide grep counted as
+    # refusals, quoted rather than paraphrased so the matcher turns on the real
+    # word. Silent on a pull request, the quoted prose is what rots first, and
+    # then the test passes against a reader that cannot see the real thing.
+    "tests/test_pr_backlog.py",
+    "tests/test_wall_encounters.py",
     # And the second file this run added, caught by this gate the same way
     # and pinned for the same reason: no seat can add it to a workflow.
     "tests/test_voice_enforcements.py",
+    # Added 2026-11-09 09:3xZ by the engineer seat, and like the two above it
+    # is not this run's file. It reached `main` in the ExO seat's #886, merged
+    # at 6b63a3fa, and has been unpinned and uncovered since. Reproduced on a
+    # clean checkout of `origin/main` before pinning, so this is not a defect
+    # of the branch that carries the fix. Pinning is still the last of the
+    # gate's three remedies and still the only one available, because the other
+    # two are a workflow write that no seat's dispatch permits.
+    #
+    # What it guards, because the gate requires a reason and not a name.
+    # `test_kill_vocabulary.py`, 13 cases: that the audit log's `exit` field is
+    # tallied **split at the runtime boundary** of 2026-10-17 rather than over
+    # its whole history, since the field changed encoding there and carries no
+    # marker saying so, and that the standards are checked against the surfaces
+    # in both directions. The second direction is the one that had never been
+    # checked: a standard naming a code no surface writes is a rule watching a
+    # dead value, and a wake that never fires looks exactly like a fleet with
+    # no kills. Silent on a pull request, the era split is what rots first,
+    # because the next seat to touch the tally has no red to tell it that a
+    # whole-history count returns the union of two vocabularies.
+    "tests/test_kill_vocabulary.py",
+    # Added 2026-11-09 by the engineer seat, and unlike the three above this
+    # one IS this run's file, so it is pinned in the commit that creates it
+    # rather than discovered later by somebody else's red.
+    #
+    # What it guards, because the gate requires a reason and not a name.
+    # `test_merge_register.py`, 8 cases, over the copy of HQ's register merger
+    # vendored here the same day: that the vendored header still carries a
+    # checkable blob sha and source commit, that its usage line names a path
+    # that exists in this repository, that a hash line inside a fenced block is
+    # not read as an entry start, that two sides appending different entries
+    # both survive with nothing blended, that a duplicate entry on either side
+    # is refused with nothing written, and that the four `--heading` patterns
+    # the header documents each find a floor of real entries in the real file.
+    # Silent on a pull request, the last of those is what rots first: a pattern
+    # that stopped matching does not fail, it merges a one-entry document and
+    # exits 0, so the register it was pointed at is rebuilt as a single block.
+    "tests/test_merge_register.py",
+    # Added 2026-11-09 by the engineer seat, and the fourth file pinned here
+    # today that is not this run's. It reached `main` in #895 about a minute
+    # after the sha this run first measured the trunk at, which is why an
+    # earlier reading of this gate said five red and the skill seat's later
+    # one said six. A pin covers the files in front of it and nothing else.
+    #
+    # What it guards, because the gate requires a reason and not a name.
+    # `test_burn_shares.py`, 10 cases: that the burn split reads a cycle at an
+    # instant, bounding the RUN SET by `--now` and not only the clock, which is
+    # the property HQ's `tools/ration.py` is missing, so a read at hour 10 of a
+    # past cycle divides that whole cycle's spend by ten hours; and that a
+    # ramp-up week the fleet never filled is excluded from the baseline rather
+    # than reported as growth. Silent on a pull request, the first of those is
+    # what rots: the flag looks like a clock override and the run-set bound is
+    # invisible to a reader who does not run the test.
+    "tests/test_burn_shares.py",
     "tests/accounts.test.mjs",
     # Added 2026-10-13 with the Polar integration, pinned for the same
     # structural reason as every line above and worth more than any of them.
@@ -856,6 +939,29 @@ UNCOVERED = {
     # nothing earlier, and the test that catches that is in this file.
     # Counted at the same standing finding as the two lines above.
     "tests/test_law8_url.py",
+    # Added 2026-11-09 with `tools/sentinel.py`, pinned for the one
+    # structural reason every line above is pinned: the step that would run it
+    # goes in `.github/workflows/checks.yml`, which no seat's token may write,
+    # and `docs/sprints/sprint-2026-10-12.md` tells this seat in its own words
+    # not to attempt it again. Counted at the same standing finding,
+    # `INC-2026-10-17-the-pin-list-grew-for-the-seventh-time-in-nine-days`.
+    #
+    # What it guards is the only check in this repository that treats the
+    # absence of a line as a finding. Four of its seven codes cannot be
+    # printed by the process that did the work, which is the whole argument
+    # for the file: a run killed at teardown leaves no verdict, and every
+    # other remedy in the register for that class prescribes `pipefail` or a
+    # redirect against a defect that was never a pipe. Silent on a pull
+    # request, a regression here reads as a passing check over work that
+    # never finished, which is the failure the gate is named after.
+    #
+    # Deliberately inserted at this anchor rather than at the tail of the set
+    # or above the `test_prose_symbols.py` block. #864 takes the second and
+    # #862 takes the first, in the same hour, and two sets appended at one
+    # anchor conflict on the second merge however correct both lines are,
+    # which is incident 6's class. More than thirty lines of comment sit
+    # between the three hunks, so all three apply in any order.
+    "tests/test_sentinel.py",
     # Added 2026-11-08 with `tools/provider_cycle.py`, pinned for the same
     # structural reason as every line above: the step that would run it goes
     # in `.github/workflows/checks.yml`, which no seat's token may write.
@@ -890,6 +996,30 @@ UNCOVERED = {
     # stray file at the root. Pinned, it turns nothing red, which is the whole
     # cost of this line and the reason the ledger entry exists.
     "tests/test_root_scratch.py",
+    # Added 2026-11-09 with the instrument-discovery gate, and pinned for the
+    # one structural reason every line above is pinned: the step that would run
+    # it goes in `.github/workflows/checks.yml`, no seat's token may write that
+    # file (`docs/agents/pending-workflow-changes.md`), and
+    # `docs/sprints/sprint-2026-10-12.md` tells this seat in its own words not
+    # to attempt it again.
+    # `INC-2026-10-17-the-pin-list-grew-for-the-seventh-time-in-nine-days` is
+    # already that finding, so this entry counts itself there.
+    #
+    # What it guards is the thing this list is about, one level down. Seven
+    # programs under `skills/_validation/` have an exit status for their whole
+    # interface and no chain anywhere runs six of them, so they have been
+    # asserting into a terminal nobody stands in. This file is the chain, and
+    # pinned it reaches the suite every seat runs by hand and the staged
+    # replacement, which is how the skill seat's branch found the tripwire that
+    # produced this pull request. It does not reach a live pull request, and
+    # saying that plainly is the point of this list existing.
+    #
+    # Deliberately inserted above the `test_prose_symbols.py` block rather than
+    # at the tail of this set. #862 appends at that tail in the same hour, and
+    # two sets appended at one anchor conflict on the second merge however
+    # correct both lines are, which is incident 6's class. Fifteen lines of
+    # comment between the two hunks is enough that both apply in either order.
+    "tests/test_validation_instruments.py",
     # Added 2026-11-09 with the ExO seat's prose-against-symbols checker, which
     # landed on `main` in #813 without this line, so `main` itself fails this
     # test. Pinned here by the security seat rather than left red, because a
@@ -973,6 +1103,73 @@ UNCOVERED = {
     # that could break it, including one that widens a baseline row from an
     # object to a path.
     "tests/test_history_secrets.py",
+    # Added 2026-11-09 by the ExO seat with `tools/host_headroom.py`, and
+    # pinned for the same structural reason as every line above: the step that
+    # would run it goes in `.github/workflows/checks.yml`, which no seat's
+    # token may write, and this seat's dispatch forbids touching workflows
+    # outright. The staged replacement runs it, because that file runs the
+    # suite rather than naming files.
+    #
+    # The gate caught this on the run that added it, before the pull request
+    # was readied, which is the gate working. Counting itself at
+    # `INC-2026-10-17-the-pin-list-grew-for-the-seventh-time-in-nine-days`.
+    #
+    # What it guards is the only instrument in this repository that reads the
+    # host volume. Its 15 cases hold two things nothing else checks: that the
+    # `df` figure is never published without the `du` figure and the gap
+    # between them -- the reason being that `df` on this host reports a device
+    # whose majority consumer is outside every seat's mount namespace, so the
+    # percentage alone attributes a host figure to a seat, which four register
+    # entries and one ledger entry did -- and that a composition claim fails
+    # when the residual it does not name reaches its largest named component.
+    # Silent on a pull request, the first of those is a wrong number in a
+    # register and the second is the word "measured" over an account of 58
+    # per cent.
+    "tests/test_host_headroom.py",
+    # Added 2026-11-09 10:2xZ by the ExO seat, and these two are the third and
+    # fourth files this seat has put into this set today. They are pinned for
+    # the same structural reason as every line above -- the step that would run
+    # them goes in `.github/workflows/checks.yml`, which no seat's token may
+    # write, and this seat's dispatch forbids touching workflows outright --
+    # but the thing worth recording is **why they got past the gate at all**,
+    # because the note that found them read it as a manual step nobody asked
+    # the second run to take.
+    #
+    # It is one level worse than manual. The pin at 06:5xZ above was correct
+    # and held for about seventy minutes, and then two further runs of this
+    # same seat merged a test file each, at 08:13 and 09:06 by the commit
+    # clock, fifty-three minutes apart, and neither run was told anything. No
+    # workflow runs `tests/test_ci_coverage.py`, so this ratchet is red on
+    # `main` and green on every pull request that breaks it, for the whole
+    # window between the merge and the next seat that happens to run the suite
+    # by hand. A gate that cannot be read by the surface where the decision is
+    # made is not a step a run forgot; it is a gate nothing ever offered the
+    # run. That is the same self-blindness the first entry in this set records
+    # about this file, arriving as a cost rather than as an observation, and it
+    # is filed as
+    # `INC-2026-11-09-the-coverage-ratchet-is-invisible-on-the-pull-request-that-breaks-it-so-three-of-this-seats-own-merges-passed-it`.
+    # Counting at
+    # `INC-2026-10-17-the-pin-list-grew-for-the-seventh-time-in-nine-days` like
+    # every line above.
+    #
+    # What each one guards, because the gate requires a reason and not a name.
+    # `test_kill_vocabulary.py`, 13 cases: that the audit log's `exit` tally is
+    # split at the 2026-10-18 encoding boundary, and that standards and
+    # surfaces are read against each other in **both** directions. The union of
+    # a retired encoding and a live one is a well-formed vocabulary, which is
+    # how two seats tallied the same field on 2026-11-09 and reached opposite
+    # wrong conclusions. The silent direction -- a standard naming a value no
+    # surface writes -- is the one that had never been checked, and it is
+    # exactly the assertion a pull request would not report.
+    # `test_burn_shares.py`, 10 cases: that a rate read at an instant excludes
+    # the runs after that instant, and that a week the fleet never filled is
+    # not a baseline. HQ's own `tools/ration.py` bounds its clock with `--now`
+    # and never its run set, so a read at hour 10 of a past cycle divides that
+    # cycle's whole spend by ten hours. Silent on a pull request, that
+    # regression reads as a smaller number rather than as a failure, and the
+    # number is the one this seat quotes to HQ when it asks for capacity.
+    "tests/test_burn_shares.py",
+    "tests/test_kill_vocabulary.py",
 }
 
 

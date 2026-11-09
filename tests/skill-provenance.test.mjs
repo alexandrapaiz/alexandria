@@ -231,9 +231,19 @@ async function realSkills() {
   return out;
 }
 
+// `sourceFile` the same way site/lib/content.js attaches it, because
+// rankBundles() breaks a tie on it and a fixture that drops the filename would
+// be testing a ranker the page never runs. Note that `readdir` is not sorted:
+// that is the point, and it is why the filename has to travel with the bundle
+// rather than being implied by the order they arrive in.
 async function realBundles() {
   const files = (await readdir(RESULTS)).filter((f) => f.endsWith(".json"));
-  return Promise.all(files.map(async (f) => JSON.parse(await readFile(RESULTS + f, "utf8"))));
+  return Promise.all(
+    files.map(async (f) => ({
+      ...JSON.parse(await readFile(RESULTS + f, "utf8")),
+      sourceFile: f,
+    }))
+  );
 }
 
 const LIBRARY = await realSkills();
@@ -316,12 +326,55 @@ test("every skill in the library has a dated validation result", () => {
     const sha = createHash("sha256").update(s.raw, "utf8").digest("hex").slice(0, 16);
     const v = core.latestValidation(BUNDLES, s.provenance.name, sha);
     assert.ok(v, `${s.dir}: no trigger-test result in skills/_validation/results`);
-    assert.match(v.date, /^\d{4}-\d{2}-\d{2}$/);
+    // a bare day or a full ISO-8601 stamp; the stamp is what lets a re-run on a
+    // day that already has a bundle outrank it instead of tying with it
+    assert.match(v.date, /^\d{4}-\d{2}-\d{2}([T ][\d:.]+(Z|[+-]\d{2}:?\d{2})?)?$/);
     assert.ok(v.total > 0, `${s.dir}: a receipt with no cases in it`);
     assert.notEqual(v.engine, "");
     // the receipt must be readable as prose, since that is what ships
     for (const line of core.receiptSentences(v)) assert.ok(line.endsWith("."), line);
   }
+});
+
+// The third ranking key, which was an accident until 2026-11-09. Two bundles
+// on one bare date were equal on `generated` and on pre-registration, so the
+// winner was whichever `readdirSync` listed first, and Node does not promise
+// that is sorted. tests/test_skill_receipts.py runs the same fixture through
+// the Python ranker and asserts both sides land on the same answer.
+
+const NAMED = (file, generated, preRegistered) => ({
+  ...BUNDLE(generated, "lexical/2.1", preRegistered, [SUITE("a", 6, 6, "aaaa")]),
+  sourceFile: file,
+});
+
+test("a tie on one bare date is broken by the filename and not by the caller", () => {
+  const input = [NAMED("ccc.json", "2026-09-30", true), NAMED("aaa.json", "2026-09-30", true), NAMED("bbb.json", "2026-09-30", true)];
+  const order = core.rankBundles(input).map((b) => b.sourceFile);
+  assert.deepEqual(order, ["aaa.json", "bbb.json", "ccc.json"]);
+  // and the same answer from the reverse input, since a stable sort with no
+  // key left would hand back whatever it was given
+  assert.deepEqual(core.rankBundles([...input].reverse()).map((b) => b.sourceFile), order);
+});
+
+test("a stamped re-run outranks the bare day it supersedes", () => {
+  const input = [NAMED("aaa-earlier.json", "2026-11-09", true), NAMED("zzz-rerun.json", "2026-11-09T06:12:03Z", true)];
+  for (const order of [input, [...input].reverse()]) {
+    assert.equal(core.rankBundles(order)[0].sourceFile, "zzz-rerun.json");
+  }
+});
+
+test("an equally-ranked bundle is named rather than hidden", () => {
+  const a = NAMED("aaa.json", "2026-09-30", true);
+  const b = NAMED("zzz.json", "2026-09-30", true);
+  assert.deepEqual(core.tiedWith(a, [a, b]).map((x) => x.sourceFile), ["zzz.json"]);
+  // the experiment ranks below rather than equal, so it is not a tie
+  assert.deepEqual(core.tiedWith(a, [a, NAMED("mmm.json", "2026-09-30", false)]), []);
+  // and a stamp removes the tie rather than merely re-breaking it
+  assert.deepEqual(core.tiedWith(a, [a, NAMED("zzz.json", "2026-09-30T06:12:03Z", true)]), []);
+
+  const v = core.latestValidation([a, b], "a", "aaaa");
+  assert.deepEqual(v.tiedWithFiles, ["zzz.json"]);
+  assert.deepEqual(core.latestValidation([a], "a", "aaaa").tiedWithFiles, []);
 });
 
 test("the receipt shown for each skill is the pre-registered engine's", () => {

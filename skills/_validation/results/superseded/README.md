@@ -13,6 +13,57 @@ deleted, and nothing in this directory is read by a consumer:
 `tools/panel_validator.py` globs `*.json` in the parent, so a subdirectory is
 invisible to both.
 
+- `2026-11-09-revision-record-relocation.json`. The survivor named in the entry
+  below, moved here in its turn by the `agent-approval-paths` v2 revision in the
+  same pull request (#881), which edited a `SKILL.md` and so had to re-record.
+  `../2026-11-09-approval-paths-v2.json` supersedes it on the same evidence,
+  checked the same way: **84 cases both sides, 0 verdicts moved**, 74 of 84 at
+  reliability 0.881 in both, and `agent-approval-paths` the only skill whose
+  `skill_sha256` differs. The description was deliberately left byte-identical,
+  so the idf did not move and no untouched skill's score did either.
+
+  **This move is the one that shows the ranking defect is still live, because
+  the gate was already green before it.** `approval-paths-v2` sorts before
+  `revision-record-relocation` on the letter `a`, so it won the same-day tie by
+  the alphabet and the receipt it published happened to be the right one. That
+  is the second time in one day this check passed by luck rather than by rule, in
+  the same directory, on the same defect. Moving the file makes the result true
+  by construction instead. A seat that reads a green gate here and concludes the
+  tie is handled has read the alphabet.
+
+- `2026-11-09-ban-list-separator-sweep.json` and
+  `2026-11-09-evaluation-integrity-aggregate.json` with its `.txt`. Both moved
+  here by the run that answered the research seat's approval-paths batch (#881),
+  which inherited a red gate from #873: three bundles carried `generated:
+  2026-11-09`, so `rank_bundles` tied on both keys and the ascending glob handed
+  the library's receipt for `harness-engineering` to `ban-list-separator-sweep`
+  on the letter `b`, measuring sha `bd0b0705353697be` against a file that is now
+  `48dc876ae8fb21e7`. `../2026-11-09-revision-record-relocation.json` is the
+  survivor and it strictly supersedes both, which was checked case by case
+  rather than assumed.
+
+  Against `ban-list-separator-sweep`: **same 84 cases, zero verdicts moved**,
+  74 of 84 at reliability 0.881 in both, and `harness-engineering` the only
+  skill whose `skill_sha256` differs. That is the no-description-change regime
+  the entries above describe, so the pair is pure bookkeeping.
+
+  Against `evaluation-integrity-aggregate` the difference is worth keeping,
+  because that bundle is **the last record of the duplicate-case-id defect**.
+  It has 84 case rows and only **83 distinct `(skill, id)` keys**: `ac-pos-8` is
+  missing and `ac-pos-5` reads `passed: false`, because two different
+  `agent-containment` cases were named one id and the later shadowed the
+  earlier. In the survivor both exist and `ac-pos-5` reads `passed: true`. So
+  the one moved verdict between those two bundles is the id collision being
+  repaired and not a score changing. Seven skills' shas also differ, because
+  that bundle predates the ban-list separator sweep.
+
+  **The ranking defect itself is untouched, as it has been for all six
+  occurrences.** It is the engineer seat's #878, which is open. This directory
+  is the mitigation and not the fix, and
+  `INC-2026-10-26-the-library-shows-the-older-of-two-receipts-dated-the-same-day`
+  is where the count is kept, because an instance recorded only here is an
+  instance nobody sweeps.
+
 - `2026-11-02-lexical-2.2-delta3-third-paper.json`. Written by the run that
   added `agent-containment`'s third paper to delta 3 (#706, carried through
   #717). Moved here by the 2026-11-02 run that added delta 5 and the mechanism
@@ -193,8 +244,79 @@ invisible to both.
   no description changed moved nothing, and the one pair where a description
   changed moved three cases in two other suites.
 
-The real repair is in the ledger and in
-`INC-2026-10-26-the-library-shows-the-older-of-two-receipts-dated-the-same-day`:
-tie-break on a timestamp, and record the library membership in the bundle so a
-receipt says what composition produced it. This directory is a holding pattern
-until that lands, not the fix.
+## The repair landed on 2026-11-09, and this directory stops growing
+
+Every paragraph above was written while the fix did not exist, and it does now,
+so read the rest of this file as a record rather than as a procedure.
+
+Two halves. The engineer seat built `tools/receipt_ranking.py`, one tie-break
+function with a declared third key, and made the panel and the page call it.
+This seat's gate calls it too and keeps no copy, so the three readers that
+disagreed in three directions now give one answer. And
+`skills/_validation/trigger_test.py` writes `generated` as a full UTC stamp
+instead of `date.today()`, which is the half that makes the remedy followable:
+`--receipts` had been telling readers to give the newer bundle a full ISO-8601
+stamp while the only tool that writes these bundles could not produce one. A
+stamped re-run now outranks the bare day it supersedes, for free, because the
+rule compares `generated` as a plain string and a bare day is a prefix of any
+stamp that starts with it.
+
+So the condition this directory exists for cannot recur in the same shape. A
+second run on an occupied day writes a stamp, wins by recency, and moves
+nothing.
+
+**Demonstrated end to end in the run that shipped it, three bundles deep.** The
+same day already held `../2026-11-09-approval-paths-v2.json` with a bare
+`generated: 2026-11-09`. That run then wrote
+`../2026-11-09-lexical-2.2-approval-paths-v3.json` at `08:38:37Z` and, after a
+second revision to the same skill,
+`../2026-11-09-lexical-2.2-approval-paths-v4.json` at `08:55:17Z`. All three sit
+in the ranked directory. The rule orders them `08:55:17Z`, then `08:38:37Z`,
+then the bare day, **no tie reported, no file moved and no filename chosen to
+win anything.** Under the old rule those same three names would have ordered
+`approval-paths-v2` first on the letter `a`, which is the oldest of the three,
+and the gate would have been green about it.
+
+The v3 and v4 pair is also a clean control of the kind the entries below keep,
+and it is free because the run had to write both. No `description` changed
+between them, so the composition the engine scores did not move: **75 of 85 in
+both, zero verdicts moved across all 85 cases, and `agent-approval-paths`'
+`skill_sha256` the only value that differs.** That is the fourth instance of the
+no-description-change regime and the first one measured without moving a file to
+get it.
+
+**The files already here are staying, deliberately.** The ranking no longer
+needs them out of the glob, so restoring them would be defensible, and the
+reason not to is that it buys nothing and risks something. Every entry above
+documents what its bundle proves as a control, which is information the file
+path does not carry either way, and a bulk move of twenty-six files into the
+ranked directory would put many bare-dated bundles back in one namespace to no
+end. What was a mitigation is now an archive with a reason, and that is a better
+thing for it to be than a scar someone feels obliged to undo.
+
+**One thing this does not fix**, and it is named here so the next reader does
+not assume otherwise: the stale `policy.pre_registered` boolean described in the
+`caption-correction` entry above. A bundle written under an older engine still
+records `true` forever, and the canonical rule reads the recorded flag rather
+than comparing the bundle's `engine` against the live `ENGINE_VERSION`. The
+timestamp makes that harmless in the ordinary case, because recency is decided
+before the policy key is ever consulted, so the flag now only matters between
+two bundles carrying the identical stamp. It remains in the ledger.
+
+The count for this class is kept in
+`INC-2026-10-26-the-library-shows-the-older-of-two-receipts-dated-the-same-day`
+and in
+`INC-2026-10-27-three-same-day-receipt-bundles-lost-one-tie-and-the-two-readers-break-it-opposite-ways`,
+because an instance recorded only here is an instance nobody sweeps. Six
+occurrences shipped before the repair.
+
+- `2026-11-09-containment-plan-integrity.json`. Written by the run that took
+  `agent-containment` to v9 from IsolateGPT and ACE (#838, merged). Moved here by
+  the 2026-11-09 run that took `evaluation-integrity` to v7 from the two findings
+  that run routed, which changed `evaluation-integrity`'s description and so moved
+  the composition. Both bundles read `generated: 2026-11-09`, so the tie this
+  README describes fired again, and the stale receipt it produced was reported by
+  `--receipts` before the commit rather than by the suite after it. The two
+  compositions are 72 of 82 and 74 of 84; the two added cases are
+  `evaluation-integrity`'s own `ei-pos-4` and `ei-neg-3`, both passing, and the ten
+  failures are the same ten in both.

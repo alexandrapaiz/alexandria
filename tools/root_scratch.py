@@ -114,6 +114,7 @@ BELONGS = {
     "mcp": "the MCP server",
     "pipeline": "the digest pipeline",
     "prompts": "the twelve charters",
+    "pytest.ini": "pytest, which reads the suite's tmp_path retention policy from it",
     "requirements-dev.txt": "the dev image",
     "requirements.txt": "the pipeline image",
     "site": "the Next.js site",
