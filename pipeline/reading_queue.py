@@ -46,6 +46,35 @@ QUEUE_PATH = "docs/research/reading-queue.md"
 ITEM = re.compile(r"^\s*-\s*\[(?P<mark>[ xX])\]\s*(?P<body>.*)$")
 ARXIV = re.compile(r"arxiv:\s*(?P<id>\d{4}\.\d{4,5}|[a-z\-]+(?:\.[A-Z]{2})?/\d{7})(?:v\d+)?",
                    re.IGNORECASE)
+# What a line has to look like before the id on it counts as a REQUEST for that
+# paper. The format the file documents puts the id first in the body, and this
+# is what says so in code.
+#
+# ## Why this is not simply `ARXIV.match` (research seat, 2026-11-09)
+#
+# `ARXIV.search` over the whole body reads an id out of a sentence that merely
+# mentions one. Nineteen of the live file's 206 parsed lines are that shape,
+# and the spec detail a one-line description of this guard loses is that the
+# position is not zero: every one of the nineteen carries a strike, a bold or a
+# backtick before the id, because a struck question is how this file retires a
+# line. So the emphasis and the whitespace come off first, and only then does
+# the id have to be the leading token.
+#
+# ## What it costs and what it buys, both measured on the live file
+#
+# `pending` returns the same 105 items with the guard and without, line for
+# line, because all nineteen are struck and `pending` reads only unchecked
+# lines. The research seat priced that correctly and declined to call it a fix.
+#
+# The reachable harm is in the other direction, through `hits`, and it is
+# worse than a wasted slot. Five of the nineteen carry an id that appears on no
+# other line in the file, so `add` refuses all five with "the paper is read and
+# the answer is in the file", which is false about every one of them: nobody
+# requested them and nobody read them. Two of the five open with the literal
+# words "no arXiv id", so the file says the id is absent in prose and the
+# parser extracts one anyway. Those five papers cannot be queued at all today,
+# and the refusal tells the asker a lie about why.
+REQUEST = re.compile(r"^[\s~*`_]*arxiv:", re.IGNORECASE)
 # The asker, read to this format's own field separator, the way `why` above it
 # already is. **It used to take one whitespace token, and that was wrong about
 # 52 of the 167 lines in the live file** (measured 2026-11-02): every line the
@@ -130,15 +159,26 @@ def normalise_asker(raw: str) -> str:
 
 
 def parse(text: str) -> list[Item]:
-    """Every checklist line in the file that carries an arXiv id, in file order."""
+    """Every checklist line in the file that REQUESTS a paper, in file order.
+
+    Not every line that carries an id, which is what this used to be and what
+    the docstring used to say. A line whose id sits inside a sentence is a
+    question the reading raised, addressed to the research seat, and it is
+    skipped here on exactly the same footing as a line with no id at all. See
+    `REQUEST` above for the measurement that distinguishes the two cases and
+    for why the test is not "the match starts at zero".
+    """
     items = []
     for n, line in enumerate(text.splitlines(), start=1):
         m = ITEM.match(line)
         if not m:
             continue
-        found = ARXIV.search(m.group("body"))
-        if not found:
+        body = m.group("body")
+        if not REQUEST.match(body):
             continue  # a question for the research seat, not a paper to fetch
+        found = ARXIV.search(body)
+        if not found:
+            continue  # `arxiv:` with nothing this parser reads after it
         arxiv_id = found.group("id")
         who = ASKED_BY.search(m.group("body"))
         slug = SKILL_ASKER.search(m.group("body"))
