@@ -34,11 +34,20 @@ reaches the largest part the claim names. The case that triggered it is in
 here as a regression: `18 + 6.9` published under the word `measured` against a
 total of 43.
 
+And the two holes alexandria/exo found in that first version, which are the
+reason this file grew. Both arrived as shell transcripts rather than as
+readings of the code, and neither was in the thirty-four cases this file
+already held, so each one is here as the transcript it arrived as. A negative
+part laundered an OVERCOUNT past a gate that only looked at the sum, and a
+repeated `--part` name was `dict()`'s last-wins, so a figure that had been
+named was dropped without a word.
+
 No count appears in this docstring. The parametrized sets below are the count.
 
 Run with `python3 -m pytest tests/test_sentinel.py -q`.
 """
 
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -372,6 +381,122 @@ def test_a_claim_with_no_parts_at_all_is_refused(tmp_path):
     comp = sn.Composition(43.0, {})
     assert comp.residual == 43.0
     assert comp.ok is False
+    assert "names no parts at all" in "\n".join(comp.report())
+
+
+# ------------------------------------- the two holes alexandria/exo found
+
+
+def test_a_negative_part_cannot_launder_an_impossible_one(tmp_path):
+    """exo's transcript, verbatim: `--compose 43 --part a=50` refuses, and
+    adding `--part credit=-20` makes the identical claim about `a` pass.
+
+    The gate was on the sum, so `43 = 50 + (-20) + 13` balanced and `a 50 GiB
+    116.3%` printed one line above the word `ok`. Any negative term buys
+    headroom for an impossible part, one unit for one unit.
+    """
+    launder = sn.Composition(43.0, {"a": 50.0, "credit": -20.0}, "GiB")
+    # The arithmetic that let it through is still the arithmetic. What changed
+    # is that the sum is no longer the only thing asked.
+    assert round(launder.residual, 1) == 13.0
+    assert launder.overcount is False
+    assert launder.ok is False
+    report = "\n".join(launder.report())
+    assert "116.3%" in report
+    assert "\nok:" not in "\n" + report
+
+
+def test_both_gates_refuse_the_laundered_claim_independently(tmp_path):
+    """The repair is two gates and not one, so neither is load-bearing alone.
+
+    exo proposed `max(part) > total`, which is here and holds for this claim.
+    This seat added the refusal of a negative part, which also holds. The test
+    asserts both, because a later run that decides a negative part is legal
+    after all must not take exo's check down with it.
+    """
+    launder = sn.Composition(43.0, {"a": 50.0, "credit": -20.0}, "GiB")
+    assert launder.oversized == (("a", 50.0),)
+    assert launder.negative == (("credit", -20.0),)
+    # And the negative gate is the one that speaks, because it is the more
+    # specific diagnosis: the impossible part is a consequence of the credit.
+    assert "A part is a share" in (launder.refusal or "")
+
+
+def test_a_negative_part_is_refused_even_when_nothing_is_oversized(tmp_path):
+    """The form exo's own check does not reach, which is why the second gate
+    is here. `40 + (-20) + 20` against 43 has no part above the total and no
+    overcount, and `a` and `c` still sum to 60 against a total of 43."""
+    comp = sn.Composition(43.0, {"a": 40.0, "b": -20.0, "c": 20.0}, "GiB")
+    assert comp.oversized == ()
+    assert comp.overcount is False
+    assert comp.residual == 3.0
+    assert comp.ok is False
+    assert "b is -20 GiB" in (comp.refusal or "")
+
+
+def test_one_part_larger_than_the_whole_is_not_two_parts_double_counting(
+    tmp_path,
+):
+    """A message repair found while fixing the gate above.
+
+    `--compose 43 --part a=50` was refused, correctly, with the sentence `at
+    least two of them count the same thing`. There is one part. The overcount
+    line now states the excess and leaves the diagnosis to the refusal, which
+    names the part that cannot fit.
+    """
+    comp = sn.Composition(43.0, {"a": 50.0}, "GiB")
+    assert comp.ok is False
+    report = "\n".join(comp.report())
+    assert "OVERCOUNT" in report
+    assert "count the same thing" not in report
+    assert "a alone is 50 GiB" in report
+    # And the two-part reading is still available when there are two parts.
+    two = "\n".join(sn.Composition(10.0, {"a": 8.0, "b": 7.0}).report())
+    assert "count the same thing" in two
+
+
+def test_a_repeated_part_name_is_refused_rather_than_resolved(tmp_path):
+    """exo's second transcript: `--part a=18 --part a=6.9` printed `a 6.9`.
+
+    `dict(pairs)` is last-wins. The verdict direction was safe, because
+    dropping a part only raises the residual, but the figure 18 was named by
+    the caller and never appeared, in the one table whose whole job is to
+    print a composition honestly.
+    """
+    # The old behaviour, kept here as the thing being refused.
+    assert dict([("a", 18.0), ("a", 6.9)]) == {"a": 6.9}
+    with pytest.raises(sn.RepeatedPart) as caught:
+        sn.collect_parts([("a", 18.0), ("a", 6.9)], "GiB")
+    report = caught.value.report()
+    assert "REFUSED" in report
+    # The dropped figure is in the refusal, which is the whole complaint.
+    assert "18 GiB" in report and "6.9 GiB" in report
+    assert caught.value.repeats == {"a": [18.0, 6.9]}
+
+
+def test_the_sum_is_not_the_repair_for_a_repeated_name(tmp_path):
+    """exo's preferred direction, taken. A sum would read 24.9 and the reader
+    could not tell it from a single `--part a=24.9`, so which of the two
+    readings was meant is exactly what the quiet repair destroys."""
+    report = sn.RepeatedPart({"a": [18.0, 6.9]}, "GiB").report()
+    assert "24.9" not in report
+    assert "summing them invents a third" in report
+
+
+def test_distinct_names_and_a_single_figure_both_still_pass(tmp_path):
+    """The refusal above must not catch the two ways out it recommends."""
+    assert sn.collect_parts([("a", 18.0), ("b", 6.9)]) == {"a": 18.0, "b": 6.9}
+    assert sn.collect_parts([("a", 24.9)]) == {"a": 24.9}
+    assert sn.collect_parts([]) == {}
+
+
+def test_three_readings_under_one_name_are_all_reported(tmp_path):
+    """Not only the first and the last. A refusal that printed two of three
+    would be the same defect one figure further along."""
+    with pytest.raises(sn.RepeatedPart) as caught:
+        sn.collect_parts([("a", 1.0), ("a", 2.0), ("a", 3.0)])
+    assert caught.value.repeats == {"a": [1.0, 2.0, 3.0]}
+    assert "given 3 times" in caught.value.report()
 
 
 # ---------------------------------------------------------------- the command
@@ -458,12 +583,66 @@ def test_the_cli_compose_mode_exits_nonzero_on_an_unnamed_majority(tmp_path):
     assert "unattributed" in proc.stdout
 
 
-def test_the_smoke_runs_and_covers_one_case_per_code(tmp_path):
+def test_the_cli_refuses_the_laundered_claim_exo_sent_back(tmp_path):
+    """The transcript as it arrived, through the command line, because that is
+    where it was found. The library test above cannot see `argparse`."""
+    base = [sys.executable, str(TOOL), "--compose", "43", "--unit", "GiB"]
+    bare = subprocess.run(
+        base + ["--part", "a=50"], capture_output=True, text=True
+    )
+    assert bare.returncode == 1
+    with_credit = subprocess.run(
+        base + ["--part", "a=50", "--part", "credit=-20"],
+        capture_output=True,
+        text=True,
+    )
+    assert with_credit.returncode == 1, with_credit.stdout
+    assert "a                50 GiB  116.3%" in with_credit.stdout
+    assert "REFUSED" in with_credit.stdout
+
+
+def test_the_cli_refuses_a_repeated_part_name(tmp_path):
+    proc = subprocess.run(
+        [
+            sys.executable,
+            str(TOOL),
+            "--compose",
+            "43",
+            "--part",
+            "a=18",
+            "--part",
+            "a=6.9",
+            "--unit",
+            "GiB",
+        ],
+        capture_output=True,
+        text=True,
+    )
+    assert proc.returncode == 1, proc.stdout
+    # Not the old output, which printed a table with 18 missing from it.
+    assert "unattributed" not in proc.stdout
+    assert "18 GiB" in proc.stdout
+
+
+def test_the_smoke_counts_its_own_denominator(tmp_path):
+    """It published `7 of 7` beside nine `check` calls.
+
+    A hand-written denominator in a file about counts a reader cannot check is
+    the subject of the file appearing inside it, so the assertion here is that
+    the two numbers agree and not that either one is 7.
+    """
     proc = subprocess.run(
         [sys.executable, str(TOOL), "--smoke"], capture_output=True, text=True
     )
     assert proc.returncode == 0, proc.stdout
-    assert "7 of 7 ok" in proc.stdout
+    match = re.search(r"^smoke: (\d+) of (\d+) ok$", proc.stdout, re.M)
+    assert match, proc.stdout
+    passed, asked = int(match.group(1)), int(match.group(2))
+    assert passed == asked
+    # And the count is the real one: one per code, plus exo's two findings.
+    source = (ROOT / "tools" / "sentinel.py").read_text()
+    body = source.split("def smoke(")[1].split("\ndef ")[0]
+    assert asked == len(re.findall(r"^\s+check\(", body, re.M))
 
 
 def test_the_tool_refuses_to_be_asked_for_nothing(tmp_path):
