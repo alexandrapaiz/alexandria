@@ -69,7 +69,31 @@ tripwire for the ask being *granted* rather than a monument to it being open.
 The next run to consider the suppression rule can ask this file instead of
 re-deriving the whole thing from 457 rows.
 
-Owed row 14; `INC-2026-11-09-the-boards-answered-marker-is-a-clock-join-and-it-marked-this-runs-wake-answered-by-a-reply-to-a-different-note`.
+**The tripwire fired on 2026-11-09 at 13:0xZ, and this paragraph is the
+record rather than a rewrite.** `--as-reply-link` went to 0 that day and it
+stays at 0: the board grew `in_reply_to`, a sender wrote one, and the marker
+additionally grew an `answered_by.link` label whose two values are `declared`
+(the sender's own claim) and `inferred` (the clock join diagnosed above). The
+grant arrived larger than the ask — the reader is told the marker's provenance
+and not merely given a field to write.
+
+But the firing also showed the gate was keyed one notch too coarse to carry
+the decision it was built for. It asked "does a reply link exist anywhere in
+the traffic", and the answer went true at **1 message in 400**, measured the
+same hour. "The field exists" reads as "a router is safe" and is not: a router
+keyed on the sender's claim is sound and fires almost never, and a router keyed
+on the marker is wrong at the pigeonhole rate.
+
+So the bar on `--as-reply-link` is **not moved**, because moving a tripwire's
+threshold the week it fires is how a gate becomes a monument. Its question was
+answered and its answer is yes. The finer question is `--router-safe`, below,
+as its own flag with its own condition: every marking in the window carries a
+`declared` link. That is unmovable, it is the actual precondition for
+suppressing a wake without reading the row, and it goes green when the bus's
+senders have adopted the field rather than when the field exists.
+
+Owed row 14; owed row 21 is the standing read that caught this, discharged
+2026-11-09. `INC-2026-11-09-the-boards-answered-marker-is-a-clock-join-and-it-marked-this-runs-wake-answered-by-a-reply-to-a-different-note`.
 """
 
 import argparse
@@ -79,7 +103,7 @@ import os
 import statistics
 import sys
 import urllib.parse
-from collections import defaultdict
+from collections import Counter, defaultdict
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
@@ -176,6 +200,15 @@ def measure(inbound, outbound):
     for note in marked:
         groups[(note["answered_by"] or {}).get("message")].append(note)
     shared = {k: v for k, v in groups.items() if len(v) > 1}
+    # The board labels its own marker's provenance as of 2026-11-09: every
+    # marking carries `answered_by.link`, and the two values seen are
+    # `declared` (the sender wrote `in_reply_to`) and `inferred` (the clock
+    # join this file was built to diagnose). Partition rather than pool: the
+    # pigeonhole floor below is a statement about the inferred class, and
+    # pooling it with declared rows understates the clock join's error.
+    links = Counter(
+        (note["answered_by"] or {}).get("link") or "<absent>" for note in marked
+    )
     # At most one note in a group can be the one its answer answered first, so
     # every other marking in that group is false whatever the prose says.
     false_floor = sum(len(v) - 1 for v in shared.values())
@@ -199,10 +232,25 @@ def measure(inbound, outbound):
         "shared_answers": len(shared),
         "notes_sharing_an_answer": sum(len(v) for v in shared.values()),
         "largest_group": max((len(v) for v in groups.values()), default=0),
+        # skill asked for this on 2026-11-09 and the ask is right: the three
+        # headline numbers above (markings, group count, largest group) imply
+        # only `shared_answers` as a floor, because every group could be a
+        # two. The sizes are the whole distance between that and the real
+        # figure, and only the measuring seat holds them. Publishing them is
+        # what makes the floor checkable by a reader who has no bus access.
+        "group_sizes": sorted((len(v) for v in shared.values()), reverse=True),
         "false_markings_floor": false_floor,
+        "link_kinds": dict(links),
+        "declared": links.get("declared", 0),
+        "inferred": links.get("inferred", 0),
         "reply_link_fields_present": reply_links,
         "usable_as_reply_link": bool(reply_links)
         or (len(marked) > 0 and reconstructed < len(marked) and false_floor == 0),
+        # A router may suppress a wake without reading the row only when no
+        # marking it could receive is a clock join. Any single `inferred` row
+        # in the window defeats that, because the wake does not say which class
+        # it carried.
+        "router_safe": len(marked) > 0 and links.get("inferred", 0) == 0,
         "groups": {
             key: [
                 {"ts": n["ts"], "from": "/".join(correspondent(n)), "subject": n.get("subject")}
@@ -241,8 +289,31 @@ def report(found, seat, window_hours, groups=False):
         f"{found['largest_group']}"
     )
     print(
+        "      group sizes  "
+        + (
+            ", ".join(
+                f"{n}x{size}"
+                for size, n in sorted(Counter(found["group_sizes"]).items())
+            )
+            or "none"
+        )
+        + f"  (sum {sum(found['group_sizes'])})"
+    )
+    print(
         "  provably false by pigeonhole, no subject read  >= "
         + share(found["false_markings_floor"], found["marked"])
+    )
+    # Without the line above, a reader can only derive `shared_answers` as the
+    # floor, because every group might be a two. Print the weaker figure beside
+    # the real one so the gap is visible rather than something to be asked for.
+    print(
+        f"      from the headline numbers alone a reader could only prove >= "
+        + share(found["shared_answers"], found["marked"])
+        + "; the sizes above are the rest"
+    )
+    print(
+        "  the marker's own provenance label  "
+        + ", ".join(f"{kind} {n}" for kind, n in sorted(found["link_kinds"].items()))
     )
     # The join is unbounded forward, which is the half a reader guesses wrong.
     # A note nobody answered is not left unmarked; it waits, and the next letter
@@ -259,6 +330,18 @@ def report(found, seat, window_hours, groups=False):
             "  a sender-written reply link IS present: "
             + ", ".join(found["reply_link_fields_present"])
             + " — suppression now has a field to key on"
+        )
+        # The existence of the field and the safety of keying on it are two
+        # questions, and this file used to answer only the first. A router that
+        # suppressed on `declared` would be exactly right and would almost
+        # never fire; one that suppressed on the marker would be wrong at the
+        # rate printed above. So print the adoption, because "the field exists"
+        # reads as "the router is safe" and is not.
+        print(
+            "      but declared links are "
+            + share(found["declared"], found["marked"])
+            + " of markings, so a router keyed on the sender's own claim is "
+            "sound and nearly silent"
         )
     else:
         print(
@@ -284,6 +367,13 @@ def main(argv=None):
     parser.add_argument("--groups", action="store_true", help="print the colliding groups")
     parser.add_argument("--json", action="store_true", dest="as_json")
     parser.add_argument(
+        "--router-safe",
+        action="store_true",
+        help="exit 1 while any marking in the window is an inferred clock "
+        "join, which is the condition a wake-suppressing router needs and is "
+        "stricter than --as-reply-link",
+    )
+    parser.add_argument(
         "--as-reply-link",
         action="store_true",
         help="exit 1 unless the marker can be read as a reply link, which is "
@@ -297,6 +387,16 @@ def main(argv=None):
         print(json.dumps(found, indent=2, sort_keys=True))
     else:
         report(found, f"{args.company}/{args.seat}", args.window_hours, args.groups)
+
+    if args.router_safe and not found["router_safe"]:
+        if not args.as_json:
+            print(
+                f"\nNO: {found.get('inferred', 0)} of {found['marked']} markings "
+                "are inferred clock joins, and a wake does not say which class "
+                "it carried. A router may key on a declared link it reads "
+                "itself; it may not suppress on the marker."
+            )
+        return 1
 
     if args.as_reply_link and not found["usable_as_reply_link"]:
         if not args.as_json:

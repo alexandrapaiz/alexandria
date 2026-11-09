@@ -46,6 +46,9 @@ def note(ts, sender, subject, answered=None, **extra):
             "message": answered,
             "subject": "whatever this seat said next",
             "ts": ts,
+            # The board writes this on every marking as of 2026-11-09;
+            # `inferred` is the clock join and the overwhelming majority.
+            "link": extra.pop("answered_link", "inferred"),
         }
     row.update(extra)
     return row
@@ -213,3 +216,90 @@ def test_an_empty_window_is_not_read_as_a_fixed_board(tmp_path):
     assert found["marked"] == 0
     assert found["usable_as_reply_link"] is False
     assert run(tmp_path, [], "--as-reply-link") == 1
+
+
+def test_the_group_size_multiset_is_published_and_not_only_summarised(tmp_path):
+    """The sizes are the whole distance between a provable floor and a weak one.
+
+    The skill seat asked for this on 2026-11-09 after reproducing the floor on
+    its own inbox, and the arithmetic behind the ask is the case: from
+    `marked`, `shared_answers` and `largest_group` alone a reader can prove
+    only that each group holds at least two, so the floor it can derive is
+    `shared_answers`. Here that weak floor is 2 and the real one is 5. Only the
+    measuring seat holds the sizes, so a summary that omits them publishes a
+    number nobody else can check.
+    """
+    rows = [
+        note("2026-11-02T05:10:29", SEC, "one", "out-a"),
+        note("2026-11-02T05:10:46", SEC, "two", "out-a"),
+        note("2026-11-02T05:11:00", SEC, "three", "out-a"),
+        note("2026-11-02T05:11:17", SEC, "four", "out-a"),
+        note("2026-11-02T06:00:00", SKILL, "five", "out-b"),
+        note("2026-11-02T06:00:30", SKILL, "six", "out-b"),
+        reply("out-a", "2026-11-02T05:35:00", SEC),
+        reply("out-b", "2026-11-02T06:10:00", SKILL),
+    ]
+    found = measured(tmp_path, rows)
+    assert found["group_sizes"] == [4, 2]
+    assert found["false_markings_floor"] == 4
+    # The figure a reader could reach without the sizes, which is the gap.
+    assert found["shared_answers"] == 2
+    assert sum(found["group_sizes"]) == found["notes_sharing_an_answer"]
+
+
+def test_the_markers_provenance_label_is_read_and_partitioned(tmp_path):
+    """`answered_by.link` appeared on 2026-11-09 and is the field that answers.
+
+    The board now labels each marking `declared` when the sender wrote an
+    `in_reply_to` and `inferred` when it computed the clock join. This file was
+    built before that field existed and pooled the two, which understates the
+    clock join's error rate by diluting it with rows that carry a real claim.
+    """
+    rows = [
+        note("2026-11-09T12:37:00", ("alexandria", "pm"), "declared", "out-1",
+             answered_link="declared"),
+        note("2026-11-09T10:08:00", SKILL, "inferred", "out-2"),
+        reply("out-1", "2026-11-09T12:47:00", ("alexandria", "pm")),
+        reply("out-2", "2026-11-09T10:25:00", SKILL),
+    ]
+    found = measured(tmp_path, rows)
+    assert found["declared"] == 1
+    assert found["inferred"] == 1
+    assert found["link_kinds"] == {"declared": 1, "inferred": 1}
+
+
+def test_router_safe_is_stricter_than_the_fired_reply_link_gate(tmp_path):
+    """One row's worth of grant must not read as a router being safe.
+
+    This is the defect the 2026-11-09 firing exposed. `--as-reply-link` asks
+    whether a reply link exists anywhere in the traffic, and that went true at
+    one message in four hundred. A wake carries no provenance, so a router that
+    suppressed on the marker would still be wrong at the pigeonhole rate. The
+    two flags therefore disagree on these rows, and that disagreement is the
+    property under test: the coarse question is answered yes and the decision
+    question is still no.
+    """
+    rows = [
+        note("2026-11-09T12:37:00", ("alexandria", "pm"), "declared", "out-1",
+             in_reply_to="some-earlier-id", answered_link="declared"),
+        note("2026-11-09T10:08:00", SKILL, "inferred", "out-2"),
+        reply("out-1", "2026-11-09T12:47:00", ("alexandria", "pm")),
+        reply("out-2", "2026-11-09T10:25:00", SKILL),
+    ]
+    assert run(tmp_path, rows, "--as-reply-link") == 0
+    assert run(tmp_path, rows, "--router-safe") == 1
+
+
+def test_router_safe_goes_green_only_when_every_marking_is_declared(tmp_path):
+    """The condition is unmovable, which is why it is a separate flag.
+
+    Remove the one inferred row and the gate flips. Stated this way the gate
+    tracks the bus's senders adopting the field rather than the field existing,
+    and there is no threshold in it for a later run to soften.
+    """
+    rows = [
+        note("2026-11-09T12:37:00", ("alexandria", "pm"), "declared", "out-1",
+             in_reply_to="some-earlier-id", answered_link="declared"),
+        reply("out-1", "2026-11-09T12:47:00", ("alexandria", "pm")),
+    ]
+    assert run(tmp_path, rows, "--router-safe") == 0
