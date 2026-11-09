@@ -491,3 +491,512 @@ def test_the_json_surface_carries_the_qualified_labels():
     )
     found, = ledger.parse(text)
     assert found.as_dict()["qualified_fields"] == {"What": "What it is"}
+
+
+# ---------------- the inbox, 2026-11-09 ----------------
+#
+# L-A18's remedy applied to this register: one file per entry, folded on the
+# mainline where there is one author. Every test below is the gate pointed at an
+# artifact known to fail it, which is incident 32's rule and the reason this
+# section is long. The two that carry the most weight are
+# `test_the_skeleton_this_tool_writes_does_not_pass_its_own_gate`, because every
+# other predicate passes on a file with no content in it, and
+# `test_a_fold_does_not_file_an_entry_under_another_seats_run_section`, because
+# that is the one difference from `tools/incidents.py` that a reader would not
+# predict.
+
+INBOX_ENTRY = """### 2026-11-09 - a thing worth building (engineer seat)
+
+- Trigger: measured on the live file this morning
+- What: one paragraph, and it is this one
+- First step: the first day-sized unit
+- Cost: $0
+- Status: proposed
+"""
+
+
+def inbox_pair(name="2026-11-09-a-thing.md", text=INBOX_ENTRY):
+    return [(name, text)]
+
+
+def test_an_empty_inbox_has_nothing_to_say():
+    assert ledger.check_inbox([], "") == []
+
+
+def test_a_well_formed_inbox_entry_passes():
+    assert ledger.check_inbox(inbox_pair(), "") == []
+
+
+def test_a_filename_that_is_not_a_date_and_a_slug_claims_nothing():
+    [problem] = ledger.check_inbox(inbox_pair(name="my-idea.md"))
+    assert "YYYY-MM-DD-slug.md" in problem
+
+
+@pytest.mark.parametrize("name", [
+    "2026-11-09-Capitalised.md",
+    "2026-11-09-trailing-.md",
+    "2026-11-09.md",
+    "2026-13-09-a-thing.md",
+])
+def test_a_filename_outside_the_slugs_own_alphabet_is_refused(name):
+    assert ledger.check_inbox(inbox_pair(name=name))
+
+
+def test_a_conflict_marker_in_an_inbox_entry_is_refused():
+    """Step zero of every charter's ship check, on the surface this adds.
+
+    A committed marker conflicts once and is ordinary text forever after, so the
+    merge that made it is the only thing that will ever warn anybody.
+    """
+    bad = INBOX_ENTRY.replace("- Cost: $0", "<<<<<<< HEAD\n- Cost: $0")
+    [problem] = ledger.check_inbox(inbox_pair(text=bad))
+    assert "conflict marker" in problem
+
+
+def test_two_entries_in_one_inbox_file_are_refused():
+    """Per-entry granularity is the whole remedy, so two in one file undo it."""
+    [problem] = ledger.check_inbox(inbox_pair(text=INBOX_ENTRY + "\n" + INBOX_ENTRY))
+    assert "exactly one entry" in problem
+
+
+def test_a_heading_quoted_inside_a_fence_is_not_a_second_entry():
+    """The register already holds an entry whose body quotes the contract block."""
+    quoted = INBOX_ENTRY + "\n```\n### 2026-01-01 - the contract's own example\n```\n"
+    assert ledger.check_inbox(inbox_pair(text=quoted)) == []
+
+
+def test_an_inbox_file_with_no_entry_heading_is_refused():
+    [problem] = ledger.check_inbox(inbox_pair(text="Some prose and no heading.\n"))
+    assert "0 `### ` headings" in problem
+
+
+def test_a_heading_that_does_not_parse_names_the_blindness_it_causes():
+    unparsed = INBOX_ENTRY.replace("### 2026-11-09 - a thing worth building",
+                                   "### A thing worth building")
+    [problem] = ledger.check_inbox(inbox_pair(text=unparsed))
+    assert "does not parse" in problem and "blind" in problem
+
+
+def test_a_heading_and_a_filename_that_disagree_about_the_date_are_refused():
+    """A reader sorting the inbox and one sorting the register would disagree."""
+    [problem] = ledger.check_inbox(inbox_pair(name="2026-11-08-a-thing.md"))
+    assert "dated 2026-11-09 and the filename 2026-11-08" in problem
+
+
+def test_an_arriving_entry_short_of_the_contract_has_no_baseline():
+    """The one thing this surface has that `--check`'s ratchet cannot.
+
+    Sixty-two live entries carry an unreadable status and no seat may rewrite
+    another seat's triage, so the register's own gate has to ratchet. An inbox
+    holds nothing older than the day it was built.
+    """
+    thin = "### 2026-11-09 - a thing worth building\n\n- Status: proposed\n"
+    [problem] = ledger.check_inbox(inbox_pair(text=thin))
+    assert "missing Trigger, What, First step, Cost" in problem
+    assert "no baseline" in problem
+
+
+def test_an_arriving_entry_with_no_readable_status_is_refused():
+    blind = INBOX_ENTRY.replace("- Status: proposed", "- Status: mostly moot by now")
+    [problem] = ledger.check_inbox(inbox_pair(text=blind))
+    assert "unknown-status" in problem and "silently absent" in problem
+
+
+@pytest.mark.parametrize("status", ["accepted", "rejected", "built"])
+def test_a_status_that_is_a_transition_cannot_be_an_arrival(status):
+    """`accepted` and `rejected` are the owner's and `built` is a move.
+
+    None of the three can be the status of an entry written for the first time,
+    and no other surface in this repository can say so, because no other surface
+    knows which entries are new.
+    """
+    moved = INBOX_ENTRY.replace("- Status: proposed", f"- Status: {status}")
+    [problem] = ledger.check_inbox(inbox_pair(text=moved))
+    assert f"status {status!r}" in problem
+    assert "already exists" in problem
+
+
+def test_urgent_is_fileable_because_a_charter_tells_a_seat_to_file_it():
+    urgent = INBOX_ENTRY.replace("- Status: proposed", "- Status: urgent")
+    assert ledger.check_inbox(inbox_pair(text=urgent)) == []
+
+
+def test_two_inbox_files_claiming_one_entry_are_refused():
+    pair = inbox_pair() + inbox_pair(name="2026-11-09-a-thing-again.md")
+    [problem] = ledger.check_inbox(pair)
+    assert "two entries in this register under one identifier" in problem
+
+
+def test_an_entry_already_in_the_register_would_be_a_second_answer_to_one_id():
+    [problem] = ledger.check_inbox(inbox_pair(), register_text=INBOX_ENTRY)
+    assert "already in docs/ideas.md" in problem and "L-A18" in problem
+
+
+# --- the stub, which every other predicate above passes ----------------------
+
+def test_the_skeleton_this_tool_writes_does_not_pass_its_own_gate(tmp_path):
+    """The test that matters most here.
+
+    `--inbox-new` emits four contract fields, a readable status and a parsing
+    heading, so every other check in this section says yes to a file with not
+    one word of content in it. A stub and a finished entry look identical from
+    the outside.
+    """
+    path = ledger.new_entry("a-thing", "2026-11-09", "engineer", "A thing",
+                            inbox=tmp_path)
+    problems = ledger.check_inbox([(path.name, path.read_text())])
+    assert len(problems) == 1
+    assert "placeholder" in problems[0]
+    assert ledger.check_inbox([(path.name, INBOX_ENTRY)]) == []
+
+
+@pytest.mark.parametrize("line, caught", [
+    ("- What: <one paragraph, concrete>", True),
+    ("- What: `- Routes: <entry name or none>` once per routed finding", False),
+    ("- What: the gate reads <div> and stops", False),
+    ("- What: superseded by <PR#>", False),
+    ("- What: quotes `git log origin/<the-older-branch> ^HEAD` across", False),
+])
+def test_a_placeholder_inside_a_code_span_is_syntax_and_not_a_stub(line, caught):
+    assert bool(ledger.PLACEHOLDER.search(ledger._uncoded(line))) is caught
+
+
+def test_the_placeholder_pattern_is_clean_on_every_live_entry():
+    """Pinned, so the next widening of that pattern moves a number.
+
+    The first draft of it matched two lines on the live register, both of them a
+    template being quoted rather than a field left unfilled, which is how the
+    code-span half was found.
+    """
+    text = LIVE.read_text(encoding="utf-8")
+    hits = [n for n, line in enumerate(text.splitlines(), start=1)
+            if ledger.PLACEHOLDER.search(ledger._uncoded(line))]
+    assert hits == [], f"{len(hits)} false positives on {len(ledger.parse(text))} entries"
+
+
+# --- the fold ----------------------------------------------------------------
+
+OTHER_SEATS_RUN = """# The ledger
+
+## 2026-11-08 - what another seat's run turned up (skill seat)
+
+### 2026-11-08 - their idea
+
+- Trigger: theirs
+- What: theirs
+- First step: theirs
+- Cost: $0
+- Status: proposed
+"""
+
+
+def test_a_fold_keeps_the_register_as_a_prefix_and_proves_its_arithmetic():
+    folded = ledger.fold_text(OTHER_SEATS_RUN, inbox_pair(), "2026-11-09")
+    assert folded.startswith(OTHER_SEATS_RUN.rstrip("\n"))
+    assert ledger.fold_invariant(OTHER_SEATS_RUN, inbox_pair(), folded, "2026-11-09") == []
+
+
+def test_a_fold_does_not_file_an_entry_under_another_seats_run_section():
+    """The one difference from `tools/incidents.py` a reader would not predict.
+
+    That register's entries are level-two headings, so its fold can append at
+    the tail and stop. Here an entry is a `### ` inside a `## ` run section, and
+    the last section on the live file belongs to another seat. A register that
+    misattributes an entry to a seat that did not write it is worse than one
+    that is hard to merge.
+    """
+    folded = ledger.fold_text(OTHER_SEATS_RUN, inbox_pair(), "2026-11-09")
+    heading = ledger.fold_section_heading("2026-11-09")
+    assert heading in folded
+    assert folded.index(heading) > folded.index("(skill seat)")
+    assert folded.index(heading) < folded.index("a thing worth building")
+
+
+def test_a_fold_that_loses_the_heading_is_refused():
+    """The invariant's own fourth claim, pointed at a fold that skips it."""
+    bare = OTHER_SEATS_RUN.rstrip("\n") + "\n\n" + INBOX_ENTRY
+    failures = ledger.fold_invariant(OTHER_SEATS_RUN, inbox_pair(), bare, "2026-11-09")
+    assert any("fold heading is absent" in f for f in failures)
+
+
+def test_a_fold_that_drops_a_line_is_caught_by_the_arithmetic():
+    folded = ledger.fold_text(OTHER_SEATS_RUN, inbox_pair(), "2026-11-09")
+    lost = folded.replace("- Cost: $0\n", "")
+    failures = ledger.fold_invariant(OTHER_SEATS_RUN, inbox_pair(), lost, "2026-11-09")
+    assert any("line arithmetic" in f for f in failures)
+
+
+def test_a_fold_orders_by_the_entrys_own_date_not_by_directory_order():
+    older = INBOX_ENTRY.replace("2026-11-09", "2026-11-01").replace(
+        "a thing worth building", "the older thing")
+    inbox = [("2026-11-09-a-thing.md", INBOX_ENTRY),
+             ("2026-11-01-older.md", older)]
+    folded = ledger.fold_text(OTHER_SEATS_RUN, inbox, "2026-11-09")
+    assert folded.index("the older thing") < folded.index("a thing worth building")
+    assert ledger.fold_invariant(OTHER_SEATS_RUN, inbox, folded, "2026-11-09") == []
+
+
+def test_a_folded_entry_is_then_visible_to_the_consumers_that_grep_for_it():
+    """The fold is only worth anything if the register reads the entry after it."""
+    folded = ledger.fold_text(OTHER_SEATS_RUN, inbox_pair(), "2026-11-09")
+    names = [e.name for e in ledger.by_status(ledger.parse(folded), "proposed")]
+    assert "a thing worth building (engineer seat)" in names
+
+
+def test_a_fold_refuses_to_move_an_entry_the_register_would_hold_badly(tmp_path):
+    inbox = tmp_path / "inbox"
+    inbox.mkdir()
+    (inbox / "2026-11-09-a-thing.md").write_text(
+        INBOX_ENTRY.replace("- Status: proposed", "- Status: accepted"))
+    register = tmp_path / "ideas.md"
+    register.write_text(OTHER_SEATS_RUN)
+    code = ledger.main(["--ledger", str(register), "--inbox-dir", str(inbox),
+                        "--fold", "--apply"])
+    assert code == 1
+    assert register.read_text() == OTHER_SEATS_RUN
+    assert (inbox / "2026-11-09-a-thing.md").exists()
+
+
+def test_fold_apply_moves_the_file_and_leaves_the_inbox_empty(tmp_path):
+    inbox = tmp_path / "inbox"
+    inbox.mkdir()
+    (inbox / "2026-11-09-a-thing.md").write_text(INBOX_ENTRY)
+    register = tmp_path / "ideas.md"
+    register.write_text(OTHER_SEATS_RUN)
+
+    assert ledger.main(["--ledger", str(register), "--inbox-dir", str(inbox),
+                        "--fold", "--date", "2026-11-09"]) == 0
+    assert (inbox / "2026-11-09-a-thing.md").exists(), "a dry run moved something"
+
+    assert ledger.main(["--ledger", str(register), "--inbox-dir", str(inbox),
+                        "--fold", "--apply", "--date", "2026-11-09"]) == 0
+    assert not (inbox / "2026-11-09-a-thing.md").exists()
+    assert "a thing worth building" in register.read_text()
+    assert ledger.check_inbox([], register.read_text()) == []
+
+
+def test_require_folded_is_off_by_default_and_loud_when_asked(tmp_path):
+    """A gate that can turn `main` red for a bookkeeping step nobody promised
+    to run is a worse defect than the one being fixed.
+
+    `tools/incidents.py`'s own argument, and it holds here for the same reason:
+    the ledger's identifiers come from the date and the name, so a fold is pure
+    movement and a missed fold costs nothing but tidiness.
+    """
+    inbox = tmp_path / "inbox"
+    inbox.mkdir()
+    (inbox / "2026-11-09-a-thing.md").write_text(INBOX_ENTRY)
+    register = tmp_path / "ideas.md"
+    register.write_text(OTHER_SEATS_RUN)
+    base = ["--ledger", str(register), "--inbox-dir", str(inbox), "--check"]
+    assert ledger.main(base) == 0
+    assert ledger.main(base + ["--require-folded"]) == 1
+
+
+# --- the skeleton writer -----------------------------------------------------
+
+def test_new_entry_refuses_a_slug_that_would_not_parse_as_a_filename(tmp_path):
+    with pytest.raises(ValueError):
+        ledger.new_entry("Not A Slug", "2026-11-09", "engineer", "x", inbox=tmp_path)
+
+
+def test_new_entry_refuses_to_overwrite_an_entry_already_filed(tmp_path):
+    ledger.new_entry("a-thing", "2026-11-09", "engineer", "x", inbox=tmp_path)
+    with pytest.raises(FileExistsError):
+        ledger.new_entry("a-thing", "2026-11-09", "engineer", "x", inbox=tmp_path)
+
+
+def test_the_skeleton_carries_no_em_dash():
+    """`tools/ban_list.py` entry 13 rejects U+2014 and `ENTRY` takes a hyphen."""
+    assert "—" not in ledger.SKELETON
+
+
+# --- the inbox on this checkout ----------------------------------------------
+
+def test_the_inbox_directory_and_its_readme_exist():
+    """A convention with no landing place is a convention nobody follows."""
+    assert ledger.INBOX.is_dir()
+    readme = (ledger.INBOX / "README.md").read_text(encoding="utf-8")
+    assert "tools/ledger.py" in readme
+    assert "L-A18" in readme
+
+
+def test_every_entry_waiting_in_the_live_inbox_would_fold_cleanly():
+    """Whatever is in the inbox right now must be foldable by the next merger."""
+    text = LIVE.read_text(encoding="utf-8")
+    inbox = ledger.read_inbox()
+    assert ledger.check_inbox(inbox, text) == []
+    folded = ledger.fold_text(text, inbox, "2026-11-09")
+    assert ledger.fold_invariant(text, inbox, folded, "2026-11-09") == []
+
+
+def test_the_readme_is_documentation_and_not_a_filing():
+    """It sits in the directory and would fail every predicate as an entry."""
+    assert (ledger.INBOX / "README.md").is_file()
+    assert all(name != "README.md" for name, _ in ledger.read_inbox())
+
+
+def test_a_badly_named_file_is_still_listed_so_its_gate_can_reach_it(tmp_path):
+    """A listing that skipped these would make the filename predicate dead."""
+    (tmp_path / "my-idea.md").write_text(INBOX_ENTRY)
+    (tmp_path / "README.md").write_text("docs")
+    assert [p.name for p in ledger.inbox_files(tmp_path)] == ["my-idea.md"]
+
+
+# --- `--seat` is a roster flag, and the probe is what made it one -------------
+
+def test_a_seat_nothing_carries_refuses_by_name():
+    """Declared `roster` in `tools/target_census.py`, so it owes a refusal."""
+    assert ledger.seat_names(), "company.yaml carried no seats, so nothing refuses"
+    assert ledger.main(["--seat", "nonesuch", "--census"]) == 4
+
+
+def test_the_refusal_is_reachable_without_the_flag_that_consumes_the_value():
+    """The defect `tools/target_census.py --probe` found in the first draft.
+
+    `--seat` is used by `--inbox-new` alone, so the check started life inside
+    that branch. The probe runs the flag on its own, got exit 0, and the roster
+    declaration was dishonest until the check moved to parse time. A check
+    reachable only through the flag that consumes it is a check the probe cannot
+    see.
+    """
+    assert ledger.main(["--seat", "nonesuch"]) == 4
+
+
+def test_every_seat_the_manifest_declares_is_accepted():
+    for seat in ledger.seat_names():
+        assert ledger.main(["--seat", seat, "--inbox", "--inbox-dir", "/nonexistent"]) == 0
+
+
+def test_an_unreadable_manifest_refuses_nothing_rather_than_everything(monkeypatch):
+    """A source of roster names, never a source of absences."""
+    monkeypatch.setattr(ledger, "seat_names", lambda: ())
+    assert ledger.main(["--seat", "nonesuch", "--inbox", "--inbox-dir", "/nonexistent"]) == 0
+
+
+# --- the branch's own appends, which no predicate above could see ------------
+#
+# `tools/incidents.py` carries this predicate for a reason worth restating:
+# every other check in this file inspects an entry already in the inbox or
+# already in the register, so a seat that ignores the inbox entirely produces a
+# clean read. The question none of them asks is what the branch did.
+#
+# These build a real repository, because the predicate's subject is a diff
+# against a merge base and a fixture cannot have one.
+
+def _git(repo, *args):
+    import subprocess
+    done = subprocess.run(["git", "-C", str(repo), *args],
+                          capture_output=True, text=True)
+    assert done.returncode == 0, done.stderr
+    return done.stdout
+
+
+@pytest.fixture
+def branch_repo(tmp_path):
+    """A repository with a register, an inbox and a `base` branch to diff."""
+    (tmp_path / "docs" / "ideas" / "inbox").mkdir(parents=True)
+    (tmp_path / "docs" / "ideas.md").write_text(OTHER_SEATS_RUN)
+    _git(tmp_path, "init", "-q", "-b", "base")
+    _git(tmp_path, "config", "user.email", "t@example.com")
+    _git(tmp_path, "config", "user.name", "t")
+    _git(tmp_path, "add", "-A")
+    _git(tmp_path, "commit", "-qm", "the register as it stands")
+    _git(tmp_path, "checkout", "-q", "-b", "work")
+    return tmp_path
+
+
+def test_a_branch_that_appends_to_the_register_with_no_inbox_file_is_caught(branch_repo):
+    (branch_repo / "docs" / "ideas.md").write_text(OTHER_SEATS_RUN + "\n" + INBOX_ENTRY)
+    _git(branch_repo, "add", "-A")
+    _git(branch_repo, "commit", "-qm", "straight in")
+    unclaimed, skipped = ledger.branch_appends("base", [], root=branch_repo)
+    assert skipped == ""
+    assert unclaimed == ["2026-11-09 - a thing worth building (engineer seat)"]
+
+
+def test_a_branch_that_files_into_the_inbox_passes(branch_repo):
+    (branch_repo / "docs" / "ideas" / "inbox" / "2026-11-09-a-thing.md").write_text(
+        INBOX_ENTRY)
+    _git(branch_repo, "add", "-A")
+    _git(branch_repo, "commit", "-qm", "through the inbox")
+    inbox = ledger.read_inbox(branch_repo / "docs" / "ideas" / "inbox")
+    assert ledger.branch_appends("base", inbox, root=branch_repo) == ([], "")
+
+
+def test_the_claim_is_the_heading_and_not_the_filename(branch_repo):
+    """A filename join would claim any entry that merely shares a date.
+
+    The slug in a filename is the author's shorthand; the heading is the
+    identifier. `tools/incidents.py` can join on the filename because there the
+    filename *is* the id, and here it is not.
+    """
+    (branch_repo / "docs" / "ideas.md").write_text(
+        OTHER_SEATS_RUN + "\n" + INBOX_ENTRY.replace(
+            "a thing worth building", "a different thing entirely"))
+    (branch_repo / "docs" / "ideas" / "inbox" / "2026-11-09-a-thing.md").write_text(
+        INBOX_ENTRY)
+    _git(branch_repo, "add", "-A")
+    _git(branch_repo, "commit", "-qm", "same date, different entry")
+    inbox = ledger.read_inbox(branch_repo / "docs" / "ideas" / "inbox")
+    unclaimed, _ = ledger.branch_appends("base", inbox, root=branch_repo)
+    assert unclaimed == ["2026-11-09 - a different thing entirely (engineer seat)"]
+
+
+def test_the_fold_is_exempt_because_it_is_a_move_and_not_an_append(branch_repo):
+    """The exemption keys on the file the diff deletes, not the branch it runs on.
+
+    A folded entry's identity has to be read from the merge base, because the
+    fold has deleted the only file that carried it.
+    """
+    inbox_dir = branch_repo / "docs" / "ideas" / "inbox"
+    (inbox_dir / "2026-11-09-a-thing.md").write_text(INBOX_ENTRY)
+    _git(branch_repo, "add", "-A")
+    _git(branch_repo, "commit", "-qm", "filed")
+    _git(branch_repo, "checkout", "-q", "base")
+    _git(branch_repo, "merge", "-q", "--no-edit", "work")
+    _git(branch_repo, "checkout", "-q", "-b", "merger")
+
+    register = branch_repo / "docs" / "ideas.md"
+    inbox = ledger.read_inbox(inbox_dir)
+    register.write_text(ledger.fold_text(register.read_text(), inbox, "2026-11-09"))
+    (inbox_dir / "2026-11-09-a-thing.md").unlink()
+    _git(branch_repo, "add", "-A")
+    _git(branch_repo, "commit", "-qm", "folded")
+
+    unclaimed, skipped = ledger.branch_appends("base", [], root=branch_repo)
+    assert skipped == ""
+    assert unclaimed == [], "a fold read as an append"
+
+
+def test_a_checkout_with_no_merge_base_is_a_skip_and_not_a_pass(tmp_path):
+    """A predicate that saw nothing must not read as a quiet pass (L-A21)."""
+    (tmp_path / "docs" / "ideas").mkdir(parents=True)
+    (tmp_path / "docs" / "ideas.md").write_text(OTHER_SEATS_RUN)
+    _git(tmp_path, "init", "-q", "-b", "work")
+    _git(tmp_path, "config", "user.email", "t@example.com")
+    _git(tmp_path, "config", "user.name", "t")
+    _git(tmp_path, "add", "-A")
+    _git(tmp_path, "commit", "-qm", "only one branch")
+    unclaimed, skipped = ledger.branch_appends("nosuchref", [], root=tmp_path)
+    assert unclaimed == []
+    assert "skipped" in skipped and "merge base" in skipped
+
+
+def test_the_cli_reaches_the_predicate_with_the_inbox_it_read(branch_repo):
+    """The regression this file did not have, and it cost a traceback.
+
+    `branch_appends` took filenames in its first draft and identities in its
+    second, and the call site in `main` kept passing filenames. Every unit test
+    above called the function directly, so the only broken path was the one a
+    seat actually runs, and it raised `ValueError` under a bare exit 1.
+    """
+    (branch_repo / "docs" / "ideas.md").write_text(OTHER_SEATS_RUN + "\n" + INBOX_ENTRY)
+    _git(branch_repo, "add", "-A")
+    _git(branch_repo, "commit", "-qm", "straight in")
+    code = ledger.main([
+        "--ledger", str(branch_repo / "docs" / "ideas.md"),
+        "--inbox-dir", str(branch_repo / "docs" / "ideas" / "inbox"),
+        "--check", "--base", "base",
+    ])
+    assert code == 1

@@ -201,6 +201,23 @@ DECLARED: dict[tuple[str, str], Judgment] = {
     ("ledger.py", "--ledger"): Judgment("path"),
     ("ledger.py", "--status"): Judgment("roster"),
     ("ledger.py", "--patch"): Judgment("opaque"),
+    # The inbox of 2026-11-09. `--base` is a git ref and takes `--patch`'s
+    # judgment above for the same reason: git owns the namespace, the tool
+    # cannot enumerate it, and a ref this checkout does not carry is reported
+    # as a skip rather than a failure.
+    ("ledger.py", "--base"): Judgment("opaque"),
+    ("ledger.py", "--date"): Judgment("date"),
+    ("ledger.py", "--inbox-dir"): Judgment("path"),
+    # The slug half of an inbox filename. Validated against the slug alphabet
+    # rather than a roster, because the whole point is that it is new: there is
+    # nothing yet for it to resolve against.
+    ("ledger.py", "--inbox-new"): Judgment("text"),
+    ("ledger.py", "--title"): Judgment("text"),
+    # Probed offline, which no other `roster` row here can say. `company.yaml`
+    # carries all twelve seat names and needs no credential, so this refuses by
+    # name on a typo instead of writing `(enginer seat)` into a heading.
+    ("ledger.py", "--seat"): Judgment(
+        "roster", ""),
     ("loop_close.py", "--proposals"): Judgment("path"),
     ("loop_close.py", "--receipt"): Judgment("path"),
     ("loop_close.py", "--repo-root"): Judgment("path"),
@@ -212,6 +229,14 @@ DECLARED: dict[tuple[str, str], Judgment] = {
     # Both are the same two judgments `cron_firing.py` already carries, and for
     # the same reason: this tool reads that one's log root through that one's
     # reader, so a divergence here would be a second answer to one question.
+    # Added 2026-11-09 by the engineer seat. `tools/prose_symbols.py` landed on
+    # 2026-11-08 and its two targets were left undeclared, so this census was
+    # red on `main` for every seat until these rows. Both are paths and neither
+    # needs a reading: `--root` is the tree to read and `paths` limits the run
+    # to named files or directories, so absent is already an error through
+    # `open()` and there is no roster either could be checked against.
+    ("prose_symbols.py", "--root"): Judgment("path"),
+    ("prose_symbols.py", "paths"): Judgment("path"),
     ("provider_cycle.py", "--root"): Judgment("path"),
     ("provider_cycle.py", "--now"): Judgment("date"),
     ("press_watch.py", "--today"): Judgment("date"),
@@ -236,12 +261,20 @@ DECLARED: dict[tuple[str, str], Judgment] = {
     ("runtime_provenance.py", "--checkout"): Judgment("path"),
     ("runtime_provenance.py", "--install"): Judgment("path"),
     ("runtime_provenance.py", "--staged"): Judgment("path"),
-    ("ship_first.py", "--company"): Judgment(
-        "roster", "reaches the board API; and `--seat` on this tool is the "
-        "hang the incident carded rather than fixed"),
+    # Probed offline from 2026-11-09, and the reason the declaration changed is
+    # worth keeping. It read "reaches the board API", and that was never true:
+    # `tools/ship_first.py` makes no network call, asks no roster and runs no
+    # subprocess. The false cause came from the 2026-11-02 incident and was
+    # copied here, which is how a wrong reason earns an exemption. The flag
+    # refuses in 0.36s because the roster check runs before `collect()` reads
+    # the transcripts, so the one thing that made it unprobeable is gone.
+    ("ship_first.py", "--company"): Judgment("roster"),
     ("ship_first.py", "--seat"): Judgment(
-        "roster", "hangs on a value nothing carries, carded in docs/ideas.md "
-        "on 2026-11-02 because the hang was not established as tool or network"),
+        "roster", "`collect()` parses every transcript on the host, 2.7 GB on "
+        "2026-11-09, before the selector filters anything, so any value costs "
+        "what `--all` costs. Not the board and not a roster fetch, which is "
+        "the correction to the 2026-11-02 carding; carried as a ledger entry "
+        "with the fix's design"),
     ("ship_first.py", "--session"): Judgment("opaque"),
     ("ship_first.py", "--projects"): Judgment("path"),
     ("ship_first.py", "--audit"): Judgment("path"),

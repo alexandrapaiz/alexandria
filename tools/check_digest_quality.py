@@ -39,6 +39,7 @@ paper the link resolves to, which is the accuracy line of the same checklist.
 """
 
 import argparse
+import pathlib
 import re
 import sys
 from dataclasses import dataclass
@@ -70,6 +71,136 @@ SKELETON_HEADINGS = (
     "gaining traction", "trailblazing", "left behind", "read these yourself",
     "key takeaways", "what this means", "new and unproven", "compounding",
 )
+
+# Ban list 19, 20, the derived half, and the reason it is derived.
+#
+# `SKELETON_HEADINGS` above is a hand list and every entry in it is one of the
+# generator's INTERNAL slot names or a near-synonym. What the press actually
+# prints is the reader-facing paraphrase, and law 12's own text says the
+# paraphrase is the violation: "A paraphrase of a banned heading is the banned
+# heading." So the floor holds the one shape the generator is least likely to
+# emit and none of the shapes it does.
+#
+# The writer seat measured that on 2026-11-01 and routed the repair here,
+# because `tools/` is pipeline code and that charter may not write it
+# (docs/ideas.md, "The pre-send heading ban and the voice canon's heading ban
+# share no phrase"). The intersection of the floor and the canon's list was
+# empty. Not small. Empty. Four headings the owner has ruled on twice, the
+# second time in capitals, were serving while this gate read them clean.
+#
+# The repair is not a ninth hand entry. It is to read the phrasings out of the
+# ban itself, which is the paragraph of `prompts/digest.md` that
+# `docs/voice/check_voice.py slotwords` already reads, so the two gates cannot
+# hold two vocabularies for one rule. A derived list does not drift.
+# `tests/test_digest_quality.py` pins this pass to the canon's own asserted
+# cases, so widening the ban there fails here until both agree.
+# The short edition's standing line, as `pipeline/weekly.py` writes it into
+# the body. The degraded edition declares itself in band, and it does so
+# because the press attaches this line rather than asking the generator for it:
+# "a label the model can forget is a label that goes missing on the week it
+# matters". That makes it the one tell this gate can trust about which edition
+# it is reading, and `tests/test_digest_quality.py` pins the literal against
+# the press's own copy of it.
+SHORT_EDITION_NOTE = "*A short edition. This week's issue is the week in brief.*"
+
+# A Markdown list item's opening row. Canon law 14's first device.
+BULLET = re.compile(r"^([-*+]|\d+\.)\s")
+
+SLOT_BAN_OPEN = "The ban is on the slot's IDEA and not on four strings"
+SLOT_BAN_CLOSE = "first job is to say which section the reader is in"
+
+# The phrasings, read out of the ban's own span. Found by its sentences rather
+# than by a line number, because a line number in a gate is a gate that lies
+# after the next edit.
+SLOT_DRESS = re.compile(r'"(what [a-z ]+)"')
+
+# Remainders that add nothing a reader could date. A banned phrasing followed
+# only by these is the banned phrasing wearing a suffix, which is how 2026-W44
+# served the reading slot's own internal name past an equality test. Kept small
+# on purpose: the moment a word here could carry the day's material, this
+# reading starts firing on the headings law 12 asks for.
+SLOT_INVARIANT = frozenset((
+    "yourself", "yourselves", "myself", "ourselves",
+    "this", "week", "today", "now", "again", "so", "far",
+    "month", "year", "issue", "edition",
+))
+
+# Where the generator is, in both places this file runs. A checkout has it
+# beside `tools/`; the Modal image drops it at `/root/prompts/digest.md`
+# (`pipeline/weekly.py`'s image list), and this file at `/root/`. Neither path
+# is a guess: both are declared in that image.
+GENERATOR_PATHS = (
+    pathlib.Path(__file__).resolve().parent.parent / "prompts" / "digest.md",
+    pathlib.Path("/root/prompts/digest.md"),
+)
+
+
+def slot_dress() -> tuple[tuple[str, ...], str]:
+    """The banned phrasings, and why the list is empty when it is.
+
+    Returns `(phrasings, complaint)`. A non-empty complaint is a finding in its
+    own right rather than a silent pass: a gate that reports zero defects
+    because it could not read its own rule is the confident zero this
+    repository keeps filing, so the caller warns and the floor still applies.
+    """
+    for path in GENERATOR_PATHS:
+        try:
+            text = path.read_text(encoding="utf-8")
+        except OSError:
+            continue
+        start, end = text.find(SLOT_BAN_OPEN), text.find(SLOT_BAN_CLOSE)
+        if start < 0 or end < 0:
+            return (), (f"{path.name}'s slot-ban paragraph is not where its own "
+                        "sentences say it is, so the derived phrasings were not read")
+        found = tuple(sorted(set(SLOT_DRESS.findall(text[start:end]))))
+        if not found:
+            return (), (f"{path.name}'s slot-ban paragraph quotes no phrasing, "
+                        "so the derived half of this rule read nothing")
+        return found, ""
+    return (), ("prompts/digest.md is not beside this file or at "
+                "/root/prompts/digest.md, so only the hand floor was applied")
+
+
+def slot_heading(heading: str, dress) -> str:
+    """Why one printed heading is the framework's own name, or the empty string.
+
+    Three readings, each of them quoted law rather than taste. They are the
+    canon's, lifted here so the verdict arrives before the send instead of in a
+    grade written afterwards.
+
+    1. The ban's own list: a heading that IS one of the phrasings, or wears one
+       as the label before a colon.
+    2. The prefix, because equality was the whole test until 2026-11-08.
+       `## What to read` was banned, and `## What to read yourself` then served
+       past the list the product had just been patched to hold. One trailing
+       word walked through, so the list is not where this can be held: the
+       phrasing plus a remainder that would be true of every issue is the
+       phrasing.
+    3. The colon. The generator says in its own words that a colon does not
+       launder the label, and 2026-W40 served that construction three times.
+       The shape is the finding and no list of phrasings can hold it, because
+       the laundered label is written fresh each time: `gaining ground` and
+       `genuinely new` are in no list anybody keeps.
+
+    What it deliberately passes is a heading that opens on `What` and then
+    makes a claim. `## What to read if you have one hour` is the generator's
+    own worked answer for that slot and has to survive this.
+    """
+    text = heading.lstrip("#").strip().strip("*_")
+    low = text.lower().rstrip(" .")
+    label = low.split(":", 1)[0].strip() if ":" in low else low
+    for phrase in dress:
+        if label == phrase:
+            return f"the ban's own phrasing, {phrase!r}"
+    for phrase in dress:
+        if label.startswith(phrase + " "):
+            rest = label[len(phrase):].strip()
+            if all(word in SLOT_INVARIANT for word in rest.split()):
+                return (f"the ban's own phrasing, {phrase!r}, plus {rest!r}, "
+                        "which is true of every issue")
+    if ":" in low and low.startswith("what "):
+        return f"a slot label laundered by a colon, {label!r}"
+    return ""
 
 # Ban list 13. Typesetter punctuation. The reader's search box does not match
 # it and neither does an agent loading the issue. 2026-W37 carried 87
@@ -217,14 +348,32 @@ def check(body: str, kind: str = "weekly") -> list[Finding]:
         findings.append(Finding(level, rule, line, detail, entry))
 
     # --- accuracy and structure ---
+    # Two readings of one rule. The floor is the hand list of the generator's
+    # internal labels; the second is derived from the ban itself and catches
+    # the reader-facing paraphrase, which is the shape that actually prints.
+    # They are reported under separate rule names because a log that cannot
+    # tell them apart cannot say which half fired, and the derived half is the
+    # one that was missing.
+    dress, unreadable = slot_dress()
+    if unreadable:
+        add(WARN, "slot-ban-unreadable", 0, unreadable, "19, 20")
     for number, line in enumerate(lines, start=1):
         if not line.startswith("#"):
             continue
         heading = line.lstrip("#").strip().strip("*_").lower()
+        floor = False
         for banned in SKELETON_HEADINGS:
             if heading == banned or heading.startswith(banned + " ") or heading.endswith(" " + banned):
                 add(BLOCK, "skeleton-heading", number,
                     f"{line.strip()!r} prints the generator's own slot label", "19, 20")
+                floor = True
+        if floor:
+            continue   # one defect, one finding; the floor already named it
+        why = slot_heading(line, dress)
+        if why:
+            add(BLOCK, "slot-heading", number,
+                f"{line.strip()!r} is {why}; write the heading from the day's "
+                "news instead", "19, 20")
 
     title = next((line for line in lines if line.startswith("# ")), "")
     if title:
@@ -324,6 +473,92 @@ def check(body: str, kind: str = "weekly") -> list[Finding]:
                 add(WARN, "bare-number", number,
                     f"{figures[0]!r} with nothing beside it to place it against", "24")
                 break
+
+    # --- canon law 14: the shape of the page ---
+    # The second rule the writer seat routed here on 2026-11-01, filed as "Law
+    # 14's one-shape failure cannot block a send". The gate had eight blocking
+    # rules and not one of them measured the shape of the page, so an issue set
+    # as one column of grey paragraphs was green at the only gate that can stop
+    # a send. The owner has read that page and rejected it twice, and the
+    # market seat's ranking of 2026-09-24 put alexandria last on exactly this
+    # while first on rigor: "a formatting and craft gap, not a substance gap".
+    #
+    # Two devices of law 14's three, and only these two, because a list with
+    # parallel results and a written turn inside a long section are the two no
+    # furniture can fake. A person on the page is a reading. Same pair
+    # `docs/voice/check_voice.py devices` takes, so the two commands cannot
+    # reach different verdicts on one page.
+    #
+    # Why it blocks, which was a judgment made against this file's own policy
+    # and is recorded because it could have gone the other way. `warn` is for a
+    # rule the generator cannot satisfy, and the first draft of this rule
+    # warned on exactly that reading, because the served issue fails it. Three
+    # facts moved it:
+    #
+    #   1. `prompts/digest.md` states this one as "A hard gate (canon law 14)"
+    #      that "can fail an issue by itself", and "One kind is a failing
+    #      issue, whatever the word counts say". Blocking is implementing that
+    #      sentence rather than tightening it.
+    #   2. The same file mandates the shape it wants, "Bullets where the
+    #      results are parallel", so the generator is already told to do this
+    #      and 2026-W39 is a deviation from its instructions rather than a
+    #      rule nothing can meet. The GOOD fixture in
+    #      tests/test_digest_quality.py meets it.
+    #   3. `docs/voice/check_voice.py ungated` counts rules the press cannot
+    #      refuse, and it counts BLOCK rules only. A warning leaves this row
+    #      UNGATED, which is the L-A22 condition of a target-zero rule
+    #      enforced by a model reading a long file. A warning would have
+    #      looked like a repair in a diff and moved that register not at all.
+    #
+    # The cost is bounded and it is not the issue. A blocking finding gives the
+    # generator one more try with `corrections()` as instructions, and this
+    # instruction is structural rather than a matter of taste, so the retry is
+    # the likely end of it. If it survives the retry the email is held and the
+    # body is still written to the digests table, which is `hold_for_quality`'s
+    # contract and not new here.
+    # Not on the short edition, and this is the one scope decision in this rule
+    # that was found by a gate rather than by reading. `check_voice.py
+    # blockrules` reports every BLOCK rule here against the prompt that writes
+    # the degraded edition, and it named this one UNRULED with the consequence
+    # attached: "block on the short edition holds the issue". Measured rather
+    # than assumed, `prompts/digest-short.md` asks for no list and no written
+    # turn anywhere in its 132 lines, and says "No other sections", so this
+    # rule would hold every degraded week. The degraded edition exists because
+    # 2026-10-12 was a week with no issue at all, so a rule that blocks it
+    # recreates the failure the edition was built to prevent. The full edition
+    # is where law 14 is mandated and it is the edition every healthy Monday
+    # prints.
+    if kind == "weekly" and SHORT_EDITION_NOTE not in body:
+        devices = []
+        for block in re.split(r"\n\s*\n", body):
+            rows = [x.strip() for x in block.strip().split("\n") if x.strip()]
+            if not rows:
+                continue
+            if rows[0].startswith("### "):
+                devices.append("turn")
+            elif not rows[0].startswith("#") and BULLET.match(rows[0]):
+                # The FIRST row, which is what Markdown means by a list item:
+                # the rows under a bullet are the bullet's continuation, not
+                # separate blocks. The canon's `shapes` asks this of every row
+                # instead, and the press's mandated item shape is a bold claim
+                # wrapped over two or three lines with prose under it, so no
+                # item the generator can write satisfies an all-rows reading.
+                # Measured on this repository's own fixtures: the worked
+                # tier-four issue in tests/test_digest_quality.py has two such
+                # blocks and `shapes` scores it `list: 0`, so law 14 would fail
+                # the one issue the gate holds up as correct. That is the same
+                # blindness `check_voice.py` recorded for the citation line one
+                # level down, and it is filed for the writer seat rather than
+                # fixed here, because docs/voice/ is that seat's surface.
+                devices.append("list")
+        if not devices:
+            add(BLOCK, "one-shape", 0,
+                "the page is one shape, with no list and no written turn in it; "
+                "find the material in the payload that is genuinely parallel, "
+                "meaning several results that did the same kind of thing, and "
+                "set that part as a list with a short bold lead per item on the "
+                "same line as its sentence, or give a section running past four "
+                "paragraphs a third-level written turn", "49")
 
     # --- the daily has its own floor ---
     if kind == "daily" and "nothing worth your time" not in lowered:

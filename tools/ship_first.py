@@ -6,7 +6,8 @@ nothing has ever measured whether a single run obeys it.
     python3 tools/ship_first.py --seat exo
     python3 tools/ship_first.py --all                # the whole portfolio
     python3 tools/ship_first.py --session <id>       # one run, with its reasoning
-    python3 tools/ship_first.py --deadline 6         # what counts as "a few turns"
+    python3 tools/ship_first.py --company Ursa       # the spelling is not load-bearing
+    python3 tools/ship_first.py --deadline 6         # the number before §8 settled it
     python3 tools/ship_first.py --self-check         # the four properties, printed
     python3 tools/ship_first.py --json
 
@@ -34,6 +35,16 @@ written on 2026-10-26 by a run of the ExO seat whose own predecessor had been
 cut at turn 20 with nothing pushed, one turn before it would have created its
 branch.
 
+**The deadline is settled now, and it is ten.** This file read "a few turns" as
+six, measured half of one percent of 1,765 runs against it, and the measurement
+went up through `docs/agents/hq-relay.md`. HQ answered in `docs/standards/pm.md`
+§8: the draft comes first and the preflight comes after it, because the
+preflight the same charters mandate cannot finish inside six turns, and **the
+deadline is turn ten**. That section names this tool as the counter for the one
+deadline it states. The default here followed it on 2026-11-09 and the `six`
+above is kept as a flag, because the two numbers are the before and after of a
+rule that got counted and the comparison is the evidence for the amendment.
+
 ## Where the measurement comes from
 
 The host keeps every run's session transcript at
@@ -50,6 +61,18 @@ the audit row's `turns` exactly on 1,049 of them, and the 57 disagreements are
 reported as `unreadable` rather than folded in, because a session id that
 carries two runs is what a disagreement looks like and no reading of it is
 honest.
+
+## Selecting runs, and why the spelling used to decide the answer
+
+The host keys an agent in ascii-lowercase, `ursa-exo`. Every other route in the
+portfolio spells a company with a capital: the work and capacity routes, the
+repository name, the daily brief, and §8 itself. So until 2026-11-09 the one
+spelling a reader was most likely to type was the one spelling that selected
+nothing, `--company Ursa` returned zero rows against the 945 that `--company
+ursa` returns, and the line it printed read as a verdict on the company rather
+than on the selector. `select` folds both sides. `report` names the selector
+back and prints the keys that do exist, because a reader who matched nothing
+cannot otherwise tell an empty company from a mistyped one.
 
 ## The states, and seven is not padding
 
@@ -102,15 +125,132 @@ import re
 import statistics
 import sys
 
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from tools import resolve_target  # noqa: E402
+
 AUDIT = '/srv/asc/state/.epito/audit.jsonl'
 PROJECTS = '/srv/asc/home/.claude/projects'
-DEADLINE = 6          # "your first few turns", read generously
+DEADLINE = 10         # docs/standards/pm.md §8: "The deadline is turn ten"
+
+# Six was this file's own reading of "your first few turns" on 2026-10-26, when
+# the clause was prose and no number had ever been counted against it. The
+# counting is what changed it. HQ amended §8 on the measurement this tool
+# produced, and the amended section names this tool as the counter for the one
+# deadline it states, so a default of six left the instrument disagreeing with
+# the standard it serves. The disagreement is not neutral in direction: at six
+# the portfolio reads 0.5% shipped, at ten about a tenth, and the standard
+# predicts a tenth. A tool whose default makes its own governing rule look
+# unobeyed will be read as evidence against the rule.
+#
+# Found by Ursa's ExO seat, 2026-11-09, which routed the number to HQ on the
+# understanding that it was HQ's to set. It was, and HQ had already set it. See
+# docs/agents/cross-repo-law.md: the parent governs, and the disagreement
+# itself is the finding.
 
 PUSH = re.compile(r'git\s+(?:-C\s+\S+\s+)?push\b')
 PR_CREATE = re.compile(r'gh\s+pr\s+create\b')
 
 # the order a report prints them in, worst first
 ORDER = ['lost', 'empty', 'late', 'shipped', 'refused', 'unreadable', 'unseen']
+
+ASCII_LOWER = str.maketrans('ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+                            'abcdefghijklmnopqrstuvwxyz')
+
+
+def fold(name):
+    """An agent key in the form the host writes it, which is ascii-lowercase.
+
+    `str.lower()` would do for the keys that exist, and it is not what this
+    does, because its job here is to normalize one alphabet rather than to case
+    anything. Unicode lowercasing maps characters outside that alphabet in ways
+    a selector should not inherit, and an agent key is `ursa-exo`, so an
+    ascii-only table says exactly what is meant and leaves everything else
+    untouched."""
+    return (name or '').translate(ASCII_LOWER)
+
+
+def select(records, company=None, seat=None, session=None, every=False):
+    """The runs a selector names, and the selector written back in words.
+
+    **Both sides are folded, and that is the whole of this.** The host keys an
+    agent in ascii-lowercase. Every other route in the portfolio spells a
+    company with a capital: the work and capacity routes, the repository name,
+    the daily brief, and the standard that names this tool as the counter for
+    its deadline. So the spelling a reader arrives with was the one spelling
+    that selected nothing, and `--company Ursa` returned zero against the 945
+    runs `--company ursa` returns.
+
+    The exit code is not folded in, and it is worth knowing why the stakes were
+    higher than a confusing line. Ursa's record carries ten `lost` runs, so
+    `--company ursa` exits 1 and `--company Ursa` exited 0. A gate wired to the
+    capital was green on a fleet that had lost work."""
+    if session:
+        return ([r for r in records if r['session'] == session],
+                'session %s' % session)
+    if seat:
+        want, bare = fold('%s-%s' % (company, seat)), fold(seat)
+        return ([r for r in records if fold(r['agent']) in (want, bare)],
+                'seat %s of company %s' % (seat, company))
+    if every:
+        return list(records), 'every seat of every company'
+    prefix = fold(company) + '-'
+    return ([r for r in records if fold(r['agent']).startswith(prefix)],
+            'company %s' % company)
+
+
+def unprefixed(records):
+    """The agent keys that name a seat without naming a company, counted.
+
+    **A company selector cannot match one of these and must say so.** The host
+    has not always written `<company>-<seat>`: on 2026-11-09 the audit log
+    carries 41 distinct agent keys, 8 of which are bare, and those 8 are 659 of
+    3,222 rows. Every bare name is also an alexandria seat name, so they are
+    most likely this company's own early runs, and `most likely` is not a thing
+    a measurement gets to act on. `--company alexandria` is this tool's default
+    invocation and it silently could not consider 659 rows, 138 of them this
+    seat's.
+
+    The `--seat` branch of `select` has always matched the bare key as a
+    fallback, which is both the evidence that the convention changed and the
+    reason this was invisible: one of the two selectors compensated and the
+    other did not. Reported rather than claimed, for the reason `unseen`
+    exists. Not having looked and having found nothing are different facts, and
+    guessing which company owns a key the log does not qualify would make the
+    third kind of error this file is built to refuse."""
+    counts = collections.Counter()
+    for r in records:
+        agent = fold(r.get('agent'))
+        if agent and '-' not in agent:
+            counts[agent] += 1
+    return counts
+
+
+def keys_present(records, company=None):
+    """The company keys and seat keys the record actually carries.
+
+    Printed when a selector matches nothing, because that is the one moment a
+    reader cannot tell a company with no runs from a company spelled another
+    way, and the keys are the only thing that answers it."""
+    companies, seats = set(), set()
+    for r in records:
+        agent = fold(r.get('agent'))
+        if not agent or '-' not in agent:
+            # A bare key names a seat and not a company, so it is not a company
+            # key and must not be offered to a reader as one. The first draft of
+            # this function split on `-` unconditionally, and the live run
+            # printed `distribution, engineer, exo, finance, frontend, mba, okr,
+            # pm, yc` among the companies, which are the nine bare seat keys
+            # this same change had just finished disclosing as not companies.
+            # `unprefixed` is where they are counted.
+            continue
+        head, tail = agent.split('-', 1)
+        if not head or not tail:
+            continue
+        companies.add(head)
+        if company is None or head == fold(company):
+            seats.add(agent)
+    return sorted(companies), sorted(seats)
 
 
 def audit_rows(path=AUDIT):
@@ -286,6 +426,29 @@ def self_check(records):
     return all(n == 0 for _, n, _ in lines[:3])
 
 
+def known_companies():
+    """The companies this portfolio declares, folded.
+
+    Taken from `tools/board.py`'s `KNOWN_COMPANIES` rather than from a second
+    list, because `docs/standards/pm.md` §14 makes a company a repository name
+    and that is already written down once. **And that list is itself the
+    evidence for the fold**: it spells five companies lowercase and `Ursa` with
+    a capital, which is the same split between the host's keys and every other
+    route that made this defect.
+
+    Imported lazily and never fatally. `board.py` is standard library only, so
+    the import is safe, and a tool that measures the host's own disk must not
+    stop working because a sibling moved."""
+    try:
+        from tools import board
+    except Exception:
+        try:
+            import board
+        except Exception:
+            return set()
+    return {fold(c) for c in getattr(board, 'KNOWN_COMPANIES', ())}
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.split('\n')[0])
     ap.add_argument('--company', default='alexandria')
@@ -299,24 +462,36 @@ def main(argv=None):
     ap.add_argument('--json', action='store_true')
     args = ap.parse_args(argv)
 
-    records, unjoined = collect(args.deadline, args.projects, args.audit)
+    # A mistyped company refuses rather than reporting a zero, which is the
+    # repair `tools/resolve_target.py` exists for and the sixth instance of the
+    # class it was built from. Scoped to the company deliberately: the
+    # companies are a closed declared list, and no closed roster of another
+    # company's seats exists in this checkout, so `--seat` discloses instead of
+    # refusing. Skipped when the roster cannot be read, because a refusal built
+    # on an empty roster refuses everything.
+    if not args.all and not args.session:
+        roster = known_companies()
+        if roster:
+            code = resolve_target.check(
+                'company', fold(args.company), roster,
+                hint='The host keys an agent in ascii-lowercase, so the spelling'
+                     ' is not what selects; the name is.')
+            if code is not None:
+                return code
 
-    if args.session:
-        records = [r for r in records if r['session'] == args.session]
-    elif args.seat:
-        want = '%s-%s' % (args.company, args.seat)
-        records = [r for r in records if r['agent'] in (want, args.seat)]
-    elif not args.all:
-        records = [r for r in records
-                   if (r['agent'] or '').startswith(args.company + '-')]
+    every, unjoined = collect(args.deadline, args.projects, args.audit)
+    records, selector = select(every, company=args.company, seat=args.seat,
+                               session=args.session, every=args.all)
 
     if args.json:
-        json.dump(dict(deadline=args.deadline, sessionless=unjoined['sessionless'],
+        json.dump(dict(deadline=args.deadline, selector=selector,
+                       sessionless=unjoined['sessionless'],
                        superseded=unjoined['superseded'],
                        records=records), sys.stdout, indent=2, sort_keys=True)
         print()
     else:
-        report(records, args.deadline, unjoined)
+        report(records, args.deadline, unjoined, selector=selector,
+               universe=every, company=None if args.all else args.company)
         if args.self_check:
             print()
             self_check(records)
@@ -324,9 +499,33 @@ def main(argv=None):
     return 1 if any(r['state'] == 'lost' for r in records) else 0
 
 
-def report(records, deadline, unjoined):
+def report(records, deadline, unjoined, selector=None, universe=None, company=None):
     if not records:
-        print('No run matched. Nothing is claimed about runs this command did not select.')
+        print('No run matched %s.' % (selector or 'the selector given'))
+        if not universe:
+            print('Nothing is claimed about runs this command did not select.')
+            return
+        # The old line stopped at the sentence above, and the sentence is
+        # honest. The trouble is that it reads as a verdict, so a reader
+        # concluded the company had no runs rather than that the selector
+        # missed. Naming the keys is what tells those two apart, and it is free
+        # here because every record is already in hand.
+        print('Nothing is claimed about runs this command did not select. That'
+              ' is a statement about the selector and not about the company:'
+              ' %d runs are on the record, under the keys below, and none of'
+              ' them answers to what was asked for.' % len(universe))
+        companies, seats = keys_present(universe, company)
+        print('\n  companies      %s' % (', '.join(companies) or '(none)'))
+        if company is None:
+            print('  seats          %d keys, which `--all` selects' % len(seats))
+        else:
+            print('  %s seats%s%s' % (fold(company), ' ' * max(1, 9 - len(fold(company))),
+                                      ', '.join(seats) or '(none)'))
+        bare = unprefixed(universe)
+        if bare:
+            print('  no company     %s' % ', '.join('%s %d' % kv for kv in bare.most_common()))
+            print('\n  The last row names seats without naming a company. No --company'
+                  ' selector reaches one.')
         return
     counts = collections.Counter(r['state'] for r in records)
     print('%d runs selected. A turn is one `user` entry in the transcript; the deadline'
@@ -342,6 +541,24 @@ def report(records, deadline, unjoined):
     if unjoined['superseded']:
         print('  %d more share a session id with a later row, which is the only one'
               ' above.' % unjoined['superseded'])
+
+    # Two disclosures about the selector itself, because a count is only an
+    # answer if the reader knows what it could not reach.
+    if company is not None and universe:
+        bare = unprefixed(universe)
+        if bare:
+            named = ', '.join('%s %d' % kv for kv in bare.most_common())
+            print('\n  %d further rows carry an agent key that names a seat and not a'
+                  ' company (%s). No --company selector can match one, and this one did'
+                  ' not try: the log does not say which company owns them. `--all`'
+                  ' counts them and `--seat <name>` matches the bare key directly.'
+                  % (sum(bare.values()), named))
+    claimed = unprefixed(records)
+    if claimed and company is not None:
+        print('\n  %d of the rows above were selected on a bare key (%s), which names'
+              ' this seat without naming a company, so they are included on the seat\'s'
+              ' identity alone.'
+              % (sum(claimed.values()), ', '.join(sorted(claimed))))
 
     pushed = sorted(r['push'] for r in records if r.get('push'))
     if pushed:
