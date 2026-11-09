@@ -1206,29 +1206,73 @@ def test_every_inbox_file_in_the_live_register_yields_exactly_one_entry():
     assert len(set(sources)) == len(sources), "a file produced more than one entry"
 
 
-# The real malformed file, read out of git rather than reconstructed.
+# The real malformed file, committed as a fixture and cross-checked against git.
 #
 # The ExO seat filed it at d525fe09 on 2026-11-09 and repaired it on the trunk
 # about an hour later, so `check` is correctly green on the live tree and the
 # splitter half survives the repair. The skill seat named this blob as the
-# fixture, which is why the test reads the blob instead of a hand copy: a
-# hand copy of a defect is a copy of somebody's reading of it.
+# fixture rather than a hand copy, and that reasoning stands: a hand copy of a
+# defect is a copy of somebody's reading of it.
+#
+# What does not stand is reading it with `git show` at test time. The host
+# clones this repository at `--depth 1`, where that blob is unreachable and
+# `git show` exits 128, so both tests below skipped on every fresh run of every
+# seat and the suite was green. The guard built to catch a gate that goes quiet
+# went quiet itself, in the default environment, with a skip message that read
+# as reassuring (skill seat, measured 2026-11-09 on a fresh depth-one clone).
+#
+# So the 4,986 bytes are committed, and the two properties are split: the
+# splitter assertions read the committed bytes and can never skip, and the
+# provenance claim is its own test, which is the only thing here allowed to
+# degrade when history is absent.
 MALFORMED_BLOB_SHA = "d525fe09"
 MALFORMED_BLOB_PATH = (
     "docs/agents/incidents/inbox/"
     "INC-2026-11-09-the-exo-learning-log-carried-one-entry-twice-for-fifty-one-days"
     "-and-the-instrument-that-would-have-caught-it-is-the-one-it-blocks.md"
 )
+MALFORMED_FIXTURE = (
+    ROOT / "tests" / "fixtures"
+    / "INC-2026-11-09-exo-learning-log-duplicate-malformed-heading.md"
+)
 
 
 def _malformed_blob():
+    """The fixture bytes, from the tree rather than from history.
+
+    A missing fixture fails rather than skips. A fixture this repository does
+    not carry is a repository that cannot run its own guard, which is the
+    finding above and not a reason to stay quiet about it.
+    """
+    assert MALFORMED_FIXTURE.exists(), (
+        f"{MALFORMED_FIXTURE.relative_to(ROOT)} is missing. It is the pre-repair "
+        f"blob {MALFORMED_BLOB_SHA}:{MALFORMED_BLOB_PATH}, and the two tests "
+        f"below cannot be answered without it."
+    )
+    return MALFORMED_FIXTURE.read_text()
+
+
+def test_the_committed_fixture_is_the_blob_the_exo_seat_filed():
+    """The provenance half, split out so it is the only assertion that can vanish.
+
+    This is the cross check the skill seat asked for: the committed bytes are
+    the ones git holds at `d525fe09`, verified when history reaches that far and
+    skipped when it does not. A depth-one clone cannot answer it, and a
+    depth-one clone can still run every other assertion in this file, which is
+    the whole point of the split.
+    """
     import subprocess
     done = subprocess.run(
         ["git", "-C", str(ROOT), "show", f"{MALFORMED_BLOB_SHA}:{MALFORMED_BLOB_PATH}"],
-        capture_output=True, text=True)
+        capture_output=True, text=True, timeout=60)
     if done.returncode != 0:
-        pytest.skip("the pre-repair blob is not reachable in this checkout")
-    return done.stdout
+        pytest.skip(
+            f"history does not reach {MALFORMED_BLOB_SHA}, so provenance is "
+            f"unverified here; the fixture's own assertions still ran"
+        )
+    assert done.stdout == MALFORMED_FIXTURE.read_text(), (
+        "the committed fixture has drifted from the blob it claims to be"
+    )
 
 
 def test_the_real_malformed_heading_yields_one_entry_and_not_six():
