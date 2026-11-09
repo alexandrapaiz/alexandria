@@ -1024,3 +1024,152 @@ def test_a_write_takes_the_qualified_form_too(live_board, capsys):
                 "--id", "i-1", "--body", "read"])
     sent = [c for c in live_board["calls"] if "/comment" in c[1]][-1]
     assert sent[-1]["seat"] == "engineer"
+
+
+# ---------------------------------------------------------------------------
+# The later-message mark (added 2026-11-02, exo message wake). `alexandria/
+# security` filed the defect against the bus this seat owns: it was woken
+# twice for one exchange, both wakes truncated, fetched both tails as the
+# banner told it to, and the inbox also held a third message sent thirteen
+# minutes after the second wake was composed that withdrew the second's claim.
+# Truncation and staleness compound, so fetching the tail feels like the whole
+# remedy and is not. Each of these was watched failing with the change backed
+# out of `tools/board.py`.
+
+
+def directed(**over):
+    return message(to_company="alexandria", to_seat="engineer", **over)
+
+
+def test_a_sender_with_no_later_message_is_marked_zero_not_omitted():
+    """A zero and an id nobody looked at must read differently, which is the
+    rule `address_of` already follows by returning `theirs` rather than
+    dropping it."""
+    buckets = board.sort_inbox([directed(id="only")], "engineer", "alexandria")
+    assert board.later_from_sender(buckets) == {"only": {"later": 0, "newest": None}}
+
+
+def test_the_mark_counts_only_newer_messages_from_the_same_sender():
+    rows = [
+        directed(id="first", ts="2026-11-02T04:48:00+00:00",
+                 from_company="alexandria", from_seat="security"),
+        directed(id="second", ts="2026-11-02T05:10:00+00:00",
+                 from_company="alexandria", from_seat="security"),
+        directed(id="third", ts="2026-11-02T05:11:00+00:00",
+                 from_company="alexandria", from_seat="security"),
+        directed(id="other", ts="2026-11-02T05:30:00+00:00",
+                 from_company="alexandria", from_seat="writer"),
+    ]
+    marks = board.later_from_sender(board.sort_inbox(rows, "engineer", "alexandria"))
+    assert marks["first"] == {"later": 2, "newest": "2026-11-02T05:11:00+00:00"}
+    assert marks["second"] == {"later": 1, "newest": "2026-11-02T05:11:00+00:00"}
+    assert marks["third"]["later"] == 0
+    # The writer's message is newer than all three and must not be counted
+    # against the security seat's: the question is whether *this* sender has
+    # moved, not whether anything at all has happened since.
+    assert marks["other"]["later"] == 0
+
+
+def test_the_sender_match_is_case_insensitive_like_the_addressing_one():
+    """`Ursa` is capitalised on the bus and lowercase in half the prose, which
+    is the reason `address_of` folds case and the reason this does too."""
+    rows = [
+        directed(id="a", ts="2026-11-02T01:00:00+00:00", from_company="Ursa", from_seat="Exo"),
+        directed(id="b", ts="2026-11-02T02:00:00+00:00", from_company="ursa", from_seat="exo"),
+    ]
+    marks = board.later_from_sender(board.sort_inbox(rows, "engineer", "alexandria"))
+    assert marks["a"]["later"] == 1
+
+
+def test_a_broadcast_is_not_a_sender_changing_its_disposition():
+    """A later broadcast from the same seat says nothing about a letter it
+    sent this seat, so counting it would make the mark fire on every seat that
+    posts a `done` to the room."""
+    rows = [
+        directed(id="letter", ts="2026-11-02T01:00:00+00:00",
+                 from_company="alexandria", from_seat="security"),
+        message(id="room", ts="2026-11-02T02:00:00+00:00",
+                from_company="alexandria", from_seat="security"),
+    ]
+    buckets = board.sort_inbox(rows, "engineer", "alexandria")
+    assert buckets["broadcast"][0]["id"] == "room"
+    assert board.later_from_sender(buckets)["letter"]["later"] == 0
+
+
+def test_an_ambiguous_message_is_counted_with_the_directed_ones():
+    """An ambiguous message is one a reader still has to judge, so a later
+    one from the same sender is exactly as relevant to it."""
+    rows = [
+        directed(id="mine", ts="2026-11-02T01:00:00+00:00",
+                 from_company="alexandria", from_seat="security"),
+        message(id="maybe", to_seat="engineer", ts="2026-11-02T02:00:00+00:00",
+                from_company="alexandria", from_seat="security"),
+    ]
+    buckets = board.sort_inbox(rows, "engineer", "alexandria")
+    assert buckets["ambiguous"][0]["id"] == "maybe"
+    assert board.later_from_sender(buckets)["mine"]["later"] == 1
+
+
+def test_the_render_prints_the_mark_on_the_message_it_is_about():
+    rows = [
+        directed(id="first", ts="2026-11-02T04:48:00+00:00", subject="the claim",
+                 from_company="alexandria", from_seat="security"),
+        directed(id="second", ts="2026-11-02T05:11:00+00:00", subject="the withdrawal",
+                 from_company="alexandria", from_seat="security"),
+    ]
+    out = board.render_inbox(
+        board.sort_inbox(rows, "engineer", "alexandria"), "engineer", "alexandria"
+    )
+    assert "later: 1 newer message from this sender" in out
+    assert "newest 2026-11-02 05:11" in out
+    # The bucket is newest-first, so the withdrawal prints first with no mark
+    # and the claim prints second carrying it. The mark belongs to the older
+    # message: the newest one has nothing after it to be stale against.
+    assert out.index("the withdrawal") < out.index("the claim")
+    assert out.index("the claim") < out.index("later: 1 newer message")
+    assert out.count("later:") == 1
+
+
+def test_the_render_counts_what_is_addressed_to_the_seat_and_names_the_newest():
+    """The count a wake payload cannot give a run, because a wake is composed
+    at one moment and read at a later one."""
+    rows = [
+        directed(id="a", ts="2026-11-02T04:48:00+00:00"),
+        message(id="b", to_seat="engineer", ts="2026-11-02T05:11:00+00:00"),
+        message(id="room", ts="2026-11-02T05:30:00+00:00"),
+    ]
+    out = board.render_inbox(
+        board.sort_inbox(rows, "engineer", "alexandria"), "engineer", "alexandria"
+    )
+    assert "2 messages addressed to this seat in this window, newest 2026-11-02 05:11" in out
+
+
+def test_an_empty_inbox_counts_zero_and_names_no_newest():
+    out = board.render_inbox(board.sort_inbox([], "engineer", "alexandria"),
+                             "engineer", "alexandria")
+    assert "0 messages addressed to this seat in this window" in out
+    assert "newest" not in out
+
+
+def test_the_mark_never_changes_the_exit_status(live_board, capsys):
+    """A sender with later messages is not a defect, and the gate is the one
+    thing in this command a backed-out change must not move: `--json`'s exit
+    and the ambiguous gate (L-A9) both stay exactly where they were."""
+    live_board["messages"] = [m for m in live_board["messages"] if m["id"] != "m-2"]
+    assert board.main(["inbox", "--company", "alexandria", "--seat", "engineer"]) == 0
+    capsys.readouterr()
+
+
+def test_inbox_json_carries_the_marks_for_a_machine_to_gate_on(live_board, capsys):
+    """The human render is one reader of this. The other is a run deciding
+    whether it has finished reading its own inbox, and it reads `--json`."""
+    live_board["messages"].append({
+        "id": "m-later", "ts": "2026-12-01T00:00:00+00:00", "kind": "note",
+        "from_company": "alexandria", "from_seat": "pm",
+        "to_company": "alexandria", "to_seat": "engineer",
+        "subject": "the withdrawal", "body": "b",
+    })
+    board.main(["inbox", "--company", "alexandria", "--seat", "engineer", "--json"])
+    marks = json.loads(capsys.readouterr().out)["later_from_sender"]
+    assert marks["m-1"]["later"] == 1
+    assert marks["m-later"] == {"later": 0, "newest": None}
