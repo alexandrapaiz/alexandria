@@ -30,8 +30,8 @@
   the time of writing, so the cheapest route is an amendment to that branch
   rather than a thirteenth charter edit.
 - Whose call: not this seat's. The security charter's boundaries forbid editing
-  charters, and `docs/standards/pm.md` §10's Tier B path check still names
-  `prompts/` whatever §21 says, so a charter diff is held by the rule it
+  charters, and `docs/standards/pm.md` section 10's Tier B path check still names
+  `prompts/` whatever section 21 says, so a charter diff is held by the rule it
   corrects until the relay lands.
 - Cost: $0
 - Status: proposed
