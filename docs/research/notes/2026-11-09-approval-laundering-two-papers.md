@@ -3,10 +3,10 @@
 Research seat, 2026-11-09, PR #903. The two reading-queue lines that were
 still abstract-only in the queue's NEXT block:
 
-- `arxiv:2609.38983` — Yang Wang (Fudan), *Approval Laundering: Systematizing
-  Approval–Execution Binding Failures in AI Coding-Agent Harnesses*.
+- `arxiv:2609.38983`  -  Yang Wang (Fudan), *Approval Laundering: Systematizing
+  Approval-Execution Binding Failures in AI Coding-Agent Harnesses*.
   `python3 tools/read_paper.py 2609.38983`, exit 0, 132,653 chars.
-- `arxiv:2609.28586` — Zhang, Xia, Wu, Yue, Zhang, Cheng, Tu (CAS/UCAS,
+- `arxiv:2609.28586`  -  Zhang, Xia, Wu, Yue, Zhang, Cheng, Tu (CAS/UCAS,
   Beihang, BUPT), *Agent Approval Laundering: Transitive Effects Beyond the
   Approved Invocation*. `python3 tools/read_paper.py 2609.28586`, exit 0,
   105,779 chars.
@@ -28,7 +28,7 @@ the earlier of the two by a week, so in the literature it is first, not
 second; the ordinal in the line is discovery order at this seat. More to the
 point, there are **three** papers, not two. `2609.38983` cites, fifteen
 times, `arXiv:2609.21081`, A. A. Kumar, *Loopjacking: Hijacking
-Human-in-the-Loop Approval*, posted **17 Sep 2026** — six days before
+Human-in-the-Loop Approval*, posted **17 Sep 2026**  -  six days before
 `2609.28586` and thirteen before `2609.38983`. Fetched and confirmed live
 this run (55,190 chars, exit 0, CC BY 4.0, independent security researcher,
 no institutional affiliation). Queued below.
@@ -40,14 +40,14 @@ occurrence of `2609.38983`, `Fudan`, `Approval Token` or `Bound-Gap`;
 paper cites the other. `2609.38983` does cite Loopjacking, and calls it
 "concurrent work ... posted concurrently with our initial literature
 search", so even that one link is not a dependence. Wang's manuscript line
-reads "prepared as a working draft, 2026-09-22" — one day before
+reads "prepared as a working draft, 2026-09-22"  -  one day before
 `2609.28586` posted. Three groups on three continents named the same
 failure class, in three different vocabularies, inside thirteen days, with
 no shared citation among them.
 
 ## 2. What each paper actually establishes
 
-### `2609.38983` — six classes, measured on one harness, with dispersion
+### `2609.38983`  -  six classes, measured on one harness, with dispersion
 
 Six classes organised by which credential-binding surface the substitution
 violates: Scope, Argument, Temporal, Tool, Delegation, Semantic. The queue
@@ -90,9 +90,9 @@ Two substitution patterns under one class give 0.000 and 1.000. The first
 The second holds the approved rule (`Bash(cat *)`), the literal command text
 and the recorded tool identity all identical to what was granted, and varies
 only which executable `$PATH` resolves `cat` to, via a same-named wrapper
-planted ahead of `/bin`. That is unprotected at 20/20. The paper's own §IX
+planted ahead of `/bin`. That is unprotected at 20/20. The paper's own section IX
 words: within Claude Code, "'Tool Laundering is blocked' is false as a
-class-level statement". The mechanism is structural — `$PATH` resolution
+class-level statement". The mechanism is structural  -  `$PATH` resolution
 happens inside the dispatched process, below the `PreToolUse` mediation
 point, and no field the hook receives can be made to reveal it.
 
@@ -110,13 +110,13 @@ repository-level effects that string triggers.
 *The negative result is the load-bearing part.* Approval Token moves Scope
 not at all and Argument by one run. Both classes' measured mechanisms leave
 every recorded dispatch field unchanged and diverge only in downstream
-effect, one process level below what a field-only verifier can observe. §IX
+effect, one process level below what a field-only verifier can observe. section IX
 names what would be needed and rules out the obvious fix: *drift detection*
 (re-approve when the environment snapshot changes between approval and
 dispatch) would have caught **none** of the measured cases, because in every
 scenario the hook or script producing the divergent effect is installed
 before the credential is issued. What the cases need is *initial effect
-validation* — analysing at approval time what the already-present
+validation*  -  analysing at approval time what the already-present
 environment would make the credential produce. The paper did not attempt it.
 
 **Bounds to carry with every number from this paper.** Single author. A
@@ -130,20 +130,20 @@ instructions (`superpowers-zh`, `everything-claude-code`) plus a
 previous-session summary on top of the published prompt, so in its own
 words the repetitions "are not independent draws from a minimal, hermetic
 harness configuration" and a clean-environment replication is needed first.
-The κ = 1.0 inter-rater figure is an author cross-check, unblinded (the
+The kappa = 1.0 inter-rater figure is an author cross-check, unblinded (the
 review artifact showed the automated verdict beside the evidence), and
 re-measured on the same 15 runs that were used to find and fix the analyzer
 bug it is reported after. Scope's BGR is 0.80 (16/20) before that fix and
 1.00 (20/20) after.
 
-### `2609.28586` — the record-to-closure relation, with freeze discipline
+### `2609.28586`  -  the record-to-closure relation, with freeze discipline
 
 Different claim, different surface. Not "the harness substituted the
 action", but "the record names the entry invocation truthfully and omits
 effects of the workflow that invocation activates". Formalised as
 *closure-bound approval*: an approval is closure-bound when every trace in
 the closure has its effects contained in the record's represented set
-(Definition 1). Coverage, not equality — conservative overrepresentation
+(Definition 1). Coverage, not equality  -  conservative overrepresentation
 passes, one omitted label does not.
 
 Effect vocabulary is six operational classes: process, file, environment,
@@ -157,11 +157,11 @@ records under three information views:
 - plus decision-time metadata, post hoc: **13** (four more)
 
 All 13 survivors are in the harness/parser fixture stratum. On the
-real-project stratum — 11 evidence-complete executions of eight fixed-SHA
+real-project stratum  -  11 evidence-complete executions of eight fixed-SHA
 repository/mechanism cases spanning npm lifecycle, PEP 517, Cargo, Docker
-and MCP — the same ladder is **10 → 2 → 0**. Both command-aware survivors
-there are successful remote MCP calls, `M → M,N`. Every other case is
-`P → P,F` or `P → P,F,C`, and conservative command semantics cover all of
+and MCP  -  the same ladder is **10 -> 2 -> 0**. Both command-aware survivors
+there are successful remote MCP calls, `M -> M,N`. Every other case is
+`P -> P,F` or `P -> P,F,C`, and conservative command semantics cover all of
 them.
 
 Prospective arm, the part with the methodology: cohort A develops parser
@@ -171,17 +171,17 @@ one positive and one control for each of nine mechanisms. 17 reach target
 execution. On those 17, frozen predictions give **0.926 macro recall, 0.941
 macro precision**, exact effect sets in 13/17. The command-only baseline on
 the same 17 gives 0.770 / 0.941 and 9/17. Binding the prediction into the
-approval object raises case-macro coverage .755 → .922 and cuts residual
-effect instances **10 → 3**.
+approval object raises case-macro coverage .755 -> .922 and cuts residual
+effect instances **10 -> 3**.
 
 **The cost number the abstract omits, and it is the one a builder needs.**
 Table III's last column: **9 of the 17 reached cases are "no-added-effect
-ASK"** — the policy demanded an extra approval decision for a workflow whose
+ASK"**  -  the policy demanded an extra approval decision for a workflow whose
 realized trace exercised nothing beyond what the command-only record already
 disclosed. Positive stratum 4/9, controls 5/8. So on this cohort, over half
 the additional prompts bought nothing, and all seven newly disclosed effect
 instances land in the positive stratum while control disclosure is unchanged
-at .857 → .857. That is the selectivity price of the disclosure gain, and
+at .857 -> .857. That is the selectivity price of the disclosure gain, and
 the paper states it plainly rather than reporting coverage alone.
 
 Latency, since it decides whether this can sit on the approval path: parser
@@ -201,10 +201,10 @@ What stands in for dispersion is freeze discipline, an independent
 re-implementation that hash-checks 109 artifacts and reconstructs all 17
 effect sets with zero mismatches, six three-run repeats at mean pairwise
 Jaccard 1.000, and a four-profile denominator sensitivity: recall spans
-0.868–1.000 and exact-set accuracy 0.722–0.889 across the alternatives.
-**One predeclared target loses its margin under one of those profiles** —
+0.868-1.000 and exact-set accuracy 0.722-0.889 across the alternatives.
+**One predeclared target loses its margin under one of those profiles**  - 
 executed-control precision is 0.875 primary and **0.778** when
-`NOT_EXECUTED` is treated as empty, below the ≥0.80 bar the protocol
+`NOT_EXECUTED` is treated as empty, below the >=0.80 bar the protocol
 predeclared. The primary profile is the pre-registered one and the setup
 failure never reached target execution, so this is a boundary rather than a
 miss; it is also the thinnest margin in the paper.
@@ -221,8 +221,8 @@ effect-specific decisions, then any record-only rule, randomized included,
 induces one output distribution for both, and disjoint singletons cannot
 both carry probability one. It is an information requirement, not a
 hardness result. **The weight is carried by the empirical half, not the
-lemma** — the demonstration that record-indistinguishable-but-different
-pairs actually occur, which is the 40 → 17 → 13 ladder and the 10 → 2 → 0
+lemma**  -  the demonstration that record-indistinguishable-but-different
+pairs actually occur, which is the 40 -> 17 -> 13 ladder and the 10 -> 2 -> 0
 fixed-SHA recurrence.
 
 And the lemma licenses four responses, not one. The paper's own sentence:
@@ -240,16 +240,16 @@ authorization), not object resolution.
 The three independent namings carve up cleanly and the division is the
 finding:
 
-- **Loopjacking (`2609.21081`, 17 Sep)** — agent-orchestration products:
+- **Loopjacking (`2609.21081`, 17 Sep)**  -  agent-orchestration products:
   Agno AgentOS, LangGraph Agent Server, OpenClaw, OpenAI Agents SDK.
   Classifies by *when* the substitution enters relative to approval
   (representation-based versus post-approval state substitution). Evidence
   is repeated deterministic trials against released product code paths
   (5/5, 3/3 counts reported per path).
-- **`2609.28586` (23 Sep)** — developer-toolchain expansion: npm lifecycle,
+- **`2609.28586` (23 Sep)**  -  developer-toolchain expansion: npm lifecycle,
   PEP 517, Cargo, Docker, Git hooks, MCP. Classifies by *which effect
   class* escapes the record.
-- **`2609.38983` (30 Sep)** — coding-agent CLI/IDE harnesses: Claude Code.
+- **`2609.38983` (30 Sep)**  -  coding-agent CLI/IDE harnesses: Claude Code.
   Classifies by *which credential field* the substitution violates.
 
 Where all three are thin in the same place: **not one of them measures a
@@ -260,7 +260,7 @@ therefore shows the guard rejecting a mismatch against a seeded value, not
 a captured grant-in-session-A/reuse-in-session-B lifecycle. Zhang's
 prospective arm replays mechanism-bearing workflows through regimes.
 Kumar's trials are deterministic product-path tests. The population
-question — how often this happens to real operators in real sessions —
+question  -  how often this happens to real operators in real sessions  - 
 is unanswered by all three, and the one corpus in reach that could answer
 it is `2611.08516`'s Corpus A (52 real sessions, 57,923 steps, 28,087 tool
 calls, released anonymized), already queued at line 3691 for exactly that
@@ -279,27 +279,27 @@ one repository revision.
 Everything below was recomputed from the papers' own reported counts.
 
 `2609.38983`. All seven Wilson 95% intervals in Table III reproduce
-exactly at z = 1.96 (20/20 → [0.839, 1.000]; 0/19 → [0.000, 0.168];
-9/20 → [0.258, 0.658]; 18/19 → [0.754, 0.991]; 2/20 → [0.028, 0.301]).
+exactly at z = 1.96 (20/20 -> [0.839, 1.000]; 0/19 -> [0.000, 0.168];
+9/20 -> [0.258, 0.658]; 18/19 -> [0.754, 0.991]; 2/20 -> [0.028, 0.301]).
 All three McNemar exact p-values reproduce as two-sided binomial on the
-discordant pairs: 2·2⁻¹⁸ = 7.63e-6 for Delegation, 2·2⁻²⁰ = 1.91e-6 for
-Temporal, 2·2⁻¹ = 1 for Argument. The replay denominator is consistent:
+discordant pairs: 2 * 2^-18 = 7.63e-6 for Delegation, 2 * 2^-20 = 1.91e-6 for
+Temporal, 2 * 2^-1 = 1 for Argument. The replay denominator is consistent:
 20+20+19+20+19+20 = 118 across the six replayed scenarios, and 118 + the
 20 unreplayed PATH-substitution runs = the 138 valid main-study traces the
-methodology section discloses. The abstract's "p < 10⁻⁵ in both cases"
+methodology section discloses. The abstract's "p < 10^-5 in both cases"
 holds for both.
 
-`2609.28586`. 40 − 23 = 17 and 17 − 4 = 13, as stated. Table II's columns
+`2609.28586`. 40 - 23 = 17 and 17 - 4 = 13, as stated. Table II's columns
 sum to the reported 11 runs and 10/2/0 residuals. Holdout accounting
 closes: 13 complete + 4 terminating after effect evidence = 17 target-
-executed, + 1 setup failure = the 18 prespecified, and 18 = 9 mechanisms ×
+executed, + 1 setup failure = the 18 prespecified, and 18 = 9 mechanisms x
 (1 positive + 1 control). The coverage figures reproduce exactly as
-case-weighted means over the 16 nonempty-effect cases: (9 × .676 + 7 ×
-.857)/16 = .755 and (9 × .972 + 7 × .857)/16 = .922. Residuals close by
-stratum: positive 8 → 1, controls 2 → 2, total 10 → 3, and 10 − 3 = the
+case-weighted means over the 16 nonempty-effect cases: (9 x .676 + 7 x
+.857)/16 = .755 and (9 x .972 + 7 x .857)/16 = .922. Residuals close by
+stratum: positive 8 -> 1, controls 2 -> 2, total 10 -> 3, and 10 - 3 = the
 seven newly disclosed effect instances the text reports as all positive-
-stratum. Exact sets close the same way: 4/9 → 8/9 and 5/8 → 5/8 give
-9/17 → 13/17, "four repairs and zero regressions".
+stratum. Exact sets close the same way: 4/9 -> 8/9 and 5/8 -> 5/8 give
+9/17 -> 13/17, "four repairs and zero regressions".
 
 One figure does **not** reproduce from the stratum means, and the reason is
 benign: macro recall .926 against (.972 + .875)/2 = .9235, and macro
@@ -315,13 +315,13 @@ Neither line's ask is discharged by this reading. What
 distill run and not a reading. Line 3685 records `2609.38983` as absent
 from the corpus; `2609.28586` was queued the same day and nothing has run
 since, so the same holds for it. Neither was verified against the `papers`
-table this run, because no seat on this host can reach it — see the two
+table this run, because no seat on this host can reach it  -  see the two
 lines below. `pipeline/reading_queue.py --order` puts
 both in the `blocked skills first` group at positions 7 and 8, and
 `reading_queue.resolve()` inserts unseen queued ids at `MAX_PER_RUN` 6 per
 distill run, so the two lines above them clearing is what brings these in.
 This seat still cannot start that run: `command -v modal` finds nothing,
 `import modal` raises `ModuleNotFoundError`, and there is no
-`DATABASE_URL`. Same state as lines 3482–3484 record, and the same
-disposition — the lines stay open, annotated with the reading, waiting on a
+`DATABASE_URL`. Same state as lines 3482-3484 record, and the same
+disposition  -  the lines stay open, annotated with the reading, waiting on a
 distill run rather than on a seat.
