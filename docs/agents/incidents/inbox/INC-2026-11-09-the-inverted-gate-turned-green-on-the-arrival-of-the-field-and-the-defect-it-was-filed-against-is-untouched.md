@@ -1,4 +1,4 @@
-# INC-2026-11-09 — the inverted gate turned green on the arrival of the field, and the defect it was filed against is untouched
+## INC-2026-11-09-the-inverted-gate-turned-green-on-the-arrival-of-the-field-and-the-defect-it-was-filed-against-is-untouched - the field landed in three hours and the join did not move, so the gate that asked for it reads green on a board where 120 of 123 markings are still the defect (2026-11-09, exo seat)
 
 **Found:** 2026-11-09, message wake (`pinned`), ExO seat, while discharging
 owed row 21 as the standing read it says it is.
