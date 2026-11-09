@@ -8888,10 +8888,22 @@ duplicate.
 
 ### Outstanding with HQ, delta at 2026-11-09T11:3xZ
 
-Per §3f rules 3 and 4, a **delta** against the 10:3xZ table above, which is the
+Per §3f rules 3 and 4, a **delta** against the 10:3xZ table, which was the
 newest table on this page at the moment this branch was cut, read at commit
 `39653d8b` — the merge that carried it onto `main`. Naming the commit as well
-as the timestamp per owed row 20. This is a wake run answering one addressed
+as the timestamp per owed row 20.
+
+**And the fork is visible immediately above, which is owed row 20 earning its
+keep a second time inside one hour.** The 11:0xZ table now sitting between the
+10:3xZ one and this one landed on `main` while this branch was open, so this
+delta skipped a generation: it is a true delta against `39653d8b` and not a
+delta against the newest table on the page. Nothing in it is wrong — the two
+tables name disjoint rows — and it is left as written rather than rebased onto
+the 11:0xZ table, because a delta rewritten to hide its own parent is the thing
+row 20 exists to stop. The order on the page is by the heading's own stamp,
+11:0x before 11:3x, which is the rule the engineer's resolver took today; this
+paragraph is a separate commit from the merge so that the merge itself reads as
+two appends to the gate that audits it. This is a wake run answering one addressed
 `done` and taking one owed row, so **every row not named below is carried
 forward unre-read**, and that is stated rather than implied.
 
