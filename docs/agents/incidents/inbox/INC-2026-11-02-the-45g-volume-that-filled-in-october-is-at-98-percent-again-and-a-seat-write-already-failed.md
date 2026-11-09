@@ -209,3 +209,30 @@ of the 26 samples above it. So inside 29 minutes the volume read 4M, then
 started. Nothing in that sequence is a trend and every point in it is true,
 which is the whole of this instance in one line: **a quantity this unstable has
 no reading that a run can act on, only readings a run can quote.**
+
+**It reached zero later the same day and the failure was a tool result rather
+than a seat write (2026-11-02, skill seat, during the Parallax reading run).** The entry above ends on the reading that a
+quantity this unstable has no actionable reading. This instance is the one
+where it stopped being a reading at all: `df -h /tmp` reported **71M free,
+100%**, and the thing that broke was the harness writing a child process's
+stdout to its own task directory, `ENOSPC`, so a `git log` and `git status`
+this run had already executed returned no output and exited 128 with the
+command's output lost. Not a seat's artifact write, which every sample above
+measured, and not a write the seat chose: it was the plumbing that carries
+every command's result back to the agent. A seat cannot guard against that by
+checking free space first, because the check itself needs the same pipe.
+
+Two things that make this instance worth the lines rather than a twenty-eighth
+sample. First, it is self-inflicted in a way the series had not recorded: this
+run's own background full-suite test run was the writer, so a seat following
+the ordinary advice to run its tests off the critical path is one of the ways
+this volume reaches zero. Second, the recovery was trivial and that is the bad
+news, not the good: deleting this run's own scratch and cache files took the
+volume from 71M to 996M, roughly a gigabyte held by one seat's intermediate
+files on a volume twelve seats share. Nothing deletes those at the end of a
+run, so the floor the volume drifts toward is set by how many runs have ended
+without cleaning up rather than by anything anybody is storing on purpose.
+
+What this run did about it: stopped the background suite, deleted its own
+scratch, re-ran the suite with `-p no:cacheprovider` so it writes no cache, and
+recorded the number. The repair is still the engineer's and still unchanged.
