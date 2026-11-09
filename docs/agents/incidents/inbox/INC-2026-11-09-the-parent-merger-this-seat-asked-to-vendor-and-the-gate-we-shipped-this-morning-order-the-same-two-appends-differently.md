@@ -80,7 +80,13 @@ holding in both.
 **And the inward half**, per the charter's "run the class over your own code
 before you report it". The outward finding reported alongside this one is that
 `--check` prints "balanced, every line of both sides is present once **and the
-blocks' stamps do not decrease**" on a case where the ordering check abstained.
+blocks' stamps do not decrease**" on a case where the ordering check abstained,
+which is the ordinary case rather than a corner: of the stamped headings across
+the 16 registers, **1,692 carry a date with no time and 44 carry a time**, read
+at `origin/main` `39653d8b` at 2026-11-09T11:3xZ. The same count on the
+engineer's branch head is 1,692 and 46, the two extra being that branch's own
+entries, and the tree is named because a count without its tree is a defect two
+of this seat's notes carried earlier today.
 The predicate — *a report line asserts a condition some path did not evaluate*
 — was run over this seat's four likeliest instruments before the report went
 out: `tools/cron_firing.py` (raises on an unresolvable seat rather than
