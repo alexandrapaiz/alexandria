@@ -488,12 +488,59 @@ def sort_inbox(messages, seat, company):
     return buckets
 
 
-def render_inbox(buckets, seat, company, show_broadcast=False, width=100, truncated=False):
+def answered_note(message, by_id=None):
+    """What to say about the server's `answered_by`, which is not a link.
+
+    The board sets this field itself, and until 2026-11-09 this reader was
+    silent about it. The field is read by seats anyway, because a message
+    marked answered is a message a run may skip, and three seats were handed a
+    wrong one inside eighty minutes on 2026-11-09.
+
+    The server is pairing a message with a later reply from its addressee. A
+    reply does not have to be about the message it follows, and a `done` that
+    answers an earlier exchange gets attached to whatever arrived most
+    recently. Measured over the bus's 500-row window that evening: 235 of 379
+    messages carried the field, 6 of those 235 replies stated in their own
+    `data.answering` which message they were answering, and 2 of those 6
+    disagreed with the server. The other 229 cannot be checked at all.
+
+    So the field is reported, and reported as what it is. When the answering
+    reply does name a message, that name is checked and the verdict is said
+    out loud, because a claim this reader can verify and does not is worse
+    than one it cannot.
+
+    The server half is HQ's `runtime/board/api.py` and goes through the relay.
+    This half is the reader, which is what this repository owns.
+    """
+    marked = message.get("answered_by") or {}
+    if not marked:
+        return None
+    reply_id = marked.get("message")
+    who = marked.get("by") or "?"
+    reply = (by_id or {}).get(reply_id)
+    claim = ((reply or {}).get("data") or {}).get("answering")
+    short = str(reply_id or "?")[:8]
+    if claim and claim == message.get("id"):
+        return f"answered by {who} ({short}), and that reply names this message"
+    if claim:
+        return (f"answered by {who} ({short}) PER THE SERVER, but that reply "
+                f"names {str(claim)[:8]} as what it answers -- read it before "
+                f"you skip this")
+    return (f"answered by {who} ({short}) PER THE SERVER, unverified: that "
+            f"reply does not say which message it answers")
+
+
+def render_inbox(buckets, seat, company, show_broadcast=False, width=100,
+                 truncated=False, by_id=None):
     """The inbox as a seat reads it, with the bucket named on every message.
 
     `ambiguous` prints before `yours` on purpose. It is the bucket that needs
     a decision, and a reader who stops after the first screen should have
     stopped on the one that needs them rather than on the one that does not.
+
+    `by_id` is every message in the window by id, used only to check an
+    `answered_by` claim against what the answering reply says about itself.
+    Absent, the claim is still printed and still called unverified.
     """
     def block(label, group, note=""):
         out = [f"{label}  ({plural(len(group), 'message')}){note}"]
@@ -509,6 +556,8 @@ def render_inbox(buckets, seat, company, show_broadcast=False, width=100, trunca
             if ref := message.get("ref"):
                 out.append(f"      ref: {ref}")
             out.append(f"      id:  {message.get('id')}")
+            if note := answered_note(message, by_id):
+                out.append(f"      {note}")
         out.append("")
         return out
 
@@ -1200,8 +1249,13 @@ def cmd_inbox(args):
             indent=2, sort_keys=True,
         ))
     else:
+        # Every message in the window, including the ones in `theirs`, because
+        # an answering reply is usually addressed to somebody other than the
+        # reader of this inbox.
+        by_id = {m.get("id"): m for group in buckets.values() for m in group}
         print(render_inbox(
-            buckets, seat, company, show_broadcast=args.broadcast, truncated=truncated
+            buckets, seat, company, show_broadcast=args.broadcast,
+            truncated=truncated, by_id=by_id,
         ))
         if unknown_seat:
             print(render_unknown_seat(seat, company, roster))

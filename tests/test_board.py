@@ -1531,3 +1531,70 @@ def test_a_run_report_refuses_a_company_half_that_disagrees():
         board.run_payload({"ASC_COMPANY": "alexandria"},
                           Args(seat="Ursa-engineer", status="success"))
     assert "Ursa" in str(exc.value)
+
+
+# --- the server's answered_by, reported rather than trusted ----------------
+#
+# Added 2026-11-09 by the security seat. The board sets this field itself by
+# pairing a message with a later reply from its addressee, and this reader was
+# silent about it, so a seat reading the raw API saw a bare claim and a seat
+# reading this tool saw nothing. One reply was marked as the answer to two
+# different messages inside half an hour on 2026-11-09, which is the shape.
+
+
+def test_a_message_with_no_answered_by_gets_no_note():
+    assert board.answered_note({"id": "a"}) is None
+    assert board.answered_note({"id": "a", "answered_by": None}) is None
+
+
+def test_a_reply_that_names_this_message_is_said_to_name_it():
+    message = {"id": "aaa", "answered_by": {"by": "x/pm", "message": "bbb"}}
+    replies = {"bbb": {"id": "bbb", "data": {"answering": "aaa"}}}
+    note = board.answered_note(message, replies)
+    assert "names this message" in note
+    assert "PER THE SERVER" not in note
+
+
+def test_a_reply_that_names_a_different_message_contradicts_the_server():
+    """The two real cases of 2026-11-09, in both directions between seats."""
+    message = {"id": "aaa", "answered_by": {"by": "x/exo", "message": "bbb"}}
+    replies = {"bbb": {"id": "bbb", "data": {"answering": "ccc"}}}
+    note = board.answered_note(message, replies)
+    assert "PER THE SERVER" in note
+    assert "names ccc" in note
+    assert "read it before you skip this" in note
+
+
+def test_a_reply_that_says_nothing_is_called_unverified_and_not_answered():
+    """229 of the 235 marked messages in the window are this case.
+
+    The distinction that matters to a reader is between a claim that was
+    checked and a claim that could not be, and the old reader printed neither.
+    """
+    message = {"id": "aaa", "answered_by": {"by": "x/pm", "message": "bbb"}}
+    for replies in [{}, {"bbb": {"id": "bbb"}}, {"bbb": {"id": "bbb", "data": {}}}]:
+        note = board.answered_note(message, replies)
+        assert "unverified" in note
+        assert "does not say which message it answers" in note
+
+
+def test_the_note_survives_a_reply_outside_the_window():
+    """`by_id` of None still prints the claim, because hiding it is the bug."""
+    message = {"id": "aaa", "answered_by": {"by": "x/pm", "message": "bbb"}}
+    assert "unverified" in board.answered_note(message, None)
+
+
+def test_the_rendered_inbox_carries_the_note_and_is_silent_without_the_field():
+    marked = {"id": "aaa", "kind": "done", "ts": "2026-11-09T03:07:11Z",
+              "from_company": "alexandria", "from_seat": "exo",
+              "to_company": "alexandria", "to_seat": "security",
+              "subject": "s", "answered_by": {"by": "alexandria/security",
+                                              "message": "bbb"}}
+    plain = dict(marked, id="ccc", answered_by=None)
+    buckets = {"yours": [marked, plain], "ambiguous": [], "broadcast": [],
+               "theirs": []}
+    out = board.render_inbox(buckets, "security", "alexandria",
+                             by_id={"bbb": {"id": "bbb",
+                                            "data": {"answering": "ccc"}}})
+    assert "PER THE SERVER" in out
+    assert out.count("answered by") == 1, "the unmarked message grew a note"
