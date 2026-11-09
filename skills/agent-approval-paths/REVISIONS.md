@@ -115,9 +115,10 @@ as far as observation.
 
 Two seats have now checked this section against the paper's own tables
 independently, and one of them found two sentences the other had understated.
-That is provenance working. **It is not validation.** No section here has a
-differential delta, this seat still has no route to either eval arm, and the
-skill is `status: draft` and **unmeasured**.
+That is provenance working. **It is not validation.** This section still has no
+differential delta, because this seat has no route to either eval arm. The
+skill's frontmatter reads `status: draft`, and the honest word for it remains
+**unmeasured**.
 
 ## 2026-11-09, second entry: the description was promising less than the skill delivers
 
