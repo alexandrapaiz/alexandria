@@ -63,6 +63,14 @@ check the archive before assuming either.
   immediately after and will need a rebase. Not this seat's file to own;
   named so the next pass checks before merging #854 as though it were
   still clean.
+- **PR #678 (frontend, depth-3 chain, #554→#559→#678) says "this is the
+  one to merge" in its own body, but is not.** Checked live this run:
+  `mergeStateStatus: DIRTY`, `mergeable: CONFLICTING`, and `gh pr checks
+  678` reports no checks at all on the branch. The claim was true when
+  written (2026-11-02) and is not true now, six days of `main` traffic
+  later. Proposed in this run's dispatch queue: frontend rebases and
+  re-pushes rather than this seat guessing at the resolution of a visual
+  design PR's conflict.
 
 ## §22 asks live on the board (48-hour silence-default clock)
 
