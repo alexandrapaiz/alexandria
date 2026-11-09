@@ -226,25 +226,36 @@ DECLARED: dict[tuple[str, str], Judgment] = {
     ("panel_adversary.py", "--skill"): Judgment("roster"),
     ("panel_provenance.py", "--skill"): Judgment("roster"),
     ("panel_validator.py", "--skill"): Judgment("roster"),
-    # Both of these arrived on `main` with #813 and were unaccounted for there,
-    # so this gate was already failing before this branch added to it. A tree
-    # that reads files takes `path` for both: `--root` is the tree to read and
-    # `paths` narrows it.
-    ("prose_symbols.py", "--root"): Judgment("path"),
-    ("prose_symbols.py", "paths"): Judgment("path"),
-    # Both are the same two judgments `cron_firing.py` already carries, and for
-    # the same reason: this tool reads that one's log root through that one's
-    # reader, so a divergence here would be a second answer to one question.
-    # Added 2026-11-09 by the engineer seat. `tools/prose_symbols.py` landed on
-    # 2026-11-08 and its two targets were left undeclared, so this census was
-    # red on `main` for every seat until these rows. Both are paths and neither
-    # needs a reading: `--root` is the tree to read and `paths` limits the run
-    # to named files or directories, so absent is already an error through
-    # `open()` and there is no roster either could be checked against.
+    # These two rows were declared twice, once by #813's reader and once by the
+    # engineer seat on 2026-11-09, and a dict literal keeps the last of each.
+    # Both reasons are kept here because both were written and only one of each
+    # pair was ever attached to anything. #813's: `prose_symbols.py` arrived on
+    # `main` unaccounted for, and a tree that reads files takes `path` for
+    # both, `--root` being the tree to read and `paths` narrowing it. The
+    # engineer seat's: absent is already an error through `open()` and there is
+    # no roster either value could be checked against, which is the same pair
+    # of judgments `cron_firing.py` carries for the same reason. The agreement
+    # is the point. Two readers reached one answer twice, and the table printed
+    # one of them. `repeated_declarations` below is why that cannot recur.
     ("prose_symbols.py", "--root"): Judgment("path"),
     ("prose_symbols.py", "paths"): Judgment("path"),
     ("provider_cycle.py", "--root"): Judgment("path"),
     ("provider_cycle.py", "--now"): Judgment("date"),
+    # Added 2026-11-09 by the engineer seat. `tools/pr_backlog.py` landed on
+    # `main` with #836 at 06:26Z and left four targets undeclared, so this
+    # census, `main`, and every open pull request inheriting `main` were red
+    # until these rows. `--prs` and `--merged` are both a file of `gh pr list
+    # --json` output, read with a bare `json.load(open(...))`, so an absent one
+    # raises before any count is reported and neither can shrink a backlog
+    # quietly. `--since` and `--now` go through `_dt`, which is
+    # `fromisoformat`, so a malformed stamp raises there. `--now` is the test
+    # hook for the clock and it is a `date` rather than `opaque` for that
+    # reason: it is compared against row timestamps and nothing else resolves
+    # it.
+    ("pr_backlog.py", "--prs"): Judgment("path"),
+    ("pr_backlog.py", "--merged"): Judgment("path"),
+    ("pr_backlog.py", "--since"): Judgment("date"),
+    ("pr_backlog.py", "--now"): Judgment("date"),
     ("press_watch.py", "--today"): Judgment("date"),
     ("press_watch.py", "--company"): Judgment(
         "roster", "same roster as board.py --company, same API"),
@@ -414,6 +425,55 @@ def stale_declarations(rows) -> list[tuple[str, str]]:
     return sorted(k for k in DECLARED if k not in live)
 
 
+class CannotRead(Exception):
+    """The source could not be read for the question asked of it."""
+
+
+def repeated_declarations(
+    source: str | None = None,
+) -> list[tuple[tuple[str, str], list[int]]]:
+    """A `(file, flag)` key declared more than once in `DECLARED`'s source.
+
+    The dict cannot be asked. By the time `DECLARED` is a dict the duplicate is
+    gone, because a dict literal keeps the last value for a repeated key and
+    says nothing. So this reads the module's own text with `ast`, which is the
+    same instrument the census uses on every other tool in the tree.
+
+    Two rows of this table were declared twice on 2026-11-09 and the gate
+    printed `137 declared` over 139 written rows. Both pairs happened to agree
+    on the judgment, so nothing was wrong in the answer. What was thrown away
+    was a reason: each pair carried two comment blocks explaining itself and
+    only one of them was attached to a live row, and a reader could not tell
+    which.
+
+    alexandria/exo found the identical shape in `tools/sentinel.py` the same
+    morning, where `dict(args.part)` dropped a part somebody had named. One
+    name carrying two readings is the ambiguity, and last-wins hides which.
+    """
+    text = source if source is not None else pathlib.Path(__file__).read_text()
+    tree = ast.parse(text)
+    for node in ast.walk(tree):
+        is_declared = (
+            isinstance(node, ast.AnnAssign)
+            and isinstance(node.target, ast.Name)
+            and node.target.id == "DECLARED"
+            and isinstance(node.value, ast.Dict)
+        )
+        if not is_declared:
+            continue
+        lines: dict[tuple[str, str], list[int]] = {}
+        for key in node.value.keys:
+            try:
+                literal = ast.literal_eval(key)
+            except ValueError:  # a computed key, which this table does not use
+                continue
+            lines.setdefault(literal, []).append(key.lineno)
+        return sorted((k, v) for k, v in lines.items() if len(v) > 1)
+    # No `DECLARED` annotated assignment at all is itself a finding, because
+    # every caller below reads a silent empty list as "no repeats".
+    raise CannotRead("DECLARED is not an annotated dict literal in this file")
+
+
 def bad_kinds() -> list[tuple[str, str]]:
     """A declaration whose kind is not one of `KINDS`, or an `offline` reason
     attached to something that is not a roster flag."""
@@ -475,6 +535,13 @@ def check(root: pathlib.Path | None = None, *, stream=None) -> int:
         problems += 1
         print(f"FAIL: {file} {flag} declares a kind outside {sorted(KINDS)}",
               file=out)
+    for (file, flag), lines in repeated_declarations():
+        problems += 1
+        print(f"FAIL: {file} {flag} is declared {len(lines)} times, at lines "
+              f"{', '.join(str(n) for n in lines)}. A dict literal keeps the "
+              f"last one, so the reasons above the others are attached to "
+              f"nothing and the count this gate prints is short by "
+              f"{len(lines) - 1}.", file=out)
     counts: dict[str, int] = {}
     for key in DECLARED:
         if key in {(f.file, f.flag) for f in judged}:
