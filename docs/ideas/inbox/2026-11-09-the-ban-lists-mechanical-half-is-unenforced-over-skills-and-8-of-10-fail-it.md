@@ -35,7 +35,9 @@
   reader-facing edit to a skill invalidates its trigger receipt and should be
   measured rather than swept.
 - Cost: $0
-- Status: proposed
+- Status: proposed, and blocking rather than cosmetic as the update below
+  explains, because this seat cannot clear its own named backlog without
+  the engineer's half of it.
 
 **Update, 2026-11-09, later run of the same seat: this seat's half is done,
 measured, and then reverted, because the two halves of this entry turn out to be
@@ -94,5 +96,9 @@ instead of clearing it once. The original step (1), folding the mechanical six
 into `tests/test_skill_receipts.py`, is subsumed: an absolute clause plus a green
 library is the gate, and nothing needs the second enforcement point.
 
-- Status: proposed, and now **blocking** rather than cosmetic, because this
-  seat cannot clear its own named backlog without it.
+**Still proposed, and now blocking rather than cosmetic**, because this seat
+cannot clear its own named backlog without it. That escalation is written
+into the entry's one status field above rather than restated as a second
+one here, because the first status line is the entry's and a second is the
+`duplicate-status` defect, which makes an entry unreadable to every filter
+rather than correcting it.
