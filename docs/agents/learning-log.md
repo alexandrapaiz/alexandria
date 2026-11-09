@@ -460,180 +460,6 @@ strong enough to rewrite what runs the agents.
   that is itself worth an incident entry, because it is the same shape
   as item 13.
 
-## 2026-09-19 — Fifth run (owner order: the blind-org postmortem)
-
-Dispatched by the owner rather than by the Sunday cron, on the day
-incident 19 was filed. Branch `exo/2026-09-19-b` and PR #43, because
-`exo/2026-09-19` and PR #39 from the fourth run were still open and
-unmerged. If the numbering of runs looks off to a later reader, PR #39
-carries runs three and four.
-
-### The pattern this run names: correct seats, blind org
-
-**What it looks like.** Every seat executes its charter correctly. Every
-audit passes. The org is blind anyway, and the owner finds out from the
-outside. Incident 19 is the founding case. The year's defining
-agent-infrastructure event, the OpenAI agent cyberattacks that
-compromised Hugging Face, was absent from a corpus, a digest, and twelve
-charters, and the owner reported it herself.
-
-**The mechanism, which is not the obvious one.** The first reading on
-the day was that nothing watched the world, so the fix was more feeds.
-The evidence refutes that. The market charter already required weekly
-reading of competitor issues, naming TLDR AI, Import AI and The Batch,
-plus Hacker News for demand signals. That seat ran three times with
-those instructions, every run after the story was public, and the words
-"Hugging Face" appear nowhere in `docs/market/`. The sources were open
-and were read.
-
-What actually happened is that every charter tells a seat what to
-PRODUCE, and a seat reading the world for its own artifact keeps what
-feeds that artifact and discards the rest. Market read competitors for
-positioning moves, so a security event was not a positioning move.
-Research read papers for claims, and a postmortem is in no arXiv
-category. Security read our code, and the compromise was upstream of our
-code. Each filter was correct. The org's awareness turned out to be the
-union of its deliverables rather than the union of what its seats saw,
-so an event shaped like nobody's deliverable was discarded by everyone
-who looked straight at it.
-
-**The detection rule, for a successor to run in ten minutes.** Two
-halves, because the class has two shapes.
-
-1. *Vocabulary absence.* Take something the org plainly depends on and
-   grep every charter in `prompts/` for the words that duty would have
-   to use. The absence of the vocabulary is the finding. This run found
-   three real gaps in a single grep. No charter anywhere contains legal,
-   privacy, GDPR, CAN-SPAM, copyright or robots.txt, while the site
-   already stores email addresses and the pricing page already promises
-   an unsubscribe link that does not exist yet. No charter contains
-   backup, restore or pg_dump, while one free-tier Postgres holds the
-   entire corpus. Quota and free-tier headroom live only in the
-   finance charter, which is dormant. All three are written up with
-   proposed checks in the new docs/agents/unowned-duties.md.
-2. *Split custody.* A duty that three seats contribute to and none owns
-   behaves exactly like a duty nobody has. Shared custody of awareness
-   is what produced incident 19, and the chair's four patches of that
-   morning had re-created it across market, research and security before
-   this run named one owner.
-
-The standing version of both halves is now §3b of the ExO charter, and
-the register it works is docs/agents/unowned-duties.md.
-
-**The trace that makes the class visible at all.** Outward-looking seats
-now end every PR description with a section headed "Seen and not mine":
-what they noticed, mattered, and was not theirs to act on, at most five
-lines, with "nothing this run" as a legitimate answer. That section
-turns each seat's discard pile into a readable surface, and the market
-seat sweeps it weekly. This attacks the mechanism rather than the
-symptom, which is why it is the change this run would keep if it could
-keep only one.
-
-### What this run changed, and why
-
-1. **One named owner for world-awareness: the market seat.** Its
-   charter's new §5 states the duty in the owner's own sentence, "the
-   org knows what the world knows," widens the question past
-   competitors' tables of contents, and routes what it finds to research
-   for steering, to security for upstream events, and to the brief for
-   digest stories. It deliberately does not ask for more reading, since
-   the postmortem showed the reading was already happening.
-2. **The "Seen and not mine" rule in four charters:** market, research,
-   security and OKR, the seats that look outward. Not in engineer,
-   frontend, skill, writer, PM or ExO, because the evidence is about
-   outward-looking seats and a rule in twelve charters with triggers in
-   four is boilerplate. If a later run sees an inward seat discard
-   something that mattered, widen it then.
-3. **§3b and §3c in this charter.** §3b is the standing unowned-duty
-   audit. §3c is the verdict on the owner's fourth question and it says
-   no: this seat must not own the outward-facing check, because it
-   audits whether duties are owned, and a seat cannot audit itself. The
-   one check that would have caught incident 19 would then sit inside
-   the only seat whose failures nobody reviews.
-
-### The audit of the chair's four reactive patches
-
-Four charters and one config file were amended inside one hour under
-live owner direction. They do not contradict each other, and two of them
-contradict the system.
-
-- **Real contradiction, filed for the engineer.** Three places now
-  promise that signal sources never become claims: the research charter,
-  the design in docs/backlog.md, and sources.yaml's own new comment. The
-  pipeline implements none of it. The four ecosystem feeds went into the
-  ordinary `feeds:` list at `tier: d`, so ingest writes them into
-  `papers` and triage judges them with a prompt whose only special rule
-  is for `gh-*` releases. A Hacker News item is currently judged as a
-  paper and can be routed to `distill`. The `role:` field the backlog
-  already designed is the fix, filed in docs/ideas.md with the exact
-  shape.
-- **Charter against deployed law.** The research patch said releases
-  never become claims, while `prompts/triage.md` has said for a week
-  that a release may be distilled when its notes describe a technique.
-  Resolved in the research charter by drawing the line where it actually
-  falls, between the REPORT of an event, which is never evidence, and an
-  ARTIFACT WITH METHOD, which is admissible whatever feed carried it.
-  The Hugging Face news was signal and the Hugging Face postmortems are
-  evidence, which is the cleanest possible statement of the difference.
-- **Consolidation, not contradiction.** Market's new coverage-gap check
-  overlaps its own §1 and §2, which already supplied the inputs, and
-  brushes the OKR seat's monthly competitor benchmark. Left in place and
-  given a frame rather than rewritten, since the owner dictated its
-  words. The new §5 says which seat scores and which seat notices.
-- **A one-way handoff.** Market was told to feed findings to the
-  research seat's steering, and the research charter said nothing about
-  receiving them. Now it does, and it must say when it declines a steer,
-  because a steer silently dropped is how the last one was lost.
-- **Good as landed:** the containment priority in the research charter,
-  and the security seat's per-upstream threat question. Neither needed
-  correcting.
-
-### The resonance, filed and not acted on
-
-The outside event's mechanism was agents coordinating past containment,
-and this org runs twelve seats on `--permission-mode bypassPermissions`.
-The technical answer is the security seat's, in flight in PR #41, and
-nothing here preempts it. The organizational contingency is written down
-in incidents.md under the postmortem so that it is not improvised later:
-if a seat turns out to be able to reach a surface its charter forbids,
-the guardrail to propose is containment by identity rather than by
-instruction, one credential per seat scoped to the paths that seat may
-write. Note that ADR-27's single shared GitHub App is the opposite
-shape, so the handover plan would need a per-seat scoping section before
-that key becomes the org's only key. A future run makes that proposal
-with the security findings in hand.
-
-### Next run must check
-
-- **Merge order.** PR #39 and this one both touch README.md,
-  docs/agents/incidents.md, docs/agents/learning-log.md and most of
-  `prompts/`. #39 merges first. Whichever lands second must renumber
-  incident 19, since #39 renumbers the founding incidents, and fix the
-  references to it here and in docs/agents/unowned-duties.md.
-- **Is "Seen and not mine" actually being written?** Read the week's PR
-  descriptions from market, research, security and OKR. An empty section
-  saying "nothing this run" is compliance. A missing section means the
-  rule is boilerplate and belongs in the workflow prompt instead, which
-  is unpushable and therefore goes to
-  docs/agents/pending-workflow-changes.md.
-- **Did market's §5 produce a "What the world learned this week"
-  heading** in the first Friday brief after this merges. If the heading
-  is there and empty every week, the duty is being performed as a
-  formality and the check needs teeth rather than repetition.
-- **Work the unowned-duty register.** One pass over the assigned rows to
-  confirm the words are still in the charters, and one new row hunted by
-  grep. The three open gaps are owner decisions and stay open until she
-  rules, so do not quietly close them.
-- **Did the engineer ship the `role:` field?** Until then, watch for a
-  news item appearing as a claim in the corpus, which is the visible
-  symptom of the contradiction filed in the ledger.
-- **Did the PM add the writer row to the org chart?** Filed in the
-  ledger this run rather than edited, because that chart is the PM's.
-- **Run failures since this run: none.** `gh run list --limit 40` showed
-  the last failures at 2026-09-19T01:54 and 01:58, both frontend, both
-  already diagnosed in PR #39, and every run after that succeeded. §2b
-  had nothing to work this cycle, which is worth recording so a later
-  run does not assume the section was skipped.
 ## 2026-09-19 — Third run (owner order, relayed by the chair)
 
 *In progress. Dispatched with a binding owner order: register the two
@@ -12396,3 +12222,171 @@ rather than printing a vocabulary.
    39 runs of 70 to it, 56% of the day, with 21.4 h idle. Only the owner can
    raise it. Nothing this seat ships changes that number, and a run note that
    reports fleet health without it is reporting the wrong thing.
+
+## 2026-11-09 08:4xZ — message wake (`rebase`), PR #886 + a PM handoff: the cure for this seat's merge debt is in the parent, and our own register refuses it
+
+**Mode: wake run.** Trigger `message`: PR #886's merge, plus a handoff from
+`alexandria/pm` (`3afd19ed`, 08:24:53Z). Three standing duties — §2b's failure
+sweep, §3f's heading, this entry — and **one** improvement. Not done and named
+so the pull request need not be read to know it: the register sweeps, the
+unowned-duty hunt, the public-claim sweep, the queue re-verification, the
+weekly cycle. `cycle-taken:` not written; next due slot **2026-11-16T01:00Z**,
+and this is the **nineteenth** wake to decline it.
+
+### What the event asked, and what I took
+
+The merge event said *continue with the next item in your lane*. The lane holds
+one Backlog card, `2ee0f59f`, the duty-classes card, and **none of it is
+takeable today**: class A closed on the fifteenth and sixteenth wakes' readings
+except market, which is re-dated to **2026-11-13T11:00Z**, four days out; class
+B is with the owner and may not move because it widens this seat's own budget;
+class C is class C. That is the fifth consecutive wake to read this card and
+find no open gate, and it is now recorded on the card rather than only in a
+run note.
+
+So what I took is the handoff, and then one finding out of the handoff.
+
+### 1. The hand-resolve, done before the clock rather than after it
+
+PM's handoff was accurate in every particular, and I re-measured it rather than
+taking it: #879 at head `9c9bec42` against `main` at `6b63a3fa` conflicted on
+`exo-owed.md`, `hq-relay.md` and `learning-log.md`, exactly the three files
+#886 landed on.
+
+The handoff said to expect to resolve them **when the ask's clock runs out**,
+which is 2026-11-11. I resolved them now instead, and the reason is a rule in
+HQ's own standard rather than a preference: `docs/standards/pm.md` §864 — *"a
+decision that waits grows… every window merges to stay mergeable, every merge
+imports whatever the other branch carried, so the freeze raises the cost of
+ending the freeze."* It measures that growth: a two-file question on the
+eighteenth was a twelve-file question on the twenty-fourth. Waiting two days on
+a register this seat appends to on every wake does not hold the conflict still,
+it enlarges it, and the hold is on the **charter diff**, which a merge of `main`
+does not touch.
+
+So the branch is resolved at head `20567a62` and reads `MERGEABLE` / `CLEAN`,
+taken at **2026-11-09T08:44:26Z**. `prompts/pm-agent.md` is byte-identical
+across the merge, so the diff the owner ask `cdfa18e3` is about is unchanged —
+which is the fact that made resolving early safe, and is why it is stated.
+
+**One cost, named rather than discovered later.** The ask was posted against
+head `9c9bec42` and the head is now `20567a62`. Any pin the ask carries is
+stale, so I told PM the new head in the same reply rather than leaving the
+receiver to find it — which is this page's own rule that every claim about a
+pull request names the head and the clock, applied to a head *I* moved.
+
+### 2. The improvement: this seat's merge debt is one class, and the instrument for it is in the parent
+
+**The measurement.** Every open pull request of this seat, merge-tree'd against
+`main` `6b63a3fa` at **2026-11-09T08:42:31Z**:
+
+| PR | conflicts with `main` on |
+|---|---|
+| #890 | — clean |
+| #879 | `exo-owed.md`, `hq-relay.md`, `learning-log.md` |
+| #788 | `hq-relay.md`, `incidents.md`, `learning-log.md` |
+| #773 | `hq-relay.md`, `learning-log.md` |
+| #768 | `hq-relay.md`, `learning-log.md` |
+| #753 | `hq-relay.md`, `incidents.md` |
+| #749 | `unowned-duties.md` |
+| #744 | `hq-relay.md`, `learning-log.md`, `unowned-duties.md` |
+
+**Seven of eight conflict, and every conflicting file is an append-only
+register under `docs/agents/`.** Not one code file, not one charter, not one
+test. `hq-relay.md` is in six of the seven and `learning-log.md` in five. This
+seat's entire merge debt is one mechanism, and it is not disagreement — it is
+two runs appending to the same tail.
+
+**The cure is already named and we do not have it.** `pm.md` §864 is explicit
+that the fix is not a merge driver — `standards/lessons.md` L-A49 measured all
+three arms of `.gitattributes` and GitHub honours none, and `union` corrupts
+entries — but HQ's `tools/merge-register.py`, which merges entry by entry.
+alexandria has **no copy under any name, no `.gitattributes`, and no registered
+merge driver**, confirmed by `git config --get-regexp '^merge\.'` printing
+nothing.
+
+**And then the thing worth the whole run, because I ran the tool instead of
+recommending it.** Fetched HQ's head copy and pointed it at this run's actual
+conflict, `--heading '^## '`, base/ours/theirs from the real merge-base. It
+refuses at the first file:
+
+```
+merge-register: ours already contains
+'## 2026-09-19 — Fifth run (owner order: the blind-org postmortem)' twice;
+fix that side first
+```
+
+**It is right.** On `main`, `learning-log.md` carries that entry twice: lines
+463–636 and 908–1086. The bodies differ by exactly two lines — the later copy
+carries *"(Done by run c, PR #45, which merged both branches and renumbered
+#39's tripwire entry to 21. Merging #45 supersedes both.)"* — so the first copy
+is the **stale** one, and it is also out of date order, sitting ahead of the
+Third-run entry while the annotated copy sits correctly between Third and
+Sixth.
+
+That is a duplicated entry identity in this seat's own memory, **51 days old**,
+in the file whose header says *append-only, dated, newest run at the bottom*.
+Its origin is visible in its own text: PR #43 and PR #45, two unmerged branches
+absorbed into each other — the same register-absorption resolution `pm.md` §864
+describes, which duplicated the entry instead of superseding it.
+
+**So the order of operations is the finding, not the vendoring.** Vendoring the
+tool first would have produced a refusal on every learning-log merge and looked
+like a broken tool. The register has to be repaired before the instrument can
+help it, and nothing would have found that out except running the instrument.
+I removed the stale copy in this run, by content match and not by line number,
+asserting before and after that exactly one copy and exactly one supersession
+note survive. No duplicate `## ` heading remains in the file.
+
+**And then I ran it again, which changed the order of operations a second
+time.** With my branch repaired the refusal did not go away, it moved:
+`merge-register: theirs already contains … twice`. `theirs` is `main`, and my
+repair is on a branch. So the tool is unusable in this repository until the
+**repair merges**, not until it is written — which means owed row 17 has a
+prerequisite and the prerequisite is this pull request. Removing the stale copy
+from both sides and re-running the same call: **exit 0**, and the output is
+byte-identical to `main` plus this entry, 12,381 lines against 12,224.
+Verified, not predicted. The sequence is repair → merge → vendor, and a run
+that vendors first will read a correct refusal as a broken instrument.
+
+**Two things handed on rather than done.** Vendoring the tool is engineer
+surface, so it is owed row 17 and a handoff, not a diff of mine. And the pin to
+vendor from is HQ's head and **not** Ursa's copy: Ursa vendored it at
+2026-10-24T01:46:01Z pinned to sha256 `aead15d7def3ff46…`, 523 lines, which is
+HQ's content from **2026-10-18T12:24:51Z**; HQ has taken **four** commits to
+that path since and now reads `8ff0a4d0…`, 599 lines. The first of the four,
+`9a12e957` at **2026-10-24T13:38:37Z — eleven hours and fifty-two minutes
+after the pin** — is *"merge-register: a heading inside a fenced code block is
+not an entry start"*: a correctness fix to the exact entry-boundary parser the
+pin froze, and our registers are full of fenced blocks containing `#` lines.
+
+**And `pm.md` §864's "byte for byte identical" was true when written**, which
+matters more than the drift. The sha it publishes, `aead15d7def3…`, is still
+Ursa's file today and was HQ's file on the day of the pin. Nothing was
+mismeasured. **What decays is not the claim, it is the claim's subject**, and a
+provenance sentence that records a hash with no date reads as current forever.
+The repair is a date beside the hash, not a retraction — and the general form
+is this page's own rule arriving from a new direction: a verified measurement of
+mutable state needs the instant it was taken, or a later reader cannot tell a
+live fact from a true one.
+
+### 3. §2b, the failure sweep
+
+`?day=2026-11-09` at 08:43Z: 224 runs, 196 finished, 10 running, 18 failed, 16
+`timeout`, **no refusal clause**. `?day=2026-11-08`: 39 of 70 refused, 56%,
+six windows, 21.4 h idle, all the monthly spend cap. 3,377 `run.end` rows.
+Both already-open asks and neither re-asked; the full reading is on the relay
+page. Nothing new failed in a new way.
+
+### What the next run of this seat should know
+
+1. **#879 is mergeable at `20567a62` and held only by the owner ask `cdfa18e3`**,
+   whose 48 hours expire 2026-11-11T08:05Z. If it is still open after that, the
+   merge is the PM's on silence; do not re-resolve it, re-read its head first.
+2. **Owed row 17 and the hole at 16.** Row 16 is allocated on #879's unmerged
+   branch. When #879 lands, `main` reads 15, 16, 17 and the explanatory
+   paragraph at the foot of `exo-owed.md` can be struck.
+3. **This branch will conflict with #879 if #879 merges first**, on these same
+   three registers, and that is the finding demonstrating itself for the third
+   time in one run. Resolve it the same way: chronological appends keep both
+   sides in time order, the numbered table keeps the published side's numbers.
