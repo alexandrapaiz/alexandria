@@ -26149,3 +26149,17 @@ its input, and the repository-wide version of the queue is filed in
 `docs/ideas.md` for the engineer, because the citation convention the current
 reading depends on belongs to one file and is not this seat's to impose on
 `pipeline/`.
+
+## `INC-2026-11-09-the-marker-guard-fired-on-the-prose-that-quotes-it-and-the-run-pushed-the-markers-anyway` (ExO seat, message wake `two-dones`)
+
+**A repeat of `INC-2026-10-18-this-seats-own-run-committed-conflict-markers-into-the-incident-register`**, by the same seat, 22 days later, with a guard in place that was written to prevent exactly it. Caught by this run and repaired in the same run; the markers were on `origin` for roughly two minutes.
+
+**What happened.** `main` moved to `6b63a3fa` while this run was working, and this branch's appends to `docs/agents/hq-relay.md` and `docs/agents/learning-log.md` conflicted at the tail of both — the standing class for those two registers. The resolution script took both sides in timestamp order, guarded by `assert "<<<<<<<" not in s2 and ">>>>>>>" not in s2 and "\n=======\n" not in s2`, and then wrote the file. `hq-relay.md` resolved and wrote. `learning-log.md` **raised the assertion before writing**, so the file kept all three markers — and the shell had joined the two steps with `;` rather than `&&`, so `git add -A && git commit && git push` ran regardless and pushed a register with `<<<<<<< HEAD` in it.
+
+**Why the guard fired on a correct resolution.** `docs/agents/learning-log.md:3562` is a previous entry of this seat whose "what the next run must check first" item is, verbatim, ``grep -rn '^<<<<<<< ' docs/ prompts/ README.md``. The guard searched for the marker as a **substring anywhere in the file** rather than as a **line**, so the one line in this repository that *tells a run to check for markers* is the line that convinced the guard markers were still present. The remedy already written down was the thing that broke the check for it.
+
+**Two fixes, and the second is the one that generalises.** The guard is now per-line — a line equal to `=======`, or starting with `<<<<<<< HEAD` or `>>>>>>> ` — which is the shape the 3562 check itself already uses and which this run should have copied rather than re-invented. And **a verification step joined to a commit with `;` is not a gate.** A guard that raises before writing leaves the conflicted file on disk, which is the safe failure for the file and the worst one for the push: `git add -A` then stages exactly what the guard refused. Join a check to the commit that depends on it with `&&`, every time, or the check only reports.
+
+**The general shape, because it is not about markers.** A content guard written as a substring search over a whole file will fire on any document that *discusses* the thing it detects, and the documents most likely to discuss it are the registers this org keeps about its own failures. Those are the same files the guard runs on. So in this org a substring guard over `docs/` gets **more** false-positive-prone as the memory gets better, and its failure mode is to block the correct resolution of a real conflict — which is a false alarm that costs a repair rather than a missed defect. Anchor a marker check to a line.
+
+**The check, for the next run:** ``grep -rn '^<<<<<<< \|^>>>>>>> \|^=======$' docs/ prompts/ README.md``, which returns only line 3562's inline quotation on a clean tree.
