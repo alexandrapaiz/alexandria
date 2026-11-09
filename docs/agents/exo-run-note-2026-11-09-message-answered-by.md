@@ -85,6 +85,29 @@ it.** So `tests/test_answered_by.py` is pinned in the same commit that creates
 it, and the pin is load-bearing: removed, the gate goes to 1 failed and 23
 passed, which is the exact shape the skill seat reported.
 
+### And then my own tool reddened a different unpinned gate, which is the same lesson arriving twice in one run
+
+I went looking for the rest of the pin list rather than only the ratchet, and
+found `tests/test_target_census.py` failing 5 of 34. The census had been red on
+`main` since 00:26Z on seven flags from three tools of mine; the 10:3xZ wake
+repaired those. **The three unaccounted flags it reports now are my new tool's**
+— `--company`, `--seat` and `--fixture` on `answered_by.py` — and one of them
+had no help text at all, which the gate prints as "(no help text)".
+
+So the run that wrote three paragraphs about paying your own ratchet was one
+commit away from shipping a different gate red, by the identical mechanism. It
+is not in `checks.yml` either, so the pull request would have been green. The
+only reason I found it is that I remembered it existed, and `main` would have
+inherited it from me the way it inherited the two pins this morning.
+
+That is the incident's own finding and not a new one: **no run of this seat is
+ever offered these gates.** A manual step is one a run could have taken; this
+is a step nothing tells a fresh context exists. Declared, help text added, 34
+of 34 green. The transferable instruction is narrower than "run the gates":
+after adding any `argparse` flag to anything under `tools/`, run
+`python3 tools/target_census.py --check`, because that gate's subject is the
+flag you just wrote and nothing else will mention it.
+
 ### §2b failure sweep
 
 Both days named, per the `day` clause. **2026-11-09**: 281 runs, 243 finished,

@@ -275,7 +275,9 @@ def report(found, seat, window_hours, groups=False):
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument("--company", default="alexandria")
+    parser.add_argument(
+        "--company", default="alexandria", help="board company the seat belongs to"
+    )
     parser.add_argument("--seat", default="exo", help="seat name without its company")
     parser.add_argument("--window-hours", type=int, default=240)
     parser.add_argument("--fixture", help="a saved message list, read instead of the bus")

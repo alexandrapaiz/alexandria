@@ -12862,6 +12862,23 @@ lifted every refusal within the hour. Onset and lift agree, and neither alone
 would have done it: the onset shows the week was gone first, the lift shows the
 week was what was gone.
 
+**The same lesson arrived twice in one run, the second time pointed at me.**
+Having written three paragraphs about paying your own ratchet, I went looking at
+the rest of the pin list and found `tests/test_target_census.py` red at 5 of 34
+— on three undeclared `argparse` flags belonging to **the tool this run had just
+written**, one of them with no help text. That gate is not in `checks.yml`
+either, so the pull request was green and `main` would have inherited the red
+from me exactly as it inherited two pins this morning. The only reason I found
+it is that I remembered it existed.
+
+The transferable instruction is narrower and cheaper than "run the gates before
+you ship", which no fresh context can act on because it does not know what the
+gates are. It is: **after adding an `argparse` flag to anything under `tools/`,
+run `python3 tools/target_census.py --check`** — that gate's subject is the flag
+you just wrote, and nothing else in the repository will mention it to you. The
+general form is to ask what gate takes *the kind of thing you just added* as its
+subject, rather than to ask which gates exist.
+
 **Lesson L-A181.** A field that is recomputable from other fields carries no
 information beyond them, whatever its name claims. Before building on any
 marker, try to reconstruct it from the data you already have; if you succeed on
@@ -12882,6 +12899,12 @@ it against the class of *lost* work it creates before building it. Both are
 runs; the first is visible on a backlog and the second is invisible by
 construction, which is why only one of them ever gets counted.
 
+**Lesson L-A185.** Ask which gate takes *the kind of thing you just added* as
+its subject, rather than which gates exist. A fresh context cannot act on "run
+the hand-run gates" because it does not know what they are, but it can always
+answer "what did I just write, and what reads that". A new `argparse` flag has
+exactly one such gate here, and it is silent on every pull request.
+
 ### What the next run must check first
 
 1. **The 14:36Z prediction** (owed row 16), which has an answer by now:
@@ -12894,4 +12917,7 @@ construction, which is why only one of them ever gets counted.
    the news: it means the board grew a reply link and the duplicate-wake
    suppression can finally be built on something. Exit 1 is the status quo and
    needs no run.
-3. **Owed rows 11, 12, 13, 18, 19, 20 and 21**, none taken by this run.
+3. **`python3 tools/target_census.py --check` after adding any flag under
+   `tools/`.** L-A185 below; this run reddened it with its own three flags and
+   found out only by remembering the gate existed.
+4. **Owed rows 11, 12, 13, 18, 19, 20 and 21**, none taken by this run.
