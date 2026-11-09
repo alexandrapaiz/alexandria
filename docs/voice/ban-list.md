@@ -4733,3 +4733,90 @@ gap that the same collision had left empty (incident 25).
     LANDED docs/voice/check_voice.py: "SLOT_INVARIANT"
     LANDED docs/voice/reviews/2026-11-08.md: "the gate said OK"
     ```
+
+158. The register of ungated rules whose admission test is narrower than the
+    rules it sweeps.
+    Not a phrase. The entry is here rather than in the ledger because the
+    repair is a criterion and the damage is a reading: a sweep's silence read
+    as "no rule is ungated" when it means "no rule of the shape I admit is
+    ungated".
+    The specimen is this file's own `ABSOLUTE_RULES`, which `ungated` reads to
+    answer which of the generator's absolute rules the press can refuse. Its
+    admission test read "a row belongs here when the generator gives it a
+    target of zero, or says never, or the canon numbers it a law and the owner
+    has ruled on it twice." Law 14's fourth count reads "Numbers in the
+    heaviest paragraph: past three, cut every number that does not change what
+    the reader would do." Its target is three, so for as long as the table has
+    existed the one sweep written to find a rule with nothing between it and a
+    reader could not admit it.
+    What makes it a class rather than a miss is which rule got through. On
+    2026-11-08 the grade of `2026-W44` named that edition's figure dump as the
+    single biggest weakness of the newest issue the product serves, and it
+    counted the figures by hand, because no command in this file counted a
+    number. The sweep for ungated rules was green. The rule it could not see
+    was the one the day's verdict turned on, and all four served editions fail
+    it: heaviest paragraphs of 8, 9, 10 and 16 against a target of 3.
+    The test, and it is asked of a register rather than of a rule. State the
+    admission criterion, then name a rule the generator states absolutely that
+    the criterion would exclude. If you can, the sweep's denominator is a
+    description of the criterion and not of the file.
+    The repair is the criterion and not a row. "A target of zero" becomes "a
+    target of zero, or a number with no budget attached to it", which admits
+    the three thresholds law 14's fourth count states and anything else the
+    generator pins to a figure. The denominator moves 11 to 12 and the ungated
+    count 5 to 6, so figures printed before 2026-11-08 are not comparable to
+    figures printed after it, which is entry 120's class and is said out loud
+    rather than left for a later run.
+    ```
+    Enforced docs/voice/check_voice.py: "a number with no budget attached to it"
+    LANDED docs/voice/check_voice.py: "figures"
+    LANDED docs/voice/check_voice.py: "FIGURE_TARGET"
+    LANDED docs/voice/reviews/2026-11-08-message.md: "had no instrument"
+    ```
+    No prompt diff, and the reason is step 3's. The rule is in the generator,
+    deployed, with its number in it, under a heading that calls the count a
+    hard gate. A second wording of a rule the writing machine already holds
+    makes the generator longer and the press no better. What was missing was
+    the instrument, and the instrument is on this seat's surface.
+
+159. The exemption carried into a format it was never written for.
+    Not a phrase. The entry is here because the failure is silent on the one
+    surface its author writes most of their prose on, which is the shape
+    entry 146 names and the opposite direction of travel.
+    The specimen is `quoting` in this file. It excused any line beginning with
+    four spaces, and the reason was right: in Markdown a four-space indent is
+    a fenceless code block, so a semicolon inside it is the literal character
+    and striking it would falsify a command. `selfcheck` then called that
+    reading over every added line of every file, including `.py` files, where
+    an indent is not a code block. It is scope. So every line of every
+    docstring and every indented comment in `check_voice.py` was excused for
+    as long as the check has existed.
+    Measured on 2026-11-08: 2,670 indented prose lines in that file, 14 of
+    them carrying a canon law 1 mark the reading could not see, 10 of those
+    plainly this seat's own prose joining two finished sentences with a
+    semicolon. The run that found it found it by committing one, in a
+    docstring, in a run whose subject was a rule with no gate.
+    The test. For every wholesale exemption a gate grants, name the property
+    of the input that makes the exemption true, then name a file the gate
+    reads where that property does not hold. An indent means a code block in
+    Markdown and scope in Python, and one reading was doing both.
+    The repair is to move the decision to the caller rather than to delete the
+    exemption, because the Markdown half was never wrong. `selfcheck` grants
+    the indent excuse everywhere except `.py` under `docs/voice/`, which is
+    this seat's own surface, and `QUOTING_CASES` pins the five readings that
+    have to hold. Scoped there on purpose: the same reading applies to
+    `tools/*.py` and widening it from here would drop a new red into lanes
+    this seat does not own, on prose this seat did not write, which is
+    incident 23's class. That half is in docs/ideas.md.
+    ```
+    Enforced docs/voice/check_voice.py: "indent_is_code"
+    LANDED docs/voice/check_voice.py: "QUOTING_CASES"
+    LANDED docs/voice/reviews/2026-11-08-message.md: "excused it"
+    ```
+    Swept, and the sweep found a second surface rather than a second file. A
+    body typed into `tools/board.py send` or `tools/board.py report` is read by
+    nothing, because `selfcheck` reads added lines in files and a board post is
+    neither. This run committed the same mark there within the hour of
+    narrowing the reading above, and the message was on the bus before it could
+    be struck. That one is the engineer's and is in docs/ideas.md under the
+    shared refusal module.
