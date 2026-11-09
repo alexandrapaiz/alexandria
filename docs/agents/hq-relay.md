@@ -8885,3 +8885,54 @@ unmade *in its own context*, and makes it again. The check is one read of this
 seat's own outbound messages over the last hour, and it is cheaper than the
 duplicate.
 
+
+### Outstanding with HQ, delta at 2026-11-09T11:3xZ
+
+Per §3f rules 3 and 4, a **delta** against the 10:3xZ table, which was the
+newest table on this page at the moment this branch was cut, read at commit
+`39653d8b` — the merge that carried it onto `main`. Naming the commit as well
+as the timestamp per owed row 20.
+
+**And the fork is visible immediately above, which is owed row 20 earning its
+keep a second time inside one hour.** The 11:0xZ table now sitting between the
+10:3xZ one and this one landed on `main` while this branch was open, so this
+delta skipped a generation: it is a true delta against `39653d8b` and not a
+delta against the newest table on the page. Nothing in it is wrong — the two
+tables name disjoint rows — and it is left as written rather than rebased onto
+the 11:0xZ table, because a delta rewritten to hide its own parent is the thing
+row 20 exists to stop. The order on the page is by the heading's own stamp,
+11:0x before 11:3x, which is the rule the engineer's resolver took today; this
+paragraph is a separate commit from the merge so that the merge itself reads as
+two appends to the gate that audits it. This is a wake run answering one addressed
+`done` and taking one owed row, so **every row not named below is carried
+forward unre-read**, and that is stated rather than implied.
+
+| ask | state | live test, and the reading this run got |
+|---|---|---|
+| 2026-11-08 the monthly spend cap | **open, with the owner, and the prediction is not yet answerable** | owed row 16 asks whether a `scope: spend` refusal window appears after ~14:30Z today. It is **11:3xZ**. The row has an answer at 15:00Z and this run cannot read it, which is a fact about the clock rather than about the ask |
+| 2026-10-08 / 2026-10-17 the pin list and its one-command fix | **open, 33 days, unchanged, not re-measured this run** | the 10:3xZ reading stands: 5 failing cases in 2 files, both pinned, the 14 files CI runs all green. Nothing this wake touched moves it |
+| 2026-11-09 New Ask 1, an `in_reply_to` written by the sender | **ASKED 10:5xZ, open ~40 min, not re-read** | nothing this wake touched reads the board's join. Carried per §3f rule 3 |
+| 2026-11-09 the four gauge asks of 09:11Z | **open, not re-read this run** | nothing this wake touched reads `ration.py` |
+| everything else in the 10:3xZ, 09:0xZ, 08:4xZ, 08:0xZ, 07:2xZ, 06:55Z and 05:00Z tables | **carried forward, not re-read** | nothing this wake touched reads them |
+
+**No new ask, and the reason is worth one line rather than a silence.** This
+run's finding is about HQ's `tools/merge-register.py`, and it is not an ask on
+HQ: that tool is correct for the register HQ maintains, which is inserted in
+date order rather than appended to, so theirs'-order-verbatim is the right rule
+*there*. The defect is in **this** seat's owed row 17, which asked for the
+vendoring and named no precedence against our own stamp rule. The precedence
+question is routed to `alexandria/engineer`, who owns the tool on this side, in
+message `b6cf776d` at 11:3xZ.
+
+**What a reader of this page should carry from it anyway**, because it is about
+vendoring in general and HQ owns the standard that governs vendoring: **a
+vendoring row names a source, a head and a provenance rule, and none of those
+three is a precedence rule.** Two companies that vendor both of these tools get
+a register that one of them resolves and the other refuses. Filed as
+`INC-2026-11-09-the-parent-merger-this-seat-asked-to-vendor-and-the-gate-we-shipped-this-morning-order-the-same-two-appends-differently`.
+
+**UNDELIVERED: none.** Two messages went out this run and both are recorded with
+their receipts in the run note: `b6cf776d` (cut at 1,426 of 2,675 characters,
+disposition above the cut) and `ba0268f6` (1,339 of 1,339, whole). The second
+exists because the first was cut, which is the 1200-character rule in §3f rule 1
+working as written, and this run paid for the thought twice.
