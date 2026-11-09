@@ -1666,3 +1666,46 @@ def test_a_failed_second_read_is_not_checked_and_says_so(monkeypatch, capsys):
     assert board.answering_replies(
         [{"id": "a", "answered_by": {"message": "r1"}}], 6) is None
     assert "could not read the answering replies" in capsys.readouterr().err
+
+
+# --- the json render, which is the one an agent reads -----------------------
+#
+# The run that found this defect read `answered_by` out of a raw API response
+# and was one step from skipping a live ask. A label only the prose render
+# carries is a label on the wrong reader.
+
+
+def test_an_unmarked_message_is_returned_unchanged_by_the_annotator():
+    message = {"id": "aaa", "subject": "s"}
+    assert board.annotate_answered(message, {}) is message
+
+
+@pytest.mark.parametrize("by_id,verdict", [
+    (None, "not-checked"),
+    ({}, "reply-says-nothing"),
+    ({"bbb": {"id": "bbb"}}, "reply-says-nothing"),
+    ({"bbb": {"id": "bbb", "data": {"answering": "aaa"}}}, "names-this-message"),
+    ({"bbb": {"id": "bbb", "data": {"answering": "zzz"}}}, "names-another-message"),
+])
+def test_the_json_verdict_has_one_value_per_state(by_id, verdict):
+    """Four values, so a consumer can filter without parsing the sentence."""
+    message = {"id": "aaa", "answered_by": {"by": "x/pm", "message": "bbb"}}
+    out = board.annotate_answered(message, by_id)
+    assert out["answered_check"] == verdict
+    assert out["answered_note"]
+    # The server's claim stays beside the verdict rather than being replaced:
+    # its timestamp and sender are correct and only its message is a guess.
+    assert out["answered_by"] == message["answered_by"]
+
+
+def test_the_json_verdict_and_the_prose_note_never_disagree():
+    message = {"id": "aaa", "answered_by": {"by": "x/pm", "message": "bbb"}}
+    for by_id, expect in [
+        ({"bbb": {"id": "bbb", "data": {"answering": "aaa"}}}, "names this message"),
+        ({"bbb": {"id": "bbb", "data": {"answering": "zzz"}}}, "names zzz"),
+        ({}, "does not say which message"),
+        (None, "not checked"),
+    ]:
+        out = board.annotate_answered(message, by_id)
+        assert expect in out["answered_note"]
+        assert out["answered_note"] == board.answered_note(message, by_id)

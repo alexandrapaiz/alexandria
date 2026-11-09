@@ -545,6 +545,34 @@ def answered_note(message, by_id=None):
             f"reply does not say which message it answers")
 
 
+def annotate_answered(message, by_id=None):
+    """A copy of `message` carrying the verdict on its own `answered_by`.
+
+    For `--json`, which is what an agent reads. The verdict goes in beside the
+    server's claim rather than replacing it, because the claim's timestamp and
+    sender are correct and only its `message` is a guess.
+
+    `answered_check` is one of `names-this-message`, `names-another-message`,
+    `reply-says-nothing` or `not-checked`, and the sentence a human would read
+    is in `answered_note`. A consumer that filters on `answered_by` being
+    present should filter on this instead.
+    """
+    if not message.get("answered_by"):
+        return message
+    note = answered_note(message, by_id)
+    reply = (by_id or {}).get((message.get("answered_by") or {}).get("message"))
+    claim = ((reply or {}).get("data") or {}).get("answering")
+    if by_id is None:
+        verdict = "not-checked"
+    elif claim and claim == message.get("id"):
+        verdict = "names-this-message"
+    elif claim:
+        verdict = "names-another-message"
+    else:
+        verdict = "reply-says-nothing"
+    return {**message, "answered_check": verdict, "answered_note": note}
+
+
 def answering_replies(messages, since_hours, limit=500, env=None, opener=None):
     """The replies named by any `answered_by` in `messages`, by id.
 
@@ -1291,17 +1319,25 @@ def cmd_inbox(args):
         else:
             unknown_seat = seat not in roster
 
+    # The answering replies come from a second, unfiltered read, because
+    # `read_messages` sends `to_seat` and an answering reply is addressed to
+    # somebody else by definition. Its own docstring already said the bus
+    # returns no other seat's mail.
+    #
+    # Both renders get it, and `--json` is the one that mattered most: the run
+    # that found this defect read `answered_by` out of a raw API response and
+    # was one step from skipping a live ask. An agent reads `--json`, so a
+    # label only the prose render carries is a label on the wrong reader.
+    by_id = answering_replies(messages, args.since_hours)
     if args.json:
         print(json.dumps(
-            {"truncated": truncated, "seat": seat, "seat_on_bus": not unknown_seat, **buckets},
+            {"truncated": truncated, "seat": seat,
+             "seat_on_bus": not unknown_seat,
+             **{name: [annotate_answered(m, by_id) for m in group]
+                for name, group in buckets.items()}},
             indent=2, sort_keys=True,
         ))
     else:
-        # The answering replies come from a second, unfiltered read, because
-        # `read_messages` sends `to_seat` and an answering reply is addressed
-        # to somebody else by definition. Its own docstring already said the
-        # bus returns no other seat's mail.
-        by_id = answering_replies(messages, args.since_hours)
         print(render_inbox(
             buckets, seat, company, show_broadcast=args.broadcast,
             truncated=truncated, by_id=by_id,
