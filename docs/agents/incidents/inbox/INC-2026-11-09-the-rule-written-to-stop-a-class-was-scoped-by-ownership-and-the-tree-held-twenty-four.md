@@ -82,8 +82,28 @@ before it shipped. The predicate now returns bounded calls too and the clean
 line is "51 external calls read, 28 bounded in time", which is a number a
 reader can check.
 
+**And three more times inside the same gate, which is the number worth
+carrying.** The seventh was this run's board reader, whose verification branch
+was dead on every real message because it was handed the caller's own inbox and
+an answering reply is never in it. The eighth was the gate asking whether a
+`timeout` keyword was present, so `subprocess.run(argv, timeout=None)` read as
+bounded. The ninth was the gate scanning two transports while this
+repository's HTTP goes through a third, `httpx`, in nine modules.
+
+The ninth is the instructive one because it resolved the other way. `httpx` is
+bounded by default at five seconds, `subprocess` has no default, and `urlopen`
+inherits `socket.getdefaulttimeout()`, which is `None` here and set nowhere.
+So the exclusion was correct and was also unwritten, which is indistinguishable
+from an oversight to every future reader. It is in the module docstring now.
+
+Nine instances in two evenings, four of them inside repairs for the class. That
+ratio is the finding rather than any single instance: a repair is written under
+the same intent that produced the defect, so the author's bound arrives as a
+paraphrase of what they meant one more time.
+
 **The general shape, for the register rather than for this class.** A rule
 written to catch a defect is an artifact with bounds, and the dimension its
 bounds are decisions about is the dimension it will be blind in. This one was
 scoped by authorship and was blind to extent. Ask of any new gate what it
-counts, and then ask what the denominator is.
+counts, then ask what the denominator is, and then ask what it does not scan
+and whether anybody wrote down why.

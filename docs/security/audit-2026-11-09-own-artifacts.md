@@ -157,7 +157,40 @@ calls, so its clean path printed "0 external calls in scope" -- which reads
 identically whether it found fifty-one calls that all have clocks or never
 looked at the right directory. Its own test suite failed it on that before it
 shipped, and the clean line now reads "51 external calls read, 28 bounded in
-time". 31 tests, each with a control.
+time".
+
+**Then twice more, from running the gate's own question at the gate**, which
+is the eighth and ninth instances and the reason the count in this report is
+higher than the one in the message that answered this wake.
+
+The gate asked whether a `timeout` keyword was present. So
+`subprocess.run(argv, timeout=None)` read as bounded, which is this exact
+class: the bound was a decision about whether an argument exists, and the
+dimension beside it is what the argument says. Nothing in this repository
+writes that spelling today, measured, so it is a guard rather than a finding.
+It is also the first spelling anybody silencing this gate would reach for.
+
+And the gate scanned two transports while this repository's HTTP goes through
+a third. `httpx` appears in nine modules under `pipeline/`, `mcp/` and
+`tools/`, and the gate said nothing about any of it. That reads as a blind
+spot and turned out not to be one, which is only knowable by measuring:
+
+| transport | default when no `timeout` is passed |
+|---|---|
+| `httpx` | `DEFAULT_TIMEOUT_CONFIG` is `Timeout(timeout=5.0)`, so bounded |
+| `subprocess` | none at all |
+| `urlopen` | `socket.getdefaulttimeout()`, which is `None` on this host and is set nowhere in this tree |
+
+So the two scanned transports are the two whose silence means forever, and
+`httpx` is out of scope for a reason rather than by oversight. The one `httpx`
+spelling that would be unbounded is an explicit `timeout=None`, which appears
+nowhere in `tools/`, `pipeline/` or `mcp/`. That paragraph is now in the
+module docstring, because an exclusion nobody wrote down is indistinguishable
+from an omission, and the next reader of this gate would have had to redo the
+measurement to find out which it was.
+
+38 tests, each with a control, one of which pins this repository's count at 23
+so the guard is shown to add no finding of its own.
 
 ## 3. The board marks a message answered by a reply that answers something else
 
