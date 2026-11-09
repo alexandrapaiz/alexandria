@@ -26149,3 +26149,98 @@ its input, and the repository-wide version of the queue is filed in
 `docs/ideas.md` for the engineer, because the citation convention the current
 reading depends on belongs to one file and is not this seat's to impose on
 `pipeline/`.
+
+## INC-2026-11-09-the-gate-for-stale-reservations-could-not-see-the-table-that-holds-them — thirteen copy candidates, the oldest forty-four days, under a green check whose scope was the one table where every row had already been asked (2026-11-09, writer seat, run 69)
+
+**Class, per ADR-29.** Enforcement gap, and specifically the one this file
+already names in its own words: "a check that cannot see the artifact must not
+read as a healthy product"
+(`INC-2026-09-27-new-register-shipped-without-a-gate`, and the delivery-health
+entry a week later). Incident 20's class at a new scope, which is also how
+incident 29 described itself.
+
+**Recorded because the standing rule says so.** It is at least the third
+appearance of a gate in this seat's own instrument answering a question it
+cannot see. `INC-2026-11-02-the-subcommand-dispatcher-answered-ok-to-a-name-it-did-not-have`
+is the same shape through the dispatcher, and run 68's
+`INC-2026-11-09-the-queued-gate-was-wrong-about-law-8-a-second-time-and-in-the-opposite-direction`
+is the same shape through a gate body, filed the day before this one.
+
+### What happened
+
+`docs/voice/awaiting-her-word.md` holds two tables. The lower one is questions
+for the owner and it has a clock, because `docs/standards/pm.md` §22 puts one
+there. The upper one is copy candidates nobody has ruled on.
+
+`check_voice.py deadlines` read only the lower table. The reason was written
+into its own source as a premise: the rows above "wait on a seat's diff and
+nothing about them expires". So on 2026-11-09 it printed `every row names its
+ask, every clock is readable, and none of them has run out`, exited 0, and the
+upper table held thirteen rows with no ask, no clock and no trail between them.
+The oldest, `site/app/page.jsx:44`, was drafted 2026-09-26 and was forty-four
+days old. Eight were twenty-two. Four of the thirteen surfaces were red in
+`check_voice.py reading` in the same minute, and `check_voice.py claims`
+reported `site/app/mission/page.jsx:29` carrying a claim the quality-claims
+register marks `contradicted`, unhedged at 100% of the claim's words.
+
+`deadline_findings` had a code named `unasked`, whose printed advice was that
+the row "is owed an ask from the PM and has never had one". Every row in the
+table it could read had been asked. So the code was reachable in the cases and
+unreachable in production, which is the sharpest version of this class: not a
+missing check, but a check whose one finding had been scoped out of existence.
+
+### Why the premise was wrong, which is the part worth keeping
+
+The register itself says a row leaves the open table two ways: she rules on it,
+or the frontend seat sets it. That seat sets APPROVED copy. So a candidate she
+has never ruled on is not waiting on anybody's diff, and the premise failed on
+the only rows it governed.
+
+The closing section of the register had been saying "Nothing fires when a row
+here goes stale" in plain words for fourteen days, which is the fact and not a
+warning. It sat two screens below the gate that would have had to read it.
+
+### The second defect, inside the fix
+
+Widening the gate produced a false green of its own. The code was renamed
+`unasked` to `unshown`, the reporting half kept filtering on the old string,
+both lists went empty, and the gate printed `every open candidate carries an
+ask` over thirteen that carry nothing, at exit 0. A case over `open_findings`
+could not catch it, because `open_findings` was correct. The defect was two
+names for one vocabulary, held in two functions. `code_vocabulary` is the
+repair and it reads the gate body's own source against the declared codes.
+
+Worth recording plainly: the commit fixing a false green shipped a false green,
+and it was caught by reading the output rather than by the suite.
+
+### The ruling that is not an omission
+
+The obvious repair is to post each row as a §22 ask, and the first version of
+the widened gate told its reader to do exactly that. It is wrong, and the
+wrongness reads as diligence, which is why it is written down here.
+
+A §22 ask proceeds as recommended after forty-eight hours of her silence.
+Applied to these rows it would set thirteen lines of copy she never ruled on,
+on the recommendation of the seat whose last eight unsupervised rounds she
+rejected one after another (incident 25). `docs/agents/copy-pipeline.md`
+reserves the ruling to her in terms that leave no room, "Her verdict is the
+only verdict. This step is hers and it does not move", and that is a safety
+clause with evidence under it. `docs/agents/cross-repo-law.md` rule 3 settles
+the collision: a local law's preconditions survive a parent override unless the
+override names them, and §22 names none of this.
+
+So the open table gets an age and not a deadline. This is incident 23's class
+read correctly for once, instead of a parent standard quietly eating a local
+safety clause.
+
+**Fixed in this run.** `deadlines` reads both tables, prints every open row
+with its age, distinguishes `unshown` from `routed` so a row this seat has
+already handed over is not scored as its failure, and refuses the silence-rule
+reading in its own output. `code_vocabulary` closes the rename hole. The
+register's closing section no longer claims nothing fires, and it carries the
+reasoning for why these rows have no clock.
+
+**Not fixed, and not this seat's.** Thirteen candidates still need her ruling.
+Routed to the PM as board handoff `1bc20f1b`, which asks for one route to her
+attention and explicitly not for a clock. Four surfaces serve false lines until
+she rules or the rows are pulled.

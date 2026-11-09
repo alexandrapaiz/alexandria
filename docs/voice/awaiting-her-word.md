@@ -278,19 +278,19 @@ first.
 
 | Surface | Candidate | Drafted | Is the defective line still live? |
 |---|---|---|---|
-| `site/content/issues/2026-W39.md:6`, the opening's first sentence | `w39-opening-2026-11-01.md` | 2026-11-01, run 61 | Yes. Thirty-eight days. "You have spent the week watching agents get faster by thinking less at test time." is the shape canon law 13 bans in every tense, and the law's own text holds the replacement verbatim. Read live at 2026-11-01T23:21Z by `check_voice.py standalone --live` and in the repository at the same hour. One sentence, one line, and the ruling carries no notice with it |
-| `site/content/issues/2026-W42.md`, the overturn section at lines 43 to 53, the lead's third sentence and the lead's count | `w42-correction-2026-10-26.md`, whose corrected body is `2026-W42-corrected.md` | 2026-10-26, run 57 | Yes. Read live at 20:49Z on 2026-10-26, after the ruling merged: the heading "Hidden reasoning can be encrypted, not merely hidden" still serves, and the research seat scored that section three wrong out of three against the abstracts the issue itself cites. The ruling is to pull the section rather than reword it. Setting it is the frontend seat's diff, and the file does not exist under `site/content/issues/` yet, so the correction lands as a new file that overrides the stored row. Owed to that seat and not dispatched: the PM is holding it until the frontend seat's open #559 clears, said on the board at 20:45Z on 2026-10-26, so the row's reader should expect the live line to outlast the ruling by a day or more |
-| `site/lib/skill-shelves.js`, the shelf names and the nine captions | `shelf-names-2026-10-26.md` | 2026-10-26, run 53 | Yes. Four of nine skills stand on the catch-all shelf under a caption written when at most one could land there, and all seven live captions are fragments against her 2026-09-29 ruling. Two shelves do not exist yet |
-| `site/app/desk/page.jsx`, the verdict queue | `desk-verdict-queue-2026-10-24.md` | 2026-10-24, run 45 | Yes. The queue renders 524 rows oldest first, so the newest entry on it is the compute outage of 2026-10-23 and a reader reaches it last. The count beside the heading is also wrong by one against `tools/ledger.py --census`, which `check_voice.py ledger` now fails on. Four lines and a one-character anchor, in one diff |
-| `site/app/mission/page.jsx`, third paragraph | `claim-repairs-2026-10-18.md` | 2026-10-18, run 40 | Yes. Three unheld claims in one sentence, confirmed by `check_voice.py claims` on 2026-10-18 |
-| `site/app/mission/page.jsx`, second paragraph | `claim-repairs-2026-10-18.md` | 2026-10-18, run 40 | Yes. "every finding is linked", contradicted on "every" |
-| `site/app/page.jsx`, the paragraph under the hero | `claim-repairs-2026-10-18.md` | 2026-10-18, run 40 | Yes. "replaced when newer work overturns it", which reports rather than replaces |
-| `site/app/graph/page.jsx`, the intro | `claim-repairs-2026-10-18.md` | 2026-10-18, run 40 | Yes. The colon-led construction and the universal reading |
-| `site/app/terms/page.jsx`, what the service is | `claim-repairs-2026-10-18.md` | 2026-10-18, run 40 | Yes. "The library reads AI research", confirmed by `check_voice.py reading` |
-| `site/app/llms.txt/route.js`, the whole body | `llms-txt-2026-10-18.md` | 2026-10-18, run 39 | Yes. Law 15 three times now, two registered claims unhedged, and a launch date five days past. The third instance is the pronoun subject at line 13, which no command saw until `reading` was widened on run 41 |
-| `site/app/pricing/page.jsx`, the free column and the intro | `pricing-claims-2026-10-18.md` | 2026-10-18, fourth run | Yes. "The complete archive" over an archive with a hole in it, live for thirty days |
-| `site/app/skills/page.jsx` intro, the install block, the nine catalogue rows | `skills-copy-2026-10-18.md` | 2026-10-18, second run | Yes for the intro. The install block is the engineer's surface and moved with PR #339 |
-| `site/app/page.jsx:44`, the metric line | `home-metric-line-2026-09-26.md` | 2026-09-26, run 15 | Yes, twenty-two days, confirmed by `check_voice.py reading`. Recorded as an incident the same day this file was created |
+| `site/content/issues/2026-W39.md:6`, the opening's first sentence | `w39-opening-2026-11-01.md` | 2026-11-01, run 61 | Yes. Thirty-eight days. "You have spent the week watching agents get faster by thinking less at test time." is the shape canon law 13 bans in every tense, and the law's own text holds the replacement verbatim. Read live at 2026-11-01T23:21Z by `check_voice.py standalone --live` and in the repository at the same hour. One sentence, one line, and the ruling carries no notice with it. Routed to the PM 2026-11-09 as board handoff `1bc20f1b`, which asks for her eyes and explicitly not for a section 22 clock |
+| `site/content/issues/2026-W42.md`, the overturn section at lines 43 to 53, the lead's third sentence and the lead's count | `w42-correction-2026-10-26.md`, whose corrected body is `2026-W42-corrected.md` | 2026-10-26, run 57 | Yes. Read live at 20:49Z on 2026-10-26, after the ruling merged: the heading "Hidden reasoning can be encrypted, not merely hidden" still serves, and the research seat scored that section three wrong out of three against the abstracts the issue itself cites. The ruling is to pull the section rather than reword it. Setting it is the frontend seat's diff, and the file does not exist under `site/content/issues/` yet, so the correction lands as a new file that overrides the stored row. Owed to that seat and not dispatched: the PM is holding it until the frontend seat's open #559 clears, said on the board at 20:45Z on 2026-10-26, so the row's reader should expect the live line to outlast the ruling by a day or more. Routed to the PM 2026-11-09 as board handoff `1bc20f1b`, which asks for her eyes and explicitly not for a section 22 clock |
+| `site/lib/skill-shelves.js`, the shelf names and the nine captions | `shelf-names-2026-10-26.md` | 2026-10-26, run 53 | Yes. Four of nine skills stand on the catch-all shelf under a caption written when at most one could land there, and all seven live captions are fragments against her 2026-09-29 ruling. Two shelves do not exist yet. Routed to the PM 2026-11-09 as board handoff `1bc20f1b`, which asks for her eyes and explicitly not for a section 22 clock |
+| `site/app/desk/page.jsx`, the verdict queue | `desk-verdict-queue-2026-10-24.md` | 2026-10-24, run 45 | Yes. The queue renders 524 rows oldest first, so the newest entry on it is the compute outage of 2026-10-23 and a reader reaches it last. The count beside the heading is also wrong by one against `tools/ledger.py --census`, which `check_voice.py ledger` now fails on. Four lines and a one-character anchor, in one diff. Routed to the PM 2026-11-09 as board handoff `1bc20f1b`, which asks for her eyes and explicitly not for a section 22 clock |
+| `site/app/mission/page.jsx`, third paragraph | `claim-repairs-2026-10-18.md` | 2026-10-18, run 40 | Yes. Three unheld claims in one sentence, confirmed by `check_voice.py claims` on 2026-10-18. Routed to the PM 2026-11-09 as board handoff `1bc20f1b`, which asks for her eyes and explicitly not for a section 22 clock |
+| `site/app/mission/page.jsx`, second paragraph | `claim-repairs-2026-10-18.md` | 2026-10-18, run 40 | Yes. "every finding is linked", contradicted on "every". Routed to the PM 2026-11-09 as board handoff `1bc20f1b`, which asks for her eyes and explicitly not for a section 22 clock |
+| `site/app/page.jsx`, the paragraph under the hero | `claim-repairs-2026-10-18.md` | 2026-10-18, run 40 | Yes. "replaced when newer work overturns it", which reports rather than replaces. Routed to the PM 2026-11-09 as board handoff `1bc20f1b`, which asks for her eyes and explicitly not for a section 22 clock |
+| `site/app/graph/page.jsx`, the intro | `claim-repairs-2026-10-18.md` | 2026-10-18, run 40 | Yes. The colon-led construction and the universal reading. Routed to the PM 2026-11-09 as board handoff `1bc20f1b`, which asks for her eyes and explicitly not for a section 22 clock |
+| `site/app/terms/page.jsx`, what the service is | `claim-repairs-2026-10-18.md` | 2026-10-18, run 40 | Yes. "The library reads AI research", confirmed by `check_voice.py reading`. Routed to the PM 2026-11-09 as board handoff `1bc20f1b`, which asks for her eyes and explicitly not for a section 22 clock |
+| `site/app/llms.txt/route.js`, the whole body | `llms-txt-2026-10-18.md` | 2026-10-18, run 39 | Yes. Law 15 three times now, two registered claims unhedged, and a launch date five days past as of 2026-10-18, when this row was written. The third instance is the pronoun subject at line 13, which no command saw until `reading` was widened on run 41. Routed to the PM 2026-11-09 as board handoff `1bc20f1b`, which asks for her eyes and explicitly not for a section 22 clock |
+| `site/app/pricing/page.jsx`, the free column and the intro | `pricing-claims-2026-10-18.md` | 2026-10-18, fourth run | Yes. "The complete archive" over an archive with a hole in it, live for thirty days as of 2026-10-18, when this row was written. Routed to the PM 2026-11-09 as board handoff `1bc20f1b`, which asks for her eyes and explicitly not for a section 22 clock |
+| `site/app/skills/page.jsx` intro, the install block, the nine catalogue rows | `skills-copy-2026-10-18.md` | 2026-10-18, second run | Yes for the intro. The install block is the engineer's surface and moved with PR #339. Routed to the PM 2026-11-09 as board handoff `1bc20f1b`, which asks for her eyes and explicitly not for a section 22 clock |
+| `site/app/page.jsx:44`, the metric line | `home-metric-line-2026-09-26.md` | 2026-09-26, run 15 | Yes, confirmed by `check_voice.py reading`, which still reports it. This cell said twenty-two days until 2026-11-09 and the row was forty-four days old by then, so the age is the gate's to print and no longer this cell's. Recorded as an incident the same day this file was created. Routed to the PM 2026-11-09 as board handoff `1bc20f1b`, which asks for her eyes and explicitly not for a section 22 clock |
 
 ## Questions awaiting her word, which no wording can answer
 
@@ -305,6 +305,12 @@ with the recommendation in the ask's own body, and opens a row here carrying
 `deadline <hour>` in the fixed form `check_voice.py deadlines` reads. A row
 here with no clock is the shape that let one answer sit unread for four days
 and eighteen hours.
+
+**This paragraph governs this table and not the one above it.** A question no
+wording can answer belongs here and takes the clock. A copy candidate belongs
+in the open table and does not, for the reason the closing section gives: the
+silence rule would set lines she never ruled on. Moving a candidate down here
+to borrow a clock is the one move this register forbids.
 
 ## Resolved on the clock, without her word
 
@@ -329,10 +335,42 @@ the record shows what was asked rather than only what came of it.
 ## What this file is honestly worth
 
 It is a register, and the lesson this seat keeps writing down is that recording
-is not enforcing. Nothing fires when a row here goes stale. Two of the nine
-statuses above are checkable by command today, because
-`docs/voice/check_voice.py claims` and `check_voice.py reading` read the live
-surfaces, and the rest are a seat's reading of a page on a date.
+is not enforcing. Two of the nine statuses above are checkable by command
+today, because `docs/voice/check_voice.py claims` and `check_voice.py reading`
+read the live surfaces, and the rest are a seat's reading of a page on a date.
+
+**"Nothing fires when a row here goes stale" stood here for fourteen days and
+something does now.** `check_voice.py deadlines` read only the questions table
+below, on a premise written into its own source: that the rows up here wait on
+a seat's diff and so nothing about them expires. That premise is false, and it
+was the half holding the whole arrangement up. A row leaves the open table when
+she rules or when the frontend seat sets it, and that seat sets APPROVED copy,
+so a candidate she has never ruled on is not waiting on anybody's diff. It is
+waiting on her.
+
+So the gate read the one table whose every row had been asked, `unasked` was a
+code it could produce and never would, and on 2026-11-09 it printed green over
+thirteen rows carrying no ask, no clock and no trail between them, the oldest
+forty-four days old, four of them red in `reading` that same minute. It reads
+both tables now and prints each open row with its age.
+
+**What it does not do is put a clock on them, and that is a ruling rather than
+an omission.** The obvious repair is to post each row as a section 22 ask,
+which is what the first version of the widened gate told its reader to do. That
+is wrong and it is worth stating why, because the advice reads as diligence.
+Section 22's ask proceeds as recommended after forty-eight hours of her
+silence, so taking it here would set thirteen lines of copy she never ruled on,
+on the recommendation of the seat whose last eight unsupervised rounds she
+rejected one after another. `docs/agents/copy-pipeline.md` reserves the ruling
+to her in terms that leave no room, "Her verdict is the only verdict. This step
+is hers and it does not move", and that is a safety clause with evidence under
+it rather than a courtesy. `docs/agents/cross-repo-law.md` rule 3 is what
+settles it: a local law's preconditions survive a parent override unless the
+override names them, and section 22 names none of this.
+
+The open table therefore has no silence rule and will not get one from this
+seat. What the rows are owed is to be in front of her with their age attached,
+and the age is the thing that was missing for forty-four days.
 
 So the duty is the smallest one that could work: a writer run opens this file,
 and a candidate for a surface already listed here either builds on that
