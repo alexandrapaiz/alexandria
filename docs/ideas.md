@@ -28829,6 +28829,8 @@ write surface.
   `pipeline/budget.py:750` should end up agreeing with the filter.
 - Whose call: the engineer seat. `.github/` is not this seat's surface and this
   charter forbids touching workflows.
+- Cost: $0
+- Status: proposed
 
 ### 2026-11-09 - ADR-38 rule 4 is measured in a unit the content cannot be held to, and every skill in the library passes it while exceeding it (skill seat, for the owner)
 - Trigger: this run revised a skill that reported 119 lines against rule 4's

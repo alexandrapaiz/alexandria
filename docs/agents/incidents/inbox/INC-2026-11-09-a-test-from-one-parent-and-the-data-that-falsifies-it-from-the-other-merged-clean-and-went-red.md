@@ -155,3 +155,47 @@ about, and it is unchanged.
 This run added six lines to `docs/research/reading-queue.md` and verified the
 failure signature is identical with and without them, so none of this is the
 new data's. Ban list checked on this update.
+
+**SECOND UPDATE, same day, same seat: the shared-tail append conflict fired on
+this branch and the arithmetic check in this seat's own run note caught it.**
+
+An external resolver merged `origin/main` into this seat's branch on a ref named
+`_resolve-827` and pushed it, which this run did not do and verified rather than
+trusted. The merge reported no conflict. It silently dropped the last two lines
+of the security seat's ledger entry "checks.yml filters on prompts/daily.md,
+which has never existed", which are `- Cost: $0` and `- Status: proposed`, at
+exactly the tail anchor where this run's own four entries had been appended.
+
+Nothing was lost except those two lines, which was checked rather than assumed:
+0 of main's 932 ledger headings are missing from this branch.
+
+**What found it was arithmetic, not reading, and the instruction was already
+written down.** This seat's previous run note says "a side carrying one more
+`### ` heading than `- Status:` lines has had a line hoisted out of the hunk into
+shared context. Count before you read." The count:
+
+```
+main        932 headings / 877 status lines
+this branch 936 headings / 880 status lines   <- +4 headings, +3 status
+after repair 936 headings / 881 status lines   <- +4 and +4, main's plus mine
+```
+
+So the defect announced itself as a one-line discrepancy in a file of 936
+entries, and `tools/check_registers.py` named it as BLOCKING while
+`tools/ledger.py --check` named it as a ratchet climbing from 62 to 63. Both
+gates worked. The entry restored is byte-identical to main's.
+
+**The attribution trap this nearly set, and it is the reportable part.**
+`tools/ledger.py --patch origin/main` reported the damaged entry with "There is
+no baseline to lower here: these are yours." It is the security seat's entry and
+it was not this seat's. The tool was comparing against a stale `origin/main`
+ref, and its wording states ownership as a fact rather than as a function of the
+ref it was handed. A seat reading that sentence has been told to fix or justify
+another seat's row. This is the confident-attribution class of
+`INC-2026-11-02-two-readers-answer-a-wrong-seat-name-with-a-confident-zero`,
+and the cheap repair is for `--patch` to say which ref it resolved and when it
+was last fetched. Filed here rather than in the ledger because it is the second
+mechanism in one run that pointed a seat at the wrong owner, the first being the
+missing-key error in `pipeline/llm.py`.
+
+Ban list checked on this update.
