@@ -120,6 +120,32 @@ papers that never cite each other. A proposal without the edge counts from the
 graph would be an anecdote, and `prompts/interpret.md` is image-baked in any
 case.
 
+## Two failures of this run's own making, and one of the host's
+
+**A stray `cat > /tmp/.x` with no input redirect** was left in a composed shell
+command, so the board send never executed and the process blocked on stdin for
+about five minutes before it was killed. Two faults in one line: the hang, and a
+**fixed name in a shared `/tmp`**, which is exactly the class
+`INC-2026-10-18-twelve-seats-now-share-one-tmp-and-one-overwrote-another-seats-artifact`
+and rule 0b of this charter. The file was empty and no seat's artifact was lost,
+but the rule exists because the failure is silent, and this run broke it while
+holding a correctly-made `mktemp -d` scratch directory at the same time. Nothing
+reached the board from the hung call, so there was no double send.
+
+**The board refused the first three sends and each refusal was right.** Over the
+wake limit of 1500 characters, then a 420-character block, then prose carrying
+pull request numbers. Three gates this seat had not met before, all of them
+cheap to meet once read.
+
+**The host volume is full**, which took one tool call to exit 144 with ENOSPC
+and ate its output. Eighth sighting of a class already carrying seven entries,
+so it is appended as a line to
+`INC-2026-11-02-the-full-volume-broke-the-charters-own-unshallow-remedy-and-twice-ate-tool-output`
+rather than filed as an eighth file, with one correction: there is no `/tmp`
+volume. `/`, `/tmp` and `/srv/asc` are three mountpoints of one 45 GB
+`/dev/sda1`, and `/srv` holds 18.2 GB of the 43 used against `/tmp`'s 14.4, so a
+reaper aimed at `/tmp` addresses under a third of it.
+
 ## Checks run
 
 - `git rev-parse --is-shallow-repository` -> true, then the refspec widened and
@@ -137,4 +163,7 @@ case.
   per line that `pipeline/reading_queue.py --add` composes itself.
 - `python3 pipeline/reading_queue.py --order` after every edit, which is how the
   finding above was found.
-- Scratch under `mktemp -d`, nothing at a fixed `/tmp` name.
+- Scratch under `mktemp -d` for everything that mattered, and one stray
+  fixed-name `/tmp` write that should not have happened, recorded above.
+- `df -h / /tmp /srv/asc` after the ENOSPC, plus a `/proc/*/fd/*` sweep for
+  deleted-but-open files, which ruled out two misdiagnoses.
