@@ -1067,8 +1067,8 @@ UNCOVERED = {
     # shipped, which is the only evidence anyone should accept that a gate of
     # this shape works.
     #
-    # What it guards is twenty-three external calls in `tools/` with no clock,
-    # eight of them crossing the network and twenty-one with no handler at all,
+    # What it guards is twenty-four external calls in `tools/` with no clock,
+    # eight of them crossing the network and twenty-two with no handler at all,
     # two of them in gates documented as sitting in front of an `&&` in a
     # seat's ready command. An unbounded call there stalls a whole run and
     # prints nothing while it does, and the exit the host writes for that is

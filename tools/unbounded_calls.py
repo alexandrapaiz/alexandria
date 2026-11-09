@@ -34,8 +34,20 @@ the call should get a clock and has not got one, and the word for a call that
 genuinely wants no bound is `status: "wants-no-clock"`, of which there are
 none here. That is why the clean path prints how many unbounded calls it read
 beside how many this file accepted, rather than printing nothing: green here
-reads "23 unbounded of which 23 accepted", which a reader can act on, and
+reads "24 unbounded of which 24 accepted", which a reader can act on, and
 never "clean".
+
+**And that sentence read 23 for eight hours, which is the ratchet's own
+weakness rather than a typo** (written 2026-11-09 on the handoff run that
+finished this branch). Merging `main` into this branch moved five accepted
+calls by between one and forty-three lines and brought a twenty-fourth
+unbounded call in with `tools/merge_register.py`, vendored from HQ. So the
+count this file exists to drive down went up by one on somebody else's merge,
+and the only reason anyone saw it is that this seat ran the suite by hand.
+`tests/test_unbounded_calls.py` is in the pin list of
+`tests/test_ci_coverage.py`, no workflow runs that suite, and the gate is
+therefore green on every pull request that breaks it. A ratchet nothing turns
+is a number in a file.
 
 **Accepted rows go stale, and a set nobody prunes stops being a ratchet.** The
 set is keyed on path and line, so a call that gets its clock and a call that

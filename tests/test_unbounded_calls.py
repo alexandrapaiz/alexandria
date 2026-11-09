@@ -296,10 +296,21 @@ def test_what_counts_as_a_bound(spelling, bounded):
 
 
 def test_the_unbounded_count_over_this_repository_is_unchanged_by_the_guard():
-    """The guard adds no finding here, which is the measurement behind it."""
+    """The guard adds no finding here, which is the measurement behind it.
+
+    The literal is deliberate and it earned its keep on 2026-11-09. It read 23
+    when it was written and this assertion is the thing that said so when a
+    merge of `main` made it 24, by vendoring HQ's `tools/merge_register.py`
+    with one unbounded `git merge-file`. A literal is the only form of this
+    test that fails on somebody else's growth rather than quietly re-measuring
+    it, which is the whole difference between a ratchet and a gauge. Raising
+    it is therefore a decision a run has to write down, and the decision for
+    the twenty-fourth row is in `docs/security/unbounded-calls.json` under
+    `the_ratchet`.
+    """
     rows = uc.scan_paths(["tools", "pipeline", "mcp"])
     unbounded = [r for r in rows if not r["bounded"]]
-    assert len(unbounded) == 23, [f"{r['path']}:{r['line']}" for r in unbounded]
+    assert len(unbounded) == 24, [f"{r['path']}:{r['line']}" for r in unbounded]
 
 
 def test_a_fully_accepted_tree_is_clean_and_still_names_what_it_read(
@@ -368,7 +379,11 @@ def test_the_shipped_accepted_set_is_readable_and_every_row_says_why():
     """A row with no status cannot be told from a blessing by any reader."""
     data = json.loads(ACCEPTED_SET.read_text(encoding="utf-8"))
     rows = uc.load_baseline(ACCEPTED_SET)          # the strict reader accepts it
-    assert len(rows) == len(data["accepted"]) == 23
+    # No literal here on purpose. The count lives in one place, which is the
+    # test above, and it lived in two until 2026-11-09, when one merge failed
+    # both of them for one fact and this one had nothing to say about `status`
+    # or `why` that the number was adding.
+    assert len(rows) == len(data["accepted"])
     assert {r["status"] for r in data["accepted"]} == {"debt"}
     assert all(r["why"] for r in data["accepted"])
     assert data["assigned"].endswith(".md")
