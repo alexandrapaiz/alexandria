@@ -11,9 +11,11 @@ A **seat** is: a charter (a versioned prompt file in prompts/), a
 scheduled cloud workflow (.github/workflows/agent-<seat>.yml), and one
 pull request per run. Nothing more. Seats never message each other;
 they read and write the repository, which is the shared blackboard
-(sprint files, the backlog, the ledger, the board). The owner's merge
-is the only gate: agents decide everything decidable, and authority
-stays with whoever clicks merge.
+(sprint files, the backlog, the ledger, the board). A merge is the only
+gate: agents decide everything decidable, and authority stays with
+whoever clicks merge. The PM merges in the ordinary course now (§21,
+below); only money, secrets, accounts, and a seat's own authority stay
+the owner's to click.
 
 Roles: the **owner** is Product Owner, merge gate, and sole holder of
 secrets and money. The **chair** is the interactive Claude session the
