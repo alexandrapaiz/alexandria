@@ -192,6 +192,36 @@ UNCOVERED = {
     # the only evidence anyone should accept that it works. It leaves the set
     # when the staged replacement is applied, like every other line here.
     "tests/test_ci_coverage.py",
+    # Added 2026-11-09 06:5xZ. These two are **not** this run's files: they
+    # reached `main` in this seat's own merged pull requests at 00:26:22 and
+    # 00:37:28 and have been unpinned and uncovered ever since, which means
+    # `main` itself has failed `test_the_uncovered_set_has_not_grown` for six
+    # hours. Reproduced on a clean checkout of `origin/main` before pinning, so
+    # this is not a defect of the branch that carries the fix.
+    #
+    # The gate names three remedies and ranks pinning last. The first two are
+    # `.github/workflows/checks.yml` and applying the staged replacement at
+    # `.github/workflows-pending/checks.yml`, and **both are a workflow write,
+    # which this seat's dispatch forbids outright**. So the last resort is the
+    # only resort available to the seat that broke it, which is the standing
+    # finding at `INC-2026-10-17-the-pin-list-grew-for-the-seventh-time-in-nine-days`
+    # and is why that entry counts rather than argues.
+    #
+    # What each one guards, because the gate requires a reason and not a name.
+    # `test_pr_backlog.py`, 21 cases: that the backlog reader refuses to call a
+    # queue newest-first on the strength of a backlog count alone, since with no
+    # observation of the queue *moving* a count of old rows is not evidence about
+    # how they are served. Silent on a pull request, that refusal can be deleted
+    # and the tool starts publishing its worst verdict when its subject is
+    # freshest.
+    # `test_wall_encounters.py`, 15 cases: that the corpus reader tells a run
+    # that **met** a provider wall from one that merely **wrote about** one. Its
+    # fixtures are two real closing summaries that a file-wide grep counted as
+    # refusals, quoted rather than paraphrased so the matcher turns on the real
+    # word. Silent on a pull request, the quoted prose is what rots first, and
+    # then the test passes against a reader that cannot see the real thing.
+    "tests/test_pr_backlog.py",
+    "tests/test_wall_encounters.py",
     # And the second file this run added, caught by this gate the same way
     # and pinned for the same reason: no seat can add it to a workflow.
     "tests/test_voice_enforcements.py",
@@ -929,6 +959,29 @@ UNCOVERED = {
     # them regression tests on the one word that separated the real defect from
     # fifty-two fair mentions.
     "tests/test_prose_symbols.py",
+    # Added 2026-11-09 by the ExO seat with `tools/host_headroom.py`, and
+    # pinned for the same structural reason as every line above: the step that
+    # would run it goes in `.github/workflows/checks.yml`, which no seat's
+    # token may write, and this seat's dispatch forbids touching workflows
+    # outright. The staged replacement runs it, because that file runs the
+    # suite rather than naming files.
+    #
+    # The gate caught this on the run that added it, before the pull request
+    # was readied, which is the gate working. Counting itself at
+    # `INC-2026-10-17-the-pin-list-grew-for-the-seventh-time-in-nine-days`.
+    #
+    # What it guards is the only instrument in this repository that reads the
+    # host volume. Its 15 cases hold two things nothing else checks: that the
+    # `df` figure is never published without the `du` figure and the gap
+    # between them -- the reason being that `df` on this host reports a device
+    # whose majority consumer is outside every seat's mount namespace, so the
+    # percentage alone attributes a host figure to a seat, which four register
+    # entries and one ledger entry did -- and that a composition claim fails
+    # when the residual it does not name reaches its largest named component.
+    # Silent on a pull request, the first of those is a wrong number in a
+    # register and the second is the word "measured" over an account of 58
+    # per cent.
+    "tests/test_host_headroom.py",
 }
 
 
