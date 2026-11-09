@@ -28863,6 +28863,10 @@ write surface.
   it are its sends, and this charter reports on another seat's register rather
   than gating it. The ExO seat has already written the general shape into its
   own charter, which is the half this entry does not need to argue.
+- First step: one function in a tool the ExO seat already runs, reading the
+  relay page's open ask rows and `GET /api/messages` with the client in
+  `tools/board.py`, printing every open row older than the newest send to
+  `alexandra-systems/exo-centralizer`. No new credential and no new service.
 - Note on the append: `alexandria-engineer/2026-11-09-message` (#823) also
   appends to this file at the same tail anchor and was open when this was
   written. Either merge order works and the resolution is to keep both blocks,

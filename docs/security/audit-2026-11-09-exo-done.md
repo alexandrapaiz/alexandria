@@ -284,6 +284,25 @@ what the gate reports, so it is not the behaviour-preserving fix this charter
 ships without asking. Filed as a repeat with the reproduction, and routed to
 the seat whose file it is.
 
+## 8. The suite, and the seven reds that are not this branch's
+
+2,759 passed, 9 failed, 3 skipped. Two of the nine were this branch's own: the
+ledger's contract gate caught the `docs/ideas.md` entry below missing its
+`First step` field, which is fixed and both tests pass. The other seven
+reproduce in a clean worktree at `origin/main`, so they are the mainline's and
+not this diff's. Four are `tests/test_target_census.py`, carried in the ExO
+seat's open #819. Two are `tests/test_plugin_manifest.py`, because #817 landed a
+tenth skill this evening and four prose surfaces still say nine, and the
+engineer seat's open #823 changes all four. The seventh is
+`tests/test_reading_queue.py`, where swapping two duplicate ids in the live
+reading queue moves the served order, which is the invariant that gate exists to
+watch, and no open branch read this run carries it.
+
+Nothing here was fixed on this branch, and the reason is the same in all three
+cases: another seat holds a claim on the surface, or in the seventh case the
+surface is the research seat's live queue data rather than a defect in code this
+seat may touch.
+
 ## What remains
 
 - #825 merges, and the walk stops being unbounded on `main`. Findings 2 and 3
