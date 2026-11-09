@@ -18,6 +18,30 @@ check the archive before assuming either.
 
 ## Owner-only (money, a secret, an account, or widened authority)
 
+- **Urgent: is the org's monthly Claude spend cap still in force?**
+  `INC-2026-11-08-the-monthly-spend-cap-was-counted-as-the-weekly-pool-for-six-dark-days`
+  (engineer, `docs/agents/incidents/inbox/`): the portfolio ran dark from
+  2026-11-03T00:20Z to 2026-11-08T23:02Z because the org hit its monthly
+  spend cap, misread by every classifier as the ordinary weekly pool
+  resetting. Zero pull requests opened anywhere in this repository for
+  six days. The incident's own last line: "whether the monthly cap is
+  still in force cannot be read from the logs... it is still set and will
+  bite again before the month ends" unless raised at
+  `claude.ai/admin-settings/usage`. This is not a background fact; an
+  unanswered version of it is a second six-day outage waiting to recur
+  before November ends.
+- **No seat holds a Modal token.** `MODAL_TOKEN_ID`/`MODAL_TOKEN_SECRET`
+  do not exist on any seat host (confirmed again this run; `command -v
+  modal` finds nothing here either, and `docs/agents/incidents.md:5141`
+  already names "a `modal deploy` step no seat's token can perform").
+  Blocks three named board cards — Deploy (`2170a62f`), Press W41
+  (`92ab912d`), and by extension the `2026-W43` backfill — all
+  independently confirmed this week (engineer PR #803) and again this
+  run (`tools/delivery_health.py`: `deploy` and `archive` both
+  `FAILING`). Workspace/account reachability ("compute: ok") is a
+  separate fact from having a token to authenticate with; the first does
+  not imply the second, which cost sprint-2026-11-02 two of its five
+  items before the outage above cost it the rest.
 - **Polar checkout secrets unset.** `POLAR_CHECKOUT_TRIAL`,
   `POLAR_CHECKOUT_MONTHLY`, `POLAR_CHECKOUT_LIFETIME` are absent from the
   site's environment, unset since 2026-10-14 (26 days). Code is complete and
@@ -48,6 +72,28 @@ check the archive before assuming either.
 
 ## Blocked on a merge only the owner or a chair can make
 
+- **PR #683, this seat's own, open since 2026-11-02 (7 days), and the
+  reason this ceremony cost more turns than planned.** It is a full,
+  unmerged Monday-ceremony attempt (retro for `sprint-2026-10-12.md`, all
+  of `sprint-2026-10-26.md` and `sprint-2026-11-02.md`, its own
+  org-chart/playbook/pending/dispatch-queue edits) that this run did not
+  discover until late, because this seat's most recent OWN pull request
+  (#856) touched none of these files and the charter's open-PR check
+  anchors on "your own last run," not "any open PR from your seat." This
+  run's PR carries forward #683's unique content (the two sprint files,
+  with retros added) and corrects one factual error #683's version of the
+  `sprint-2026-10-12.md` retro had already fixed that this run's first
+  draft re-introduced (see that file's own correction note). This run
+  did NOT merge #683's conflicting edits to `org-chart.md`, `playbook.md`,
+  `dispatch-queue.md`, or `pending.md`, because #683 branched from
+  2026-11-02 main and `docs/ideas.md` alone has grown by several thousand
+  lines since, making a clean merge of those four files into a 7-day-old
+  branch riskier than recommending closure. **Recommend: close #683 as
+  superseded by this PR** (its unique content is carried forward; nothing
+  in it is lost) rather than merging it. The owner or a chair should
+  confirm before it closes, since this seat's own read of "superseded" is
+  exactly the judgment call incident class this charter asks a seat to
+  flag rather than act on unilaterally when it touches this many files.
 - **PR #483, this seat's own, depth-13 supersession chain, open since
   2026-10-24 (16 days).** `#...→#480→#483` per the title; not superseded
   further (`gh pr list --state all` finds no PR naming "supersedes #483").
