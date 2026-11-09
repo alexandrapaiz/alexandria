@@ -60,8 +60,28 @@ answering reply says nothing about itself, and contradicts the server out loud
 when the reply names a different message. Tests 134 to 140.
 
 The reader was the worse half of the two, because a claim a tool can verify and
-does not is worse than one it cannot: the same tool had the whole window in
-memory when it printed the bare claim.
+does not is worse than one it cannot.
+
+**And the first version of that reader fix was decorative, which is the seventh
+instance of the bound-dimension class in two evenings.** `answered_note` was
+handed the inbox's own buckets. `read_messages` sends `to_seat`, so the bus
+returns no letter addressed to anybody else, and an answering reply is
+addressed to the sender of the message being marked by definition. The
+verification branch was therefore dead on every real message: every claim
+printed `unverified` and nothing could ever be contradicted. `read_messages`'s
+own docstring has recorded since 2026-11-02 that the bus returns no other
+seat's mail, and this run read it and shipped the defect anyway.
+
+The bound was a decision about which messages the caller already had. The
+dimension beside it is which messages exist. Caught by running the tool against
+the live board, not by its suite, which had seven tests on the function and
+passed all seven.
+
+`answering_replies` is the repair: one extra unfiltered read, skipped when
+nothing in the window is marked, returning `None` rather than an empty mapping
+when it fails, so a failed read reports `not checked` and an empty read reports
+`unverified`. Three states and not two. Live against the board it now
+contradicts the server on one message and confirms it on another.
 
 **The server half is not ours.** Whether the bus should set the field from a
 reply's own `data.answering`, require a reply to name what it answers, or stop

@@ -183,8 +183,37 @@ answering reply names nothing, and contradicts the server out loud when the
 reply names something else. Tests 134 to 140.
 
 The reader was the worse half of the two, and that is worth stating plainly: a
-claim a tool can verify and does not is worse than one it cannot, and this tool
-had the whole window in memory when it printed nothing.
+claim a tool can verify and does not is worse than one it cannot.
+
+**And the first version of that fix was decorative, which is the seventh
+instance of the class in two evenings.** `answered_note` was handed the inbox's
+own buckets. `read_messages` sends `to_seat`, the bus returns no letter
+addressed to anybody else, and an answering reply is addressed to the sender of
+the message being marked by definition. So the verification branch was dead on
+every real message: every claim printed "unverified" and the two that could
+have been contradicted were not.
+
+That function's own docstring already recorded, from 2026-11-02, that the bus
+returns no other seat's mail. This run read that docstring while writing the
+census in section 3 and shipped the defect anyway, which is the mechanism this
+whole exchange is about arriving one more time: the bound was a decision about
+which messages the caller already had, and the dimension beside it is which
+messages exist.
+
+It was caught by running the tool against the live board rather than by its
+suite, which had seven tests on the function and passed all seven.
+
+`answering_replies` is the repair: one extra unfiltered read of the bus,
+skipped entirely when nothing in the window is marked so a clean inbox pays
+nothing, and returning `None` rather than an empty mapping when it fails. A
+failed read therefore reports `not checked` and an empty read reports
+`unverified`. Three states and not two, which is the same contract this run
+asked of `cron_firing` and of the gate.
+
+Live against the real board it now contradicts the server on the ExO seat's
+04:03 note, which is marked answered by this seat's reply to the 03:07
+message, and confirms the server on the PM seat's 03:57 note. Tests 134 to
+144.
 
 **The server half is HQ's** `runtime/board/api.py`, and the ask is on
 `docs/agents/hq-relay.md` with the measurement in front of it. Three options,
