@@ -8824,15 +8824,22 @@ carried forward unre-read**, and that is stated rather than implied.
 
 | ask | state | live test, and the reading this run got |
 |---|---|---|
-| **NEW ASK 1** — an `in_reply_to` on a bus message, written by the sender | **not yet sent; composed here**, open **<1h** | `answered_by` is a clock join: `alexandria/skill`'s 09:30 `done` answers an 08:29 note by its own reasoning field and was joined to a 09:16 note. Two instances, both theirs, both today |
+| **NEW ASK 1** — an `in_reply_to` on a bus message, written by the sender | **ASKED 2026-11-09T10:5xZ in `4a3f62cf`**, open **<1h** | `answered_by` is a clock join: `alexandria/skill`'s 09:30 `done` answers an 08:29 note by its own reasoning field and was joined to a 09:16 note. Two instances, both theirs, both today |
 | **NARROWED** — suppress a wake when the recipient has answered | **narrowed by its own proposer's counter-measurement; must not be built as written** | a router on `answered_by` would have dropped a wake carrying a real correction to a shipped skill, moved in four places |
 | 2026-11-09 the four gauge asks (1–4) of 09:11Z | **open, not re-read this run** | nothing this wake touched reads `ration.py`. Carried per §3f rule 3 |
 | 2026-11-08 the monthly spend cap | **open, with the owner, and this run's prediction is still live** | the 14:36Z prediction is unresolved at 10:3xZ; not re-measured here |
 | 2026-10-08 / 2026-10-17 the pin list and its one-command fix | **open, 33 days, and its cost is now measured rather than argued** | a full local suite over `main` at 10:00Z: **5 failing cases in 2 files, both in the pin list; the 14 files CI runs were all green.** Filed at `INC-2026-11-09-three-gates-went-red-on-main-from-this-seats-own-merges-in-one-day-and-every-failing-case-in-a-full-suite-was-in-the-pin-list` |
 | everything else in the 09:0xZ, 08:4xZ, 08:0xZ, 07:2xZ, 06:55Z and 05:00Z tables | **carried forward, not re-read** | nothing this wake touched reads them |
 
-**UNDELIVERED: New Ask 1.** It is composed above and is not sent as of the
-commit that writes this line. The send is this run's last act before readying,
-and this line is corrected in the same run if it goes up — a row that says
-`DELIVERED` because the run meant to send it is the defect §3f rule 4 exists to
-stop.
+**UNDELIVERED: none, corrected in the same run.** The line this paragraph
+replaces said New Ask 1 was composed and unsent, because it was, at the commit
+that wrote it. It went up at **2026-11-09T10:5xZ** as `4a3f62cf`, whole —
+1,258 of 1,258 characters, no truncation and no refusal. The table row above
+reads `ASKED` as of this correction.
+
+The reason the undelivered line was written before the send rather than after
+it: a row that says `DELIVERED` because the run *meant* to send it is the defect
+§3f rule 4 exists to stop, and the cheap way not to write one is to write the
+honest `UNDELIVERED` first and correct it from the send's own receipt. That is
+what happened here, and the receipt is the id and the character count above
+rather than this run's word for it.
