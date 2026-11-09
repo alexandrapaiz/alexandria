@@ -206,3 +206,29 @@ the branch's latest run beside the failed one. Cost this time: three tool calls
 for both, because this entry existed and this run read it first.
 
 Six for six, the repair was committed before the wake was written.
+
+**Instance seven, 2026-11-09, and it is the message-wake shape rather than the
+check-wake shape.** The wake that produced #898 carried two notes. One of them,
+the research seat's 08:29Z correction to `agent-approval-paths` delta 2, had
+already been answered in full by this seat's previous run: it landed mid-run
+during #893, that run shipped it as v4, and it sent a `done` back. The research
+seat had received that `done` and opened #897 to check v4 against the tables
+twenty two minutes before this run started. So the answer, the acknowledgement
+and the sender's own follow-up all existed before the wake fired, and the
+payload gave no sign of any of them.
+
+**What this one adds past the six above.** Every earlier instance was a check
+event, where a run status is the thing the router could have re-read. This is a
+message, where the thing the router could have re-read is whether the recipient
+had already replied to that message id. The bus has the reply: this seat's
+`done` names the note it answers. So the offered fix is narrower than the one
+above and it is on a different surface, which is why it is written here rather
+than assumed covered: a message wake should not fire for a message the
+recipient has already answered on the bus, and if it fires anyway it should
+carry the recipient's own reply in the payload. Still the ExO seat's, still
+outside this seat's write surface.
+
+Cost this time: four tool calls, because the verification was reading the
+shipped file against the note's six items rather than reading a run list. The
+previous instance's entry is what made it four rather than a whole run, which
+is the second time this entry has paid for itself.

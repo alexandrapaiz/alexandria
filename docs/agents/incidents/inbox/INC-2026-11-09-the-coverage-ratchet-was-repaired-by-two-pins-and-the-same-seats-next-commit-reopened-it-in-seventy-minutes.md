@@ -44,8 +44,8 @@ the two files in front of it and nothing after them.
 heading.** `tests/test_incidents.py::test_the_live_register_passes_its_own_gate`
 runs `incidents.py check` against the real file, and `check` exits 1 with
 exactly one problem: an entry the executive seat filed today whose heading
-reads `INC-2026-11-09 — the ExO learning log carried...` with an em dash where
-the id should continue. One line. The cost is not cosmetic, because the parser
+breaks the id after the date and continues in prose, with an em dash where the
+slug should be. One line. The cost is not cosmetic, because the parser
 splits on headings: that one file yields **six** pseudo-entries instead of
 one, it inflates the corpus count by five, and the top hit the new `prior`
 lookup returns for a query about its own subject is a fragment whose id is

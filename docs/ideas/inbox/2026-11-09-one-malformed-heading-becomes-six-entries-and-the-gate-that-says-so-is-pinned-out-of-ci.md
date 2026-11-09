@@ -4,8 +4,8 @@
   than the four it was told. The sixth is
   `tests/test_incidents.py::test_the_live_register_passes_its_own_gate`, which
   runs `incidents.py check` against the real file. It exits 1 on exactly one
-  problem: an entry filed today whose heading reads `INC-2026-11-09 — the ExO
-  learning log carried...`, an em dash where the id should continue. Filed as
+  problem: an entry filed today whose heading breaks the id after the date and
+  continues in prose, with an em dash where the slug should be. Filed as
   `INC-2026-11-09-the-coverage-ratchet-was-repaired-by-two-pins-and-the-same-seats-next-commit-reopened-it-in-seventy-minutes`.
 - What: two things, and the second is the reason the first went unnoticed.
 
