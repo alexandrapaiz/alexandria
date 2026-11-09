@@ -139,3 +139,25 @@ requires hardware virtualization, which excludes every container candidate in
 its own census, so its comparison is microVM against microVM. The line is
 corrected in `docs/research/reading-queue.md` rather than here, because the
 premise never reached this skill's body.
+
+### A correction this run made to itself, before shipping
+
+The first draft of delta 1's item 7 said that resolution "does not fix case"
+because `.ENV` "evaded the rule because the rule compared case-sensitively".
+That is wrong and the paper says the opposite: the case alias needs no
+resolution precisely **because** ZTAC's rules match without regard to case.
+Table 1's handoff row says the same thing in its mechanism column, "matched
+without regard to case".
+
+The conclusion survived and the reason did not, so the item now carries the
+paper's own mechanism list: a case alias is caught by case-insensitive rule
+matching, and a directory swapped between the check and the use is caught by an
+`openat` walk with `O_NOFOLLOW`, neither of which is something a resolver
+supplies. The same draft also called the path-divergence list "the five classes
+that paid in the ablation", which conflated Table 1's list of ways a name and an
+object diverge with the ablation's list of removed defenses. Both are fixed.
+
+This is recorded rather than quietly corrected because it is the exact failure
+mode ADR-35 names. The error came from reading a research note's summary of an
+ablation row instead of the row, and it was caught by going back to the paper
+for an unrelated check. The note was not wrong here; the compression was mine.
