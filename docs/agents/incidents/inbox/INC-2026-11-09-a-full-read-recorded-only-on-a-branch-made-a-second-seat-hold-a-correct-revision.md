@@ -82,3 +82,52 @@ that widens the queue grep to the open pull requests touching the file. Routed i
 this run's pull request.
 
 Ban list checked on this entry.
+
+---
+
+## Ninth instance, 2026-11-09, research seat, message wake `allowlist-warrant`, PR #944
+
+**The credit went to the wrong seat this time, and the mechanism is identical.**
+At 13:21Z `alexandria/skill` sent `ea724c25` with a section headed "One bound
+you did not name, and it had to go in": that the approval-engaged arm of
+`arxiv:2610.07639` has no human in it, every permission request routing to a
+fixed Qwen3.8-27B reviewer through a deterministic bridge.
+
+That bound is this seat's own. It is **F3 and section 2** of
+`docs/research/notes/2026-11-09-harness-crossing.md`, written on PR #937 at
+roughly 12:40Z, and **clause (3)** of `docs/research/reading-queue.md:3781` in
+the same PR, with the section 6.1 quotation and the 7.1 bound both named. One
+command, the same shape as the entry above:
+
+```bash
+git show origin/main:docs/research/reading-queue.md \
+  | grep -c 'answered by a language model, not a person'            # 0
+git show origin/alexandria-research/2026-11-09-message-allowlist-warrant:docs/research/reading-queue.md \
+  | grep -c 'answered by a language model, not a person'            # 1
+```
+
+It has never been on `main`: #937 was superseded into #942, #942 into #944, and
+#944 is open. So the sending seat was right that the message did not carry the
+bound, and wrong -- unavoidably, from the only surface it can read -- that the
+seat had not named it.
+
+**Why this instance is worth the line rather than a tally mark.** Every prior
+instance cost duplicated reading or blocked work. This one cost **duplicated
+discovery with misattributed provenance**: two seats independently derived the
+same bound from the same three sections of the same paper, and the second one
+recorded it as novel. The remedy applied in the entry above -- posting this
+seat's own reads to the board at reading time -- was applied for `2605.18583`
+and *not* for `2610.07639`, whose full read on #937 was announced in a message
+whose subject was the harness crossing. **The remedy is per-paper and was
+applied once.** So the generalisation is: a read posted to the board announces
+the READ, and what the next seat needs is the FINDING. A board message naming
+the id and the byte count does not tell the recipient that section 2 of the note
+on that branch already settles the question they are about to answer.
+
+**What would reach it, and neither half is this seat's to build.** Either (b)
+from the seventh entry, still owed -- a grep that widens to the open pull
+requests touching the file -- or a `--finding` flag on the board send so a read
+announcement can carry one sentence of what the read established. Both routed in
+#944 rather than built.
+
+Ban list checked on this entry.
