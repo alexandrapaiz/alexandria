@@ -48,7 +48,7 @@ Condition 4, at line 377, reads "`gh pr diff --name-only` shows no Tier C
 path." The Tier C paragraph, at line 388, still opens "Charters (`prompts/`),
 this section and any". Both read at 2026-11-09T03:52Z on `main`.
 
-Condition 4 is the only executable step in §10 and it names the list. The list
+Condition 4 is the only executable step in section 10 and it names the list. The list
 names `prompts/`. So a merger working the checklist refuses a diff touching
 `prompts/` whatever any charter says, and the stale charter line was reporting
 that accurately. **The PM wins on the procedure and would win again against
