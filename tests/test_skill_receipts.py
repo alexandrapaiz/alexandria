@@ -893,16 +893,29 @@ _RANKED_EXPECTED = [
 ]
 
 
-def _rank_in_python(rows):
-    sys.path.insert(0, str(REPO / "skills" / "_validation"))
-    import trigger_test as tt            # noqa: E402
-
-    bundles = [
+def _bundles(rows):
+    return [
         {"generated": gen, "policy": {"pre_registered": pre},
          "_path": f"skills/_validation/results/{name}"}
         for name, gen, pre in rows
     ]
-    return [Path(b["_path"]).name for b in tt.rank_bundles(bundles)]
+
+
+def _rank_in_python(rows):
+    """The canonical rule, tools/receipt_ranking.py, which the panel calls and
+    which the gate is being handed."""
+    sys.path.insert(0, str(REPO / "tools"))
+    import receipt_ranking               # noqa: E402
+
+    return [Path(b["_path"]).name for b in receipt_ranking.rank(_bundles(rows))]
+
+
+def _rank_in_the_gate(rows):
+    """The gate's own copy of the rule, in a file this seat may not write."""
+    sys.path.insert(0, str(REPO / "skills" / "_validation"))
+    import trigger_test as tt            # noqa: E402
+
+    return [Path(b["_path"]).name for b in tt.rank_bundles(_bundles(rows))]
 
 
 def _rank_in_node(rows):
@@ -1008,36 +1021,63 @@ _TIED_EXPECTED = [
 ]
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason="the gate's half of the third ranking key is alexandria/skill's to "
-           "land in skills/_validation/trigger_test.py, handed over on #878. "
-           "strict=True on purpose: this goes red the moment their half lands, "
-           "which is the signal to delete this marker rather than a defect.",
-)
-def test_both_rankers_break_a_tie_the_same_way():
-    """The assertion that closes the parity, pending one file this seat cannot
-    write.
-
-    A plain skip would be the wrong instrument. A skip is green forever and
-    reads the same as a check that ran, so the handover would be remembered
-    only for as long as somebody remembered it. A strict xfail fails when it
-    starts passing, so the suite itself reports the handover as complete.
-    """
+def test_the_canonical_rule_and_the_page_break_a_tie_the_same_way():
+    """Three bundles equal on both shared keys, so only the third key can order
+    them, and the two sides have to land on one answer from opposite inputs."""
     in_python = _rank_in_python(_TIED)
     in_node = _rank_in_node(_TIED[::-1])
     assert in_python == in_node, (
-        f"trigger_test.py: {in_python}\n  the page:        {in_node}"
+        f"receipt_ranking.py: {in_python}\n  the page:           {in_node}"
     )
     assert in_python == _TIED_EXPECTED, in_python
+    # and each side alone is order-independent, which is the property that
+    # makes the two of them agreeing mean something
+    assert _rank_in_python(_TIED[::-1]) == _TIED_EXPECTED
+    assert _rank_in_node(_TIED) == _TIED_EXPECTED
 
 
-def test_the_page_breaks_a_tie_by_filename_and_not_by_the_caller():
-    """The half of the above that is live on this branch: whatever order the
-    page's bundles arrive in, the answer is the same."""
-    first = _rank_in_node(_TIED)
-    assert first == _TIED_EXPECTED, first
-    assert _rank_in_node(_TIED[::-1]) == _TIED_EXPECTED
+@pytest.mark.xfail(
+    strict=True,
+    reason="the gate keeps its own copy of the rule in "
+           "skills/_validation/trigger_test.py, which this seat may not write "
+           "(prompts/engineer-agent.md line 89). Handed to alexandria/skill as "
+           "a patch on #878. strict=True on purpose: this goes red the moment "
+           "their half lands, which is the signal to delete the marker rather "
+           "than a defect, and it fires on their branch before their merge.",
+)
+def test_the_gate_breaks_a_tie_the_way_everything_else_does():
+    """The last of the three readers, pending one file this seat cannot write.
+
+    A plain skip would be the wrong instrument. A skip is green forever and
+    reads exactly like a check that ran, so the handover would survive only as
+    long as somebody's memory of it, and this defect has already outlived six
+    days of being written down. A strict xfail fails when it starts passing, so
+    the suite reports the handover as complete rather than waiting to be asked.
+    """
+    assert _rank_in_the_gate(_TIED) == _TIED_EXPECTED, _rank_in_the_gate(_TIED)
+
+
+def test_the_panel_reads_the_receipt_through_the_canonical_rule():
+    """The third reader, which had the opposite tie-break and never read
+    `generated` at all.
+
+    Asserted through the panel's own entry point rather than by reading its
+    source, because the defect was three files each claiming to implement one
+    rule. `tied` is the panel's own account of how it chose.
+    """
+    sys.path.insert(0, str(REPO / "tools"))
+    import panel_validator as pv          # noqa: E402
+
+    for s in _list_skills():
+        receipt = pv.trigger_receipt(SKILLS, s["name"])
+        assert receipt is not None, f"{s['name']}: the panel found no receipt"
+        assert receipt["tied"] == [], (
+            f"{s['name']}: the panel's receipt {receipt['file']} ranked equal "
+            f"to {receipt['tied']}, so it won on its filename"
+        )
+        # the panel and the page have to name the same bundle, which is the
+        # thing that was false for six days
+        assert receipt["file"] == s["validation"].get("sourceFile", receipt["file"])
 
 
 def test_the_library_as_it_stands_publishes_no_receipt_chosen_by_filename():
