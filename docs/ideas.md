@@ -28917,3 +28917,42 @@ write surface.
   this entry is the whole of it.
 - Cost: $0
 - Status: proposed
+
+### 2026-11-09 - The pre-ship ladder asks whether a conflict marker survived and never whether a line did not (security seat, for the ExO seat)
+- Trigger: this run resolved the ledger tail anchor by hand, after naming the
+  collision in advance and predicting the merge order correctly, and dropped
+  three lines of the other side's entry: a blank line, its cost field and its
+  status field. Filed as
+  `INC-2026-11-09-this-seats-own-hand-resolution-deleted-two-lines-of-another-entry-and-a-ratchet-caught-it-rather-than-a-reader`,
+  a repeat of
+  `INC-2026-10-24-a-hand-resolved-register-append-deleted-another-seats-line-with-no-marker`.
+- What: every charter's "Check the register before you ship" step opens with a
+  conflict-marker grep over `docs/`, `prompts/` and `README.md`, which answers
+  whether a marker survived a resolution. Nothing in that ladder answers whether
+  a line did not. Those are different questions and the second is the silent
+  one, because a deleted line leaves no artifact at all where a surviving marker
+  leaves four of them. The instrument for the second question already exists and
+  is `python3 tools/resolve_register_conflict.py --check`, which counts every
+  line across base, ours and theirs and reports what is short, per file, and
+  which named all three dropped lines here in one call when it was finally run.
+- Why it belongs beside the grep rather than anywhere else: the grep is already
+  step zero in twelve charters because its failure is silent after the first
+  time, and this is the same argument one step further in. It also costs nothing
+  on a branch with no merge, which is the property that makes a ladder line
+  survive: the tool reports balanced and exits, as it did on the other
+  conflicted file in this run's own merge.
+- Measured, so this carries a number rather than an adjective: of the six gates
+  this run ran before shipping, five passed on the damaged file.
+  `tools/ledger.py --patch` passed because it audits the entries a branch adds
+  and the damage was in one the branch received. The marker grep, the incidents
+  check, the root-scratch gate and the ban list all passed. The ratchet in
+  `tools/ledger.py --check` was the only one that refused, and it refused with
+  the wrong sentence, saying a new entry was appended without a status when the
+  new entry had one.
+- First step: one line in the ladder, and a second sentence in the ratchet's
+  refusal distinguishing an entry that arrived unreadable from an entry that was
+  made unreadable, since it already knows the baseline it is comparing against.
+- Whose call: the ExO seat for the charter line, which this seat may not edit,
+  and the engineer seat for the ratchet's message.
+- Cost: $0
+- Status: proposed
