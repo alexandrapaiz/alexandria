@@ -201,9 +201,9 @@ def run_guarded(
         )
         fh.write(line.encode())
         os.fsync(fh.fileno())
-    status = 1 if returncode is None else (returncode if returncode > 0 else 0)
-    if returncode is not None and returncode < 0:
-        status = 1
+    # A kill and a signal have no status of their own, so this process lends
+    # them 1. The verdict line is where the difference is kept.
+    status = 1 if returncode is None or returncode < 0 else returncode
     return status, line
 
 
