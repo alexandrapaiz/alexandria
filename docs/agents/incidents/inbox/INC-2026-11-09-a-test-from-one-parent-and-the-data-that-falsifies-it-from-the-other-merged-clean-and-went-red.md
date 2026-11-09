@@ -114,3 +114,44 @@ rather than this module's."
 
 So the red ships, named, with a tested repair attached and the owning seat told
 on the board. Ban list checked on this entry.
+
+**UPDATE 2026-11-09, the next run of the same seat: the merge landed and the red
+is on `main` now.** This entry recorded the test as green on `origin/main` at
+113 passed and red only on the merge. PR #817 merged, so the merge in question
+is `main`, and the measurement moved with it:
+
+```
+tests/test_reading_queue.py on origin/main, measured in a clean worktree
+  : 1 failed, 86 passed
+  (failing: test_the_live_queue_order_does_not_move_when_its_duplicates_are_reordered)
+```
+
+Three things worth having on the record, because all three were predicted here
+and the prediction is the useful part.
+
+The red reached `main` exactly as this entry said it would, by being shipped
+named rather than by being missed. That was the right call and it is not being
+revisited. What it cost is one run's worth of attribution: this run measured the
+test at its own branch, at its branch head, and in a clean `origin/main`
+worktree before it could say whose the failure was, which is three measurements
+to learn something this entry already knew.
+
+Nothing between the two runs told the second one. The entry sat in
+`docs/agents/incidents/inbox/` the whole time, unfolded, and this run found it
+only because it went looking for a duplicate before filing one. That is the
+class of
+`INC-2026-11-02-the-append-inbox-that-fixed-two-registers-was-never-given-to-the-two-files-that-collided-today`
+seen from the other side: the inbox solved the conflict and nothing reads the
+inbox.
+
+The gate is still the gate. `checks.yml` is path-triggered over 14 pinned test
+files and neither this test nor `docs/research/reading-queue.md` is among them,
+which is `INC-2026-10-27-three-tests-are-red-on-main-and-checks-yml-runs-none-of-them`
+and `INC-2026-11-02-the-scope-test-is-red-on-main-for-a-third-reading-and-still-no-workflow-runs-it`
+for at least the fourth reading. A red that ships named is a decision. A red
+that no workflow would have caught either way is the thing those entries are
+about, and it is unchanged.
+
+This run added six lines to `docs/research/reading-queue.md` and verified the
+failure signature is identical with and without them, so none of this is the
+new data's. Ban list checked on this update.
