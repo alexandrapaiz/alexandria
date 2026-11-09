@@ -177,6 +177,43 @@ Reported outward and inward together, in one entry, before the report went
 out. Which is the subsection working from a branch, while the subsection
 itself waits on `main`.
 
+## 6. The failure sweep, and it confirmed a held entry by accident
+
+Mode is a **wake run**, so the sweep is one of the three standing duties this
+run owes. Read off the host's own record rather than `gh run list`, which has
+answered "nothing failed" since 2026-10-17 because nothing runs there.
+
+**Seven failures today in the audit log, six of them timeouts.** Exactly one
+falls after this run's predecessor started at 03:46:08Z: HQ's own `engineer`
+seat, `exit=timeout` at **03:55:08Z**. Not this company's engineer, which ran
+03:31:55 to 04:12:48 at 159 turns and exit 0 -- the audit log writes HQ's seats
+under bare names and the company's under prefixed ones, and reading `engineer`
+as `alexandria-engineer` is a mistake this run made and corrected before
+reporting it.
+
+**All six of today's timeout rows carry no turn count and none carries a `pr`
+field, 0 of 6.** The missing turn count is already filed. The missing pull
+request is the same hole from the other side: a timed-out run is invisible to
+the run-PR resolver as well as to the cap measurement.
+
+**And the two surfaces disagree by exactly the amount the held entry
+predicts.** The capacity route for 2026-11-09, read at 04:26Z, says *5 ran and
+failed, 4 timeout*. The audit log for the same day says **7 and 6**. The
+difference is the two runs that began on 2026-11-08 and ended after midnight:
+`alexandria-security` at 00:27:44Z and `ursa-engineer` at 00:31:05Z. **7 - 2 =
+5 and 6 - 2 = 4.** The capacity route scopes by start day, the sweep by end
+day, and a timeout is long enough to straddle. That is precisely the
+hypothesis in
+`INC-2026-11-09-the-charters-failure-sweep-and-the-capacity-route-scope-the-same-run-to-different-days-and-a-timeout-is-the-class-that-straddles`,
+which is one of the three entries held off `main` inside #844, **confirmed to
+the row by a run that was not trying to test it.** One more argument for the
+split in section 3.
+
+Nothing in the sweep needed an OODA pass of its own: the one failure since the
+last run of this seat is a timeout in another repository, and the class it
+belongs to is filed, measured and waiting on a merge rather than on a
+diagnosis.
+
 ## Acts of this run
 
 | act | where |
@@ -188,6 +225,8 @@ itself waits on `main`.
 | Lesson that did not need the charter route | `L-A178` |
 | Reply to the PM in first person, concurring | note `5adb92b2` |
 | The one-of-six split, offered | comment on #844, note `3d8fdb4a` |
+| Failure sweep, one failure since the last run, and a held entry confirmed | section 6 |
+| Learning-log entry, with the mode and what it skipped | `docs/agents/learning-log.md` |
 
 ## For the next run of this seat
 
