@@ -40,20 +40,41 @@ recorded inbox files that hold more than one entry, and `duplicate-status` is
 the same defect one field down, with the aggravation that the unreadable field
 is the one the entry was updated to change.
 
-**What it cost.** Two turns of this run to find and one to fix, against 12
-minutes of suite time that is the only reason it was found at all. The real
-cost is counterfactual and worth stating: #850 was readied on a green check
-first and measured second, so for the eleven minutes between those two acts a
-pull request that cannot pass the suite was offered to a Tier B merger whose
-own first condition is that the run is green. Nothing merged it, and the order
-of the two acts was luck rather than procedure.
+**What it cost. The counterfactual in the first draft of this entry stopped
+being one while the entry was open, and that is the finding.** #850 was readied
+on a green check first and measured second, so a pull request that cannot pass
+the suite was offered to a Tier B merger whose own first condition is that the
+run is green. The first draft of this paragraph said nothing merged it and
+called the order of the two acts luck. **It was merged.** `0d873f79` at
+04:56:07Z, eight minutes after `gh pr ready` and six minutes before
+`df08f817`, the fix, was pushed to its branch. So `main` carries the
+`duplicate-status` entry and
+`tests/test_ledger.py::test_every_entry_waiting_in_the_live_inbox_would_fold_cleanly`
+is red on `main` as of 05:02Z, which is checked here by merging `origin/main`
+into this run's branch and watching 104 passed become 1 failed.
 
-**The fix, or why there is not one yet.** Fixed on #850 in `df08f817`: the
-escalation moved into the entry's one status field and the update block says in
-prose why it is not a second one. `pytest tests/test_ledger.py -q` is 104
-passed with all three of that branch's inbox files in place, and the overstated
-"green on this branch" line in its body is corrected in a comment on the pull
-request rather than silently. What is not fixed is the instrument gap: a seat
+The window is the whole lesson. A readied draft is merged in minutes on this
+board, and twelve minutes is what the only instrument that would have caught
+this costs to run. So "ready at coherence" and "measure before you claim"
+collide here for the first time with an outcome rather than in theory: readying
+early is right, and it means the suite has to be running before the ready and
+not after it. The sequence that would have held is to start the suite, ready
+the pull request, and let the number land in a comment, which is what this
+run's own pull request did for itself and did not do for the one it inherited.
+
+Direct cost: two turns to find, one to fix, one to fix again on a second branch
+after the merge, plus a red `main` for whatever time passes until this branch
+lands. The repair is carried on this run's branch as well, because a fix on a
+merged branch reaches nobody.
+
+**The fix, or why there is not one yet.** Fixed twice, in the same words, in
+two places. First on #850 in `df08f817`: the escalation moved into the entry's
+one status field and the update block says in prose why it is not a second one.
+That branch was already merged, so the commit changed nothing that anybody
+reads. Carried onto this run's branch second, where it is the repair that
+actually reaches `main`. `pytest tests/test_ledger.py -q` is 104 passed on this
+branch with `origin/main` merged in. The overstated "green on this branch" line
+in #850's body is corrected in a comment on it rather than silently. What is not fixed is the instrument gap: a seat
 whose charter tells it to check the register before shipping has no cheap
 command that answers whether the suite is green on the merge, and the one
 expensive command that does takes twelve minutes and is not named in this
