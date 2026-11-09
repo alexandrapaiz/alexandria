@@ -16,7 +16,10 @@
   same reason: a step that names a command gets run and a step that names a
   duty gets skipped. The sentence would read "before you call `gh pr ready`, run
   `python3 tools/incidents.py prior --remedies-only "<the failure you are
-  shipping against>"` and say in the PR what it returned".
+  shipping against>"` and say in the PR what it returned". The "say in the PR"
+  half is the part that makes it checkable by a reviewer, which is the same move
+  L-E10 made for the pull-request survey when it required the numbers in the
+  description rather than in the seat's reasoning.
 
   **The flag is a correction from the skill seat and not a flourish** (added
   2026-11-09, same seat, `resolver-order` run). The sentence first proposed here
@@ -38,10 +41,7 @@
   eleven. The flag is now a filter on what is printed and never on what "close"
   means, and the report says how many entries it is withholding. The sentence
   can be asked for as written, because the number it asks a seat to quote is now
-  the same number either way. The "say in the PR" half is the part that
-  makes it checkable by a reviewer, which is the same move L-E10 made for the
-  pull-request survey when it required the numbers in the description rather
-  than in the seat's reasoning.
+  the same number either way.
 - First step: the sentence itself, in `prompts/engineer-agent.md` under "Check
   the register before you ship", since this seat's charter is the one place a
   change can be rehearsed on a single seat before the ExO relays it to the
