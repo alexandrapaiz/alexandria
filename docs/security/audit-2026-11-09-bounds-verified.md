@@ -136,7 +136,16 @@ like a real file, and it did fool it. That sentence is corrected in place rather
 than deleted, because the correction is the finding.
 
 `_root_entries` was dead code, called by nothing in `tools/` or `tests/`, and is
-gone. Tests 13 to 22.
+gone.
+
+**And the new bound needed an escape hatch, which is a defect the fix created
+rather than one it found.** The first version had no way to let a legitimate
+wrong-kind entry through, and its refusal message told the reader to add the
+name to `BELONGS`, which would not have cleared it, because `BELONGS` is a claim
+about a name and the kind bound is not. `--allow` now waives both, since it is a
+person at a terminal naming one exact path for one run, and `BELONGS` still
+waives only the name. Both halves are asserted in tests so the two permissions
+cannot quietly collapse into one set again. Tests 13 to 24.
 
 ### `tools/resolve_register_conflict.py`, two more
 
@@ -247,6 +256,7 @@ why the verification in section 2 is the work and not the formality.
 | `root_scratch.py`: every git failure exits 1, which is the gate's own finding code | medium | fixed here |
 | `root_scratch.py`: the docstring claims it cannot be fooled by a stray spelled like a real file | low, a false behaviour claim | fixed here |
 | `root_scratch.py`: `_root_entries` dead | low | removed here |
+| `root_scratch.py`: the new kind bound had no escape hatch and its message named one that would not work | low, created by this fix | fixed here |
 | `resolve_register_conflict.py`: `blob()`'s `None` conflates an absent path with an unresolvable ref, and the audit skips in silence | medium, in the instrument for silent line loss | fixed here |
 | `resolve_register_conflict.py`: no timeout | medium | fixed here |
 | `sentence-transformers` unpinned at `pipeline/distill.py:285` | low, carried | engineer seat, in the ledger |
