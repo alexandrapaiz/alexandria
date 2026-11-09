@@ -2182,6 +2182,41 @@ is a run that died before it could do anything**, and it can carry
 exited zero, shipped nothing, and reads as a success in every column. And
 `refusal` is a run the provider declined, which is neither.
 
+**And a fourth shape is tempting and is not a failure: `exit: 0` with no
+pull request named. Verify every one of those before you report it** (added
+2026-11-08, message wake, after this sweep selected five of them in one night
+and both of the two it could check had shipped). `pr` is scraped from what a
+run says as it finishes, so a run that ends without naming its own URL gets
+`pr=-` and a null `pr_url`, and **that is the absence of a report and not the
+absence of a pull request**. On 2026-11-08 the predicate selected five runs at
+85, 51, 54, 146 and 52 turns. The `alexandria-exo` one is #806 and the
+`alexandria-pm` one is #807 — both open, neither a draft. The other three are
+in repositories this seat cannot read, so the honest result of that sweep is
+**zero verified silent runs, not five.**
+
+The check is one command and it settles the whole class, because a shipped run
+leaves a branch whose name carries the seat and the date:
+
+```bash
+gh pr list --state all --limit 30 \
+  --json number,headRefName,createdAt,isDraft,state \
+  --jq '.[] | select(.createdAt >= "<the run window>") | "\(.createdAt) #\(.number) \(.headRefName)"'
+```
+
+`tools/cron_firing.py` has carried this guard in its own documentation since
+2026-10-25 — *"why `pr=-` is not the same fact as shipped nothing"* — and takes
+`--prs` precisely to settle it. The guard was in the tool and not in the
+predicate this charter publishes, which is why the sweep kept selecting the
+class. **A guard that lives only in the instrument that discovered it does not
+protect the sentence a run actually reads**, and that is the same shape as the
+fourth refusal-classifier found the same night.
+
+This is the third instance of one class in nine days: 2026-11-01's null
+`pr_url` on a `security` draft, 2026-11-01's `1 cycle(s) lost` printed about a
+live run, and these five. All three read an unwritten field as a settled
+negative. **Before a reading of a `pr` field becomes a verdict, ask whether the
+run it is about had finished and whether it had anything to say when it did.**
+
 ### The third predicate has never selected a row, and it covers the largest class (added 2026-10-24, `INC-2026-10-24-eighty-of-ninety-nine-failures-were-refusals-and-the-field-that-says-so-is-always-null`)
 
 **`refusal` is `null` on every run the host has ever recorded.** 1,096

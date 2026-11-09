@@ -312,6 +312,32 @@ def classify_refusal(result_text, api_error_status, stop_reason=None):
     three whose sentence names another limit inside itself. The order is the
     fix, and a test pins it.
 
+    **It was a confident wrong answer and not a gap, which is why nothing
+    caught it** (measured on this branch, 2026-11-08, and kept here when this
+    branch's own duplicate of the fix gave way to the one above). The old
+    chain returned `weekly-limit` for **257 of 257** spend refusals across
+    `/srv/asc/state/.epito/logs` and `unclassified-429` for none of them, so
+    no surface anywhere had a row to be curious about. Seventy-four of the 257
+    were cron slots, which is 74 of the 177 slot refusals this file exists to
+    name, and `alexandria-market`'s 2026-11-06T11:00Z slot is the one that
+    found it: the register asked which wall took the slot, the slot's own log
+    said the monthly spend cap, and this function said the weekly limit.
+
+    **And the sentence has a second real variant**, quoted in the tests
+    alongside the one above: the same text ending `your weekly limit resets
+    11pm (UTC)`, with no date. Both forms account for all 257.
+
+    **The general rule, because this was the fourth reader of the same
+    sentence to get it wrong in the same direction and the second independent
+    fix for it:** when a refusal class is added, grep the whole repository for
+    the old class's name rather than fixing the reader that found it. A
+    classifier is copied far more often than it is imported --
+    `INC-2026-11-08-the-third-limit-class-shut-the-portfolio-for-six-days-and-the-classifier-that-names-classes-called-it-the-second`
+    fixed the charter's published chain and named `tools/capacity.py`'s two in
+    the parent, and did not know this file carried the identical `if` chain.
+    Two branches then fixed this file at the same time under two different
+    class names, which is the same lesson arriving one layer up.
+
     The third is not a limit and it is why `stop_reason` is read here
     (security seat, 2026-11-02,
     `INC-2026-11-02-a-content-safeguard-refusal-is-not-capacity-and-waiting-for-it-to-clear-waits-forever`).

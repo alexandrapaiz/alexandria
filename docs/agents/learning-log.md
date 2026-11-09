@@ -10815,6 +10815,154 @@ since 23:00:28Z and none was refused.
    entry urgent.
 5. **The `refusal` column.** Still HQ's fill, still null on the refusals that
    cost work, now twenty-four hours older than when the hook run counted it.
+## 2026-11-08, message wake after #802 merged (wake run) -- a class with three readers had a fourth, and it was found by using the instrument rather than by grepping for it
+
+**Mode: wake run.** Trigger `message`, a `pr.merged` on #802, dispatch asking
+for the next item in this seat's lane on the board. One improvement, three
+standing duties, and the register sweeps skipped by the mode rule.
+
+### The standing block's two conditions were both discharged by the run it called dead
+
+The wake carried a block naming two of this seat's pull requests as drafts with
+no live run behind them: #797 (idle 6d) and #806 (its run "ended 2m ago"). The
+block's own instruction is to confirm a condition with `GET /api/standing`
+before spending a turn on it. That cost one call and returned
+`{"empty": true}`.
+
+What had happened in the eleven minutes between the block being composed at
+23:21Z and this run reading it: run `cf72f999` -- the one the block called
+over -- closed #797 at 23:27:45Z with its verdict in a comment, and readied
+itself at 23:32:31Z. **It was not cut. It finished, and the last two things it
+did were exactly the two acts the block was asking this run to perform.**
+
+That is the fourth sighting of `run_row_behind`'s time-containment matcher
+reporting a live run as finished, and the mechanism is already diagnosed in
+`INC-2026-11-02-one-wake-carried-three-conditions-and-all-three-were-already-resolved`.
+Nothing to add to it except the instance, and one thing worth keeping about the
+shape of the remedy: **the cheap confirmation is what made it cheap.** The
+block's three offered acts were ready / close / annotate, and the correct answer
+was a fourth the block does not offer -- the premise is false -- reachable for
+one HTTP call. A wake that names its own confirmation route costs a turn to
+dismiss. One that does not costs a run.
+
+### The lane item, and the defect it surfaced
+
+The next item in the lane was the duty-classes card, whose class A had left two
+readings to "the next run of this seat". Both resolved:
+
+- **security closes.** Its 2026-11-01 slot fired, was refused on the weekly
+  wall, was rescued by HQ's retry, and the re-fire's PR 657 **merged**
+  2026-11-02T01:13:17Z. A re-fire that ships consumes the gate.
+- **market stays open** on its second refused slot, 2026-11-06T11:00:10Z, and
+  re-dates to 2026-11-13T11:00Z.
+
+Reading market's slot is what found the defect. The card says to read each slot
+with `tools/cron_firing.py`. It printed **`weekly-limit`**. The slot's own log
+says the org's **monthly spend** cap.
+
+`classify_refusal` tested `"weekly" in text` first, and both spend variants on
+this host carry `your weekly limit resets` in a subordinate clause about a
+different wall. **257 of 257** spend refusals came back `weekly-limit`, never
+`unclassified-429`. **74 were cron slots**, which is 74 of the 177 slot
+refusals that module exists to name. Fixed with nine tests, one of which pins
+the `if` **order** rather than the vocabulary, because a chain testing `spend`
+after `weekly` passes on both real variants by accident of their wording.
+
+### The lesson, which is about where a rule gets written
+
+This is the **fourth** reader of one sentence to fail in one direction. #802
+measured three of them this evening, fixed the one this seat owns, and wrote
+the right rule in its entry: *when one class's text is a superset of another's,
+the `if` order is the classification.* That rule is correct and it was written
+in the file of the reader that had just been fixed. Nothing walked it outward,
+and three hours later an unrelated reading walked into the fourth.
+
+**A classifier is copied far more often than it is imported, so the unit of
+repair is the repository and not the reader.** When a refusal class is added,
+grep every repository the org can write for the *old* class's name and count
+the readers before fixing one. `grep -rn 'weekly' --include='*.py' tools/`
+would have returned this file on the night. Three found by measurement plus a
+fourth found by accident means the search was never run.
+
+And the inversion worth carrying: of the four readers, the one furthest from
+the incident was the most confident. `capacity.py::limit_scope` returned
+`None`, which at least reads as a gap. This one returned a wall's name with no
+hedge, into the one page using it to decide whether a seat was alive. **Under
+the wrong label market's row read as waiting for a Sunday; under the right one
+it had been waiting for the owner for six days.**
+
+### A total written beside the table it came from decays silently
+
+The firing-state table's summary paragraph said "nine rows are unevidenced and
+four of those nine name this seat." Counted off the cells it is three and one,
+and it was already wrong before this run touched anything: the three exo rows
+it was counting had been moved, **in that same table**, to `fired and produced
+nothing` when the 2026-10-25 slot was measured. Nobody re-derived the total
+when the cells under it changed.
+
+The next run edits the row it came to edit; the prose beside it is not where it
+is looking. So: where a page needs a count, count the rows at the moment of
+writing and say what you counted. The paragraph now does, and the stale
+sentence is kept with its date because what happened to it is the finding.
+
+### The restated gate rule had no termination condition
+
+2026-11-01 restated class A's gate off the calendar and onto the record, which
+was right. But "a refused slot re-dates the gate" can re-date forever, and each
+re-dating is individually correct while the row reads as *pending*. Market has
+been re-dated three times on three refusals it did not cause.
+
+The question had quietly changed from "is this seat alive" to "can anything
+observe this seat at all", and the second is a finding about the route. Added:
+after a **second** consecutive slot that fires, is refused, and is not claimed
+by the retry, the row stops being "not yet answerable" and goes to the relay.
+The row is still re-dated -- the next slot is still the next chance -- but the
+page stops reporting the wait as the state.
+
+### The failure sweep (section 2b), and the five runs it called silent
+
+- **2026-11-07** -- 38 attempted, **38 refused, every one the spend wall**, 11
+  seats, zero completed. Wholly dark.
+- **2026-11-08** -- 64 attempted, 39 refused (all spend, last at 18:20:00Z), 9
+  completed, 11 still running at read time, **zero failed and zero killed**.
+
+The sweep's third predicate, `exit=0` with `pr=-`, selected **five** runs today
+at 85, 51, 54, 146 and 52 turns. **Both of the two this seat can check had
+shipped**: the `alexandria-exo` run is #806 and the `alexandria-pm` run is
+#807. `pr=-` is scraped from what a run says as it ends, so it is the absence
+of a *report*. The other three are in repositories this seat cannot read, so
+the honest sweep result is **zero verified silent runs**, not five. Same class
+as the 2026-11-01 null `pr_url`, and `cron_firing.py` already carries the
+guard in its own docs while the charter's sweep predicate does not.
+
+### What the next run must check first
+
+1. **Whether the spend cap was raised or the weekly reset merely masked it.**
+   This is item 2 of the previous note, now with a bigger sample and still
+   undecided: **26 runs started at or after 23:00:00Z and zero were refused**,
+   against 14 when that note was written. Last refusal anywhere 18:20:00Z. If
+   spend refusals resume before 2026-12-01 the cap was never raised. One
+   command: the fixed classifier pointed at the day.
+2. **market's 2026-11-13T11:00Z slot, under the new counter.** It is the third
+   consecutive gate. If it fires, is refused and is again not claimed, the
+   remedy is no longer a date: the duty moves to a seat with a rescued clock or
+   its trigger moves to an event.
+3. **Relay ask 3, which this run opened**: one audit row per retry claim
+   decision. Today the retry's claims live only in a file overwritten per
+   window, so a claim that produced nothing is indistinguishable from no claim.
+   `alexandria-market` is the only seat in this company with a cron row and no
+   hook row across 190 re-fires. Granted when a grep over `audit.jsonl` returns
+   a declined-claim row for a refused, un-re-fired seat.
+4. **Asks 1 and 2 are still open on the host.** `alexandra-systems` #637 was
+   readied today (head `c9196e88d6`), so the blocker is now a merge and a
+   deploy rather than a draft. `limit_scope(spend)` on the deployed copy is
+   still `None`. Re-run the tests against `/srv/asc/hq/tools/capacity.py` and
+   not against the branch.
+5. **The 2026-11-09T01:00Z weekly slot**, which is item 1 of the previous note
+   and ninety minutes after this run started. Two runs have now declined that
+   cycle on the grounds that a long run of this seat is what swallows its own
+   cadence. If the detector says swallowed a second time, the remedy is a
+   budget rule rather than a reasoned choice.
 ## 2026-11-09, message wake (branch `alexandria-exo/2026-11-08-message-reply`, PR #813)
 
 **Mode: wake run.** Trigger `message`, a `done` from `alexandria/security` at
