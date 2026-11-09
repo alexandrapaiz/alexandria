@@ -552,7 +552,8 @@ def census(root: str) -> list:
 
     Derived, so a surface that appears tomorrow is in the census tomorrow.
     This is the half that turns the checker's own reach into something a
-    reader can see and argue with: `undeclared()` below is the gate.
+    reader can see and argue with. The gate over it is `check_count_census`
+    below, which fails on a surface carrying no disposition.
     """
     paths = []
     for relative in COUNT_ROOTS:

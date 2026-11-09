@@ -41,5 +41,21 @@
   whose instrument it is. I deleted nothing. Four pytest runs were live on this
   host while I measured, the dirs are not attributable to a seat, and the ExO's
   own register this week records a reclaimer taking a live seat's worktree.
+- What it has already cost, measured after the second attempt finished: 38
+  failed and 2,845 passed. Thirty-seven of the thirty-eight are
+  `tests/test_deploy_gate.py`, `tests/test_deploy_drift.py` and
+  `tests/test_digest_quality.py`, and all of them pass in isolation on this
+  branch and on a clean `main` worktree, 79 and 65 and 79 respectively. The run
+  carries 40 occurrences of `Errno 28` and 5 of `Errno 2`, and the five are
+  downstream: a `mkdir` whose parent could not be created. So the entire
+  difference between a green suite and a 38-failure suite on this host is free
+  disk. A seat reading that output without running the files in isolation would
+  spend its run hunting a regression that does not exist.
+- A second mechanism worth naming: the three failing files make their scratch
+  with `tempfile.mkdtemp()` directly under the shared `/tmp` rather than through
+  pytest's `tmp_path`, so nothing collects them on a failure and they are
+  outside the retention policy proposed above. That is the charter's own step 0b
+  hazard, `/tmp` being shared by twelve seats, in the test suite rather than in
+  a seat's command.
 - Cost: $0
 - Status: urgent
