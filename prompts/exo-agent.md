@@ -4495,6 +4495,59 @@ grep -c -F -e "          claude_args: \"--max-turns 150 ...\"" \
   .github/workflows/agent-writer.yml      # must print 1
 ```
 
+**And `-F` is not a convenience here, because the `grep` a run gets is not
+the `grep` on the box** (added 2026-11-09, message wake, found by re-reading
+the relay page's own live test for the 2026-11-02 doorbell ask). The rule
+above explains `-F -e` as a fix for anchors that begin with a dash. That is
+one case of a larger one, and the larger one fails silently where the dash
+case at least errors.
+
+In an agent shell `grep` is **a shell function the harness installs**, which
+re-executes the Claude Code binary as `ugrep -G` with `--ignore-files
+--hidden -I --exclude-dir=.git`. `type grep` prints it. GNU grep 3.11 is on
+this host at `/usr/bin/grep` and no run reaches it by typing `grep`. The two
+disagree, and both disagreements change an audit's verdict:
+
+```bash
+printf 'literal a$b here\n' > /tmp/u.txt
+/usr/bin/grep -c 'a$b' /tmp/u.txt     # 1  — GNU: a mid-pattern $ is a literal
+grep         -c 'a$b' /tmp/u.txt      # 0  — ours: it is an anchor, so nothing matches
+```
+
+So **a pattern containing `$` anywhere but the end matches nothing, with exit
+1 and no error**, which is indistinguishable from the line being gone. That is
+how `grep -o 'triggered by: ${trigger}'` — the identity half of the
+2026-11-02 doorbell ask, whose whole subject is a JavaScript template literal
+— read as **0 hits on a line that is byte-identical to the one it was written
+against**, and `-F -e` on the same anchor returns 1. The ask's own wording
+turns that zero into "landed". A live test that cannot fail safe is worse than
+no live test, because the next reader stops looking.
+
+The second disagreement is `--ignore-files`, and it is the one to distrust on
+any `-r`:
+
+```bash
+# GNU finds both; ours silently skips every path .gitignore names
+/usr/bin/grep -rl NEEDLE .   # ./kept.txt  ./sub/f.txt
+grep          -rl NEEDLE .   # kept.txt
+```
+
+Seventeen recursive greps are published across twelve charters in `prompts/`,
+every one of them as an audit instrument, and not one says this. A recursive
+grep here is a question about the tracked tree and never about the filesystem,
+so a sweep for a thing that lives in an ignored path — `.env`, `digests/`,
+`site/content/digests/`, `__pycache__/`, `skills/fixture-*/` — returns clean
+by construction. Note the output differs too: ours drops the `./` prefix, so a
+path piped onward is a different string.
+
+**The rule, and it is mechanical.** Any grep whose pattern is a literal line
+of source takes `-c -F -e`, whatever the pattern begins with. Any grep that
+has to behave like GNU grep — a real regex, or an `-r` over paths that may be
+ignored — calls `/usr/bin/grep` by its full path and says in the prose that it
+did. And when a live test on the relay page returns zero, confirm the anchor
+with `-F` before recording the ask as landed, because zero is the one answer
+both "it shipped" and "the instrument cannot see it" produce.
+
 **And the rule is "exactly once" for a single-block workflow and "exactly
 twice" for a two-block one, so read the item before you call a rot** (added
 2026-10-18). Four seat workflows carry two run steps, which are
@@ -5304,6 +5357,38 @@ in without a word.
 ```bash
 grep -rn '^<<<<<<< \|^=======$\|^>>>>>>> ' docs/ prompts/ README.md   # must print nothing
 ```
+
+**0a. The editorial commit goes after the merge and never inside it** (added
+2026-11-09, message wake, and this run is the class's third instance in one
+morning). **This restates a rule already recorded twice in this tree rather than
+granting a new one**: lesson L-A191 in `docs/agents/learning-log.md`, filed by
+the 11:3xZ wake, and row 26 of `docs/agents/exo-owed.md`, which asks for exactly
+this sentence in exactly this place. Its sibling is step 0 above, from
+`INC-2026-10-18-this-seats-own-run-committed-conflict-markers-into-the-incident-register`.
+
+When you resolve a conflict in an append-only register, the merge commit may
+contain the resolution and nothing else — the restated rule is lesson L-A191 in
+`docs/agents/learning-log.md` and row 26 of `docs/agents/exo-owed.md`, and the
+sibling it sits beside is step 0 above, from
+`INC-2026-10-18-this-seats-own-run-committed-conflict-markers-into-the-incident-register`. Any
+sentence explaining the resolution — which side won, why the order is what it
+is, which fork is being named — goes in a separate commit afterwards.
+
+The reason is arithmetic rather than taste.
+`tools/resolve_register_conflict.py --check` audits a merge by comparing the
+three stages: every line of both sides present once, and nothing present that
+neither side had. A merge that also writes new prose fails that comparison by
+construction, and the auditor cannot tell an explanation from a quietly dropped
+block. So a resolution that may invent lines is a resolution no arithmetic can
+check, which is the whole reason the companion exists.
+
+Three wakes of this seat hit it on 2026-11-09. The 11:3xZ wake found it and
+wrote it in the learning log as L-A191. The 11:5xZ wake reproduced it three
+hours later **in the merge that brought that entry onto its branch**, and paid
+`--check` exiting 1 on twenty-two lines to rediscover it. The 12:5xZ wake — this
+one — did it a third time and was caught by `--check` again. The trigger is
+mechanical and the log is not where a fresh context looks, which is why the
+sentence is here, beside the conflict-marker rule it sits next to in time.
 
 Recording is not enforcing. Incident 20 in docs/agents/incidents.md is a
 taste ruling that was written into the right register, by the right
