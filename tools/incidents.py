@@ -746,6 +746,30 @@ def seat_of(entry: "Entry") -> str | None:
     return match.group(1) if match else None
 
 
+def _descending(date: str | None) -> str:
+    """A sort key that puts a later date first, for an ascending sort.
+
+    One function rather than a `reverse=` on part of a compound key, which
+    `sorted` cannot express. Dates here are `YYYY-MM-DD` strings and some
+    entries carry a range like `2026-09-17/18`, so this complements the digits
+    and leaves everything else alone: the complement of a lexicographic
+    ascending order is a lexicographic descending one on the same alphabet, and
+    a malformed date sorts consistently rather than raising.
+
+    An entry with no date at all is real: some register entries are headed by a
+    name and nothing else, and `date` is `None` for those. They sort last
+    within their tie rather than raising, which is what the first draft of this
+    function did on the live register. The sentinel is the high codepoint and
+    not the low one, because this key is read by an ASCENDING sort and "last"
+    therefore means largest. The first draft had it backwards and put the
+    dateless entries on top.
+    """
+    if not date:
+        return "\uffff"
+    return "".join(chr(ord("9") - (ord(c) - ord("0"))) if c.isdigit() else c
+                   for c in date)
+
+
 def prior_art(query: str, entries: list["Entry"] | None = None,
               limit: int = 5, remedies_only: bool = False) -> dict:
     """Rank the register's entries against a failure in hand.
@@ -790,7 +814,31 @@ def prior_art(query: str, entries: list["Entry"] | None = None,
             "remedy": verdict,
             "remedy_lines": section,
         })
-    scored.sort(key=lambda row: (-row["confidence"], row["id"]))
+    # Ties are the common case and not the edge one, so the tie-break is part
+    # of the ranking rather than a detail of it. On 2026-11-09 the query
+    # `test_the_uncovered_set_has_not_grown` put FOUR entries at confidence
+    # 1.000, because an assertion name is the most distinctive term this corpus
+    # has and every entry about that gate carries it. Breaking that tie on the
+    # id, as this did, is alphabetical order dressed as relevance: the entry a
+    # reader saw first was a register entry whose id happened to sort early,
+    # and the entry that governs the failure was third.
+    #
+    # The skill seat reported this, in the direction of its own query, and the
+    # half that reproduces is this one. Its other half does not: the headline
+    # read `1 of those prescribes a remedy` and not zero, measured on 646
+    # entries at the same query. Recorded here because an unreproduced half of
+    # a true report is how a correct fix gets attributed to the wrong cause.
+    #
+    # So within a tie: an entry that prescribes a remedy first, because the
+    # question this tool exists to answer is "and did that entry prescribe a
+    # remedy?"; then the newest, because the latest instance of a class carries
+    # the most current reading of it; then the id, so the order is total and
+    # the output is reproducible.
+    REMEDY_RANK = {"REMEDY": 0, "OPEN": 1, "NONE": 2}
+    scored.sort(key=lambda row: (-row["confidence"],
+                                 REMEDY_RANK.get(row["remedy"], 3),
+                                 _descending(row["date"]),
+                                 row["id"]))
     # `matched` counts every entry sharing any distinctive term, which on this
     # corpus is nearly all of them, so it is data and never the headline. The
     # number a reader can use is `close`, counted over the whole ranking rather

@@ -953,3 +953,107 @@ def test_a_truncated_list_never_reports_that_nothing_was_filed(capsys):
 def test_a_limit_below_one_is_a_usage_error():
     assert inc.main(["prior", "rank_bundles", "--limit", "0"]) == 2
     assert inc.main(["prior", "rank_bundles", "--limit", "-3"]) == 2
+
+
+# --------------------------------------------------------------------------
+# The tie-break in `prior_art` (engineer seat, 2026-11-09)
+#
+# Reported by the skill seat the hour the lookup shipped. An assertion name is
+# the most distinctive term this corpus has, so every entry about one gate
+# carries it and ties at confidence 1.000 are the common case rather than the
+# edge one. Breaking that tie on the id is alphabetical order dressed as
+# relevance: on the live register the entry that governed the failure was third
+# behind one whose id happened to sort early.
+# --------------------------------------------------------------------------
+
+TIE_REGISTER = """# Incident register
+
+## INC-2026-01-01-aaa-no-remedy - the widget gate went red (2026-01-01, a seat)
+
+**What happened.** The widget gate went red and nobody read it.
+
+## INC-2026-11-08-mmm-open - the widget gate went red (2026-11-08, a seat)
+
+**What happened.** The widget gate went red and nobody read it.
+
+**The fix, or why there is not one yet.** Not this seat's file.
+
+## INC-2026-11-09-zzz-remedy - the widget gate went red (2026-11-09, a seat)
+
+**What happened.** The widget gate went red and nobody read it.
+
+**The fix shipped here.** One widget row in the census.
+
+## INC-2026-03-03-an-unrelated-digest-failure - the digest did not send (2026-03-03, a seat)
+
+**What happened.** The mailer refused the recipient list and the issue never went out.
+
+## INC-2026-04-04-an-unrelated-clone-failure - the clone came back shallow (2026-04-04, a seat)
+
+**What happened.** A merge base between two close branches read as unrelated histories.
+"""
+
+# Two entries above share none of the query's terms, on purpose. The scorer
+# weights a term by how rare it is, so a fixture where every entry carries
+# every term gives each one no discriminating power at all and the whole
+# ranking comes back empty. That is how the first draft of these tests failed,
+# and it is the same in-band shape as the rest of this run: a degenerate
+# corpus returns a legal empty result rather than an error.
+
+
+def _tie_entries():
+    return inc.split_entries(TIE_REGISTER, "register")
+
+
+def test_the_descending_date_key_puts_newer_first_and_dateless_last():
+    """The helper on its own, because both of its directions were wrong once.
+
+    The first draft raised on a dateless entry, which the live register has.
+    The second returned the low codepoint for one, which an ascending sort puts
+    on top, so "sorts last" had to mean "largest key".
+    """
+    assert inc._descending("2026-11-09") < inc._descending("2026-11-08")
+    assert inc._descending("2026-01-01") < inc._descending("2025-12-31")
+    assert inc._descending("2026-11-09") < inc._descending(None)
+    assert inc._descending("2026-11-09") < inc._descending("")
+    # A dated range is what some register entries carry, and it must not raise.
+    assert inc._descending("2026-09-17/18") == inc._descending("2026-09-17/18")
+
+
+def test_a_tie_is_broken_by_remedy_then_recency_and_not_by_the_id():
+    """The ranking's contract on a tie.
+
+    The ids are chosen so alphabetical order and the intended order disagree:
+    `aaa-no-remedy` would win on the id alone and is the least useful hit.
+    """
+    found = inc.prior_art("the widget gate went red and nobody read it",
+                          _tie_entries())
+    order = [h["id"] for h in found["hits"]]
+    widgets = [i for i in order if "unrelated" not in i]
+    assert widgets == ["INC-2026-11-09-zzz-remedy",
+                       "INC-2026-11-08-mmm-open",
+                       "INC-2026-01-01-aaa-no-remedy"], order
+    # The three tie on confidence, so the order above is the tie-break and not
+    # the score. Asserted so a scoring change cannot make this pass for the
+    # wrong reason. The two distractors score lower and are excluded.
+    scores = {h["confidence"] for h in found["hits"] if h["id"] in widgets}
+    assert len(scores) == 1, found["hits"]
+
+
+def test_the_newest_of_two_equal_verdicts_comes_first():
+    """The second key, isolated from the first: both of these are OPEN."""
+    entries = [e for e in _tie_entries()
+               if e.key != "INC-2026-11-09-zzz-remedy"]
+    found = inc.prior_art("the widget gate went red and nobody read it", entries)
+    assert [h["id"] for h in found["hits"]][0] == "INC-2026-11-08-mmm-open"
+
+
+def test_the_ranking_is_stable_across_two_calls_on_the_live_register():
+    """A lookup a seat quotes in a pull request has to be reproducible.
+
+    The key is total, with the id last, so this holds whatever the corpus does.
+    Asserted on the real register because a partial key only shows up there.
+    """
+    first = inc.prior_art("test_the_uncovered_set_has_not_grown")
+    second = inc.prior_art("test_the_uncovered_set_has_not_grown")
+    assert [h["id"] for h in first["hits"]] == [h["id"] for h in second["hits"]]
