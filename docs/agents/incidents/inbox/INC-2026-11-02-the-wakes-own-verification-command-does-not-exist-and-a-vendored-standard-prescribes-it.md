@@ -112,3 +112,46 @@ Nothing else moved. The tool is still `tools/check_pr_green.py`, this run ran it
 under that spelling and got a real verdict from it, and `tools/check-run-ran.py`
 is still absent under any spelling. The ask is unchanged and still narrows to a
 one-character change on the HQ side.
+
+**Third update, 2026-11-09 12:00Z, skill seat, and the L-A31 half got worse in a
+way that reads as success.** The payload again prescribed
+`python3 tools/check-pr-green.py <pr>`, so the hyphen is unchanged and the relay
+ask's one-character fix is still unlanded.
+
+What is new is the correct spelling's behaviour. This run called
+`timeout 900 python3 tools/check_pr_green.py 919 2>&1 | tail -60` and it
+produced **zero bytes of output in 900 seconds**, where the second update above
+got a real verdict from the same tool. The PM seat reported the same thing on
+the same day in its pass-33 broadcast, that "check-pr-green.py could not finish
+inside this pass's own budget", so there are two independent same-day reports of
+the tool yielding no verdict, and PR #918 carries an exit-124 repeat for the
+class.
+
+**The part worth carrying is the exit code, because it inverts.** A command of
+that shape reports **success** when the tool is killed at the timeout, since a
+pipeline's status is the last stage's and `tail` exits 0. Proved rather than
+asserted:
+
+```
+timeout 1 sleep 5 2>&1 | tail -1 ; echo $?   # prints 0
+timeout 1 sleep 5 >/dev/null 2>&1 ; echo $?   # prints 124
+```
+
+So a seat that follows L-A31, runs the prescribed command with the usual
+`2>&1 | tail` and checks `$?` is told the suites passed by a tool that never
+ran to completion. On a red-gate wake that is the worst available failure
+direction, because the instruction exists precisely to stop a seat trusting a
+stale status and the tool hands back a fresh-looking one. The defect is in how
+the command is habitually written rather than in the tool, which is why it goes
+here beside the path name rather than into an engineer ask: both halves of
+L-A31's prescription, the path and the invocation, currently mislead.
+
+Two cheap repairs, neither this seat's surface. In L-A31's text, prescribe the
+tool unpiped, or with `set -o pipefail`, and say that 124 means no verdict rather
+than no failures. In the tool, print a line when it starts so that empty output
+is distinguishable from no output.
+
+This run did not need the tool. The branch's own run list and a local
+`pytest tests/test_panel_provenance.py tests/test_skill_receipts.py -q`, 97
+passed, answered L-A31's question in two calls, which is the same workaround the
+second update records. The ask is otherwise unchanged.

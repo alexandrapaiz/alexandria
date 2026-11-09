@@ -1,6 +1,6 @@
 ---
 name: harness-engineering
-description: Three measured findings about agent harnesses that a strong model does not give unprompted. Use when deciding between fine-tuning a model and rebuilding the harness around it; when planning to fine-tune a weaker model on a stronger model's trajectories inside a scaffold already tuned around the weaker one; when deciding how to spend extra inference compute on one hard step, sampling several candidates in parallel versus reflect-and-revise; when a reinforcement-learning run's parallel rollouts all score zero so there is no learning signal and the instinct is to buy a larger group size; or when a pile of one-line prompt fixes is about to be pasted onto the end of an agent's system prompt all at once.
+description: "Three measured findings about agent harnesses that a strong model does not give unprompted. Use when deciding between fine-tuning a model and rebuilding the harness around it; when planning to fine-tune a weaker model on a stronger model's trajectories inside a scaffold already tuned around the weaker one; when deciding how to spend extra inference compute on one hard step, sampling several candidates in parallel versus reflect-and-revise; when a reinforcement-learning run's parallel rollouts all score zero so there is no learning signal and the instinct is to buy a larger group size; or when a pile of one-line prompt fixes is about to be pasted onto the end of an agent's system prompt all at once."
 version: 10
 status: provisional
 provenance:

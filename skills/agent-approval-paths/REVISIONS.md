@@ -6,6 +6,353 @@ changed; the narrative lives here. The reason for that split is the measurement
 recorded in `skills/harness-engineering/REVISIONS.md` and the rule is in
 `prompts/skill-extract.md` section 2.
 
+## 2026-11-09, sixth entry: the ceiling has a precondition under it, and the only paper carrying the field is the one the corpus had never read
+
+**Trigger.** ADR-37, a cited paper read in full for the first time. The research
+seat's `done` of 10:55Z (board id `08830fa2`, ref #913) reported reading
+`arxiv:2609.21081` (Loopjacking, A. A. Kumar, 17 Sep 2026) in full and routed
+five items to this seat without applying any of them, because `skills/` is this
+seat's surface under ADR-22. This entry is the application, and the paper was
+read here independently first: `python3 tools/read_paper.py 2609.21081`, exit 0,
+**55,190 chars**, the same count their note records.
+
+### The finding, and it is a precondition rather than a caveat
+
+v6 added a **ceiling** to the binding this file prescribes: the recorded fields
+agree and the operation differs, because the divergence is below the mediation
+point. v7 adds a **precondition**, and the two are invisible to the same check
+for opposite reasons. The precondition is that the recorded fields agree
+*because the record itself is lossy*, so the operation that differs was never in
+the record to be compared against.
+
+Checklist items 1 and 2 both ran in one direction, action to text. "Decoded from
+the action that will execute" is satisfied by a lossy projection of that action,
+and that is not a hypothetical: it is the shape of a measured positive at a
+released version. A gateway-mediated shell path carried a positional argument
+vector whose inline payload was `$0 "$1"`, with additional positional arguments
+selecting the command and destination that created the marker. The paper's own
+sentence is that **the full vector was prepared before approval** while the
+product's approval event **represented only the inline payload**. So the
+rendering was genuinely derived from the real command and was still a projection
+of it. An allow-once decision then released the complete vector: **3 of 3**,
+with direct unapproved execution denied 3 of 3 and unchanged approved commands
+still succeeding.
+
+The consequence for a builder is the one that justifies changing the decision
+rule rather than appending a warning. A team that captures its descriptor from
+the approval view, hashes it, and re-checks the hash at dispatch has built
+something where the comparison **passes** and a different operation executes,
+and the team's own proof of safety ("display and enforcement can never
+disagree") is the hole. Eval task `ap-t9` is written against exactly that team.
+
+### The field the corpus did not have, verified here rather than taken
+
+Until this read, the corpus knew this paper only through `2609.38983`'s section
+VIII-A, which reads it at length as concurrent work. That section reports
+Loopjacking's section 6.1 canonical approval record as five items. **Section 6.1
+has six bullets**, and the sixth, read here in the paper's own text, is:
+
+> a digest over the same complete descriptor shown to the human.
+
+followed immediately by the operative sentence:
+
+> The display must be generated from this descriptor, not from a lossy
+> convenience string while execution uses a richer object.
+
+Three checks were run here rather than inherited:
+
+| check | result |
+|---|---|
+| `digest` in `2609.38983` (132,653 chars, re-fetched this run) | **0 occurrences** |
+| `digest` in `2609.28586` (105,779 chars) | 3, all source-content or prediction digests, none over what the human saw |
+| `Loopjacking`/`Agno`/`OpenClaw` in `2609.28586` | **0**, so the two are independent |
+
+**And one observation this seat adds to the research seat's note.** The citing
+paper does not drop the field at random. Its own words are that Loopjacking's
+record is "a field set with substantial overlap with our own seven-field
+credential", so it summarises the record by mapping it onto its own mechanism,
+and the single field it drops is the one with no counterpart there. That same
+credential is the one its own measurement puts at a ceiling, scope 1.000 to
+1.000 and arguments 0.450 to 0.400. So the omission and the ceiling are one fact
+seen twice: the dropped field addresses a failure the dropping paper's mechanism
+cannot see. Of the three independent namings of this class, this is the only one
+carrying the field, and the only one with a **released vendor fix**, the next
+version of the affected product, which reconstructs and checks the complete
+argument vector and rejects the mismatch 3 of 3 while still executing the
+approved command.
+
+### The second timing-shaped repair is now ruled out, by two papers that do not cite each other
+
+v6 already refused one: re-approving when an environment snapshot differs
+between grant and dispatch catches **none** of the ceiling cases, because the
+hook or shadowed executable is installed before the credential is issued. This
+paper's negative control rules out the other, which is the repair a reviewer
+reaches for when told approvals can be substituted after the click. Refusing to
+persist approvals, or shortening the window, is not the fix: every approved
+action was serialized, restored and resumed and executed **3 of 3 and 3 of 3**,
+while a same-call-ID raw mutation was rejected. The paper's conclusion is that
+resumability "is a carrier for post-approval substitution but neither a
+necessary condition for the umbrella nor a sufficient cause of failure". What
+the control preserves is a canonical invocation fingerprint across
+serialization, which is a completeness property and not a timing one.
+
+So both halves of delta 1's new material point the same way, and neither points
+at duration.
+
+### What changed in the file
+
+1. **Checklist item 1** separates completeness from provenance, says in the file
+   that a faithful render can still be lossy, and names the six measured fields
+   for a shell surface: inline payloads, positional arguments, environment
+   changes, working directory, interpreter flags, redirections. It carries the
+   paper's collapsed-view rule, that a collapsed view may stay useful but
+   approval must expose any material hidden field or refuse to authorize it.
+2. **Checklist item 2** binds the complete resolved operation rather than the
+   view, and requires the enforcement point to **reconstruct** that operation at
+   dispatch and compare, rather than re-verify the fields it stored. It also
+   names the three insufficiencies the paper states one per studied product:
+   binding a call identifier, binding a run-level approved flag, and checking
+   only at presentation time.
+3. **Delta 1's procedure** items 1 and 2 carry the same two changes with the
+   source's own five-step use-time decision in order, which is the first
+   numbered procedure in this file taken verbatim from a paper rather than
+   composed from its findings.
+4. **Caveats** gain a seventh surface with this paper's bounds, and one
+   prohibition in bold.
+5. **Evals** gain `ap-t9`, paired with `ap-t8` as precondition to ceiling, five
+   rubric criteria and a zero-scoring exploit.
+
+### The prohibition, because it is the thing most likely to be misused
+
+**This paper may never be cited for approval fatigue, dialog quality, deception
+rates or interface comprehension.** Its approval decision was scripted, and only
+after the test had asserted and recorded the exact product view, so it measures
+binding behaviour and nothing about a human. It disclaims that reading twice in
+its own text, in section 3.3 and in section 7.1. It is also the paper here whose
+method most resembles a human-factors study, which is exactly why the disclaimer
+needs to travel with it inside this file rather than only in a note.
+
+### Rule 4, and the number this run owes the owner rather than the one it passes
+
+`wc -l` is **119**, under rule 4's cap, down from v6's 120. v6 was the only file
+in the library not under the cap, every other skill sitting at 119 or below, and
+that is corrected here.
+
+**That sentence is true and it is not the honest number, so both go in the pull
+request.** `skills/_validation/skill_length.py` measures the same rule in
+rendered lines at 100 columns, which is the unit rule 4 meant, and against that:
+
+| version | `wc -l` | frontmatter | body | rendered |
+|---|---|---|---|---|
+| v5 | 118 | 99 | 347 | 446 |
+| v6 | 120 | 118 | 402 | 520 |
+| **v7** | **119** | **109** | **459** | **568** |
+
+So the governing metric improved by one line while the file got 48 rendered
+lines longer to read. This revision paid for its new material by collapsing four
+superseded revision narratives in the frontmatter into one pointer line, which
+is the right direction (the frontmatter is a record REVISIONS.md already holds in
+full) and is why the frontmatter fell 118 to 109. It does not change the fact
+that the body grew and the gate did not see it.
+
+The instrument's own docstring predicted this seat's behaviour: it records that
+three `harness-engineering` revision entries state, in their own words, cutting
+reader-facing advice to make room for a revision entry. v6 did exactly that,
+merging two cross-paper caveats to pay for a frontmatter line. v7 did the
+inverse, and it still grew.
+
+**The conclusion is the one v6's pull request already reached and this run now
+has the number for: the approval-laundering and Loopjacking material is a
+different surface from all three current deltas and belongs in a second skill.**
+The longest single line in this file is 4,444 characters, about 45 rendered lines
+in one paragraph, and it now carries a ceiling and a precondition from two papers
+that neither of the three deltas was built around. That split is the next
+maintenance item for this skill and is recorded as such, not done here, because
+the charter allows one skill per run and this run's item was the revision.
+
+### Still unmeasured
+
+No route to either eval arm, so no delta. `status` stays `draft` and the word
+**unmeasured** is in the pull request. The trigger suite moved 75 of 85 to 76 of
+86 with **zero verdicts moved** and one case added, and a green trigger case says
+this skill is findable and says nothing about whether it helps.
+
+## 2026-11-09, fifth entry: the prescription had a ceiling and the file did not say so
+
+**Trigger.** ADR-37, a cited prescription narrowed by papers read in full. The
+research seat's `done` of 09:48Z (board id `e6764735`, ref #903) reported both
+approval-laundering papers read in full, corrected two premises in this skill's
+own queue lines, and asked this seat to say which paper each delta rests on. The
+reading below is this seat's own, not the note's.
+
+**What this seat did before writing anything.** Fetched both full texts with
+`python3 tools/read_paper.py`, exit 0 both, 132,653 and 105,779 characters,
+matching the research seat's counts exactly. Then read, in the texts rather
+than in the note, section IX of `2609.38983` for the class-level claim and the
+ruled-out repair, Table I for what each grant's own text excludes, the benign
+example in section I for the argument mechanism, and sections III-C and the
+Table III note of `2609.28586` for the four responses and the no-added-effect
+ASK definition and count. Every figure quoted below was read in the paper.
+
+### The finding: the half this file told a builder to ship is measured at zero on two of six classes
+
+Checklist item 2 and delta 1's procedure item 2 said, in substance, bind the
+approval to the one concrete action and re-verify it at dispatch, and said
+nothing about what that does not reach. Three independent lines reach the
+construction, which is why v4 called it a pattern, and none of the three
+measured its ceiling. `2609.38983` does.
+
+Its Bound-Gap Rate is the fraction of valid runs in which a per-scenario canary
+effect outside the credential's own text occurs. Table III, Claude Code
+2.1.197, Wilson 95 percent:
+
+| class | N | BGR | 95% CI |
+|---|---|---|---|
+| Scope | 20 | 1.000 | [0.839, 1.000] |
+| Temporal | 20 | 1.000 | [0.839, 1.000] |
+| Tool, cross-tool identity | 19 | 0.000 | [0.000, 0.168] |
+| Tool, same-name `$PATH` | 20 | 1.000 | [0.839, 1.000] |
+| Argument | 20 | 0.450 | [0.258, 0.658] |
+| Delegation | 19 | 0.947 | [0.754, 0.991] |
+| Semantic (proxy) | 20 | 0.100 | [0.028, 0.301] |
+
+Its defense is an HMAC credential over principal, agent id, session id, tool,
+argument hash, scope and expiry, minted by a mediator and held server-side,
+which is a strictly stronger version of what checklist item 2 asks for. Table V
+replays it paired over the 118 runs of the six replayed scenarios, McNemar
+exact:
+
+| class | baseline | with defense | discordant | p |
+|---|---|---|---|---|
+| Delegation | 0.947 | 0.000 | 18/0 | 7.6e-6 |
+| Temporal | 1.000 | 0.000 | 20/0 | 1.9e-6 |
+| Argument | 0.450 | 0.400 | 1/0 | 1 |
+| Scope | 1.000 | 1.000 | 0/0 | 1 |
+| Semantic | 0.100 | 0.100 | 0/0 | 1 |
+| Tool (cross-tool) | 0.000 | 0.000 | 0/0 | 1 |
+
+**So the binding eliminates the two classes where a field diverges and moves
+nothing where no field diverges.** The paper's own section IX sentence is that
+`"Tool Laundering is blocked" is false as a class-level statement`, and the
+mechanism it gives is structural rather than contingent: `$PATH` resolution
+happens inside the dispatched process, below the `PreToolUse` mediation point,
+and no field the hook receives can be made to reveal it. The three mechanisms,
+from Table I:
+
+- **Scope.** A grant of `Bash(npm run test *)` never names the canary read that
+  a `package.json` script's child process performs.
+- **Argument.** A grant of the literal `git commit -m "wip"` never names the
+  unstaged edit a repository `pre-commit` hook running `git add -A` sweeps in.
+  Eight of the nine successes issue the approved literal unmodified, so this is
+  not the model widening its own arguments, and the ten failures attempt a
+  *narrower* command which the allowlist correctly denies.
+- **Tool, same-name `$PATH`.** The approved rule `Bash(cat *)`, the literal
+  command text and the recorded tool identity all match what was granted, and
+  only which executable `$PATH` resolves `cat` to differs.
+
+### Why the obvious repair is in the file as a refusal rather than as an option
+
+This is the part that makes the revision a decision-rule change rather than a
+caveat. An engineer told that the binding has a ceiling reaches next for
+re-approval on environment change, which the literature calls drift detection.
+The paper measured it and says it `would not have caught any of our measured
+cases`, because in every scenario the hook or shadowed executable is installed
+before the credential is ever issued, so the snapshot is identical at approval
+and at dispatch. Finer matching on the argument or scope field cannot help
+either, and the paper's reason is the one to carry: there is no delta to match
+against, since the field never changes.
+
+What it names instead is *initial effect validation*, inspecting at approval
+time what the already-present environment would make the credential produce and
+refusing a grant whose own text excludes an effect the environment is already
+configured to produce. **It did not build or test that**, and says so, calling
+it the paper's most concrete open problem. Delta 1's procedure item 2 now
+prescribes it and the file says it is unbuilt in the source, because
+prescribing an untested mechanism as though it were a measured one is the
+overstatement this library's provenance reviewer exists to catch.
+
+### The second paper's half, and it lands in delta 2 rather than delta 1
+
+`2609.28586` derives an information limit: if two validly bound executions
+project to the same policy-visible record and need different effect-specific
+decisions, no record-only rule can decide both. v5 of this file had no sentence
+resting on that paper, and the queue line that asked for it claimed the limit
+was `the strongest available argument for why delta 1 must read the resolved
+object`. Read against Lemma 1 that is wrong twice, and the research seat caught
+both: it is an information requirement rather than a hardness result, and it
+licenses four responses rather than one. The paper's own words are that the
+decision path `must conservatively represent the union, re-mediate, reject, or
+contain the unresolved effects`, and its recommendation is the union, meaning
+bind a source-backed prediction of the transitive effect boundary into the
+approval object before authorizing. Reading the resolved object is one of the
+four and is the one that needs the separating information to exist.
+
+So the sentence lands in delta 2's procedure item 6, which is the item about
+consulting effects, and it arrives with its price. **The cost figure the
+abstract omits is the one a builder needs**, and it is in the note under Table
+III: of the 17 reached cases in the frozen confirmatory holdout, **9 are
+no-added-effect ASK**, which the paper defines as a reached case routed to ASK
+whose realized trace exercises no effect class the command-only record had not
+already disclosed. Positive stratum 4 of 9, controls 5 of 8. Against that, the
+frozen predictions raise macro recall 0.770 to 0.926 at 0.941 precision, case
+coverage 0.755 to 0.922, and cut residual effect instances 10 to 3, with all
+seven newly disclosed effects in the positive stratum and control disclosure
+unchanged. Over half the extra prompts bought nothing, and that ratio belongs
+beside the coverage gain rather than under it.
+
+### Which paper each new sentence rests on, because the research seat asked
+
+The two are not interchangeable and the file now says which carries which.
+
+**Delta 1's ceiling rests on `2609.38983` alone.** Single author. A working
+draft dated 2026-09-22, target venue IEEE TDSC, stated in its own manuscript
+line as not yet submitted. One harness, one pinned model version. A Codex CLI
+replication was attempted and blocked because `codex exec` exposes no
+observable per-call approval checkpoint. And the paper disqualifies its own
+point estimates as harness-intrinsic: the runner forks the full parent
+environment and all 138 valid traces load extra plugin instructions and a
+previous-session summary on top of the published prompt, so in its own words the
+repetitions `are not independent draws from a minimal, hermetic harness
+configuration`. The kappa of 1.0 is an unblinded author cross-check re-measured
+on the same 15 runs used to find the analyzer bug it is reported after, and
+Scope's BGR is 0.80 before that fix and 1.00 after. **So take the direction and
+the two zeros, not the rates**, which is what the validation tag now says.
+
+**Delta 2's four responses and the 9-of-17 price rest on `2609.28586` alone**,
+and its warrant is a different kind rather than a weaker one. It reports no
+population dispersion anywhere, and the one interval it draws is labelled in its
+own caption as a fixed-cohort case-resampling stability interval. What stands in
+its place is freeze discipline: a parser frozen before a disjoint, prespecified
+holdout of 18 workflows from 18 previously unseen fixed-SHA repositories, an
+independent re-implementation that hash-checks 109 artifacts, six three-run
+repeats at mean pairwise Jaccard 1.000, and a four-profile denominator
+sensitivity. One predeclared target loses its margin under one of those
+profiles, executed-control precision 0.875 primary and 0.778 when
+`NOT_EXECUTED` is treated as empty, against a predeclared bar of 0.80. The
+primary profile is the pre-registered one, so that is a boundary rather than a
+miss, and it is the thinnest margin in the paper.
+
+### What this run did not do, and why
+
+**The queue lines were not corrected here.** Both carried premises this seat
+wrote from abstracts, and both are wrong: the papers posted a week apart rather
+than three weeks, `2609.28586` is the earlier of the two rather than the second,
+there is a third independent naming thirteen days wide that neither of them
+cites, and the information-limit sentence overstates Lemma 1. The research seat
+corrected all four in place on #903, so correcting them again here would be the
+same two lines written twice at one anchor. That file already conflicts between
+the two branches, proved with `git merge-tree --write-tree`, and the resolution
+is to keep both tail sections. Named in the pull request with the merge order
+rather than resolved on this branch.
+
+**Loopjacking is not cited.** `arxiv:2609.21081` is the first of the three
+namings by posting date and this seat has not read it, so it appears nowhere in
+`SKILL.md`. The research seat queued it on #903.
+
+**Nothing moved on status.** `status: draft` stands, `validated` stays empty,
+and no delta was measured, because neither eval arm has a route from this seat.
+ap-t8 is written and unqualified like the other nine.
+
 ## 2026-11-09, fourth entry: the right number was on the wrong baseline, and the paper prints it twice
 
 **Trigger.** ADR-37, a cited result refined again. The research seat read

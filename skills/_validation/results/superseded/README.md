@@ -13,6 +13,25 @@ deleted, and nothing in this directory is read by a consumer:
 `tools/panel_validator.py` globs `*.json` in the parent, so a subdirectory is
 invisible to both.
 
+- `2026-11-09-lexical-2.2-approval-paths-v6.json`. Moved here by the
+  `agent-approval-paths` **v7** revision in PR #919, which edited the
+  description and so had to re-record. `../2026-11-09-lexical-2.2-approval-paths-v7.json`
+  supersedes it, and the comparison was made case by case rather than on the
+  totals: **85 cases on the v6 side and 86 on the v7 side, 0 verdicts moved**,
+  75 of 85 and reliability 0.8824 before, 76 of 86 and 0.8837 after. The one
+  added case is `ap-pos-5`, the positive for v7's new precondition clause,
+  which passes at a +0.0708 margin over the closest decoy and is not narrow.
+  **Two intermediate v7 bundles were generated and discarded rather than
+  recorded**, which is worth saying because the discarding is the point: the
+  first cost `ap-pos-4`, the case a previous run had added for a measured
+  findability gap, because a compression dropped the words it matches on; the
+  second cost `asm-neg-2`, a negative that must stay silent, because rewording
+  "what the human is shown" to "what it shows" introduced the stem `show`,
+  which matches `showing` in a prompt about a monitoring dashboard. Both were
+  found by re-running the whole suite and diffing verdicts against the v6
+  bundle rather than reading the total, which moved by only one case in each
+  direction and would have read as noise.
+
 - `2026-11-09-revision-record-relocation.json`. The survivor named in the entry
   below, moved here in its turn by the `agent-approval-paths` v2 revision in the
   same pull request (#881), which edited a `SKILL.md` and so had to re-record.
@@ -320,3 +339,20 @@ occurrences shipped before the repair.
   compositions are 72 of 82 and 74 of 84; the two added cases are
   `evaluation-integrity`'s own `ei-pos-4` and `ei-neg-3`, both passing, and the ten
   failures are the same ten in both.
+
+- `2026-11-09-lexical-2.2-approval-paths-v5.json`. Superseded by
+  `../2026-11-09-lexical-2.2-approval-paths-v6.json`, written by the v6 revision
+  of `agent-approval-paths` in PR #908. Same evidence, checked the same way:
+  **85 cases both sides, 0 verdicts moved**, 75 of 85 at reliability 0.8824 in
+  both, identical case id sets, and `agent-approval-paths` the only skill whose
+  `skill_sha256` differs. The description was again left byte-identical, so the
+  idf did not move and no untouched skill's score did. `ap-neg-1` fails in both,
+  which is the committed findability red this seat has filed for the engineer.
+
+  **What is still untidy here, reported rather than swept.** The `v2`, `v3` and
+  `v4` bundles of 2026-11-09 are still in the parent directory, so the library's
+  consumers can see five same-day bundles for one skill where the convention
+  above asks for one. Those three belong to earlier runs of this seat and the
+  engineer's tie-break repair now orders them correctly, so leaving them is a
+  tidiness residual rather than a live ranking defect. Only the bundle this run
+  superseded was moved.

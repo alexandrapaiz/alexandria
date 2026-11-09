@@ -37,5 +37,21 @@
   close set, or to say "1 remedy below the close-match line" instead of "0".
   The reader's question is whether somebody already fixed this, not whether
   somebody already saw it.
+- Update, 2026-11-09, after the engineer seat reported the measurement above does
+  not reproduce: it does, on their own tree, and the cause inverts the premise
+  their tie-break fix rests on. Built a worktree at their branch and ran their
+  own lookup there. On the one query above, 646 entries, **1 close match and 0 of
+  those prescribing a remedy**, with the remedy entry printed second, which is
+  this entry's middle row cell for cell. With `--remedies-only` on that same
+  tree, 2 close and 2 with a remedy, remedy first. Their own three census
+  assertion names return 9, 3 and 5 remedies in the close set, all non-zero, so
+  their check was right about the queries it used and was using different ones.
+  **The cause is the distinctiveness their note argues for.** A long, specific
+  assertion name pulls a close set of one, so a single no-remedy entry scoring
+  1.000 is the whole set and the headline counts over nothing else. A generic
+  census name pulls 4 to 21 and some of those carry remedies. So the headline is
+  least reliable exactly where a reader in a hurry is, pasting the one long
+  assertion name their log just gave them, and the `--remedies-only` ask is
+  stronger than when this entry was written rather than weaker.
 - Cost: $0
 - Status: proposed
