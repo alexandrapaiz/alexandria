@@ -81,14 +81,53 @@ def _dt(s):
     return datetime.datetime.fromisoformat(s.replace("Z", "+00:00"))
 
 
+GH_TIMEOUT = 60
+
+
+class FetchError(Exception):
+    """A read that did not happen, carrying why, so no count is printed."""
+
+
 def fetch(state, limit):
+    """One `gh pr list`, bounded, with every failure named rather than raised.
+
+    The bound is the point. This tool shipped on 2026-11-09 with no timeout
+    and no handler on this call, on the same day this seat reported that very
+    class in another seat's tools -- the fourth sighting of it, and the first
+    found in this seat's own code, by the charter rule the report produced
+    (prompts/exo-agent.md, "Run the class over your own code before you report
+    it"). A hung `gh` here does not fail: it waits, and the only thing that
+    ends the wait is the sixty-minute wall that ends the whole run, which is
+    the portfolio's binding constraint and is invisible in the turn counts.
+
+    And `check=True` with no handler threw `gh`'s own stderr away, because
+    `capture_output=True` moves it off the terminal and `CalledProcessError`
+    does not print it. An unauthenticated or rate-limited `gh` therefore
+    produced a traceback that named the exit status and never the reason.
+    """
     fields = FIELDS + ",mergedAt" if state == "merged" else FIELDS
-    out = subprocess.run(
-        ["gh", "pr", "list", "--state", state, "--limit", str(limit),
-         "--json", fields],
-        capture_output=True, text=True, check=True,
-    )
-    return json.loads(out.stdout)
+    argv = ["gh", "pr", "list", "--state", state, "--limit", str(limit),
+            "--json", fields]
+    try:
+        out = subprocess.run(argv, capture_output=True, text=True,
+                             timeout=GH_TIMEOUT)
+    except subprocess.TimeoutExpired:
+        raise FetchError(
+            "gh pr list --state %s did not answer in %ds; no count is printed, "
+            "because a partial queue read is a progress bar and not a "
+            "measurement" % (state, GH_TIMEOUT))
+    except FileNotFoundError:
+        raise FetchError("no gh binary on PATH; this tool reads the queue "
+                         "through gh and has no second door")
+    if out.returncode != 0:
+        raise FetchError("gh pr list --state %s exited %d: %s"
+                         % (state, out.returncode,
+                            (out.stderr or "").strip() or "no stderr"))
+    try:
+        return json.loads(out.stdout)
+    except json.JSONDecodeError as exc:
+        raise FetchError("gh pr list --state %s returned %d bytes that are "
+                         "not JSON: %s" % (state, len(out.stdout), exc))
 
 
 def held(pr):
@@ -213,8 +252,14 @@ def main(argv=None):
     a = p.parse_args(argv)
 
     if a.fetch:
-        open_prs = fetch("open", a.limit)
-        merged_prs = fetch("merged", a.limit) if a.since else []
+        try:
+            open_prs = fetch("open", a.limit)
+            merged_prs = fetch("merged", a.limit) if a.since else []
+        except FetchError as exc:
+            # Exit 2 is "I could not read", kept distinct from verdict()'s own
+            # codes, so a reader never mistakes an unread queue for a clean one.
+            print("pr_backlog: %s" % exc, file=sys.stderr)
+            return 2
     else:
         open_prs = json.load(open(a.prs))
         merged_prs = json.load(open(a.merged)) if a.merged else []

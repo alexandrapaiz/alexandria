@@ -18,6 +18,7 @@ its worst verdict at the moment its subject is freshest.
 """
 
 import json
+import subprocess
 import sys
 from pathlib import Path
 
@@ -226,3 +227,100 @@ def test_a_branchless_row_does_not_crash_the_seat_grouping(tmp_path, capsys):
     row["headRefName"] = ""
     code, m = measured(tmp_path, capsys, [row])
     assert m["backlog"][0]["seat"] == "?"
+
+
+# --- the bound on the one call that leaves the process -----------------------
+#
+# Added 2026-11-09, the same day and the same seat as the tool itself, under
+# the charter rule the day produced: a class reported in another seat's code is
+# never the only instance, so run it over your own before the report goes out.
+# This file's own header says `--fetch` "calls `gh`, which a pull-request
+# checkout cannot rely on" -- and the call it describes had no timeout and no
+# handler, so the unreliability the header names was the one case untested.
+
+
+def test_a_hung_gh_is_a_named_refusal_and_never_a_wait(monkeypatch, capsys):
+    """The defect, at its shape: `gh` that never answers.
+
+    Before the fix this call had no `timeout`, so the only thing that ended the
+    wait was the run's sixty-minute wall. Now it raises `FetchError`, and the
+    control below proves the bound is not simply refusing everything.
+    """
+    def hang(argv, **kw):
+        assert kw.get("timeout") == pr_backlog.GH_TIMEOUT, \
+            "the call left the process with no bound on it"
+        raise subprocess.TimeoutExpired(argv, kw["timeout"])
+
+    monkeypatch.setattr(pr_backlog.subprocess, "run", hang)
+    with pytest.raises(pr_backlog.FetchError) as e:
+        pr_backlog.fetch("open", 200)
+    assert "did not answer in %d" % pr_backlog.GH_TIMEOUT in str(e.value)
+
+
+def test_the_control_a_gh_that_answers_still_reads(monkeypatch):
+    """Control for the test above: the bound refuses a hang, not a read."""
+    rows = [{"number": 1, "createdAt": "2026-11-01T00:00:00Z",
+             "headRefName": "alexandria-exo/x"}]
+
+    def ok(argv, **kw):
+        return subprocess.CompletedProcess(argv, 0, json.dumps(rows), "")
+
+    monkeypatch.setattr(pr_backlog.subprocess, "run", ok)
+    assert pr_backlog.fetch("open", 200) == rows
+
+
+def test_a_failing_gh_carries_its_own_stderr_into_the_message(monkeypatch):
+    """`check=True` plus `capture_output=True` threw the reason away.
+
+    The old code raised `CalledProcessError`, which prints the exit status and
+    not the stderr, and `capture_output` had already taken that stderr off the
+    terminal. So the one line explaining a rate limit or a missing login was
+    captured and then discarded.
+    """
+    def refused(argv, **kw):
+        return subprocess.CompletedProcess(
+            argv, 4, "", "gh: API rate limit exceeded for user\n")
+
+    monkeypatch.setattr(pr_backlog.subprocess, "run", refused)
+    with pytest.raises(pr_backlog.FetchError) as e:
+        pr_backlog.fetch("open", 200)
+    assert "exited 4" in str(e.value)
+    assert "rate limit exceeded" in str(e.value)
+
+
+def test_no_gh_binary_is_a_refusal_and_not_a_traceback(monkeypatch):
+    def absent(argv, **kw):
+        raise FileNotFoundError(2, "No such file or directory", "gh")
+
+    monkeypatch.setattr(pr_backlog.subprocess, "run", absent)
+    with pytest.raises(pr_backlog.FetchError) as e:
+        pr_backlog.fetch("open", 200)
+    assert "no gh binary" in str(e.value)
+
+
+def test_a_non_json_answer_is_a_refusal_and_names_its_size(monkeypatch):
+    def html(argv, **kw):
+        return subprocess.CompletedProcess(argv, 0, "<html>502</html>", "")
+
+    monkeypatch.setattr(pr_backlog.subprocess, "run", html)
+    with pytest.raises(pr_backlog.FetchError) as e:
+        pr_backlog.fetch("open", 200)
+    assert "not JSON" in str(e.value)
+
+
+def test_an_unread_queue_exits_two_and_prints_no_count(monkeypatch, capsys):
+    """Exit 2 is "I could not read", distinct from verdict()'s 0 and 1.
+
+    The reason it must be its own code: 0 is this tool's word for an empty
+    backlog, so a read that never happened reported as 0 is an unlooked-at
+    queue reported as a drained one.
+    """
+    def hang(argv, **kw):
+        raise subprocess.TimeoutExpired(argv, kw["timeout"])
+
+    monkeypatch.setattr(pr_backlog.subprocess, "run", hang)
+    code = pr_backlog.main(["--fetch"])
+    out, err = capsys.readouterr()
+    assert code == 2
+    assert "pr_backlog:" in err
+    assert "open" not in out and out.strip() == ""
