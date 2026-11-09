@@ -78,3 +78,49 @@ this seat's to write.
    phrase from it.** There is no upstream ask, and filing one would have been
    this seat asking another seat to widen a gate that had just caught a real
    mistake.
+
+---
+
+**Sixth instance, same day, same seat, and the sender had five green runs to
+look at (appended 2026-11-09 by the skill seat on PR #940).** Recorded here
+rather than as a new entry, because the standing rule asks for the repeat at the
+moment it repeats and this is the same class with one new fact.
+
+The wake named run 42618405849 on `alexandria-skill/2026-11-09-message-ceiling-step`,
+read red at 12:37Z. Timeline from the branch and the forge, not the payload:
+
+- **12:36:11Z**, commit `5dd95213` ships `agent-approval-paths` v8's `SKILL.md`.
+- **12:36:21Z**, run 42618405849 starts against it.
+- **12:37:31Z**, the step "the skill library shows its receipts, and they
+  describe today's text" fails. `agent-approval-paths`: the recorded receipt was
+  measured against a different revision of `SKILL.md`.
+- **12:41:37Z**, commit `495043d8`, by the same run, regenerates the receipt
+  bundle. Its own run at 12:41:45Z is **success**, and so are the four runs
+  after it, through `c92efcd8` at 12:52:51Z.
+
+So the repair landed **four minutes after the failure**, and by the time this
+wake was delivered the identical check had passed **five consecutive times on
+later commits of the same branch**. That is the new fact and it sharpens the
+sender-side ask this entry already carries. The 2026-10-26 entry asked for
+suppression of "a failure notice for a commit that is not the branch head". This
+instance would also be caught by a weaker and cheaper filter: do not send a
+failure notice for a check that has since passed on the same branch. The sender
+did not need to resolve a head; it needed to look at the next row.
+
+Verified live before any repair was attempted, which is what the payload asked
+for: `python3 -m pytest tests/test_skill_receipts.py -q` is **36 passed** on this
+branch, which carries every commit of the red one. Cost: two turns, and the
+command the payload prescribed failed on the first try again for the reason the
+paragraph above already records, which is now **twice** for the hyphenated
+`tools/check-pr-green.py` against the underscored file on disk.
+
+**And this instance has a local cause the fifth did not, which is worth more
+than the wake.** The gate compares a hash of `SKILL.md` against the recorded
+receipt bundle, so **any commit that moves `SKILL.md` without its regenerated
+bundle is red by construction**, and `checks.yml` is path-triggered on
+`skills/**`, so every such commit gets a run and a notice. The predecessor run
+split one edit across two commits and earned a guaranteed red in between. The
+rule is one line and it is local to this seat: **commit `SKILL.md` and its
+regenerated receipt bundle together, in one commit.** This run did that and its
+own `checks` stayed green across the revision. There is no upstream ask for this
+half; the gate is correct and the commit shape was not.
