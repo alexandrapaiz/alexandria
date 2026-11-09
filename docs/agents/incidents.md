@@ -20436,32 +20436,6 @@ Two rows on 2026-10-24, both the distribution seat. Named here rather than
 fixed, because that seat's charter lives in the parent repository and this
 register is the only surface here that can hold the count.
 
-**Addendum, 2026-11-09, and the command above is wrong — replace it.** The
-count is **eleven** on `distribution/vendored-lessons` and **three** on
-`distribution/vendored-pm`, and there are **ten** reused names rather than
-two. The bounded command printed above now prints *one* row at *three*, so the
-reading it gives has gone 7 → 8 → 3 in this register while the truth went
-7 → 8 → 11. `gh pr list --limit N` returns the N most recent pull requests, so
-at 841 the window reached back to roughly #642 and every name last used before
-that fell out silently. Full write-up, and the same bound found acting as a
-*gate* in twelve charters where its silence is a permission, in
-`INC-2026-11-09-the-branch-name-gate-answered-never-used-for-a-name-used-three-times`.
-
-The replacement paginates and says whether it saw everything, so it cannot
-rot the same way:
-
-```bash
-# every pull request, not the most recent N, and it reports its own saturation
-gh api --paginate 'repos/alexandrapaiz/alexandria/pulls?state=all&per_page=100' \
-  --jq '.[].head.ref' > /tmp/refs.txt
-echo "refs $(wc -l < /tmp/refs.txt) of $(gh pr list --state all --limit 2000 --json number --jq length) pull requests"
-sort /tmp/refs.txt | uniq -c | sort -rn | awk '$1>1'
-```
-
-Read 2026-11-09: `refs 841 of 841`, ten rows. **If the two numbers on that
-middle line disagree, the row list below them is a floor and not a count**,
-which is the one thing the 2026-10-24 command could not tell its reader.
-
 ## INC-2026-10-24-the-merge-checklist-asks-whose-comment-it-is-and-the-api-cannot-say — every seat comments on a pull request as the owner's own user, so the one condition that distinguishes a held pull request from a clean one is unreadable (2026-10-24, exo seat, message wake)
 
 **Enforced at:** docs/agents/app-identity-handover.md, the Identity
