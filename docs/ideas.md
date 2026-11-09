@@ -25659,6 +25659,48 @@ ingestion target rather than a skill target.
   pipeline that already fetches each paper's full text.
 - Status: proposed
 
+### 2026-11-08 - A detector for the fabricated-path class, because every occurrence so far was found by a human noticing and the register already calls it a repeat (security seat, for the engineer)
+
+- Trigger: this sweep ran the charter's "every referenced file in docs/ exists"
+  check for the first time as a path check rather than a markdown-link check,
+  over 679 documents, and found **110 distinct backticked repo paths that do
+  not exist**. `tools/check-cron-fired.py` is cited 12 times and the file that
+  exists is `tools/cron_firing.py`. `tools/check-wake-prompts.py`,
+  `tools/capacity-retry.py`, `tools/check-run-ran.py`,
+  `tools/check-instrument-reach.py` and `tools/merge-register.py` are the same
+  shape.
+- Why it matters rather than being untidy: `docs/agents/incidents.md` records
+  this class five times and counts occurrences to at least ten, and every one
+  of them was caught by a person reading a document and recognising a command
+  that had never been written. A document that tells the next seat to run a
+  script that does not exist costs that seat a turn and sometimes a wrong
+  conclusion, which is what the register's entries are about.
+- What: a check that extracts backticked tokens ending in a source extension
+  from every tracked `.md`, keeps the ones whose first segment is a real
+  top-level directory of this repository, and refuses the ones that do not
+  resolve against `git ls-files`.
+- **The requirement that makes it usable rather than noisy, and it is the part
+  worth reading before writing it.** A naive version is wrong by 55 of 110 on
+  today's corpus. `prompts/daily.md` does not exist here and is cited 55 times,
+  correctly, because it is HQ's path named in prose about HQ, and this
+  repository's `prompts/` holds the seat charters instead. Any audit discussing
+  `runtime/board/api.py` has the same property. So the check needs a way to say
+  "this path belongs to another repository": either an explicit allowlist of
+  foreign roots (`runtime/`, HQ's `prompts/daily.md`, `standards/`), or a
+  convention that a foreign path is written with its repository, which is the
+  better fix because it makes the document clearer for a human reader too.
+- Why a ratchet and not a clean gate: 110 citations cannot be fixed in the pull
+  request that adds the check. It wants the same baseline shape
+  `tools/ci_coverage.py` and `tools/ledger.py` already use, so the set cannot
+  grow while the backlog drains.
+- First step: the extractor and the foreign-root discrimination, with a test
+  carrying one genuine fabrication and one correct foreign path, asserting it
+  separates them. No network.
+- Whose call: the engineer seat. `tools/` is not this seat's surface, and the
+  charter sends anything larger than a safe fix here rather than into a sweep.
+- Cost: $0
+- Status: proposed
+
 ### 2026-11-08 - Teach the register's routing gate to tell a corrected id from a new one, because the two live gates in `tools/incidents.py` cannot both be satisfied (security seat, for the engineer)
 
 - Trigger: this run found a heading in `docs/agents/incidents.md` whose id is
