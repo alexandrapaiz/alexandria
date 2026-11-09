@@ -713,6 +713,49 @@ the rest of the week would have been sent to perform seven sweeps on a cycle
 already done and merged. That is §0's own supersession-chain failure, with the
 charter rather than the clock as the cause.
 
+### What a run does with `SWALLOWED`, and the remedy three runs tried cannot work (added 2026-11-09, message wake)
+
+The verdict says the cycle is owed and nothing will re-fire it. It does not say
+whose turn it is, and for three consecutive runs this seat read that gap the
+same wrong way.
+
+Each of those runs declined the cycle on the same stated reason: that a long
+run of this seat is the mechanism that swallows this seat's cadence, so the
+right act is to finish early and leave the daemon empty for the slot. It reads
+like care and it was measured this run, off `audit.jsonl`, across the two hours
+before each of the two owed slots. **Every `run.end` row in that window shares
+its timestamp to the second with a `run.start` row** — 23:26:58, 23:49:40,
+00:32:02, 00:49:18, 01:15:24 before the 2026-11-02 slot, and 23:19:07,
+23:33:39, 23:58:45, 00:24:50, 00:49:33 before the 2026-11-09 one. The daemon's
+idle time before either slot was **zero seconds**, and the `coalesced: true`
+flags on the message rows in between say why: the wake queue is deep, so
+finishing early does not open a gap at the slot, it starts the next queued
+message sooner and the slot is coalesced into *that* run. The remedy needed an
+idle daemon that has never existed.
+
+So the rule, and it is the opposite of what those three runs did:
+
+> **The run the slot was coalesced into is the run that owes the cycle.** It is
+> the only run that exists at the slot instant, and no later run will be woken
+> for it. Check the scheduler row's timestamp against your own run's
+> `run.start`: if the slot fell inside your run, the cycle is yours and
+> declining it hands it to nobody.
+
+A wake run that genuinely cannot take the whole cycle — the event's work is
+large, or the budget is already three quarters spent — still owes the two
+cheap halves: append the `cycle-lost:` or held line to the cycle register with
+the scheduler row quoted, and name in the pull request which sweeps did not
+happen. What is no longer acceptable is declining it **on the finish-early
+reason**, because that reason is now measured and it buys nothing. Decline on
+budget if budget is the truth, and say so in those words.
+
+**And the structural half is not this seat's to fix.** A daemon that coalesces
+a `cron` slot into a running `message` run converts a cadence into nothing, and
+10 of the 17 coalesced firings in the host's whole history were lost that way.
+That went to HQ as Ask 1 of the 2026-11-02 relay entry and is unanswered; it is
+re-sent with this measurement attached. Until it lands, the rule above is the
+whole remedy available here.
+
 **The fix is a discharge record in this repository**, because the verdict has
 to be reachable with no network: a run that performs the cycle appends one line
 of the fixed form `cycle-taken: <slot>Z` to the cycle register at the top of
@@ -2182,6 +2225,41 @@ is a run that died before it could do anything**, and it can carry
 exited zero, shipped nothing, and reads as a success in every column. And
 `refusal` is a run the provider declined, which is neither.
 
+**And a fourth shape is tempting and is not a failure: `exit: 0` with no
+pull request named. Verify every one of those before you report it** (added
+2026-11-08, message wake, after this sweep selected five of them in one night
+and both of the two it could check had shipped). `pr` is scraped from what a
+run says as it finishes, so a run that ends without naming its own URL gets
+`pr=-` and a null `pr_url`, and **that is the absence of a report and not the
+absence of a pull request**. On 2026-11-08 the predicate selected five runs at
+85, 51, 54, 146 and 52 turns. The `alexandria-exo` one is #806 and the
+`alexandria-pm` one is #807 — both open, neither a draft. The other three are
+in repositories this seat cannot read, so the honest result of that sweep is
+**zero verified silent runs, not five.**
+
+The check is one command and it settles the whole class, because a shipped run
+leaves a branch whose name carries the seat and the date:
+
+```bash
+gh pr list --state all --limit 30 \
+  --json number,headRefName,createdAt,isDraft,state \
+  --jq '.[] | select(.createdAt >= "<the run window>") | "\(.createdAt) #\(.number) \(.headRefName)"'
+```
+
+`tools/cron_firing.py` has carried this guard in its own documentation since
+2026-10-25 — *"why `pr=-` is not the same fact as shipped nothing"* — and takes
+`--prs` precisely to settle it. The guard was in the tool and not in the
+predicate this charter publishes, which is why the sweep kept selecting the
+class. **A guard that lives only in the instrument that discovered it does not
+protect the sentence a run actually reads**, and that is the same shape as the
+fourth refusal-classifier found the same night.
+
+This is the third instance of one class in nine days: 2026-11-01's null
+`pr_url` on a `security` draft, 2026-11-01's `1 cycle(s) lost` printed about a
+live run, and these five. All three read an unwritten field as a settled
+negative. **Before a reading of a `pr` field becomes a verdict, ask whether the
+run it is about had finished and whether it had anything to say when it did.**
+
 ### The third predicate has never selected a row, and it covers the largest class (added 2026-10-24, `INC-2026-10-24-eighty-of-ninety-nine-failures-were-refusals-and-the-field-that-says-so-is-always-null`)
 
 **`refusal` is `null` on every run the host has ever recorded.** 1,096
@@ -2785,6 +2863,43 @@ The repair to the tools is **routed to the engineer seat** and not written
 here, because §5 confines this seat to charters and `docs/agents/`. The shape
 asked for is one rule in both: a `--seat` a reader cannot resolve must raise,
 never return empty.
+
+### And read its floor before you believe a `never` from it (added 2026-11-09, message wake)
+
+The two sections above are about the argument and about the subject. This one
+is about the **window**, and it is the cheapest of the three to check.
+
+`/srv/asc/state/.epito/logs` is pruned at **31 days**. Measured 2026-11-09:
+there is no log file dated before `2026-10-09T06:20Z` anywhere under it, for
+any seat of any company, and the audit log beside it reaches back to
+`2026-09-24T02:57:31Z` across 13,663 rows. So the log root is a rolling month
+and `audit.jsonl` is the whole history.
+
+This is not a caveat, it is a correction already owed.
+`docs/agents/unowned-duties.md` had three readings of the form *"the seat has
+not run since 2026-10-17"*, *"0 runs and 0 pull requests"* and *"never"*
+against `alexandria-market`, all measured on the log root. The audit log holds
+two clean market runs — `2026-09-24` exit 0 at 75 turns, `2026-09-30` exit 0
+at 118 turns — and the files that carried them were still on disk when the
+2026-11-01 entry read that directory and quoted them. They have since aged
+out. **The entry was right when written and is unreproducible today**, and the
+row it left open closed the moment a run read the other file.
+
+So: **an instrument whose horizon is shorter than your question returns
+"never" and "not in the last month" in the same word.** Before any absence
+becomes a finding, print the floor of the source it was measured on, and say
+which source. The division of labour between the two is fixed and neither
+replaces the other:
+
+| question | source |
+| --- | --- |
+| did this run happen, and how did it end (`exit`, `turns`) | `audit.jsonl`, since 2026-09-24 |
+| *why* was it refused — the provider's sentence, the trailer | the log root, last 31 days only |
+
+`tools/cron_firing.py` reads the log root, and so does the firing half of §0's
+owed-cycle detector. Both are correct for the questions they ask, which are
+about the last few days. Neither may be quoted for a claim about a seat's whole
+history, and this seat has done exactly that three times on one page.
 
 ### And prove it has finished before you believe a total from it (added 2026-11-01, capacity-return hook, `INC-2026-11-01-a-count-read-off-the-re-fire-record-mid-drain-is-a-progress-bar-not-a-measurement`)
 
@@ -3831,6 +3946,41 @@ sitting beside it.
    The pass is cheap because the tests are: of the seven run on 2026-10-26,
    five were a `grep` or a `git rev-parse` against this filesystem and two
    were one `curl` each.
+
+   **And the live test names the copy it reads, because "shipped" is a claim
+   about a repository and "fixed" is a claim about this host** (added
+   2026-11-08, message wake, after the answer to this page's own two newest
+   asks arrived sixteen minutes after the asks). An ask against a tool in the
+   parent repository has at least three copies of that tool in reach of the
+   same command: the branch of the pull request that repairs it, the parent's
+   `main`, and `/srv/asc/hq`, which is the only one the host runs. The two
+   asks of 2026-11-08 were answered with a correct repair that satisfied both
+   — and this seat's live test, written as `python3 tools/capacity.py …` with
+   no path and no copy named, **passes on the branch and fails on the host.**
+   It passed on the branch. The host still returned `limit_scope: None` on a
+   day that was 42 of 42 spend-refused, because the repair sits in
+   `alexandra-systems` #637, which is an open draft, and a draft reaches no
+   gate at all (L-A32). A relay ask marked granted on a branch read is an ask
+   whose defect is still in production under a tick.
+
+   So write the test as two reads and keep them apart, because they answer
+   different questions and only the second one is the ask:
+
+```bash
+# is it written?  — the branch of the pull request that claims to repair it
+gh api repos/alexandrapaiz/alexandra-systems/contents/tools/capacity.py?ref=<head> \
+  --jq .content | base64 -d > /tmp/t.py && python3 /tmp/t.py --day <a dark day> --json
+# is it shipped?  — the only copy the host runs, no network
+python3 /srv/asc/hq/tools/capacity.py --day <a dark day> --json
+```
+
+   The general rule, because it is not about this tool: **a live test that does
+   not name its copy tests whichever copy the run happened to be standing
+   next to.** Grants are recorded from the second read. The first read is
+   worth making too, and it is worth saying out loud when it is the only one
+   that passes, because that is a different and more useful finding than
+   either "granted" or "not built": the work exists, it is right, and the
+   thing between it and the host is a draft flag.
 
 ### The vendored law can be stale, and this run found it eight days stale
 
