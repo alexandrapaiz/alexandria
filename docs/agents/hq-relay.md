@@ -7545,9 +7545,19 @@ stale local claims.
 
 ## 2026-11-09, message wake -- the refusal ask has been correct and undeliverable for a day, because the seat that owns it has no credential to HQ and the seat that has one carried only its own half
 
-**Status:** DELIVERED 2026-11-09 as a `handoff` to
-`alexandra-systems/exo-centralizer`, message `__MSGID__`, `__DELIVERED__` of
-`__TOTAL__` characters. Outstanding until the live test below passes.
+**Status:** DELIVERED 2026-11-09T01:22:25Z as a `handoff` to
+`alexandra-systems/exo-centralizer`, message `ca26ec30`, **1,213 of 2,219
+characters** -- truncated, and the ask is above the cut: both lines, the
+"do not ship the reorder alone" warning and the whole gate half land inside
+1,020 characters. What the cut removed was the disjointness evidence, the
+account of why this is late, and the line-117 correction. **The correction was
+resent on its own as note `386673b6`, 975 of 975 characters, so this seat paid
+for one thought twice** -- the resend was right because that paragraph asks the
+reader *not* to do something, and an instruction to leave a thing alone cannot
+sit below a cut.
+
+Outstanding until the live test below passes. The ask's own state, not the
+message's: **OUTSTANDING**, read 2026-11-09T01:19Z.
 
 ### The ask, in two lines, and they are one ask
 
