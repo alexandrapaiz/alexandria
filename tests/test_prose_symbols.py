@@ -39,6 +39,7 @@ named in call form by prose, and this repo has fifty such mentions and no
 defects. They are reported in the untiered bucket and never as stale.
 """
 
+import subprocess
 import sys
 from pathlib import Path
 
@@ -187,8 +188,14 @@ URL = "https://example.invalid"
 def test_this_repository_has_no_stale_local_claims(tmp_path):
     """The measurement, asserted so that a new one has to be noticed.
 
-    164 Python files, zero prose claims that a function is in a module where it
-    is not. This is the baseline, not a guarantee: the fifty untiered mentions
+    168 Python files read 2026-11-09, zero prose claims that a function is in a
+    module where it is not -- the same pair `alexandria/security` measured
+    independently against HQ's checkout that day. The count carries its date
+    because it drifts with every added module: it said 164 until 2026-11-09 and
+    nothing noticed, in the test file of the tool whose whole job is prose that
+    went stale without an event to fire on.
+
+    This is the baseline, not a guarantee: the fifty untiered mentions
     are deliberately not covered, because a comment is allowed to name a
     pipeline stage or a SQL function, and failing a build over that is how a
     useful check becomes one a seat turns off.
@@ -202,6 +209,103 @@ def test_this_repository_has_no_stale_local_claims(tmp_path):
         if f["verdict"] == "unresolved" and f["claims_local"]
     ]
     assert stale == [], f"new stale local claims: {stale}"
+
+
+# The file list, which is the half of this tool that `alexandria/security`
+# tested and these tests did not. Every test above hands `check_file` a tree it
+# built, so nine passing tests said nothing about which files get read. On
+# 2026-11-09 security ran the tool from a copy outside a checkout, with no
+# `--root`, and the walk it fell back to went into the shared temp twelve seats
+# write to; they killed it at twelve minutes.
+
+
+def git_init(path):
+    """A real checkout, because the thing under test is a question asked of git."""
+    path.mkdir(parents=True, exist_ok=True)
+    subprocess.run(["git", "init", "-q", str(path)], check=True)
+    (path / "m.py").write_text("# nothing\n")
+    subprocess.run(["git", "-C", str(path), "add", "-A"], check=True)
+    subprocess.run(
+        ["git", "-C", str(path), "-c", "user.email=a@b", "-c", "user.name=a",
+         "commit", "-qm", "x"],
+        check=True,
+    )
+
+
+def test_a_tree_that_is_not_a_checkout_is_walked_not_refused(tmp_path):
+    """The fallback still exists. It is how the host's runtime gets read at all."""
+    (tmp_path / "a.py").write_text("# one\n")
+    (tmp_path / "sub").mkdir()
+    (tmp_path / "sub" / "b.py").write_text("# two\n")
+    assert not ps.is_checkout(tmp_path)
+    assert ps.tracked_python(tmp_path, []) == [tmp_path / "a.py", tmp_path / "sub" / "b.py"]
+
+
+def test_the_walk_does_not_descend_into_another_checkout(tmp_path):
+    """Security's twelve minutes, in the small.
+
+    A directory that is not a checkout, holding directories that are: the
+    seats' sandboxes under a shared temp. `Path.rglob` read all of them, so a
+    tree whose own answer was one file was reported as 201 and 90 findings about
+    code the caller never named. git owns those trees and would list them
+    properly if asked about them; this walk was not asked about them.
+    """
+    (tmp_path / "mine.py").write_text("# mine\n")
+    git_init(tmp_path / "seatA")
+    git_init(tmp_path / "seatB")
+    assert ps.tracked_python(tmp_path, []) == [tmp_path / "mine.py"]
+
+
+def test_the_walk_prunes_vendored_trees(tmp_path):
+    """What `git ls-files` gave for free and the walk has to be told."""
+    (tmp_path / "mine.py").write_text("# mine\n")
+    for noise in ("node_modules/pkg", ".venv/lib/site-packages", "__pycache__"):
+        d = tmp_path / noise
+        d.mkdir(parents=True)
+        (d / "v.py").write_text("# noise\n")
+    assert ps.tracked_python(tmp_path, []) == [tmp_path / "mine.py"]
+
+
+def test_the_walk_raises_rather_than_truncating(tmp_path):
+    """A short list is a quiet zero, and this tool's output is a count of absences.
+
+    Truncating would put the cap in `files_read` and nothing would say the list
+    was partial, which on a tool that reports what it did *not* find reads as a
+    clean tree.
+    """
+    for i in range(12):
+        (tmp_path / f"m{i}.py").write_text("# x\n")
+    with pytest.raises(ps.WalkTooWide):
+        ps.tracked_python(tmp_path, [], max_files=5)
+    assert ps.main(["--root", str(tmp_path), "--max-files", "5"]) == 2
+
+
+def test_a_checkout_is_listed_by_git_and_a_broken_git_is_not_silently_walked(tmp_path):
+    """The two failures the old code read off one exit code.
+
+    "git does not know this tree" and "git knows it and the call broke" are
+    different, and both arrived as a `SubprocessError` caught into the same
+    fallback. A thirty-second timeout inside a real checkout therefore became a
+    filesystem walk of it, silently, including everything git was keeping out.
+    Now the first answers False to `is_checkout` and the second raises.
+    """
+    git_init(tmp_path)
+    (tmp_path / "untracked.py").write_text("# not added\n")
+    assert ps.is_checkout(tmp_path)
+    assert ps.tracked_python(tmp_path, []) == [tmp_path / "m.py"]
+
+    def broken(*a, **k):
+        raise subprocess.TimeoutExpired(cmd="git", timeout=30)
+
+    real = ps.subprocess.run
+    ps.subprocess.run = lambda *a, **k: (
+        broken() if "ls-files" in a[0] else real(*a, **k)
+    )
+    try:
+        with pytest.raises(subprocess.SubprocessError):
+            ps.tracked_python(tmp_path, [])
+    finally:
+        ps.subprocess.run = real
 
 
 if __name__ == "__main__":
