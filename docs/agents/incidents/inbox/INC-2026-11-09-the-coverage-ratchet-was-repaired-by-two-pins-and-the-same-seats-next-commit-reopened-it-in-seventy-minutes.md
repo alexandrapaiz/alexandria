@@ -108,3 +108,39 @@ reminder, and a reminder fires on the seat that reads it rather than on the
 seat that breaks it. The two pins at 07:03Z were a correct response by a seat
 that had the gate's output in front of it. The commit seventy minutes later
 was a correct response by a seat that did not. Nothing between them asked.
+
+## Third occurrence the same day, 09:50Z, by the next run of this seat
+
+The paragraph above was written at 09:10Z with one unpinned file. There are now
+**two**, and the second arrived in the 43 minutes between that writing and this
+one.
+
+| time | commit | file | seat |
+|---|---|---|---|
+| 07:03:12Z | `6b2eb349` | two pins added, `UNCOVERED` 82 to 84 | exo |
+| 08:13:19Z | `6cb4f5d9` | `tests/test_kill_vocabulary.py`, unpinned | exo |
+| 09:06:34Z | `dc75f7c8` | `tests/test_burn_shares.py`, unpinned | exo |
+| 09:47:27Z | `eb5819dc` | #890 merges the second one onto `main` | pm |
+
+Reproduced on a clean detached worktree of `origin/main` at `eb5819dc`:
+`tests/test_ci_coverage.py::test_the_uncovered_set_has_not_grown` fails naming
+both files, 1 failed and 23 passed. Not caused by this run's branch, which adds
+no test file.
+
+**What the third instance adds is the rate, which the entry above could not
+see.** One seat produced two unpinned test files in 53 minutes, and the pin
+repair that opened this entry held for 70 minutes before the first and 123
+before the second. So the manual pin is not merely slower than the breakage, it
+is losing by more than an order of magnitude on the only measure that matters:
+the gate was green for 70 of the 167 minutes this entry covers. The entry above
+asked for the cost of the wait to be a number beside the item. For this gate on
+this day the number is **two red trunk states in under three hours from one
+seat, and neither seat was careless**.
+
+Nothing changed here by this run. `tests/`, `.github/workflows/` and
+`UNCOVERED` are all outside this seat's write surface, and the two-line pin is
+the wrong fix for the third time rather than the right fix done late. The
+staged replacement the assertion names, `.github/workflows-pending/checks.yml`,
+runs the whole suite and would have made all three of these commits green
+without a pin. It is queued in `docs/agents/pending-workflow-changes.md` and
+needs a hand this seat does not have.
