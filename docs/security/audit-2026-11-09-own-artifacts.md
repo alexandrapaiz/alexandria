@@ -1,11 +1,222 @@
-# Security run note, 2026-11-09 (message): the ExO's charter line turned inward on this seat
+# Security run note, 2026-11-09 (message): the rule this seat asked for, run inward and measured
 
-**Status: in progress.** This file is opened at the start of the run so the
-draft pull request carries something if the run dies.
+**No severe finding this run.** No leaked secret, no exploitable exposure,
+nothing that needs the owner's immediate action.
 
-**Trigger.** A `done` from `alexandria/exo` at 03:07Z, ref
-https://github.com/alexandrapaiz/alexandria/pull/844. It reports that the
-charter line this seat asked for is written, and that the first thing it did
-was find the class in a tool the ExO seat had shipped six hours earlier.
+**Trigger.** A `done` from `alexandria/exo` at 03:07Z, `2c9bdc6b`, ref PR #844.
+It reports that the charter line this seat asked for is written, that the first
+thing it did was find the class in a tool the ExO seat had shipped six hours
+earlier, and that one half of the class is this seat's rather than the ExO's.
 
-**No severe finding yet.**
+This is a message wake rather than a semimonthly sweep, so the two scheduled
+sweeps are not run here. The last full audit is `audit-2026-11-09.md`, and the
+three run notes between it and this one are `-bounds-verified`, `-pm-done`,
+`-exo-done` and `-message`.
+
+## 0. The trigger was marked answered before this run read it
+
+The board's `answered_by` on `2c9bdc6b` names this seat's own reply `15098afe`
+of 03:38Z, fourteen minutes before this run began. That reply answers the 02:48
+message: its data names PR 841 and PR 848, and it never mentions 844 or the
+charter line.
+
+A message marked answered is a message a run may skip, so this is the first
+thing the run checked and it is section zero rather than a footnote. The same
+reply is marked as the answer to two different messages. The measurement, the
+client fix and the relay ask are in §3.
+
+**#848 is not a duplicate wake and was not treated as one.** It was this seat's
+own open pull request, twenty-two minutes old, and the charter's rule is to read
+it rather than assume a collision. It answered the 02:48 `done` and was pushed
+before 03:07 existed, so it is a predecessor and not this event's answer. It
+collides on `docs/security/`, `docs/agents/incidents/inbox/` and
+`docs/ideas/inbox/`, so this branch is built on it, the containment proof
+printed nothing, and #848 is closed.
+
+## 1. The ExO seat's half, verified rather than taken
+
+Three claims, each read at the source.
+
+| Claim | Read at | Holds |
+|---|---|---|
+| The charter line is written after the polarity test | `prompts/exo-agent.md` on `alexandria-exo/2026-11-09-message-trigger` | yes, and this seat's mechanism is quoted verbatim |
+| `tools/pr_backlog.py` had one unbounded call, now bounded with its own exit code and a reason | `tools/pr_backlog.py` at `3e38c088` | yes: `timeout=GH_TIMEOUT`, a `TimeoutExpired` branch, a `FileNotFoundError` branch, and `returncode` read beside `stderr` rather than instead of it |
+| The exit status was checked beside a captured output, so the reason was discarded | same file | yes, and that is this seat's stderr finding one layer out, as the message says |
+
+Nothing was asked back, and the merge order stands as this seat set it: #825
+then #833.
+
+## 2. The reciprocal half, and the rule turned out to carry the class
+
+The new charter line says: a sighting in another seat's code is never the only
+instance, so run the class over the artifacts this seat owns, in the same run,
+before the report goes out. This seat asked for that line. It is right, and
+running it properly produced the finding this run is actually for.
+
+### What the inward passes had measured
+
+Three inward passes ran under that rule on 2026-11-09. The ExO seat grepped the
+one tool it had shipped six hours earlier and found one instance. This seat
+grepped the two tools it had shipped and found six. All three were correct and
+all three were a grep over the files the seat had open.
+
+### What one `ast` walk over the tree returned
+
+| | count |
+|---|---|
+| external calls in `tools/` | 51 |
+| bounded in time | 28 |
+| **unbounded** | **24** |
+| unbounded and crossing the network | 8 |
+| unbounded with an argv the scanner cannot read | 8 |
+| unbounded with no handler of any kind | 22 |
+| `pipeline/` and `mcp/` | clean |
+
+Twenty-four, in fifteen files, available at every minute of the evening two
+seats spent writing to each other about four of them. Four of twenty-four is a
+sixth of the class, reported as the class.
+
+**Why the remedy carried the class it was written to stop.** The rule's scope
+word is "the artifacts this seat owns", and that is three bounds in one
+dimension: who wrote it, which file is open, which sighting is in hand. The
+dimension beside them is what is in the tree. A seat obeying the rule exactly
+still reports a distribution of authors rather than a count of instances, which
+is the same shape as the defects the rule is about. Sixth sighting of the class
+and the first inside a remedy rather than inside a tool, filed as
+`INC-2026-11-09-the-rule-written-to-stop-a-class-was-scoped-by-ownership-and-the-tree-held-twenty-four`.
+
+### The one instance this run fixed, and why that one
+
+`tools/cron_firing.py:497`. The line is the engineer seat's, from 2026-10-27.
+The file is one this seat has shipped into three times in nine days, including
+the same evening, and never once asked this question of. All three halves of
+the class were live in six lines.
+
+```
+proc = subprocess.run(["git", "-C", root, "remote", "get-url", "origin"],
+                      capture_output=True, text=True)
+repo = proc.stdout.strip() if proc.returncode == 0 else ""
+```
+
+No timeout. No handler. And an exit status read beside a captured output so
+that every way the probe can fail arrives as a company named the empty string.
+
+This is the live path on this host rather than a fallback. The seats left
+GitHub Actions on 2026-10-17, so `GITHUB_REPOSITORY` is unset and the probe
+runs on every call that reaches it. `ASC_COMPANY` is unset too.
+
+Reproduced with a control in each case. The control is the real repository,
+which answers `alexandria`.
+
+| shape | the old code | the new code |
+|---|---|---|
+| hanging `git` on `PATH`, 8s external clock | still waiting, killed at **exit 124** | `None` in 3s, exit 0, reason on stderr |
+| no `git` binary on `PATH` | **`FileNotFoundError`** traceback, exit 1 | `None`, exit 0, reason on stderr |
+| `git` exits non-zero | `""`, read by the caller as a company | `None` |
+| `git` exits 0 and prints nothing | `""`, read by the caller as a company | `None` |
+
+Exit 124 is the same word the host writes for the sixty-minute wall, which is
+the constraint that ends runs here. That is the ExO seat's observation about
+its own tool and it transfers unchanged.
+
+**Behaviour on the failure path is preserved.** The empty string produced the
+prefix `-<seat>`, which matched no directory, so `resolve_seat` raised its
+collision. `None` raises the same collision, and `resolve_seat` now reads the
+`None` rather than formatting it into a prefix. What changes is that the reason
+is printed instead of being the absence of one. Tests 119 to 123, each new one
+with a control, each failure shape driven by a real `git` on a real `PATH`
+rather than a mock, because what is under test is an exit code and a hang
+crossing a process boundary.
+
+### The predicate, shipped as a gate
+
+`tools/unbounded_calls.py`. The point is that the inward pass stops being a
+habit and becomes something you can run, which is the second of the two gates
+`docs/agents/registers.md` says the org keeps forgetting.
+
+It walks the AST of a path, reports every `subprocess` start and every
+`urlopen` with no `timeout`, classifies the reach as `network`, `local` or
+`unknown`, and names any handler covering the call **separately from the
+bound**, because a handler catches a refusal and does not end a hang. Exit 0
+clean, 1 on a finding, 2 when it could not look. A line prints on the clean
+path too, and it names how many calls were read rather than how many findings
+there are, so a reader can check it.
+
+`unknown` is a third answer on purpose. Collapsing an unreadable argv into
+`local` would be this entire class one layer up: the instrument's inability to
+look, written down as a fact about the call.
+
+It ships with **no baseline on purpose**, so it exits 1 today at 23 and the
+number is the thing that goes down. The 23 are twelve files owned by four other
+seats and a day of work, so they are a `proposed` ledger entry for the engineer
+with the per-file counts attached, not a diff here.
+
+**And the class reproduced inside this repair too**, which is the seventh
+instance in two evenings. The gate's first version returned only unbounded
+calls, so its clean path printed "0 external calls in scope" — which reads
+identically whether it found fifty-one calls that all have clocks or never
+looked at the right directory. Its own test suite failed it on that before it
+shipped, and the clean line now reads "51 external calls read, 28 bounded in
+time". 31 tests, each with a control.
+
+## 3. The board marks a message answered by a reply that answers something else
+
+Measured because §0 happened, not as a sweep item.
+
+Four instances on 2026-11-09 inside eighty minutes, across three companies'
+seats, two of them found independently by the two seats in this exchange and
+in opposite directions. The table is in
+`INC-2026-11-09-the-board-marks-a-message-answered-by-a-reply-that-answers-a-different-message`.
+
+Over the bus's 500-row window, 2026-11-07T05:59Z to 2026-11-09T03:59Z: 379
+messages, 235 carrying `answered_by`, 6 of those replies naming a message in
+their own `data.answering`, 2 of those 6 disagreeing with the server, and 229
+unauditable. So the field is wrong in a third of the cases where it can be
+checked and cannot be checked in 229 of 235. The field that would settle every
+one of them exists, is written by 6 of 235 repliers, and is read by nothing.
+
+**Fixed on the half this repository owns.** `tools/board.py` never read
+`answered_by` at all, so the tool twelve seats use to read their mail was
+silent about a claim the raw API makes. `board.py inbox` now prints the claim
+on every marked message, labels it `PER THE SERVER, unverified` when the
+answering reply names nothing, and contradicts the server out loud when the
+reply names something else. Tests 134 to 140.
+
+The reader was the worse half of the two, and that is worth stating plainly: a
+claim a tool can verify and does not is worse than one it cannot, and this tool
+had the whole window in memory when it printed nothing.
+
+**The server half is HQ's** `runtime/board/api.py`, and the ask is on
+`docs/agents/hq-relay.md` with the measurement in front of it. Three options,
+any of which beats the present state: set the field from the reply's own
+`data.answering` and leave it unset when the reply names nothing, require a
+`done` to name what it answers, or stop setting it.
+
+## 4. The branch prefix, read at the source again
+
+The charter holds this seat's prefix at `sec/` until `semimonthly` joins the
+continue-wake suppression set in HQ's `runtime/board/api.py`. The harness named
+`alexandria-security/2026-11-09-message`.
+
+Read on the deployed tree rather than carried from a note:
+`NO_SELF_CONTINUE = {"monthly", "quarterly", "dispatch-only", "none"}` at
+`/srv/asc/hq/runtime/board/api.py:374`. `semimonthly` is absent, so the hold
+binds and the prefix stays wrong on purpose.
+
+The harness's name is also a name PR #846 already used and closed, so the
+never-reuse rule refuses it independently of the charter. Two rules, one
+answer.
+
+## What this run did not do
+
+The two scheduled sweeps. This is a message wake and the trigger carried
+specific work, and the semimonthly audit of 2026-11-09 is in this directory
+already.
+
+The 23 remaining unbounded calls. Twelve files owned by four other seats, and
+the charter sends a change that size to the engineer through the ledger.
+
+The server-side `answered_by` fix. It is a change to HQ's bus that binds five
+companies, and it is the owner's call on her own server. The client half is all
+this repository owns and all this run took, which is the same split the
+2026-10-24 inbox work used.
