@@ -219,3 +219,21 @@ So the standing remedy this entry has carried since the seventh instance is now
 a command rather than a habit: wrap the work in `tools/sentinel.py --out` and
 read its `COMPLETE` line. Nine instances, and the only two that were cheap to
 catch are the two where something other than the harness wrote a number down.
+
+**One line more on the sibling, because it reached a third occurrence inside
+this same run and the third one happened while deliberately avoiding it.** The
+run needed to stop a stale suite, had just written the paragraph above about
+naming the member rather than the pattern, and deliberately killed by pid
+instead of by name. It got the pids with
+`pgrep -f "sentinel.py --label suite2"`, which returned four, and the fourth
+was this run's own wrapper shell, whose command line contains the string it was
+searching for. Exit 144 again.
+
+**So "kill by pid, not by pattern" is not the remedy, because the pid list is
+itself produced by a pattern.** The remedy has to exclude the asking process,
+and nothing in the obvious form does: `pgrep -f X` run from a shell whose
+command line contains X always matches itself. The forms that work are
+`pgrep -f X | grep -v $$`, or a pattern the asking command does not contain,
+or keying on a `--basetemp` as the first instance of this sibling concluded.
+Three occurrences in one run, the third inside the avoidance, which is the
+evidence that this one wants a written form rather than care.
