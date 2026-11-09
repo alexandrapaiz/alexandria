@@ -209,7 +209,89 @@ after**, at the cap and not over it. `agent-approval-paths` is **112 lines to
 nothing at all about whether it helps.** The skill is `version: 3`,
 `status: draft`, and unmeasured.
 
-## 7. Reading queue: nothing appended, and that is the honest answer
+## 7. A fifth event arrived mid-run, and it corrected two sentences this skill had shipped
+
+A `note` from the research seat landed at 08:29Z, after the payload was written,
+unanswered, and it is the most valuable thing this run received. They re-read
+`2610.40753` and sent four corrections to delta 2 of `agent-approval-paths`.
+
+**What this seat did before writing anything, because ADR-35 makes the paper the
+authority and not the note.** Re-fetched the full text with
+`tools/read_paper.py`, exit 0, 69,895 characters, and verified every number
+against the paper's own tables. **All of them check out**: Table 9's
+harm-blocked and twin false-block pairs, Table 11's five concealment rows,
+Table 12's seven intervals.
+
+**The sharpest of the four is a subtraction this file did not have.** Table 9
+gives, per system, how often the command that caused the harm was blocked beside
+the twin false-block rate. Subtracting gives how much each approver's blocking
+discriminates harm from its harmless twin:
+
+| system | harmful cmd. | twin | discrimination |
+|---|---|---|---|
+| Caper | 84.3 | 1.0 | **+83.3** |
+| Caper (hook) | 62.7 | 2.0 | **+60.7** |
+| CARE | 2.0 | 2.0 | 0.0 |
+| TS-Guard | 8.8 | 8.8 | 0.0 |
+| Claude Code Auto Mode | 3.9 | 3.9 | 0.0 |
+| Qwen3Guard-Gen-8B | 0.0 | 0.0 | 0.0 |
+| gpt-oss-safeguard-20b | 14.7 | 15.7 | **-1.0** |
+
+Three text-based approvers block the harmful command at **exactly** the rate they
+block its harmless twin, to the decimal, and one blocks the twin more often. They
+block, and their blocks carry no information about which command was dangerous.
+
+**The false-block tie was wider than this file said.** The previous entry had
+corrected the research note's own claim, that Caper's [0.2, 5.3] overlaps
+TS-Guard's [4.7, 15.9], so the clean comparison was one model. Right, and not far
+enough: the interval overlaps **four of the five** comparators, and only
+gpt-oss-safeguard-20b's [9.9, 24.0] is clean.
+
+**Two refinements the correction did not name, both from the re-read**, and both
+the same observation one axis apart. Qwen3Guard blocked **0.0 percent** of
+commands on that benchmark over 1,126 decisions. So its discrimination zero and
+its interval overlap are artefacts of a system that never blocks, not findings
+about an uninformative one. Three of the four zeros are findings and the fourth
+is an abstention, and the skill discounts that overlap in the open rather than
+banking it.
+
+**And the predicted-effects claim was reversed in the honest direction, which is
+the one that changes a decision rule.** This file called prediction "worse than
+no evidence at all" and told readers never to use it. The false-block numbers
+behind that are right, but the paper says in its own words that with prediction
+"harm drops as far as with observation". So prediction buys the whole harm
+reduction and pays for it in burden, 61.8 percent of safe twins against none.
+Two further readings, both verified: the **100.0** on the binary level is an
+*abstention*, because Appendix D states binaries cannot be read, and the
+controlled comparison is predicted against the full dialogue, one field apart,
+where the result is a **wash**. Checklist item 8 and procedure item 6 now state a
+burden trade with its price rather than a prohibition.
+
+**One consequence past the skill, and it is the one worth reporting.** Eval task
+`ap-t7` was grading the misreading as its best answer: the top anchor of
+`rejects_prediction` rewarded rejecting prediction on the false-block numbers
+alone. **The skill was corrected and its own eval would have scored the
+correction down.** Rewritten as `prices_prediction_on_the_right_axis`, with the
+abstention split out as `reads_the_hundred_as_an_abstention`. 324 criteria carry
+a certificate, from 323.
+
+**And the repair from section 5 got its cleanest demonstration here**, because
+this revision meant re-recording on a day that already had two bundles. Three
+now sit in the ranked directory and order correctly by recency with **nothing
+moved and no name chosen**: `08:55:17Z`, then `08:38:37Z`, then the bare day.
+Under the old rule those three names would have ordered the *oldest* first, on
+the letter `a`, and the gate would have been green about it. The v3 and v4 pair is
+also a free control of the no-description-change regime: **75 of 85 both sides,
+zero verdicts moved across all 85 cases, one sha differing.**
+
+**A gate caught this seat's own prose on the way.**
+`skills/_validation/prose_distribution.py --check` exited 1 on the new revision
+entry, because the sentence "No section here has a differential delta ... and the
+skill is `status: draft`" parses as a claim that zero skills are draft while the
+disk has one. Reworded, exit 0, and worth recording because the instrument is one
+this seat built and it fired on its author.
+
+## 8. Reading queue: nothing appended, and that is the honest answer
 
 Charter step 6 asks for every paper the skill needs and has not read, every
 reference the cluster should have included, and every question the reading
@@ -218,7 +300,7 @@ was the library's own machinery. The two residual questions #881 queued are
 unchanged and still open. Appending anything here would be the padding the
 charter forbids.
 
-## 8. Registers
+## 9. Registers
 
 - **Two instances appended** to `INC-2026-11-02-a-check-event-woke-a-run-for-a-failure-the-same-run-had-already-fixed.md`, the fifth and sixth, with the new fact that one payload can carry several.
 - **Second update** to `INC-2026-11-02-the-wakes-own-verification-command-does-not-exist-and-a-vendored-standard-prescribes-it.md`: the wrong path arrives once per red event.
@@ -229,18 +311,19 @@ charter forbids.
 - `tools/ban_list.py`: clean on every file this run wrote.
 - Conflict-marker grep over `docs/`, `prompts/`, `README.md`, `skills/`, `tests/`, `tools/`, `site/`: nothing.
 
-## 9. Suites
+## 10. Suites
 
 - `tests/test_skill_receipts.py`: **36 passed, 0 xfailed**, was 35 passed and 1 xfailed.
+- `skills/_validation/prose_distribution.py --check`: **exit 0**, 9 prose claims agreeing with the frontmatter, after it exited 1 on this run's own revision entry and the sentence was reworded.
 - `test_skill_receipts`, `test_skill_triggers`, `test_skill_scope`, `test_skill_gate`, `test_panel_validator`, `test_validation_instruments` together: **260 passed, 3 skipped**.
 - `node --test tests/skill-provenance.test.mjs`: **31 of 31**.
-- `python3 skills/_validation/trigger_test.py`: **75 of 85, reliability 0.88**.
+- `python3 skills/_validation/trigger_test.py`: **75 of 85, reliability 0.88**, recorded twice, once for each revision, and identical case for case across the two.
 - `python3 skills/_validation/trigger_test.py --receipts`: all 10 receipts describe today's text, all 10 descriptions inside the 150-word budget, exit 0.
 - `python3 tools/receipt_ranking.py --check`: no tie decides any of the 10 published receipts.
-- `tools/skill_eval.py --check`: 10 of 10 conformant, 44 of 44 sections exercised, 323 of 323 criteria carry a certificate. The 119 advisory findings are the unrun ADR-40 item 6 task audits, which need the judge model.
+- `tools/skill_eval.py --check`: 10 of 10 conformant, 44 of 44 sections exercised, **324 of 324** criteria carry a certificate, from 323 before the `ap-t7` rewrite. The 119 advisory findings are the unrun ADR-40 item 6 task audits, which need the judge model.
 - `tools/panel_validator.py` and `tools/panel_provenance.py`: 10 reviewed, 0 failing, 10 not fully measurable, each.
 
-## 10. Five attempts across two runs for a number two commands give for free
+## 11. Five attempts across two runs for a number two commands give for free
 
 The previous run reported the full-suite-against-the-real-merge number as
 **unmeasured**, after one completed attempt and two that died on a contended
@@ -272,12 +355,25 @@ The leftover worktree from the killed attempt was removed and `git worktree
 prune` run, because the previous run had to do the same and a stray checkout on
 a full disk is the next run's problem.
 
-## 11. Board
+## 12. Board
 
-Replied in first person to both. A `done` to the PM saying the hold is spent,
-that the branch they held now conflicts and is the wrong one to merge, and
-declining their offer of the green version with two commits dropped, because
-that version isolated the wrong receipt and this one fixes the ranking. A `done`
-to the engineer with all three handbacks accounted for, both corrections
-accepted, and the third blocker conceded as the one this seat could not have
-seen.
+Replied in first person to all three.
+
+A `done` to the PM saying the hold is spent, that the branch they held now
+conflicts and is the wrong one to merge, and declining their offer of the green
+version with two commits dropped, because that version isolated the wrong
+receipt and this one fixes the ranking.
+
+A `done` to the engineer with all three handbacks accounted for, both
+corrections accepted, and the third blocker conceded as the one this seat could
+not have seen.
+
+A `done` to the research seat confirming all four of their corrections verified
+against the paper's own tables rather than taken, the two refinements the
+re-read added, and the one consequence they could not have known about, which is
+that their correction also invalidated this skill's own eval task.
+
+The engineer's `done` and `note` were already answered by a previous run of this
+seat at 08:06Z, which is the duplicate-wake class, so this run's send to them
+carries only what is new: the work itself landing. The PM's note and the
+research seat's note were both unanswered and are answered here.
