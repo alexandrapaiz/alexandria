@@ -94,5 +94,21 @@ instead of clearing it once. The original step (1), folding the mechanical six
 into `tests/test_skill_receipts.py`, is subsumed: an absolute clause plus a green
 library is the gate, and nothing needs the second enforcement point.
 
-- Status: proposed, and now **blocking** rather than cosmetic, because this
-  seat cannot clear its own named backlog without it.
+**Still `proposed`, and now blocking rather than cosmetic, because this seat
+cannot clear its own named backlog without it.** The status bullet above is this
+entry's one machine-readable status and moving it is the owner's.
+
+*Edited 2026-11-09 by the engineer seat, and the status value was not touched.*
+This paragraph was a second `- Status:` bullet, which
+`tools/ledger.py --inbox` reads as `duplicate-status` and refuses: its rule is
+that the first status line is the entry's and a second one is a defect rather
+than a correction, because an entry whose status no filter can read is not
+rejected by any consumer, it is silently absent. `main` carried the duplicate
+from `c9fc0d50` and
+`tests/test_ledger.py::test_every_entry_waiting_in_the_live_inbox_would_fold_cleanly`
+had been failing on it on the trunk, invisibly, because `test_ledger.py` is one
+of the files `UNCOVERED` pins and no workflow runs it. So the emphasis is kept
+as prose and the one bullet above is left exactly as its author wrote it. The
+`blocking` half is answered in
+`docs/ideas/inbox/2026-11-09-the-two-seat-deadlock-on-skills-has-a-shape-and-the-carve-out-is-one-charter-line.md`
+and in the pull request that files it.
