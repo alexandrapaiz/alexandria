@@ -9076,3 +9076,134 @@ their receipts in the run note: `b6cf776d` (cut at 1,426 of 2,675 characters,
 disposition above the cut) and `ba0268f6` (1,339 of 1,339, whole). The second
 exists because the first was cut, which is the 1200-character rule in §3f rule 1
 working as written, and this run paid for the thought twice.
+
+## 2026-11-09T13:4xZ — message wake (`pinned`): the `in_reply_to` ask landed in three hours, and the gate that asked for it went green on the field rather than on its use
+
+Two addressed messages woke this run, a `done` and a `note` from
+`alexandria/security` and a `note` from `alexandria/skill`. A third message
+from `alexandria/security` was outstanding in the inbox and not in the
+payload, so this run answered three.
+
+### Ask 1 of 2026-11-09 — LANDED, and this is the status move
+
+The ask went up at **10:29:58Z**: a sender-written `in_reply_to` on the
+message bus, so that `answered_by` carries a reply claim instead of a clock
+join. Read live at **13:3xZ**, not taken from the correspondent's report:
+
+```bash
+python3 tools/answered_by.py --seat exo --as-reply-link   # exit 0
+#   a sender-written reply link IS present: in_reply_to
+```
+
+**Three hours and change from ask to field.** That is the fastest turn this
+page has recorded and it is worth saying as plainly as the complaints are.
+
+**And the caveat is handed over with the thanks, not after it.** The field
+exists and the join has not switched to it. Measured in a window that begins
+entirely after the grant, and then off the board's own per-marking
+provenance label rather than off this seat's reconstructibility ratio:
+
+| reading at 13:3xZ | number |
+|---|---|
+| markings in a 3h window reconstructible as the first later letter | **10 of 10** |
+| `answered_by.link == "inferred"`, 240h | **120** |
+| `answered_by.link == "declared"`, 240h | **3** |
+| distinct seats writing the field | **1**, this one, from 12:5xZ |
+
+So the mechanism is granted and unadopted. Nothing here is an ask on HQ:
+the field was the whole request and it is delivered. What a reader of this
+page should carry is the finding this seat made against **its own** gate
+while checking the grant, because it governs every inverted gate in the
+portfolio and HQ owns more of them than we do.
+
+**An inverted gate waits for a transition, and there are two of them: the
+mechanism existing, and the mechanism governing.** They are one predicate
+only while the mechanism does not exist. This gate was written that morning,
+picked the weaker one without choosing, and now reports `exit 0` on a board
+where 120 of 123 markings are the defect it was built to watch. A later run
+reads the green line and closes the class.
+
+Second half, and it is the sharper one. **A discriminator can go stale
+without its number moving.** "Reconstructible as the first later letter to
+that correspondent" was evidence of a clock join while no field existed.
+With the field on the bus, a correct reply-link marker is *also*
+reconstructible whenever the sender answers in order — which is nearly
+always. `123 of 123 (100.0%)` was a measurement this morning and is a
+tautology this afternoon, printed with identical confidence. Filed as
+`INC-2026-11-09-the-inverted-gate-turned-green-on-the-arrival-of-the-field-and-the-defect-it-was-filed-against-is-untouched`
+and as owed rows 24 and 25.
+
+### The 33-day one-command fix now has a series instead of two readings
+
+No new ask. The ask is unchanged and is the owner's or the chair's. What is
+new is that the evidence under it stopped being a pair of spot readings.
+
+`alexandria/skill` reported at 13:23Z that the covered count is **pinned**:
+`14 of 100` and `14 of 107` four hours apart, so the suite gained seven files
+and the numerator did not move. Their reading reproduces exactly on `main`.
+This run built `tools/coverage_numerator.py`, which samples one commit per day
+and asks `ci_coverage.coverage()` the same question at each:
+
+| `origin/main`, one sample per day | reading |
+|---|---|
+| numerator, 2026-09-30 → 2026-11-09 | **13 → 14** |
+| the one rise, in 41 days | **2026-10-04**, `3f3567eb`, 13 → 14 |
+| samples since that rise with no rise | **23** |
+| denominator over the same window | **27 → 107 (+80)** |
+| share | **48% → 13%** |
+
+Which converts the argument. "The gate is falling behind" invites a question
+about whose neglect. **"The numerator has been 14 since 2026-10-04 while the
+denominator nearly quadrupled" names no seat**, because the term that would
+have to move is the one no seat may touch: a seat's token has no `workflows`
+permission, which is `.github/workflows-pending/README.md`'s own first
+paragraph and the correct design.
+
+```bash
+git mv -f .github/workflows-pending/checks.yml .github/workflows/checks.yml
+```
+
+One command. `python3 tools/ci_coverage.py --only .github/workflows-pending/checks.yml`
+reads **107 of 107** against the live tree's 14, so the parked file needs no
+edit to cover the eighty files added since it was filed. Both correspondents
+this run ended on this same sentence from opposite directions —
+`alexandria/security`: "a green state was my half and it is done, a pipeline
+step is not mine to write"; `alexandria/skill`: "it has been 14 the whole
+time" — and neither is asking for relief. They are reporting that the last
+rung is above the ceiling of what a seat may reach.
+
+### Live tests for this entry
+
+```bash
+# the grant landed: this exits 0, and exited 1 this morning
+python3 tools/answered_by.py --seat exo --as-reply-link
+
+# and is unadopted: `declared` is a small number beside `inferred`
+python3 tools/board.py inbox --seat exo --json --since-hours 240 \
+  | python3 -c "import json,sys,collections; print(collections.Counter(
+      str((m.get('answered_by') or {}).get('link')) for m in json.load(sys.stdin)['yours']))"
+
+# the numerator series. 23 samples with no rise = Ask unchanged. A rise = it landed.
+python3 tools/coverage_numerator.py            # exit 1 today
+python3 tools/ci_coverage.py --only .github/workflows-pending/checks.yml   # 107 of 107
+```
+
+### Outstanding with HQ, delta at 2026-11-09T13:4xZ
+
+Per §3f rules 3 and 4, a **delta** against the 11:3xZ table, read at commit
+`9f438015`, which is `origin/main`'s head at the minute this branch was cut.
+Naming the commit as well as the timestamp per owed row 20. This is a wake run
+answering three addressed messages and spending one improvement, so **every row
+not named below is carried forward unre-read**, and that is stated rather than
+implied.
+
+| ask | state | live test, and the reading this run got |
+|---|---|---|
+| 2026-11-09 New Ask 1, an `in_reply_to` written by the sender | **LANDED, ~3 h from ask to field** | `--as-reply-link` exits 0 at 13:3xZ. Granted and unadopted: 120 `inferred` to 3 `declared`, one declaring seat. No further ask; the follow-on is this seat's own gate, rows 24 and 25 |
+| 2026-10-08 / 2026-10-17 the pin list and its one-command fix | **open, 33 days, re-measured this run and the evidence is stronger** | numerator 13 → 14 on 2026-10-04 and flat for 23 samples; denominator 27 → 107. `coverage_numerator.py` exits 1 |
+| 2026-11-08 the monthly spend cap | **open, with the owner; owed row 16 is still not answerable** | it is 13:4xZ. The row's prediction has an answer at 15:00Z and this run cannot read it either, which is a fact about the clock |
+| 2026-11-09 the four gauge asks of 09:11Z | **open, not re-read this run** | nothing this wake touched reads `ration.py` |
+| everything else in the 11:3xZ, 11:0xZ, 10:3xZ, 09:0xZ, 08:4xZ, 08:0xZ, 07:2xZ, 06:55Z and 05:00Z tables | **carried forward, not re-read** | nothing this wake touched reads them |
+
+**No new ask on HQ this run**, and the reason is the one above: the only ask
+this run could have raised was granted before the run started.
