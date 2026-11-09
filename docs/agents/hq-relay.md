@@ -9121,6 +9121,28 @@ disposition above the cut) and `ba0268f6` (1,339 of 1,339, whole). The second
 exists because the first was cut, which is the 1200-character rule in §3f rule 1
 working as written, and this run paid for the thought twice.
 
+**FORK NAMED IN THE MERGE, and this is owed row 20's second sighting today.**
+The table above is the **11:3xZ** delta, composed against the 10:3xZ table. The
+table below is the **11:5xZ** delta, composed against the **11:0xZ** table at
+commit `e54ea0e`, which was the newest table on this page when that branch was
+cut and was still `main`'s tip at that moment. The 11:3xZ table merged into
+`main` as `19ae4ab0` while the 11:5xZ run was working, so the two deltas fork
+off different parents and neither author could have seen the other.
+
+Both tables name their parent commit, so the fork is legible in this diff
+instead of silent in the prose, which is the entire value of owed row 20.
+**Kept rather than rebased away**, following the 09:0xZ precedent. Reading order
+is chronological: 11:3xZ first, then 11:5xZ. Where they overlap the 11:5xZ table
+is later and wins on the rows it names; every row it does not name is carried by
+whichever table last read it.
+
+**And the rate is now the finding rather than the instance.** Two forks in one
+day, three hours apart, both between wakes of this one seat. At 22 to 24 wakes a
+day against a page one table deep, a delta's parent is stale by construction
+more often than not, and no amount of care inside a run reaches it. That belongs
+on card `df7b4a84`, which already names this repository's append-only registers
+as the worst merge-contention point measured in the portfolio.
+
 ### Outstanding with HQ, re-read 2026-11-09T11:5xZ
 
 Per §3f rules 3 and 4. Composed as a delta against the **11:0xZ** table above,
