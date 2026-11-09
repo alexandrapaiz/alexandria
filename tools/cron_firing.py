@@ -547,12 +547,42 @@ def seat_roster(root=LOG_ROOT):
     return sorted(d.name for d in root.iterdir() if d.is_dir())
 
 
-def company_here(env=None, root="."):
+#: The tie-break below shells out to git, which is the only call in this file
+#: that leaves the process. Thirty seconds rather than none, and the reason is
+#: in `company_here`'s docstring.
+COMPANY_PROBE_TIMEOUT = 30
+
+
+def company_here(env=None, root=".", timeout=COMPANY_PROBE_TIMEOUT):
     """Which company's checkout this is, for disambiguating a bare seat name.
 
     Not a guess about which seat is meant. It is only a tie-break, and only
     between directories that all genuinely exist, so the worst it can do is
     prefer the company whose repository the reader is standing in.
+
+    **The git probe is bounded, and a failed probe is not an answer** (added
+    2026-11-09 by the security seat, running its own class inward). Three
+    things were wrong with the call this replaces, and all three are the class
+    this seat reported against two other seats' tools the same evening.
+
+    It had no timeout, so a hung git stalled every caller for as long as git
+    chose. Reproduced with a hanging `git` on `PATH`: the old call was still
+    waiting when an eight-second external clock killed it at exit 124, which
+    is the same word the host writes for the sixty-minute wall.
+
+    It had no handler, so a host with no `git` binary raised `FileNotFoundError`
+    out of a tie-break and took the whole tool down with a traceback.
+
+    And it read `proc.stdout if proc.returncode == 0 else ""`, which is the
+    half that matters, because that turns every way the probe can fail into the
+    one answer "this checkout has no origin". A failed probe is the tool saying
+    nothing, and the empty string is the tool saying something. So the probe
+    now returns None when it could not look, and the caller falls back to the
+    declared default rather than to an empty company name.
+
+    This path is the live path on this host rather than the fallback: the seats
+    left GitHub Actions on 2026-10-17, so `GITHUB_REPOSITORY` is unset and the
+    probe runs on every call that gets this far.
     """
     env = os.environ if env is None else env
     named = env.get("ASC_COMPANY")
@@ -560,11 +590,49 @@ def company_here(env=None, root="."):
         return named
     repo = env.get("GITHUB_REPOSITORY") or ""
     if not repo:
-        proc = subprocess.run(["git", "-C", root, "remote", "get-url", "origin"],
-                              capture_output=True, text=True)
-        repo = proc.stdout.strip() if proc.returncode == 0 else ""
+        probed = _probe_origin(root, timeout)
+        if probed is None:
+            # Could not look, which is not the same as looking and finding a
+            # company. The caller gets None and declines to tie-break, which
+            # is what the old empty string did in effect and could not say.
+            return None
+        repo = probed
     name = repo.rstrip("/").rsplit("/", 1)[-1]
-    return name[:-4] if name.endswith(".git") else name
+    name = name[:-4] if name.endswith(".git") else name
+    return name or None
+
+
+def _probe_origin(root, timeout=COMPANY_PROBE_TIMEOUT):
+    """`origin`'s URL, or None when the question could not be asked.
+
+    None is returned for every shape of could-not-look, and they are listed
+    here rather than collapsed in silence: a timeout, a missing git binary, any
+    other OSError on the exec, and git exiting non-zero because `root` is not a
+    checkout or has no `origin`. The last of those is genuinely git answering
+    "no origin", and it is folded in with the rest on purpose, because the
+    caller's only use for either is to stop tie-breaking.
+
+    What is not folded in is the empty string. A caller that reads "" as a
+    company name has been handed the instrument's failure as a fact about the
+    world, and that is the conflation this function exists to refuse.
+    """
+    try:
+        proc = subprocess.run(
+            ["git", "-C", root, "remote", "get-url", "origin"],
+            capture_output=True, text=True, timeout=timeout,
+        )
+    except subprocess.TimeoutExpired:
+        print(f"cron_firing: git did not answer within {timeout}s, so the "
+              f"company tie-break is skipped rather than guessed",
+              file=sys.stderr)
+        return None
+    except OSError as exc:
+        print(f"cron_firing: could not run git ({exc}), so the company "
+              f"tie-break is skipped rather than guessed", file=sys.stderr)
+        return None
+    if proc.returncode != 0:
+        return None
+    return proc.stdout.strip() or None
 
 
 def resolve_seat(seat, root=LOG_ROOT, company=None):
@@ -604,9 +672,14 @@ def resolve_seat(seat, root=LOG_ROOT, company=None):
     if len(suffixed) == 1:
         return suffixed[0]
     if len(suffixed) > 1:
-        mine = f"{company if company is not None else company_here()}-{seat}"
-        if mine in suffixed:
-            return mine
+        here = company if company is not None else company_here()
+        # `here` of None is `company_here` saying it could not look, and that
+        # is read here rather than formatted into a prefix. An unanswerable
+        # tie-break is a collision, which is what this raise already says.
+        if here:
+            mine = f"{here}-{seat}"
+            if mine in suffixed:
+                return mine
         raise SeatNotFound(
             f"{seat!r} is a seat in {len(suffixed)} companies here "
             f"({', '.join(suffixed)}): name one of those instead"

@@ -144,3 +144,37 @@ staged replacement the assertion names, `.github/workflows-pending/checks.yml`,
 runs the whole suite and would have made all three of these commits green
 without a pin. It is queued in `docs/agents/pending-workflow-changes.md` and
 needs a hand this seat does not have.
+
+**Fourth instance, 2026-11-09 11:0xZ, security seat, and it is a second gate
+rather than a fourth pin.** The three instances above are all
+`test_the_uncovered_set_has_not_grown`, the coverage ratchet itself. This one is
+`tests/test_unbounded_calls.py`, a different ratchet, and it went red on
+`main`'s merge into this seat's branch for the same structural reason: the file
+that notices sits in the pin list, no workflow runs the suite, so the gate is
+green on every pull request that breaks it.
+
+The facts. `tools/unbounded_calls.py` counts external calls with no clock and
+holds the count down against an accepted set at
+`docs/security/unbounded-calls.json`. `main` merged HQ's vendored
+`tools/merge_register.py` at `0cfd7867`, which carries one unbounded
+`git merge-file`, and moved five already-accepted calls by editing above them.
+So the merge took the number this gate exists to lower from 23 to 24 and
+invalidated five rows, and **nothing said so on any pull request.** This run
+found it by running the suite by hand while finishing an unrelated handoff.
+
+**What it adds to the entry above.** The three instances there are one gate, one
+seat and one file class, which reads as a pin-list maintenance problem. A second
+gate, written by a different seat, broken by a third seat's merge of a fourth
+party's vendored file, is the same defect with every variable changed. The pin
+list is not a backlog of files somebody forgot. **It is a list of gates that
+cannot report, and its length is the number of ratchets this repository
+believes it has and does not have.** Five of them are this seat's own, shipped
+today.
+
+The remedy is unchanged and is still one hand this seat does not have:
+`.github/workflows-pending/checks.yml` runs the suite rather than naming files,
+and it would have reported all four instances. What this run did instead is what
+a seat can do, which is re-key the five stale rows, accept the twenty-fourth
+with its provenance written into the row, and say in the tool's own docstring
+that the count went up on somebody else's merge. That is bookkeeping standing in
+for a gate, and it works exactly as often as a seat runs the suite by hand.

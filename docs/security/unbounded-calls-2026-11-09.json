@@ -1,0 +1,222 @@
+{
+  "scanned": [
+    "tools",
+    "pipeline",
+    "mcp"
+  ],
+  "findings": [
+    {
+      "path": "tools/anchor_contention.py",
+      "line": 82,
+      "call": "subprocess.run",
+      "binary": "gh",
+      "reach": "network",
+      "bounded": false,
+      "handlers": []
+    },
+    {
+      "path": "tools/anchor_contention.py",
+      "line": 89,
+      "call": "subprocess.run",
+      "binary": "gh",
+      "reach": "network",
+      "bounded": false,
+      "handlers": []
+    },
+    {
+      "path": "tools/board.py",
+      "line": 844,
+      "call": "subprocess.run",
+      "binary": "git",
+      "reach": "unknown",
+      "bounded": false,
+      "handlers": []
+    },
+    {
+      "path": "tools/board.py",
+      "line": 857,
+      "call": "subprocess.run",
+      "binary": "gh",
+      "reach": "network",
+      "bounded": false,
+      "handlers": []
+    },
+    {
+      "path": "tools/check_authority.py",
+      "line": 396,
+      "call": "subprocess.run",
+      "binary": "git",
+      "reach": "local",
+      "bounded": false,
+      "handlers": []
+    },
+    {
+      "path": "tools/check_authority.py",
+      "line": 706,
+      "call": "subprocess.run",
+      "binary": "gh",
+      "reach": "network",
+      "bounded": false,
+      "handlers": []
+    },
+    {
+      "path": "tools/check_authority.py",
+      "line": 713,
+      "call": "subprocess.run",
+      "binary": "git",
+      "reach": "local",
+      "bounded": false,
+      "handlers": []
+    },
+    {
+      "path": "tools/check_authority.py",
+      "line": 721,
+      "call": "subprocess.run",
+      "binary": "git",
+      "reach": "local",
+      "bounded": false,
+      "handlers": []
+    },
+    {
+      "path": "tools/check_pr_green.py",
+      "line": 200,
+      "call": "subprocess.run",
+      "binary": "gh",
+      "reach": "network",
+      "bounded": false,
+      "handlers": []
+    },
+    {
+      "path": "tools/deploy_gate.py",
+      "line": 217,
+      "call": "subprocess.run",
+      "binary": "unreadable",
+      "reach": "unknown",
+      "bounded": false,
+      "handlers": []
+    },
+    {
+      "path": "tools/incidents.py",
+      "line": 259,
+      "call": "subprocess.run",
+      "binary": "git",
+      "reach": "unknown",
+      "bounded": false,
+      "handlers": []
+    },
+    {
+      "path": "tools/ledger.py",
+      "line": 959,
+      "call": "subprocess.run",
+      "binary": "git",
+      "reach": "unknown",
+      "bounded": false,
+      "handlers": []
+    },
+    {
+      "path": "tools/merge_order.py",
+      "line": 81,
+      "call": "subprocess.run",
+      "binary": "git",
+      "reach": "unknown",
+      "bounded": false,
+      "handlers": []
+    },
+    {
+      "path": "tools/merge_order.py",
+      "line": 102,
+      "call": "subprocess.run",
+      "binary": "gh",
+      "reach": "network",
+      "bounded": false,
+      "handlers": []
+    },
+    {
+      "path": "tools/panel_merge.py",
+      "line": 479,
+      "call": "subprocess.run",
+      "binary": "git",
+      "reach": "network",
+      "bounded": false,
+      "handlers": []
+    },
+    {
+      "path": "tools/panel_merge.py",
+      "line": 481,
+      "call": "subprocess.run",
+      "binary": "git",
+      "reach": "local",
+      "bounded": false,
+      "handlers": []
+    },
+    {
+      "path": "tools/run_report.py",
+      "line": 131,
+      "call": "subprocess.run",
+      "binary": "git",
+      "reach": "local",
+      "bounded": false,
+      "handlers": []
+    },
+    {
+      "path": "tools/run_report.py",
+      "line": 141,
+      "call": "subprocess.run",
+      "binary": "gh",
+      "reach": "network",
+      "bounded": false,
+      "handlers": []
+    },
+    {
+      "path": "tools/skill_gate.py",
+      "line": 129,
+      "call": "subprocess.run",
+      "binary": "git",
+      "reach": "unknown",
+      "bounded": false,
+      "handlers": []
+    },
+    {
+      "path": "tools/skill_gate.py",
+      "line": 681,
+      "call": "subprocess.run",
+      "binary": "unreadable",
+      "reach": "unknown",
+      "bounded": false,
+      "handlers": []
+    },
+    {
+      "path": "tools/skill_gate.py",
+      "line": 695,
+      "call": "subprocess.run",
+      "binary": "unreadable",
+      "reach": "unknown",
+      "bounded": false,
+      "handlers": []
+    },
+    {
+      "path": "tools/skill_registrar.py",
+      "line": 658,
+      "call": "subprocess.run",
+      "binary": "git",
+      "reach": "local",
+      "bounded": false,
+      "handlers": [
+        "(OSError, subprocess.CalledProcessError)"
+      ]
+    },
+    {
+      "path": "tools/skill_registrar.py",
+      "line": 661,
+      "call": "subprocess.run",
+      "binary": "git",
+      "reach": "local",
+      "bounded": false,
+      "handlers": [
+        "(OSError, subprocess.CalledProcessError)"
+      ]
+    }
+  ],
+  "calls_read": 51,
+  "unbounded": 23
+}
