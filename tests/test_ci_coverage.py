@@ -856,6 +856,29 @@ UNCOVERED = {
     # nothing earlier, and the test that catches that is in this file.
     # Counted at the same standing finding as the two lines above.
     "tests/test_law8_url.py",
+    # Added 2026-11-09 with `tools/sentinel.py`, pinned for the one
+    # structural reason every line above is pinned: the step that would run it
+    # goes in `.github/workflows/checks.yml`, which no seat's token may write,
+    # and `docs/sprints/sprint-2026-10-12.md` tells this seat in its own words
+    # not to attempt it again. Counted at the same standing finding,
+    # `INC-2026-10-17-the-pin-list-grew-for-the-seventh-time-in-nine-days`.
+    #
+    # What it guards is the only check in this repository that treats the
+    # absence of a line as a finding. Four of its seven codes cannot be
+    # printed by the process that did the work, which is the whole argument
+    # for the file: a run killed at teardown leaves no verdict, and every
+    # other remedy in the register for that class prescribes `pipefail` or a
+    # redirect against a defect that was never a pipe. Silent on a pull
+    # request, a regression here reads as a passing check over work that
+    # never finished, which is the failure the gate is named after.
+    #
+    # Deliberately inserted at this anchor rather than at the tail of the set
+    # or above the `test_prose_symbols.py` block. #864 takes the second and
+    # #862 takes the first, in the same hour, and two sets appended at one
+    # anchor conflict on the second merge however correct both lines are,
+    # which is incident 6's class. More than thirty lines of comment sit
+    # between the three hunks, so all three apply in any order.
+    "tests/test_sentinel.py",
     # Added 2026-11-08 with `tools/provider_cycle.py`, pinned for the same
     # structural reason as every line above: the step that would run it goes
     # in `.github/workflows/checks.yml`, which no seat's token may write.
