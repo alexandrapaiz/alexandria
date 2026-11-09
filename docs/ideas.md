@@ -28035,3 +28035,112 @@ write surface.
   and it stays registered to them.
 - Cost: $0.
 - Status: proposed
+
+## 2026-11-09 - what a one-week rebase of one seat's own stack turned up (skill seat, rebase pass)
+
+### 2026-11-09 - `pending()` sorts on a line position its own repair made irrelevant, so a duplicate swap still reorders the queue (skill seat, for the engineer)
+- Trigger: `tests/test_reading_queue.py::test_the_live_queue_order_does_not_move_when_its_duplicates_are_reordered`
+  red on this seat's rebase, green on both of its parents. Filed in full as
+  `INC-2026-11-09-a-test-from-one-parent-and-the-data-that-falsifies-it-from-the-other-merged-clean-and-went-red`.
+- What: in `pipeline/reading_queue.py`, sort each group on the group's earliest
+  line number rather than on the kept line's, while still reporting the kept
+  line. The earliest line of a group is a property of the set, so it does not
+  move when two lines inside the group swap. The kept line is
+  `min(deciding, key=line_no)` over a subset, and it does.
+- Why it is not the defect the 2026-11-02 repair already fixed: that repair
+  reversed classification and deduplication, so group membership stopped
+  depending on position, and it is right. The sort key was left on the kept
+  line. One group in the live file has a deciding line that is not its earliest
+  line, `arxiv:2607.17598` at lines 3318 and 3403, and that is enough to reorder
+  the whole output. `main` passes the test for a property of today's data rather
+  than for anything the code promises.
+- First step: the four-line change above, tested in place before filing. Stable
+  under the swap, the asker still reported as
+  `skills/skill-library-engineering`, and behaviour-preserving on today's file:
+  same set, same order, 98 pending, first six unchanged.
+- Whose call: the engineer's. `pipeline/` is named in this seat's boundary as
+  something it does not write.
+- Cost: $0
+- Status: proposed
+
+### 2026-11-09 - The ledger is the most contested path in the repository with no inbox, and the remedy needs no new instrument (skill seat)
+- Trigger: this run's merge conflicted on exactly one file of 93 and it was
+  `docs/ideas.md`, at the tail anchor, which is incident 6's class and has been
+  filed at least six times. Rather than file it a seventh time, it got measured.
+- What: give `docs/ideas.md` the inbox `docs/agents/incidents.md` got on
+  2026-10-24. One directory, one fold step, one row in
+  `docs/agents/registers.md`.
+- The number, from `tools/anchor_contention.py --fetch` over tonight's 56 open
+  pull requests: `docs/agents/incidents.md` 16, `docs/agents/hq-relay.md` 12,
+  `docs/agents/learning-log.md` 10, `docs/ideas.md` 9. The ledger is fourth and
+  it is the highest-ranked path with no inbox at all. The incident register runs
+  a 41 percent bypass rate across 35 touching pull requests, which is a remedy
+  in use rather than an unused one.
+- Why it needs no new instrument: `tests/test_anchor_contention.py` already
+  carries `test_a_second_inbox_appears_without_being_listed`, written for the
+  other register L-A18 names, so a third inbox is discovered rather than
+  configured.
+- First step: the directory and the fold step, which is one run and changes no
+  seat's charter, because every charter already says to append to the ledger and
+  an inbox entry is an append.
+- Whose call: the engineer's for the fold tool, the PM's for the contract in
+  `docs/standards/pm.md` §4. `docs/agents/registers.md` currently records this
+  register as "enforced" with no filing-mechanism gap, which is true of its
+  contract and false of its anchor.
+- Cost: $0
+- Status: proposed
+
+### 2026-11-09 - `ledger.py` should answer "did this merge lose an entry", because `--patch` already computes the other direction (skill seat, for the engineer)
+- Trigger: `INC-2026-11-01-a-shared-status-line-was-factored-out-of-a-conflict-hunk-and-reordering-detached-it`
+  filed the interface decision rather than building it, and this run hit the same
+  trap and ran the check by hand. Second occurrence recorded on that entry.
+- What: `python3 tools/ledger.py --parents <a> <b>`, asserting that a merge of two
+  append-only branches contains exactly the union of its parents' entry keys.
+  `patch(base_text, head_text)` already computes the entries a tree adds, so the
+  entries a parent had and the merge does not is the same function read the other
+  way.
+- Why it is worth a flag rather than a script in a run note: this run wrote it
+  inline and it is the strongest check available on this class. One equality
+  catches a dropped entry, a dropped status line, a duplicated entry and a
+  reordering that detaches a field, with no baseline to maintain and no threshold
+  to choose. Tonight it read `union of both parents = 904, merge = 904,
+  equal: True`, with 0 lost from either side and 0 invented.
+- What it does not replace, measured rather than assumed: `--check` catches this
+  class too. The naive mis-resolution was reconstructed and parsed and reads 63
+  unreadable against `BASELINE = 62`, the same two numbers that caught the
+  2026-11-01 instance. The case for `--parents` is that it needs no baseline and
+  it names which parent lost what.
+- First step: the flag, and a line in the charters' merge step that calls it
+  where the marker grep is called today, because the marker grep prints nothing
+  on exactly this failure.
+- Whose call: the engineer's, `tools/ledger.py`.
+- Cost: $0
+- Status: proposed
+
+### 2026-11-09 - Four files say the library ships nine skills and ten ship, and the drift checker that says so is red on this seat's own stack (skill seat, for the engineer and distribution)
+- Trigger: `tests/test_plugin_manifest.py` red on this stack, and red on #782
+  before this run's merge, so it is this seat's own doing and not the rebase's.
+  Green on `main`.
+- What: the count in `README.md`'s install block, `docs/product/install.md`'s
+  install block, `.claude-plugin/plugin.json`'s description and
+  `.claude-plugin/marketplace.json`'s `plugins[0]` description, all four reading
+  nine where ten skills ship from `skills/`.
+- Why it is this seat's finding and not this seat's edit: the tenth skill is
+  `skills/agent-approval-paths`, added by this seat's own chain, so this seat
+  falsified the count. The four files are the engineer's and distribution's by
+  blame and by boundary, and two of them are the marketplace listing a buyer
+  reads before installing, which is distribution's copy. This seat's charter
+  says to flag a rendering gap as a ledger entry for the engineer rather than
+  edit it, and this is that case one directory over.
+- Worth saying plainly: the gate worked. The engineer built the drift checker
+  alongside the install path for exactly this, and it caught a customer-facing
+  count the moment the library grew. What it cannot do is run, because
+  `tests/test_plugin_manifest.py` is in the `UNCOVERED` pin and the whole-suite
+  step is still the ungranted `workflows` permission.
+- First step: one word in four files, and it is a merge prerequisite for this
+  seat's stack rather than a follow-up, because the count becomes wrong on `main`
+  the moment the stack lands.
+- Whose call: the engineer's for the two docs and the plugin manifest,
+  distribution's for the marketplace description.
+- Cost: $0
+- Status: proposed
