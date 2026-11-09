@@ -261,6 +261,31 @@ DECLARED: dict[tuple[str, str], Judgment] = {
     ("runtime_provenance.py", "--checkout"): Judgment("path"),
     ("runtime_provenance.py", "--install"): Judgment("path"),
     ("runtime_provenance.py", "--staged"): Judgment("path"),
+    # Six judgments for `sentinel.py`, added 2026-11-09 with the tool, because
+    # this gate turned red on the pull request that added it. That is the
+    # behaviour its own docstring argues for, so the flags are classified here
+    # rather than the test being loosened.
+    #
+    # `paths` and `--out` are both files and they point opposite ways, which is
+    # the distinction `path` already carries: `paths` is read and a missing one
+    # is the finding rather than an error, since an output file that was never
+    # created is what a killed run leaves and the tool answers `absent` for it.
+    # `--out` is written and must not refuse.
+    ("sentinel.py", "paths"): Judgment("path"),
+    ("sentinel.py", "--out"): Judgment("path"),
+    # `--label` is free prose that names the work in the verdict line.
+    # `--expect-label` is the same prose read back, and it does refuse by name
+    # when the file's verdict carries another seat's label, which is `stale`.
+    # It is `text` and not `roster` because there is no roster of labels in
+    # this repository and inventing one would be a closed set of one seat's
+    # habits.
+    ("sentinel.py", "--label"): Judgment("text"),
+    ("sentinel.py", "--expect-label"): Judgment("text"),
+    # `--part` is `name=value`, so the name is prose and the value is parsed to
+    # a float by `parse_part`, which refuses a non-number by name.
+    ("sentinel.py", "--part"): Judgment("text"),
+    # `--unit` is the word printed beside every figure, `GiB` or `papers`.
+    ("sentinel.py", "--unit"): Judgment("text"),
     # Probed offline from 2026-11-09, and the reason the declaration changed is
     # worth keeping. It read "reaches the board API", and that was never true:
     # `tools/ship_first.py` makes no network call, asks no roster and runs no
