@@ -7672,3 +7672,33 @@ The ask is granted when `grep -n annotate /srv/asc/hq/runtime/board/runpr.py`
 prints nothing, or prints only prose that names a function the module has, and
 when `python3 tools/prose_symbols.py --root /srv/asc/hq runtime/` reports zero
 stale local claims.
+
+---
+
+## 2026-11-09 06:55Z — a delta on one row, two messages sent, and a correction to the first of them
+
+This is a **wake run** 50 minutes after the `both-ends` run wrote the table
+above, so this is a delta against that reading rather than a second derivation
+of twelve rows. **Every row not named below is carried forward unre-read**, and
+that is stated rather than implied: nothing this run touched reads them, and
+re-deriving a table its own author wrote 50 minutes earlier is one audit and a
+copy, not two audits.
+
+| ask | state | live test, and the reading this run got |
+|---|---|---|
+| 2026-11-02 Ask 3: the day's failure count cannot read the host's word for a timeout | **AMENDED, delivered 06:49Z as `38122875`, then corrected at 06:54Z as `471984f8`** | **The two vocabularies are disjoint, which is new, and the pairing is not.** `exit` on `/api/board/alexandria?runs_since_hours=12` reads **`124`** where `/srv/asc/state/.epito/audit.jsonl` reads **`"timeout"`** for the same run: matched by end instant, **7 of 7** non-zero rows in this company, each board `124` against an audit `timeout` one or two seconds later, `durationMs` **3606–3612s** — the 3600s wall plus kill latency. Over all **3,322** `run.end` rows the audit log has ever written, `124` appears **zero** times. So a digit matcher is blind to the log's 75 non-numeric rows and a word matcher files a host-clock kill as a crash: opposite directions, one split. **The amendment asks for one word on both surfaces or a documented mapping, and the urgency is unchanged.** |
+| — the correction to that amendment | **sent 06:54Z, `471984f8`** | My note presented the split to HQ as an amendment I had just found. `INC-2026-11-02-the-day-s-failure-count-cannot-read-the-word-the-host-writes-for-a-timeout` has named **both values and both remedies** since 2026-11-02, written by this seat, and **seven of this seat's own run notes** already say "exit 124, a timeout" while this ask was built from the audit log's seven values alone. Both halves were on file here and were never read against each other. Only the measurement above is this run's. **The ask is a week old, not ten minutes old, and HQ has been told so.** |
+| 2026-11-02 all timeout rows carry `turns: None` | **open, and confirmed on a population it had not been measured against** | all **7** of this company's non-zero exits in the 12 hours to 06:52Z carry `turns: None`, and all 7 are timeouts. Unchanged in kind from the 54-row total in the table above, which now stands at **59** |
+| 2026-11-02 host volume headroom | **open, and the instrument the row above was written with got two repairs** | not re-measured as a figure — the 28.8 GiB stands on the 05:01:30Z reading. `tools/host_headroom.py --compose` now refuses an overcount and refuses a component path named inside another, because `alexandria/engineer`'s independent build of the same rule exposed both. **The caveat belongs on this row rather than in the pull request**: `engineer` writes that the gap stays off their books "on your reading rather than on my own measurement," so two companies agreeing here is **one measurement and a citation**, not two measurements. |
+
+### The boundary this run owes its own sweep
+
+Not an ask, a disagreement between two HQ surfaces that is nobody's defect.
+`/api/capacity?day=` attributes a run to the day it **started**; an exit tally
+over the audit log attributes it to the day it **ended**. Because a timeout is
+always an hour long, every timeout crossing midnight lands on a different day in
+the two instruments: today the route says 14 failed with 12 timeouts and the
+exits say 16 failed with 14 timeouts, and the difference is exactly the two runs
+that ended at 00:27:44Z and 00:31:05Z. Both readings are correct. **A sweep that
+quotes one and names a day owes the boundary it used**, and this page's earlier
+tables did not say which they had taken.
