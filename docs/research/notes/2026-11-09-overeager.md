@@ -258,10 +258,101 @@ because posture is the variable Appendix I removed by configuration. So:
  count or safety-gate pass rate** (section 5). The rate from that cell is safe; the
  harm columns are not.
 
-**What is still unmeasured, and it is the next measurement to want.** No
-published work holds a mechanism fixed and varies the harness. Every figure in
-both skills is one mechanism inside one harness, and OverEager-Bench is one
-benign task set across four harnesses with no mechanism. The crossing - one
-approval mechanism, two harnesses, one task set - is the study that would turn
-the provenance field into an adjustment. Queued as a correction target rather
-than claimed.
+## The live-world check found the measurement I was about to call unpublished
+
+L-R1 makes an ecosystem check against the live web a per-run duty. This run
+ran it before shipping, and it landed inside the run's own conclusion.
+
+**The draft of this note said no published work holds a mechanism fixed and
+varies the harness. That sentence was wrong, and it was wrong by a month.**
+`arxiv:2610.07639`, "HarnessSecurity-Bench: Do Security Mechanisms Really
+Protect Coding Agent Harnesses?" (Zhu, Huang, Ji, Ye, Zhou, Guo, Wu, Ye, Feng,
+Dai, Zheng; arXiv:2610.07639v2 [cs.CR], 10 Oct 2026) is exactly that crossing.
+Verified from the paper rather than from the search summary
+(`tools/read_paper.py 2610.07639`, exit 0, 114,176 chars), because a search
+summary's numbers are never quotable here and are only a reason to fetch the
+source.
+
+**What it is.** A ten-mechanism taxonomy rated over 400 harness-mechanism
+cells by researchers and LLM judges, plus a 23-task benchmark over five attack
+surfaces, evaluating **nine mechanisms across six harnesses** - Claude Code,
+Codex CLI, Gemini CLI, gptme, Qwen Code, GitHub Copilot - **under one
+controlled base model (GLM-5.2)**, at 2,500 trials and 81,155 tool calls. Its
+own Table 1 claims it is the only study in its comparison set carrying an
+ON/OFF comparison of a harness's native security setting.
+
+**Read partially and said so.** This run read the abstract, section 1 with its
+Table 1, and section 6.2 with Table 6. It did not read sections 2 to 5, 6.3,
+section 7's limitations, or the appendices. The rest is queued as this paper's
+own line rather than summarised, which is the ruling this whole run exists to
+honour.
+
+**What the partial read already changes, with denominators.**
+
+| | ASR off | ASR on | delta ASR | utility off | utility on |
+|---|---|---|---|---|---|
+| auto-approve, all six harnesses | 29.2% (105/360) | 95.6% (344/360) | +66.4 pp | 77.1% (601/780) | 95.4% (744/780) |
+
+So **posture does carry a large measured effect** - 66.4 pp, model held fixed,
+"ASR increased in every harness" - and the skill seat's instinct was sound. It
+simply cannot be warranted from `2605.18583`, which configured posture away.
+The warrant is this paper.
+
+**And the same table gives the harness axis with posture held fixed, which is
+the sharper half.** Auto-approve OFF means the native approval mechanism is
+engaged, which is the condition every mechanism figure in both skills is
+measured under. Across the six harnesses at that setting, on identical tasks
+with one model:
+
+| harness, approval engaged | ASR |
+|---|---|
+| Codex CLI | 81.7% (49/60) |
+| gptme | 45.0% (27/60) |
+| Claude Code | 43.3% (26/60) |
+| Gemini CLI | 3.3% (2/60) |
+| GitHub Copilot | 1.7% (1/60) |
+| Qwen Code | 0.0% (0/60) |
+
+An **81.7 pp** spread, larger than the 66.4 pp posture effect, and the spread
+collapses to 13.3 pp once auto-approve is on. **The harness matters most
+exactly where a skill's mechanism figures live.** That is direct evidence for
+the no-transfer rule above, far better than the inference from
+`2605.18583`'s benign-task swing: the same mechanism, engaged, reads 0.0% in
+one harness and 81.7% in another.
+
+Four more results from the same section, each with its utility price, for
+whoever drains the queue line: network isolation -56.3 pp ASR at -24.5 pp
+utility, where 161 of the 162 lost utility passes were required network
+interactions; read-only 8.3% to 0.8% at -34.0 pp utility; command
+allowlisting -48.1 pp at -1.5 pp; command denylisting -40.4 pp at **+5.2 pp**,
+because blocking the key-copying operation preserved reports that had been
+invalidated by signing-key material under OFF.
+
+**So the revision to the revision.** Item 2 above stands and is now evidenced
+rather than inferred. Item 4 - do not put posture ahead of mechanism - holds
+**for `2605.18583` as its warrant** and is overtaken on the merits by
+`2610.07639`, which measures posture properly. The honest decision rule is
+neither ordering: posture and harness interact, the harness spread is widest
+with approval engaged, and both belong in a figure's provenance. **The skill
+seat should not ship the addition-only version of this revision without
+reading `2610.07639` first**, and has been told so on the bus.
+
+**The reach gap.** A cs.CR paper of 10 October 2026, squarely inside the
+charter's named containment priority and answering a question two of this
+library's skills turn on, is in no skill, on no queue line, and was found by a
+web search rather than by `sources.yaml`. Three siblings turned up in the same
+search and are equally absent: `2608.17597` (HarnessRisk), `2605.14271`
+(Auditing Agent Harness Safety), `2608.06984` (HarnessSafe). Under ADR-29 a
+reach gap found by this seat is a register entry; this one is recorded here and
+routed in the pull request, because the census is a monthly duty and this run
+is a message wake.
+
+**What is still unmeasured.** Not the crossing, which exists and is the
+section above. What no paper in this run's reading does is cross a *published
+mechanism from the literature* - a verifiable action card, a pre-execution
+mediator, a provenance binding - against two harnesses. `2610.07639` crosses
+the harnesses' **own native settings**, which is the right first study and is
+not the same thing: it tells a builder that their harness's allowlist behaves
+differently from another harness's, not that Caper's 7.8 percent would survive
+a move from Claude Code to Codex CLI. That is the residual, and it is now a
+narrow question rather than a missing field.
