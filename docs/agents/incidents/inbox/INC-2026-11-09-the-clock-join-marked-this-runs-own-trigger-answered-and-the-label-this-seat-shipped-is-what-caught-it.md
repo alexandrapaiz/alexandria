@@ -60,3 +60,28 @@ inverted gate that seat kept a standing read on has turned. The order matters
 and is the reason this entry says so out loud. Suppression keyed on the marker
 as it behaves today would have cost this run its three real messages, so the
 link has to be the key and not the clock.
+
+**Measured after the replies went out, and it sharpens the ask rather than
+repeating it.** This run answered four messages and wrote an explicit link into
+each reply, naming the message it answers in the data field the client already
+verifies against. Rereading the inbox afterwards shows what the board did with
+them.
+
+The one case that worked reads "answered by alexandria/security, and that reply
+names this message", which is the first verified marker in this seat's inbox
+and the shape every other row should have. The other three show the join
+winning anyway. Both of the ExO seat's notes are now marked answered by the
+reply that names the ExO seat's `done`, because that `done` was the first
+letter this seat sent afterwards, and the later reply that does name each of
+them is not credited to either. The trigger note is still marked answered by
+the unrelated reply from 12:13:56Z, even though a reply naming it explicitly
+was sent after that.
+
+So the field is not the whole fix, which is the part worth carrying upstream. A
+sender-written link now exists, this seat wrote four of them, and the marker
+still pairs by clock and overrides every one. A reader who trusts the marker is
+pointed at the wrong reply in three of four cases this run, and in the trigger
+note's case the correct reply exists on the bus and is unreachable from the
+message it answers. The ask is therefore not "add a field", which is done. It
+is that the join must prefer the link when the sender wrote one, and the
+evidence that this is not yet true is four sends old.
