@@ -3,7 +3,7 @@
   "suite_version": 2,
   "written": "2026-09-30",
   "author": "skill agent (ADR-22)",
-  "note": "Four positives, two hard negatives and two confusion cases. Revised 2026-10-06 with the ADR-38 retrofit: ac-pos-3 tested the isolation-tier trigger and is retired with that section (see retired_cases) rather than rewritten, because the skill no longer answers a tier question and a pass would be the wrong outcome. Two positives replace it, one for each delta the retrofit sharpened: the within-tool axis (delta 2) and the unactioned alert (delta 4). ac-pos-2's anchor is requoted from the revised description. The hard negatives are unchanged and still chosen against this skill's worst false-positive risk, which is that isolation vocabulary (sandbox, container, node, rollback) is also ordinary infrastructure vocabulary. Revised 2026-11-02: ac-pos-5 is new, for delta 5, and the description gained the clause it anchors to, because the new delta's decision (whether a system-prompt policy is enforcement) was not reachable from any activation condition the description named. Five positives now.",
+  "note": "Four positives, two hard negatives and two confusion cases. Revised 2026-10-06 with the ADR-38 retrofit: ac-pos-3 tested the isolation-tier trigger and is retired with that section (see retired_cases) rather than rewritten, because the skill no longer answers a tier question and a pass would be the wrong outcome. Two positives replace it, one for each delta the retrofit sharpened: the within-tool axis (delta 2) and the unactioned alert (delta 4). ac-pos-2's anchor is requoted from the revised description. The hard negatives are unchanged and still chosen against this skill's worst false-positive risk, which is that isolation vocabulary (sandbox, container, node, rollback) is also ordinary infrastructure vocabulary. Revised 2026-11-02: ac-pos-5 is new, for delta 5, and the description gained the clause it anchors to, because the new delta's decision (whether a system-prompt policy is enforcement) was not reachable from any activation condition the description named. Five positives now. Revised 2026-11-09 with agent-containment v9: three positives for delta 1's new material, ac-pos-5 for the plan-integrity gap, ac-pos-6 for the coverage-denominator error and ac-pos-7 for the final-output-correctness inference, and two negatives. ac-pos-7 has no exact anchor in the description, which is recorded on the case rather than fixed by widening the description on a guess. ac-neg-4 is the one that matters, because it is the hard negative for this revision's own risk: delta 1 now discusses planning at length and must not fire on a plan-quality question with no adversary in it. CORRECTED in the same run that wrote it: these five cases were first recorded as reasoned and not executed, on the belief that a trigger run needs a model route. It does not. The engine is lexical, it ran, and the result is `skills/_validation/results/2026-11-09-containment-plan-integrity.json`. Measured: 72 of 82, reliability 0.88, against 70 of 77 and 0.91 on main over the smaller case set. ac-pos-6 fires. **ac-pos-5 and ac-pos-7 do not fire, so this skill is not findable on two thirds of its own new material**, and that is reported rather than fixed by padding the description. ac-pos-7 CAN be made to fire by adding a clause about a passing suite being the evidence a boundary holds, and measured, that clause also fires evaluation-integrity's ei-neg-1, so it was not taken: the material belongs to that skill's description space and is routed there in the reading queue. ac-neg-4 fails, and the control run settles whose it is: with main's description verbatim it fails identically, so the plan-quality over-fire is pre-existing and this case exposed a latent defect rather than one this revision introduced. A green trigger suite says a skill is findable and nothing about whether it helps, and this one is not fully green.",
   "cases": [
     {
       "id": "ac-pos-1",
@@ -72,6 +72,46 @@
       "prompt": "We wrote a page of security rules for our agent and put it at the top of the system prompt: do not touch production credentials, do not write outside the working directory, stop after eight file writes. Our lead says that is our security model. Is a system-prompt policy enough, and if not what do we replace it with?",
       "anchor": "when an agent's security rules are written as instructions in its system prompt and you are deciding whether that counts as enforcement",
       "rationale": "Delta 5's decision, in the words a team uses for it. The three rules named in the prompt are each in a different box: the credential and directory rules are relations over runtime state and the write cap is a counter, so all three are deterministic code and none of them needs prose or a judge. The skill answers that the system-prompt page is the one box an adversary controlling the agent's text controls, and that all fifteen searched harnesses ship deterministic code. Added 2026-11-02 with delta 5 and the description clause it anchors to."
+    },
+    {
+      "id": "ac-pos-5",
+      "kind": "positive",
+      "expect": "agent-containment",
+      "prompt": "Our agent platform runs every third-party plugin in its own sandboxed process with no shared memory, and a planner model picks which plugins are allowed for a request by reading their manifests. A second model then decides the call order and pipes each plugin's output into the next. Our penetration test found no cross-plugin data leakage. Are we contained?",
+      "anchor": "when a model composes the plan or picks the tools from descriptions it was handed, and you are deciding whether isolating those tools from each other contains it",
+      "rationale": "This is IsolateGPT's architecture described by a user who built it independently, and it is the exact configuration ACE demonstrates three attacks against. The manifests reach the planner and the second model re-plans while reading plugin output, so both of delta 1's new untrusted planner inputs are present in the prompt without being named as risks. A clean penetration test for data leakage is also the evidence delta 1 says cannot see this defect."
+    },
+    {
+      "id": "ac-pos-6",
+      "kind": "positive",
+      "expect": "agent-containment",
+      "prompt": "We are sizing infrastructure for an agent that fans out across eight to ten installed tools per request. The isolation architecture we are copying reports that its overhead is under 30 percent for three quarters of tested queries, so we have put 30 percent in the capacity plan. Is that the right number to budget?",
+      "anchor": "when you are budgeting the cost of an isolation boundary from an overhead figure a paper published",
+      "rationale": "The user has taken a coverage statistic for a central tendency, which is the error checklist item 8 now names. The eight-to-ten tool detail puts them in the band this skill recomputed at 2.38x from the paper's own Table IV, so the budgeted figure is wrong by a factor near two and the skill carries the arithmetic that says so."
+    },
+    {
+      "id": "ac-neg-3",
+      "kind": "negative",
+      "expect": null,
+      "prompt": "Our agent fleet keeps running out of memory on the worker nodes and pods are getting evicted during long runs. How many agent containers can we safely pack per host, and should we move to larger instances?",
+      "anchor": null,
+      "rationale": "A capacity question with no enforcement point in it. This skill's description rules it out in its own second sentence, the subject is the enforcement point and the authority an agent holds and not the capacity of the machines it runs on, and the isolation-tier and sandbox-density material was cut in the 2026-10-06 retrofit for that reason. A pass here would mean the cut never took."
+    },
+    {
+      "id": "ac-neg-4",
+      "kind": "negative",
+      "expect": null,
+      "prompt": "Our agent's plans are often wasteful. It calls the same search tool three times with near-identical queries, and sometimes it plans six steps where two would do. How do we get the planner to produce tighter plans?",
+      "anchor": null,
+      "rationale": "A plan-quality question, and the hard negative for the material added on 2026-11-09. Delta 1 now says a great deal about planning, so the risk this revision introduces is firing on the word plan. Nothing here involves an adversary, an authority boundary or untrusted input, and redundant tool calls are a cost and latency problem. The right answer is planner prompting or caching, which this skill does not carry. If this fires, the description's new clause is too broad and should be narrowed to name untrusted input explicitly."
+    },
+    {
+      "id": "ac-pos-7",
+      "kind": "positive",
+      "expect": "agent-containment",
+      "prompt": "We tightened our agent's tool authority last sprint and we are deciding whether to ship it. Our end-to-end suite passes with byte-identical final answers to the previous build, and the agent still completes every task in the regression set. We are reading that as proof the new boundary does not break anything and the agent is properly contained. Is that sound evidence, and what else should we measure before shipping?",
+      "anchor": "when an agent's security rules are written as instructions in its system prompt and you are deciding whether that counts as enforcement",
+      "rationale": "The user is treating final-answer equivalence as evidence about a containment boundary, which is the inference delta 1 now shows is unavailable: the architecture that introduced app isolation logged four classes of plan deviation and counted them all correct because the final output was right, and those were the deviations its attacker later used. The skill's answer is to grade the trajectory against the authorised plan rather than the answer against the expected answer. The anchor is the nearest existing clause rather than an exact one, and that is itself the finding: the description has no clause for evidence quality, so this case is the weakest of the three positives and the one most likely to miss."
     }
   ],
   "retired_cases": [
@@ -85,5 +125,5 @@
       "retired": "2026-10-06. This case tested the trigger 'when choosing between a container, a microVM and a full VM for agent execution', and the ADR-38 retrofit cut that section and that clause of the description. It is retired rather than rewritten because the skill no longer answers the question, so a pass would be the wrong outcome. It failed on its last run before retirement (it fired recursive-harness-self-improvement at 0.239 against this skill's 0.201), which is the engine agreeing that the material was never strongly this skill's."
     }
   ],
-  "revised": "2026-11-02"
+  "revised": "2026-11-09"
 }

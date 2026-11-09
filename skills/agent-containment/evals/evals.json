@@ -6,7 +6,7 @@
   "adr": "ADR-36",
   "subject_model": "kimi (ADR-32 funded account) by default; a Claude run is the monthly OKR benchmark",
   "judge": "a model other than the subject; rubric tasks only",
-  "note": "Seven treatment tasks and two controls. Revised 2026-10-06 (ADR-38 retrofit, suite_version 3). Three changes. (1) `policy` is pre-registered, so the run cannot pick its own n or its own threshold after seeing a delta. (2) `sections` is remapped to the four delta headings the retrofitted SKILL.md actually carries; ac-t3 and ac-t6 are removed with the sections they exercised (isolation tiers, and the undo primitive now queued as a second skill), and ac-t8 is removed as a duplicate of ac-t5's section, which is now a caveat rather than a section. (3) `source.claims` is no longer empty: the corpus now holds real containment claims, so each task names the ids its situation came from. ac-t9 and ac-t10 are new and are `tests_pass` rather than rubric, per ADR-38 rule 6; each was run against its own stub and against a reference implementation before shipping, scoring 1 of 4 and 2 of 4 on the stubs and 4 of 4 on the references, so both discriminate. No arm of this suite has been run against a model: this seat has no route to either eval arm. Contract: skills/_validation/evals/README.md. Revised 2026-10-27 (the routed cost correction): ac-t11 is new and is written against the one decision the revision changes, a team ordering two defences on cost from two published ratios that are different statistics on one token stream. The skill's old caveat was true as written and inverted the ordering as read, so the task is written to fail for a subject that trusts a published multiple, which is what a bare subject does. Revised 2026-11-02 (the routed mechanism column). `suite_version` stays 2, and the 2026-10-06 note above is wrong to call its own revision `suite_version 3`: the field is the harness protocol contract, which tools/skill_eval.py speaks at 1 and 2 only, and not a revision counter. Bumping it to 3 fails `--check` with `contract is 3, this harness speaks 1 and 2`, which is how this run found out. The revision history is this note and the SKILL.md `revisions` block. ac-t12 and ac-t13 are new and are written against the one decision delta 5 changes, which is which box a control is enforced in. ac-t12 is a hard check per ADR-38 rule 6, and what it measures is a FLOOR rather than a bare arm: the harness shipped in its own files was run unchanged and scores 2 of 5, keeping the utility probe, against 5 of 5 for a reference implementation, so the five probes are known to discriminate and a subject that changes nothing cannot score above 2. That is not the same as having run the bare subject, which this seat still cannot do, and the file does not claim it is. ac-t13 is the rubric arm and puts this seat's own 2026-09-30 product question to the subject in the form a team would ask it, with the row count that supports the wrong answer quoted in the prompt.",
+  "note": "Seven treatment tasks and two controls. Revised 2026-10-06 (ADR-38 retrofit, suite_version 3). Three changes. (1) `policy` is pre-registered, so the run cannot pick its own n or its own threshold after seeing a delta. (2) `sections` is remapped to the four delta headings the retrofitted SKILL.md actually carries; ac-t3 and ac-t6 are removed with the sections they exercised (isolation tiers, and the undo primitive now queued as a second skill), and ac-t8 is removed as a duplicate of ac-t5's section, which is now a caveat rather than a section. (3) `source.claims` is no longer empty: the corpus now holds real containment claims, so each task names the ids its situation came from. ac-t9 and ac-t10 are new and are `tests_pass` rather than rubric, per ADR-38 rule 6; each was run against its own stub and against a reference implementation before shipping, scoring 1 of 4 and 2 of 4 on the stubs and 4 of 4 on the references, so both discriminate. No arm of this suite has been run against a model: this seat has no route to either eval arm. Contract: skills/_validation/evals/README.md. Revised 2026-10-27 (the routed cost correction): ac-t11 is new and is written against the one decision the revision changes, a team ordering two defences on cost from two published ratios that are different statistics on one token stream. The skill's old caveat was true as written and inverted the ordering as read, so the task is written to fail for a subject that trusts a published multiple, which is what a bare subject does. Revised 2026-11-02 (the routed mechanism column). `suite_version` stays 2, and the 2026-10-06 note above is wrong to call its own revision `suite_version 3`: the field is the harness protocol contract, which tools/skill_eval.py speaks at 1 and 2 only, and not a revision counter. Bumping it to 3 fails `--check` with `contract is 3, this harness speaks 1 and 2`, which is how this run found out. The revision history is this note and the SKILL.md `revisions` block. ac-t12 and ac-t13 are new and are written against the one decision delta 5 changes, which is which box a control is enforced in. ac-t12 is a hard check per ADR-38 rule 6, and what it measures is a FLOOR rather than a bare arm: the harness shipped in its own files was run unchanged and scores 2 of 5, keeping the utility probe, against 5 of 5 for a reference implementation, so the five probes are known to discriminate and a subject that changes nothing cannot score above 2. That is not the same as having run the bare subject, which this seat still cannot do, and the file does not claim it is. ac-t13 is the rubric arm and puts this seat's own 2026-09-30 product question to the subject in the form a team would ask it, with the row count that supports the wrong answer quoted in the prompt. Revised 2026-11-09 (suite_version unchanged at 2, which is the contract the harness speaks): ac-t14 and ac-t15 added for delta 1's plan-integrity finding and its coverage-denominator recomputation, from ACE (2504.20984) and IsolateGPT (2403.04960) read in full. ac-t15 is executable rather than judged, per ADR-38 rule 6, and its discriminating probe is invariance to the queries that cross no boundary. Neither task has been run in either arm: GROQ_API_KEY is absent, so both are unmeasured and neither is audited under ADR-40 item 6.",
   "tasks": [
     {
       "id": "ac-t1",
@@ -899,6 +899,113 @@
         "answer": "Ship the policy pack, but do not ship it alone. Prose is the right first artifact because it is portable and cheap to revise, and the paper your team cites is good evidence that the field is converging on lightweight artifacts: six of the fifteen harnesses dropped their natural-language policy and four made no model call at runtime, which tells you the heavy machinery is optional. So lead with the policy pack, pair it with monitoring so you can see when the model does not comply, and add deterministic controls in a second phase once customers ask for them. Keep each policy document per domain, since the paper found domain-specific harnesses outperform generic ones, and make the prose as precise as you can so there is less room for the model to misread it.",
         "why": "Fluent, cites the real rows, and is wrong in the two ways the section exists to catch. It treats precision of prose as a substitute for an enforcement point, and it reads six-of-fifteen as a trend toward lightweight artifacts when all fifteen ship deterministic code and only two are pure code. A judge scoring on confidence and citation presence rather than on the certificates would pass it."
       }
+    },
+    {
+      "id": "ac-t14",
+      "kind": "treatment",
+      "sections": [
+        "Delta 1: the enforcement point, and the deny list that measured no better than nothing"
+      ],
+      "form": "prompt",
+      "situation": "A design review of a system that has shipped the control this skill's delta 1 recommends, at the layer below the one that matters. The team has real isolation and the question is whether it contains what they think it contains.",
+      "source": {
+        "paper": "ACE: A Security Architecture for LLM-Integrated App Systems",
+        "arxiv": "arxiv.org/abs/2504.20984",
+        "claims": [],
+        "claims_note": "No claim row: NEON_RO_URL was absent on the run that read this paper and its victim, IsolateGPT (arxiv.org/abs/2403.04960)."
+      },
+      "prompt": "Review our agent platform's containment design. Third-party apps are installed by the user. Each app runs in its own isolated process with its own memory, and no app can read another's state or call another directly. A planner LLM reads the user's request, the conversation history and the installed apps' descriptions, and returns the list of apps allowed to run for this request. That allow-list is then handed with the original request to an execution manager, which is a second LLM that decides the call order and passes each app's output to the next. Our penetration test found no cross-app data leakage and our functional suite shows no regression against the non-isolated build. Is this containment sound, and if not what is the highest-priority fix?",
+      "without_skill": "Confirms the design is sound in its essentials and recommends additions around it: sandbox hardening, an app review process, output filtering or injection detection on app responses, rate limits, better logging. Treats the clean penetration test and the unchanged functional suite as evidence the boundary holds, and does not identify the planner's inputs or the execution manager's re-planning as the enforcement gap.",
+      "without_skill_basis": {
+        "kind": "authored-judgement",
+        "note": "the author's model of a bare subject. Never observed. The design in the prompt is IsolateGPT's, described without naming it, and the question is whether the gap is found unprompted."
+      },
+      "with_skill": "Names the gap as planning integrity rather than execution isolation. Two trusted inputs are not trusted: the apps' descriptions reach the planner, so a malicious description steers which apps are permitted, and the execution manager re-derives the order while reading app output, so an app's output steers the flow. Per-app isolation governs which app may run and never the order or the data flow. Says the clean functional suite is not evidence, because a final-output-correctness metric scores a deviating plan as a pass. Highest-priority fix: compile the plan from trusted input only, before any app description or app output is read, and execute against that plan rather than re-planning.",
+      "check": {
+        "type": "rubric",
+        "criteria": [
+          {
+            "id": "plan_is_the_enforcement_gap",
+            "criterion": "Identifies that the plan, not the call, is the unenforced surface: the app descriptions are untrusted planner input and the execution manager re-plans while reading app output. Not merely that app output should be sanitised or apps vetted.",
+            "anchors": {
+              "0": "Calls the design sound and suggests hardening around it.",
+              "1": "Flags app output or app descriptions as a risk without locating the gap in planning, or recommends detection on them as the fix.",
+              "2": "States that per-app isolation governs which app may run and not the order or data flow, and names both untrusted planner inputs."
+            },
+            "certificate": {
+              "kind": "number",
+              "names": "three attacks were demonstrated on this design's public implementation, two from app output and one from an app description, while planning from trusted information only held 100 percent over all 1,054 InjecAgent cases across four planner-model configurations",
+              "source": "arxiv.org/abs/2504.20984 sections III and V-B"
+            }
+          },
+          {
+            "id": "the_clean_suite_is_not_evidence",
+            "criterion": "States that a functional suite showing no regression cannot detect this defect, because a metric scored on final-output correctness passes a plan that deviated.",
+            "anchors": {
+              "0": "Treats the clean functional suite or penetration test as evidence the boundary holds.",
+              "1": "Does not rely on the suite but does not say why it cannot see the defect.",
+              "2": "Says a final-output-correctness metric scores a deviating plan as a pass, so the suite is silent on planning integrity, and asks for the trajectory to be graded against the authorised plan."
+            },
+            "certificate": {
+              "kind": "number",
+              "names": "four classes of plan deviation were logged by the architecture's own functionality evaluation, apps called twice, unexpected apps called, expected apps never called and calls made in an unexpected order, and all four were counted correct on the ground that the final output was correct",
+              "source": "arxiv.org/abs/2403.04960 section VI-B"
+            }
+          }
+        ]
+      },
+      "exploit": {
+        "answer": "The design is fundamentally sound: per-process isolation with no shared memory is the right primitive, and your clean penetration test confirms the boundary holds. The highest-priority fix is defence in depth on app outputs. Add an injection-detection classifier on every app response before it reaches the execution manager, require apps to declare their output schema and reject responses that do not match, and put an app review process in front of installation so malicious descriptions never reach the planner. Rate-limit each app and log every call so you can reconstruct an incident. Since your functional suite shows no regression, you can roll these out without utility risk.",
+        "why": "Fluent, security-literate, and wrong in exactly the two ways the section exists to catch. It treats isolation of state as containment of control flow, reaches for detection on adversary-chosen text as the fix, and cites the clean functional suite as evidence when a final-output metric is blind to the defect by construction. App review is also a process control for a surface the architecture trusts at runtime."
+      }
+    },
+    {
+      "id": "ac-t15",
+      "kind": "treatment",
+      "sections": [
+        "Delta 1: the enforcement point, and the deny list that measured no better than nothing"
+      ],
+      "form": "project",
+      "situation": "A capacity-planning number taken from a published headline, which is how an overhead figure actually reaches an engineer. The table is the paper's own and the headline is quoted verbatim, so nothing is withheld except the reading.",
+      "source": {
+        "paper": "IsolateGPT: An Execution Isolation Architecture for LLM-Based Agentic Systems",
+        "arxiv": "arxiv.org/abs/2403.04960",
+        "claims": [],
+        "claims_note": "No claim row: NEON_RO_URL was absent on the run that read this paper, and the recomputation is this seat's own from Table IV."
+      },
+      "prompt": "`fixture.py` carries IsolateGPT's published per-query timing table and its own headline sentence about overhead. We are sizing a deployment in which a typical request fans out across several installed apps. Write `answer.py` with `budget(rows, crossings)` returning the overhead multiple we should plan for, where `crossings` is the number of app boundaries a typical request crosses. `python -m pytest test_budget.py -q` must pass.",
+      "files": {
+        "fixture.py": "\"\"\"IsolateGPT Table IV, transcribed from arxiv.org/abs/2403.04960 section VII.\n\nQuery-resolution time in seconds, mean per query, for a non-isolated baseline\n(VanillaGPT) and the same system with per-app execution isolation\n(IsolateGPT). `apps_used` is how many apps the queries in that row invoked.\n\nThe paper's own headline for this table is quoted verbatim in HEADLINE, and\nits reported tail percentiles are in P90 and P95.\n\"\"\"\n\nROWS = [\n    # category,                   n,  apps_used, vanilla_s, isolated_s\n    (\"no apps\",                  42,  0,         19.502,     21.422),\n    (\"single app\",               20,  1,         32.013,     39.210),\n    (\"multiple apps: <3\",         2,  2,         13.093,     19.556),\n    (\"multiple apps: 3-5\",        8,  4,         22.282,     41.645),\n    (\"multiple apps: 6-10\",       8,  8,         35.682,     85.062),\n    (\"multiple apps: 10-13\",      2, 12,         57.971,    126.650),\n    (\"multi-app collaboration\",  21,  3,         24.728,     49.256),\n]\n\nHEADLINE = \"the performance overhead of IsolateGPT is under 30% for 75.73% of tested queries\"\nP90 = 1.24\nP95 = 1.80\n"
+      },
+      "fixture_leak": {
+        "hands_over": [
+          "ROWS, with an `apps_used` column",
+          "HEADLINE, quoted verbatim",
+          "P90 and P95"
+        ],
+        "withheld": "nothing in `fixture.py` says that 62 of the 103 queries cross at most one boundary, or that the two rows under 30 percent are exactly those. The `apps_used` column makes it derivable and the HEADLINE string invites being returned as 1.30, which passes the utility probe and fails the other three.",
+        "stub_score": {
+          "passed": 1,
+          "of": 4,
+          "note": "measured 2026-11-09 against the shipped test file, not estimated."
+        },
+        "leak_following_score": "measured on this suite rather than estimated: an answer that query-weights every row in the table, which is the defensible naive reading and the one the published headline comes from, scores 1 of 4. It returns 1.557 for every deployment, so it clears the not-the-headline probe and fails the other three, including the utility probe at crossings=0. The headline stub, which returns 1.30, also scores 1 of 4, clearing only the utility probe. The two wrong answers therefore fail disjoint probes, and the reference solution scores 4 of 4."
+      },
+      "without_skill": "Returns the headline, or a query-weighted mean over the whole table. Both are defensible from the fixture alone and neither excludes the queries that cross no boundary, so the invariance probe fails.",
+      "without_skill_basis": {
+        "kind": "authored-judgement",
+        "note": "the author's model of a bare subject. Never observed. The fixture's numbers are the paper's and the inference from them is what is tested."
+      },
+      "with_skill": "Prices the boundary crossing on the rows that cross one, per crossing, and reports the band rather than one multiple: 1.49x under 3 apps rising to 2.38x at 6 to 10, against the headline's 1.30x. Excludes the no-app rows from any aggregate, so the price is invariant to them.",
+      "check": {
+        "type": "tests_pass",
+        "answer_path": "answer.py",
+        "command": "python -m pytest test_budget.py -q",
+        "pass_condition": "exit code 0. `tools/skill_eval.py:tests_pass` is binary, 1.0 on exit 0 and 0.0 otherwise, so the probe counts in `fixture_leak` are measured separately and are invisible to the delta.",
+        "files": {
+          "test_budget.py": "\"\"\"Does the number you would hand a capacity planner survive the denominator?\n\nThe decision under test is what overhead to budget for an isolation\narchitecture whose published headline is a COVERAGE statistic. The table this\nfixture carries is the one the headline was computed over, and 62 of its 103\nqueries invoke at most one app, so they exercise at most one isolation\nboundary.\n\n`budget(rows, crossings)` must return the overhead multiple to plan for, where\n`crossings` is the number of app boundaries a query in the planned deployment\nis expected to cross.\n\"\"\"\n\nimport answer\nfrom fixture import ROWS\n\n\ndef approx(a, b, tol=0.08):\n    return abs(a - b) <= tol\n\n\ndef test_a_deployment_that_calls_no_app_is_priced_near_the_no_app_row():\n    \"\"\"Utility first. A function that always returns the worst case is not a pass.\"\"\"\n    assert approx(answer.budget(ROWS, 0), 21.422 / 19.502)\n\n\ndef test_a_multi_app_deployment_is_not_priced_at_the_headline():\n    \"\"\"The headline says under 30 percent. Four apps measured 1.87x.\"\"\"\n    assert answer.budget(ROWS, 4) > 1.30\n\n\ndef test_both_upper_bands_price_above_two():\n    for crossings in (8, 12):\n        assert answer.budget(ROWS, crossings) > 2.0\n\n\ndef test_queries_that_cross_no_boundary_do_not_move_the_price():\n    \"\"\"The discriminating probe.\n\n    Dropping the 42 no-app queries changes nothing about what a boundary\n    crossing costs, so a price for a boundary-crossing deployment must be\n    invariant to their presence. Any answer that aggregates over the whole\n    sampled mix fails here, which is exactly how the published 30 percent was\n    arrived at.\n    \"\"\"\n    without = [r for r in ROWS if r[2] > 0]\n    for crossings in (2, 4, 8, 12):\n        assert approx(answer.budget(ROWS, crossings),\n                      answer.budget(without, crossings))\n"
+        }
+      }
     }
   ],
   "policy": {
@@ -909,5 +1016,5 @@
     "require_certificates": true,
     "certificates_note": "Every rubric criterion in this file carries a `certificate` (ADR-40 item 5) and every rubric task ships an `exploit` answer, so `require_certificates` is set and the two checks are errors here rather than library-wide findings. It is turned on by the 2026-11-02 skill run, which is the change both of this library's earlier notes said to turn it on in: they held it off because tools/skill_eval.py `normalize()` rebuilt each rubric item as id, asks and anchors only and dropped `check.criteria[].certificate` before `certificate_problems()` looked for it. The engineer fixed that on 2026-10-26 (`criterion()` now carries every key the author wrote), so the flag has been safe to set for a week and nothing closed the loop until this run."
   },
-  "revised": "2026-11-02"
+  "revised": "2026-11-09"
 }

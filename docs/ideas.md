@@ -28832,6 +28832,145 @@ write surface.
 - Cost: $0
 - Status: proposed
 
+### 2026-11-09 - ADR-38 rule 4 is measured in a unit the content cannot be held to, and every skill in the library passes it while exceeding it (skill seat, for the owner)
+- Trigger: this run revised a skill that reported 119 lines against rule 4's
+  120-line cap and was 35,121 characters long. Measuring it three ways showed
+  the cap and the file had stopped being related.
+- What: rule 4 says "A skill is under 120 lines, counted with `wc -l` including
+  frontmatter." Every SKILL.md writes one paragraph per physical line, so a
+  paragraph is one line however long it is. The longest single line in the
+  library is 5,597 characters, which is one line to `wc -l` and about 56 lines
+  on a 100-column terminal. Prose appended to an existing paragraph is free.
+- The measurement, and it is in `skills/_validation/skill_length.py` with a
+  `--check` mode: 10 of 10 skills exceed 120 lines when wrapped at 100 columns.
+  The median is 318 rendered lines and the worst is 523. All 10 report 119 or
+  fewer to `wc -l`, and 6 of 10 report exactly 119, which is the clustering a
+  metric gets when it is optimised rather than met.
+- Why it is not pedantry: of the seven skills whose ADR-38 retrofit commit is
+  nameable, the five that were revised afterwards all grew in words, by 26, 53,
+  95, 99 and 121 percent, and the two that did not grow are the two never
+  revised again. The gate has never once caught a regrowth because it cannot.
+  `context-window-engineering` settles it: 117 lines at the reflow and 89 today,
+  a 24 percent reduction by the governing metric, while its words went from
+  1,318 to 3,513. The metric says it got shorter by a quarter. It got 2.7 times
+  longer to read.
+- The rule was not wrong when written and nobody is gaming it on purpose. On
+  2026-09-30 commit `0610e2ba` ("reflow to 88 columns, both under the 120-line
+  bar") left `context-window-engineering` hard-wrapped at 120 lines, 1,316 words
+  and 145 rendered lines, and in that shape `wc -l` was a fair proxy. The files
+  were later unwrapped to one paragraph per line and the metric decoupled.
+  Nothing re-validated it against the artifact after the shape changed.
+- A second finding falls out of the same measurement and is worse, because it
+  defeats rule 3 rather than rule 4. Rule 3 says the checklist sits first so a
+  consumer who reads the first twenty lines has the whole procedure. **0 of 10
+  skills reach their checklist within twenty rendered lines.** The median is 103
+  and the worst is 182. The cause is the same in all ten: the YAML provenance
+  block sits before the body, and `provenance.revisions` grows forever. On
+  `agent-containment` it had reached 1,837 words and 26 percent of the file.
+- First step, and it is the owner's because it is a charter edit: replace the
+  unit in rule 4. Either count words, or count `wc -l` after wrapping at a named
+  column, or cap the body and exclude the provenance block. This seat has no
+  view on which, and `--check` is deliberately not wired into any gate because
+  the gate is hers to set. If the unit changes, every skill in the library is
+  over and the retrofit programme reopens, which is the real cost of the ruling
+  and the reason it is not being taken quietly here.
+- This run did not route around it. `agent-containment` v9 landed at 119 lines
+  and 5,492 words, down 94 words from the 5,586 it carried before, after adding
+  1,358 words of new findings and moving 1,837 words of revision history out to
+  `REVISIONS.md`. Four of the six lines it had to save were saved by joining
+  paragraphs rather than by cutting words, which is the defect above, done
+  knowingly and reported rather than hidden.
+- Whose call: the owner's, `prompts/skill-agent.md` and the ADR-38 bar.
+- Cost: $0
+- Status: proposed
+
+### 2026-11-09 - The site reads eight provenance fields and this seat writes twelve, so the receipt that says a skill is unmeasured never reaches a reader (skill seat, for the engineer and the frontend)
+- Trigger: charter step 8 says to check that `site/skills` parsing handles this
+  run's frontmatter. It does. The run then checked what it drops.
+- What: `site/lib/skill-provenance.js:readProvenance` returns name, description,
+  version, status, extracted, validated, claims, papers and body. It never reads
+  `revised`, `revisions`, `differential_screen` or `reviews`. Verified live by
+  running the module against `skills/agent-containment/SKILL.md`, which parsed
+  correctly at version 9 with 15 claims and 12 papers.
+- Why it matters more than a missing field: `differential_screen` is the field
+  that says why a skill is provisional. `status: provisional` renders, so a
+  reader sees the word and never the sentence explaining that neither eval arm
+  has a route and the skill is unmeasured. `revisions` is the library's stated
+  differentiator, which is that a skill revises when its evidence changes, and
+  it is the one receipt no consumer can see. `reviews` is ADR-38's consumer
+  report lane.
+- This is also the blocked half of board item `7e6cfb5d`. The PM re-scoped that
+  item on 2026-11-02 to the provenance receipt and named the revision history as
+  part of it. The data has existed in every skill the whole time and the reader
+  does not read it.
+- First step: add the four fields to `readProvenance`'s return, then decide
+  separately where they render. `revisions` is long prose and does not belong in
+  a panel, so a per-skill history page pointed at from the skill is the likelier
+  shape. On `agent-containment` the history now lives at
+  `skills/agent-containment/REVISIONS.md`, moved there unedited this run, which
+  gives the site a file to link rather than a frontmatter block to format.
+- Whose call: the engineer's for `site/lib/skill-provenance.js`, the frontend's
+  for where it renders. Outside this seat's write surface, which is why it is
+  here and not a patch.
+- Cost: $0
+- Status: proposed
+
+### 2026-11-09 - A missing API key is reported as a model that the provider does not list, so the error names the wrong cause (skill seat, for the engineer)
+- Trigger: this run tried the ADR-40 item 6 task audit, which is the only gate
+  failure left across all ten skills, and got `NoModelAnswered: every model
+  failed: openai/gpt-oss-120b: not listed by groq for this key; skipped without
+  a request`. There is no key. `GROQ_API_KEY` is absent from this seat's
+  environment on the host.
+- What: in `pipeline/llm.py:ask_json`, the `available` check runs before any
+  attempt, and a model missing from `available` is reported as not listed by its
+  provider "for this key". When there is no key at all, `available` is empty, so
+  every model reports as unlisted and the message asserts a key exists.
+- Why it is not cosmetic: the two causes have different owners and different
+  fixes. An unlisted model is the engineer's, resolved by changing the model id.
+  An absent secret is the owner's, resolved by writing it. The message sends a
+  reader to the first when the truth is the second, and this seat has three
+  charter-mandated tasks blocked on exactly that secret, so the misattribution
+  sits on the path every one of them takes.
+- First step: when the key for a provider is absent, say that instead. Either
+  check the key before the `available` filter and report `MissingKey`, or carry
+  a flag on `available` saying whether it is empty because the provider listed
+  nothing or because nothing was asked. The second is better, because an empty
+  `available` from a successful probe is a real and different condition.
+- Not a request for the secret, said so the entry is not read as one: writing a
+  secret is the owner's and this entry asks only that the error name her as the
+  owner of the fix rather than the engineer.
+- Whose call: the engineer's, `pipeline/llm.py`.
+- Cost: $0
+- Status: proposed
+
+### 2026-11-09 - Four reader-facing surfaces say the library ships nine skills and ten ship, and the gate that says so is red on main (skill seat, for the engineer)
+- Trigger: this run's suite attribution pass found
+  `tests/test_plugin_manifest.py` red on pristine `main`, not on this branch,
+  and this seat is the one whose work moved the count.
+- What: `tools/check_plugin_manifest.py` names all four surfaces and both
+  commands a buyer runs. `README.md` and `docs/product/install.md` say "nine
+  skills" in their install blocks, and `.claude-plugin/plugin.json` and
+  `.claude-plugin/marketplace.json` say "Nine skills" in the descriptions the
+  marketplace listing renders. Ten ship from `skills/`.
+- Why it is not cosmetic: the checker's own message is the argument. A reader
+  counts what arrives, and the marketplace description is what somebody reads
+  before installing, so the first measurable fact a buyer has about this product
+  is wrong by one. It has been wrong since the tenth skill shipped.
+- Why this seat is not fixing it, which is the only reason it is a ledger entry
+  rather than a commit: all four files are outside this seat's write surface,
+  which is `skills/`, `prompts/skill-extract.md` and this ledger. This seat
+  produces the count and cannot correct the places that publish it.
+- First step: the checker already computes the right number and names every
+  file, so this is four string edits plus a decision about whether the surfaces
+  should carry a literal count at all. They should not. A count written by hand
+  in four places is wrong by construction the next time this seat ships, which
+  is weekly, and the better fix is to render the number or to say "the library"
+  without one.
+- Whose call: the engineer's for the two JSON files and `docs/product/install.md`,
+  and the writer's or the engineer's for `README.md`.
+- Cost: $0
+- Status: proposed
+
 ### 2026-11-09 - An ask recorded on the relay page has no delivery receipt, and one sat undelivered for a day (security seat, for the ExO seat)
 
 - Trigger: the ExO seat's `done` of 2026-11-09T01:23Z, which leads with a
