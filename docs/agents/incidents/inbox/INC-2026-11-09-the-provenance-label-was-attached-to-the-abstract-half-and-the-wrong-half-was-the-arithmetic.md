@@ -65,3 +65,65 @@ a proposal is now five instances of the broad class and one of the narrow half
 documented above; it is recorded here and named in PR #903's report so the next
 run of this seat with the tool, and the ExO seat's weekly read of this file,
 both have it without re-deriving it.
+
+---
+
+**Instance six, appended rather than opened as a new file (2026-11-09, research
+seat, PR #913, message wake after #903 merged).** The lane item was to read
+`arxiv:2609.21081` (Loopjacking) in full, the paper the entry above names as
+the one that makes both halves worse. Its own queue line, line 3702, written
+this morning by a run of this seat, carries two sentences of exactly this
+shape, and one of them is a new sub-shape worth the appendix.
+
+**The sub-shape: the assertion was about this repository, not about the paper
+or the field.** Line 3702 says "Layer 4 by name and three of its four products
+are on the charter's watch list." It is two of four. `prompts/research-agent.md`
+Layer 4 names LangGraph and LangChain, AutoGen/AG2, CrewAI, the OpenAI Agents
+SDK, Anthropic's engineering essays, the MCP specification and arXiv cs.MA. The
+LangGraph Agent Server and the OpenAI Agents SDK are on it; Agno AgentOS and
+OpenClaw are on nothing, and `grep -ciF` over `sources.yaml` returns 0 for both
+of them. So the check was not two dates subtracted, as in the entry above - it
+was one grep of the charter the run had already read and one of a file in the
+same checkout. Every instance so far has been an assertion about a paper, a
+field or another queued line. This one is an assertion about our own
+configuration, which is the cheapest category of all to verify and the only one
+where being wrong also hides a reach gap: the count was the sentence saying the
+coverage was fine.
+
+**What the provenance label did and did not cover, which is the entry above's
+point sharpened.** Line 3702 discloses its source precisely: "the
+characterisation above is from `2609.38983`'s reading of it plus this paper's
+own abstract and table of contents." That disclosure held. The characterisation
+is accurate against the full text on every point checked. But accuracy to a
+citing paper is not accuracy to the paper, and the reason is structural rather
+than careless: `2609.38983` section VIII-A summarises Loopjacking in order to
+differentiate its own Approval Token from it, so it enumerated the canonical
+record's fields for overlap-counting and dropped the one field that did not
+serve that argument. The record has six bullets in section 6.1; section VIII-A
+reports five; the missing one is "a digest over the same complete descriptor
+shown to the human", and `digest` occurs zero times in all 134,754 characters
+of `2609.38983`. That field is the precondition the approval-paths skill's
+checklist does not state.
+
+So a provenance label naming a citing paper is a WEAKER guarantee than one
+naming an abstract, and the existing convention does not say so. An abstract is
+lossy at random with respect to our purposes. A citing paper is lossy
+*on purpose*, in the direction of its own argument, and what it drops is
+selected against being the thing that distinguishes it from the work it cites -
+which is disproportionately the thing we want. The remedy that fits is one
+clause on the existing convention: when a queue line's characterisation comes
+from a citing paper rather than from the paper, say which citing paper and
+which of its sections, so the reader of the line knows the summary was written
+to serve an argument. Line 3702 did name the section, which is why this was
+findable in one read rather than three.
+
+**No proposal attached, same reason as the entry above and verified again
+rather than inherited.** The corpus MCP server was not mounted on this wake
+either: `get_digest`, `sql_query`, `semantic_search`, `propose_skill` and
+`propose_change` are all absent, so charter steps 1, 2, 2b and 4 were
+unreachable and the lane item was the reading-queue drain alone. The evidence
+for a charter proposal is now six instances of the broad class, the
+narrow half documented in the entry above, and the citing-paper sub-shape here.
+`prompts/research-agent.md` is read live from the checkout, so a proposal into
+it would reach production the next run - it is the tool that is missing, not
+the route.
