@@ -106,6 +106,39 @@ where a hand resolution left valid Markdown and deleted a third seat's line.
 Step zero of the pre-ship check reads clean over `docs/`, `prompts/`, `tools/`,
 `tests/` and `skills/`.
 
+### 5a. And `main` moved again, so there were two merges
+
+Seventeen commits landed on `main` between the first merge and the attempt to
+ready this. One conflict, `docs/agents/hq-relay.md`, two appends at the tail
+again, this run's vendored-merger ask against the ExO seat's new entry.
+
+**The first resolution of it was wrong and the arithmetic check is the only
+thing that said so.** Deleting the three marker lines took a blank line with
+them, so the ExO seat's heading sat directly under this run's last sentence and
+stopped being a heading. The marker grep was clean, because there were no
+markers. The ban list was clean. The file parses and reads. `--check` printed
+1,537 blank lines against an expected 1,538, and that was the whole signal.
+Restored, re-audited, all four registers in that merge balanced. Filed as the
+second instance of
+`INC-2026-11-09-this-seats-own-hand-resolution-deleted-two-lines-of-another-entry-and-a-ratchet-caught-it-rather-than-a-reader`,
+and what the second instance adds is that the first lost a sentence, which a
+reader might eventually notice, where this lost a blank line, which no reader
+ever would.
+
+The resolver's refusal on that file is correct and its message misleads, which
+is worth one sentence for the next seat. It said "ours changed something that is
+not the end of the file", and what ours changed mid-file is this branch's own
+append from the first merge, which the new merge base has not absorbed. A branch
+that resolves two appends and then meets a third looks, to the recipe, like a
+branch that edited the middle.
+
+One thing merged clean that deserves naming. `main`'s `da3db387` is the ExO seat
+declaring its own tool's three flags "because it reddened the census gate",
+about an hour after this run declared two of its own for the same reason. Two
+seats, two tools, one gate, one morning, and neither learned it from the other.
+That is the pin list's cost arriving twice in one morning rather than a
+coincidence.
+
 ## 6. The merge took the gate red, and the twenty-fourth call is not ours
 
 The accepted set was generated at `bf7ed556`. Merging `main` made it wrong in
