@@ -801,8 +801,6 @@ def prior_art(query: str, entries: list["Entry"] | None = None,
             continue
         score = sum(wanted[term] * idf[term] for term in hits)
         verdict, section = remedy_of(entry)
-        if remedies_only and verdict != "REMEDY":
-            continue
         scored.append({
             "id": entry.key,
             "heading": entry.heading,
@@ -844,8 +842,21 @@ def prior_art(query: str, entries: list["Entry"] | None = None,
     # number a reader can use is `close`, counted over the whole ranking rather
     # than over the printed slice: a seat that passes --limit 3 still needs to
     # know there are nine close matches behind them.
+    # `remedies_only` filters what is PRINTED and never what "close" is measured
+    # against, and that ordering is load-bearing rather than tidy. It used to
+    # `continue` inside the loop above, which dropped the non-remedy entries
+    # before the floor was taken, and the floor is a fraction of the best
+    # surviving hit. So removing entries lowered the bar and the count went up:
+    # measured on 647 entries, `prior "test_the_four_flags_pr_backlog_brought_to
+    # _main_are_declared"` said `5 close matches, 1 with a remedy` and the same
+    # query with `--remedies-only` said `11 close matches, 11 with a remedy`.
+    # A filter that reports more than the unfiltered run is not a filter a reader
+    # can act on, and this flag is about to be named in a charter sentence, so
+    # the two invocations have to agree on the one number the sentence asks for.
     floor = strong_threshold(scored[0]["confidence"] if scored else 0.0)
     close = [row for row in scored if row["confidence"] >= floor]
+    shown = [row for row in scored
+             if not remedies_only or row["remedy"] == "REMEDY"]
     return {
         "query": query,
         "entries_searched": total,
@@ -856,7 +867,9 @@ def prior_art(query: str, entries: list["Entry"] | None = None,
         "close": len(close),
         "close_with_remedy": sum(1 for row in close if row["remedy"] == "REMEDY"),
         "close_threshold": round(floor, 3),
-        "hits": scored[:limit],
+        "remedies_only": remedies_only,
+        "withheld": len(scored) - len(shown),
+        "hits": shown[:limit],
     }
 
 
@@ -931,6 +944,14 @@ def report_prior(found: dict, seat: str | None = None, stream=None) -> int:
         print(
             "No close match. Nothing here is more than a shared word, so read the "
             "ranking\nas a weak hint rather than as prior art.",
+            file=stream,
+        )
+    if found.get("remedies_only"):
+        print(
+            f"\nShowing only entries that prescribe a remedy. "
+            f"{found['withheld']} matching {'entry' if found['withheld'] == 1 else 'entries'} "
+            f"{'is' if found['withheld'] == 1 else 'are'} withheld,\nand the two counts above "
+            f"are over the whole register either way.",
             file=stream,
         )
     print(f"\nThe closest {len(found['hits'])}:", file=stream)

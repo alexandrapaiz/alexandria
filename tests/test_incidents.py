@@ -762,6 +762,60 @@ def test_remedies_only_drops_the_entries_that_cannot_answer_the_question():
     assert all(h["remedy"] == "REMEDY" for h in found["hits"])
 
 
+def test_remedies_only_changes_what_is_printed_and_not_what_close_means():
+    """A filter that reports more than the unfiltered run is not one a reader can act on.
+
+    `close` is a fraction of the best hit, and the filter used to run before the
+    floor was taken, so dropping the non-remedy entries lowered the bar and the
+    count went UP. Measured on the live register at 647 entries: the query
+    `test_the_four_flags_pr_backlog_brought_to_main_are_declared` said 5 close
+    matches with 1 remedy, and the same query with `--remedies-only` said 11 and
+    11. The skill seat's correction of 2026-11-09 asks for this flag in a charter
+    sentence, so the sentence's own headline has to be the number the register
+    actually holds.
+    """
+    query = "a run woke for a red already repaired by its own commit"
+    plain = inc.prior_art(query, _prior_entries())
+    filtered = inc.prior_art(query, _prior_entries(), remedies_only=True)
+
+    for key in ("matched", "with_remedy", "close", "close_with_remedy",
+                "close_threshold"):
+        assert filtered[key] == plain[key], \
+            f"{key} moved when the filter was applied: {plain[key]} -> {filtered[key]}"
+    assert filtered["withheld"] == plain["matched"] - plain["with_remedy"], \
+        "withheld must account for every matching entry the filter removed"
+    assert filtered["withheld"] > 0, "the fixture needs a non-remedy entry to withhold"
+    assert plain["withheld"] == 0
+
+
+def test_the_filtered_report_says_how_many_entries_it_is_not_showing():
+    """Otherwise the ranking is a subset and reads as the whole of it."""
+    import io
+    out = io.StringIO()
+    found = inc.prior_art("a run woke for a red already repaired by its own commit",
+                          _prior_entries(), remedies_only=True)
+    inc.report_prior(found, stream=out)
+    printed = out.getvalue()
+    assert "Showing only entries that prescribe a remedy" in printed
+    assert f"{found['withheld']} matching" in printed
+    assert "over the whole register either way" in printed
+
+
+def test_remedies_only_lifts_a_remedy_above_a_higher_scoring_open_entry():
+    """The correction the skill seat sent: with an assertion name alone the remedy
+    is outranked by an OPEN entry, and this flag is what puts it first."""
+    entries = _prior_entries()
+    query = "a run woke for a red already repaired by its own commit"
+    plain = inc.prior_art(query, entries)
+    filtered = inc.prior_art(query, entries, remedies_only=True)
+
+    assert plain["hits"], "the fixture matched nothing"
+    assert filtered["hits"], "the filter left nothing to rank"
+    assert filtered["hits"][0]["remedy"] == "REMEDY"
+    assert filtered["hits"][0]["confidence"] <= plain["hits"][0]["confidence"], \
+        "filtering cannot raise a score, only reveal a lower one"
+
+
 def test_a_seats_own_prior_entry_is_called_out_as_its_own():
     import io
     out = io.StringIO()
