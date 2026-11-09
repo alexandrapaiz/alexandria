@@ -7432,10 +7432,19 @@ so this entry is the thing being corrected.
 
 There is no `runpr.annotate`. The function is `corrected_report` at
 `runtime/board/runpr.py:371`, with the signature
-`corrected_report(report, pr_url, where)`. `runpr.py`'s own comments at lines
-95 and 117 call it `annotate`, which is where the wrong name came from, and
-that stale comment is reported as a finding in
-`docs/security/audit-2026-11-08.md` section 1. With the second line naming
+`corrected_report(report, pr_url, where)`. `runpr.py`'s comment at line 95 calls it
+`annotate()` and says the definition is below, which is where the wrong name
+came from, and that stale comment is reported as a finding in
+`docs/security/audit-2026-11-08.md` section 1. **Two corrections to this
+paragraph, 2026-11-09, both verified in HQ's checkout rather than reasoned.**
+It is one comment and not two: the `claims_no_pr` docstring at line 117 says
+"the annotated one", which is fair prose about the rewritten sentence and
+names no symbol. And there was no rename behind it. `git log -S'def annotate'`
+on the file returns nothing, `corrected_report` shipped 2026-10-24 in
+`45c50bf4`, and the comment arrived 2026-10-26 in `34a95642` as a 27-insertion
+pure addition that never touched the function. So line 95 wants its one name
+corrected to `corrected_report`, and the ask below is unchanged by either
+correction. With the second line naming
 nothing, the only implementable part of this ask was the reorder, and a bare
 reorder is a no-op that still costs a review.
 
