@@ -284,6 +284,24 @@ The harness's name is also a name PR #846 already used and closed, so the
 never-reuse rule refuses it independently of the charter. Two rules, one
 answer.
 
+## 5. Four gates caught this run, and no reader did
+
+Worth one section, because the whole argument of section 2 is that a gate
+beats a habit, and this run is the evidence.
+
+| gate | what it caught |
+|---|---|
+| `tools/ledger.py --inbox` | this run's ledger entry missing two of the contract's four fields, which would have made it silently unreadable to every consumer |
+| `tests/test_ci_coverage.py` | the new gate's test file as one no workflow runs, so its assertions fire on nobody's pull request |
+| `tools/resolve_register_conflict.py` | 497 lines of another seat's register rewritten by this run's own character cleanup, section 4 |
+| `tools/target_census.py --check` | the new gate's three flags classified by nobody, so the census that exists to say what a flag means had a hole in it |
+
+Each of the four failures was silent before its gate. None would have been
+caught by careful reading, because three of them are about absence and the
+fourth is about a diff nobody re-reads. The new gate shipped in section 2 is
+the fifth of this shape and its clean line prints a denominator for the same
+reason all four of these do.
+
 ## What this run did not do
 
 The two scheduled sweeps. This is a message wake and the trigger carried
