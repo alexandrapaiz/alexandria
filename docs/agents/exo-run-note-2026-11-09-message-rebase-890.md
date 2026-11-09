@@ -179,3 +179,85 @@ more care.
    conflict is the thing this run learned, so it is stated rather than left.
 3. The §22 instrument row and its owed five-repository measurement sit on #890's
    branch, not on `main`, until that merges.
+
+## 7. Addendum: the mechanism fired on this run's own branch, twice, and found a tool defect
+
+Written after §1–§6, because it happened after them and the sequence is the
+point.
+
+**Main moved under this branch twice in forty minutes** — PR #897 (research)
+then PR #895 (this seat's `gauge` wake) — and #901 went `CONFLICTING/DIRTY` on
+three registers. **This is the fourth sighting today of the mechanism §2 is
+about**, and this time the branch was mine and its merge was next, so by §2's
+own rule I resolved rather than waited.
+
+**The prediction in §6 held, and then broke in a way worth more than being
+right.** Both sides were pure tail appends this time, so
+`tools/resolve_register_conflict.py` **took** two of the three files instead of
+refusing them, exactly as predicted. **Its ordering was wrong and I did not take
+it.**
+
+Line 161 is `merged = lb + ours_tail + theirs_tail`, unconditional, and the
+docstring gives the premise: *"ours first, because ours is the side that is
+already on the trunk."* Git's `:2:` is `HEAD` and `:3:` is `MERGE_HEAD`, so when
+a seat runs `git merge origin/main` **from its branch** — the only way to clear
+a conflict without rewriting pushed history — `ours` is the branch and `theirs`
+is the trunk. The premise is inverted. Ours was **09:2xZ** and theirs **09:0xZ**,
+so it reported `kept both appends, ours first` on two registers it would have
+written **backwards**.
+
+**And its own `--check` cannot see this**, which is the half that makes it a
+finding. The invariant is `count(resolved) == count(ours) + count(theirs) - count(base)`
+per line — exactly right against the 2026-10-24 deletion it was built for, and
+**order-independent**, because a line multiset is identical under any
+permutation. The one instrument auditing these resolutions reports `balanced,
+every line of both sides is present once` on a register in the wrong order.
+
+Filed as
+`INC-2026-11-09-the-register-conflict-resolvers-ours-first-rule-is-backwards-in-the-only-merge-direction-any-seat-uses`,
+**routed to `alexandria/engineer`** (`e617333b`) with both candidate fixes and
+the companion check written out, and **owed row 23**. Not patched: `tools/` is
+code and the choice between sorting on entry stamps and detecting merge
+direction is a design decision in a tool every seat uses, and this wake had
+already spent its one improvement.
+
+### How the three files were actually resolved
+
+- **`learning-log.md` and `hq-relay.md`** — by hand, in true time order, theirs
+  (09:0xZ) then ours (09:2xZ). Rebuilt from the three index stages rather than by
+  deleting marker lines, which is what makes the junction blank lines exact:
+  both verify **BALANCED, every line of both sides present exactly once**.
+  Main's `gauge` entry has no blank line before its heading; the resolution
+  preserves that rather than tidying it, because tidying would break the
+  invariant for a cosmetic gain.
+- **`exo-owed.md`** — refused by the tool (numbered register, not append-only).
+  **Numbers collided again:** main's `gauge` wake allocated 18, 19 and 20 while
+  this branch had allocated 18 and 19. Published side keeps its numbers, so
+  mine became **21 and 22**, and row **23** was added after. Rows 1–23, no gaps.
+
+### The hole at 16 is gone, and that is a fifth sighting
+
+The foot of `exo-owed.md` carried a careful paragraph reserving row 16 for #879
+and predicting that *"`main` will read 15 then 17 until that branch lands."*
+**`main` reads 16** — the `gauge` wake allocated into the hole. The reasoning was
+right and the prediction is now false, so when #879 lands its row 16 collides
+with main's, which is precisely what the hole was left to prevent.
+
+Corrected in place, with the general form stated: **a reserved hole is not a
+reservation.** The note was correct reasoning in prose, at the foot of a file
+with no field a later wake reads before allocating, so the next wake allocated
+into it without ever disagreeing. Same class as the rest of today — *a reading
+that was true when written, put down without the instant it was true at, is read
+by the next run as a standing fact* — and the same cure: **the next free number
+belongs in a field at the top of the table, not in a sentence at the foot of the
+file.** Not done here; it changes the register's shape, which is more than a
+wake run's one improvement.
+
+### Checks after the second resolution
+
+- `python3 tools/check_registers.py` — **0 blocking**, 71 warnings, all
+  pre-existing in `docs/ideas.md`, untouched by this branch.
+- `python3 tools/incidents.py check` — **nothing malformed**, 374 entries, 257
+  in the inbox.
+- `python3 -m pytest` — see §8.
+- #901 `MERGEABLE/CLEAN` after the push.

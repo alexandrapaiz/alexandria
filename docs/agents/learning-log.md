@@ -12690,3 +12690,69 @@ place to put the instant, so that omitting it is a deletion somebody can see.
    as "sixteen days" with no read time beside it. No row taken this run.
 4. The §22 instrument row and its owed five-repository measurement sit on #890's
    branch, not on `main`, until that merges.
+
+### 6. Addendum, written after the rest: the mechanism fired on this run's own branch and turned up a tool defect
+
+**Main moved under #901 twice in forty minutes** (PRs #897 and #895), and the
+branch went `CONFLICTING/DIRTY` on three registers. Fourth sighting today of the
+mechanism §2 of this entry is about — and this time the branch was mine with its
+merge next, so §2's own rule said resolve rather than wait.
+
+**§5's prediction held and then broke usefully.** Both sides were pure tail
+appends this time, so `tools/resolve_register_conflict.py` **took** two of the
+three files rather than refusing them, exactly as predicted. **Its order was
+wrong.**
+
+`tools/resolve_register_conflict.py:161` is `merged = lb + ours_tail + theirs_tail`,
+unconditional, on the docstring's premise *"ours first, because ours is the side
+that is already on the trunk."* Git's `:2:` is `HEAD` and `:3:` is `MERGE_HEAD`,
+so a seat running `git merge origin/main` **from its own branch** — the only way
+to clear a conflict without rewriting pushed history — has `ours` = the branch
+and `theirs` = the trunk. **The premise is inverted in the only direction any
+seat here uses.** Ours was 09:2xZ and theirs 09:0xZ, and it reported
+`kept both appends, ours first` on two registers it would have written
+backwards.
+
+**No gate catches it.** `--check`'s invariant is
+`count(resolved) == count(ours) + count(theirs) - count(base)` per line, which is
+exactly right against the 2026-10-24 deletion it was built for and is
+**order-independent** — a line multiset is identical under any permutation. So
+the only instrument auditing these resolutions reads `balanced, every line of
+both sides is present once` on a register in the wrong order. Nor did this run's
+*earlier* resolution disconfirm it: on #890 the tool **refused** both files, so
+its ordering never ran. Where ours-first has been right before, it was
+coincidence — the branch's entry is usually older than the trunk's.
+
+Filed as
+`INC-2026-11-09-the-register-conflict-resolvers-ours-first-rule-is-backwards-in-the-only-merge-direction-any-seat-uses`,
+routed to `alexandria/engineer` (`e617333b`), **owed row 23**. Not patched: the
+choice between sorting on entry stamps and detecting merge direction is a design
+decision in a tool every seat depends on, and this wake had spent its
+improvement. The remedy carries a third part worth keeping — **the balance check
+needs an order-aware companion**: for an append-only register, assert the entry
+stamps are non-decreasing. That would have failed loudly on both files.
+
+**Resolved by hand instead**, in true time order, rebuilt from the three index
+stages rather than by deleting marker lines — which is what makes the junction
+blanks exact. Both chronological registers verify **BALANCED**. `exo-owed.md`
+collided on numbers again (main's `gauge` wake took 18, 19, 20; mine became 21
+and 22, with 23 added after). Rows 1–23, no gaps.
+
+**And the hole at 16 is gone, which is a fifth sighting of the class.** The foot
+of `exo-owed.md` carried a careful paragraph reserving 16 for #879, predicting
+*"`main` will read 15 then 17 until that branch lands."* **`main` reads 16** —
+the `gauge` wake allocated into the hole, so #879 now faces exactly the
+collision the hole was left to prevent. The reasoning was right; the prediction
+decayed. **A reserved hole is not a reservation** when the reservation lives in
+prose at the foot of a file with no field a later wake reads before allocating —
+the next wake allocated into it without ever disagreeing with the note, because
+nothing made it read the note. Corrected in place. The cure is the one this
+entry keeps arriving at: **the next free number belongs in a field at the top of
+the table, not a sentence at the foot of the file.**
+
+**So the class closed the day at five instances** — the undated provenance hash,
+the `held` cycle verdict, *a date is not an observation*, the reserved hole, and
+a tool whose correctness depends on a merge direction it never names. One
+sentence covers all five: **a statement whose truth depends on a condition it
+does not name is read by the next reader as unconditional.** In every case the
+cure was a declared place to put the condition, and in no case was it more care.
