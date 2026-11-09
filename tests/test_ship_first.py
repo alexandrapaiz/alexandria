@@ -265,3 +265,123 @@ def test_the_report_says_so_rather_than_leaving_the_reader_to_subtract(tmp_path,
                                    audit=str(tmp_path / 'audit.jsonl'))
     sf.report(records, 6, unjoined)
     assert 'share a session id with a later row' in capsys.readouterr().out
+
+
+def test_the_company_selector_does_not_depend_on_how_the_company_is_spelled(tmp_path):
+    """Ursa's ExO seat, 2026-11-09: `--company ursa` returned 945 rows here and
+    `--company Ursa` returned none.
+
+    The host keys an agent in ascii-lowercase and every other route in the
+    portfolio spells a company with a capital, so the spelling a reader arrives
+    with was the one spelling that answered nothing."""
+    write_audit(tmp_path, [run_row('s1', agent='ursa-exo', turns=30)])
+    write_transcript(tmp_path, 'ursa-exo', 's1', {4: 'git push'}, 30)
+    records, _ = sf.collect(projects=str(tmp_path / 'projects'),
+                            audit=str(tmp_path / 'audit.jsonl'))
+    for spelling in ('ursa', 'Ursa', 'URSA', 'uRsA'):
+        got, _note = sf.select(records, company=spelling)
+        assert [r['session'] for r in got] == ['s1'], spelling
+
+
+def test_the_seat_selector_folds_both_halves_of_the_key(tmp_path):
+    """`--seat` built its key from both arguments, so either half being
+    capitalized lost the run, and the bare-seat fallback lost it too."""
+    write_audit(tmp_path, [run_row('s1', agent='ursa-exo', turns=30)])
+    write_transcript(tmp_path, 'ursa-exo', 's1', {4: 'git push'}, 30)
+    records, _ = sf.collect(projects=str(tmp_path / 'projects'),
+                            audit=str(tmp_path / 'audit.jsonl'))
+    for company, seat in (('ursa', 'exo'), ('Ursa', 'exo'),
+                          ('ursa', 'ExO'), ('Ursa', 'ExO')):
+        got, _note = sf.select(records, company=company, seat=seat)
+        assert [r['session'] for r in got] == ['s1'], (company, seat)
+
+
+def test_a_capitalized_company_cannot_turn_a_lost_run_green(tmp_path):
+    """The sharp end of the same defect, and worse than a confusing line. Ursa's
+    record carries ten `lost` runs, so `--company ursa` exits 1 and `--company
+    Ursa` exited 0. A gate wired to the capital was green on a fleet that had
+    lost work."""
+    write_audit(tmp_path, [run_row('s1', agent='ursa-exo', exit_code=1, turns=30)])
+    write_transcript(tmp_path, 'ursa-exo', 's1', {}, 30)
+    args = ['--projects', str(tmp_path / 'projects'),
+            '--audit', str(tmp_path / 'audit.jsonl')]
+    assert sf.main(args + ['--company', 'ursa']) == 1
+    assert sf.main(args + ['--company', 'Ursa']) == 1
+
+
+def test_an_empty_selection_names_the_selector_and_the_keys_that_exist(tmp_path, capsys):
+    """"Nothing is claimed about runs this command did not select" is honest and
+    it reads as a verdict, so a reader concluded the company had no runs rather
+    than that the selector missed. The keys are what tell those apart, and they
+    are free to print because every record is already in hand."""
+    write_audit(tmp_path, [run_row('s1', agent='ursa-exo', turns=30)])
+    write_transcript(tmp_path, 'ursa-exo', 's1', {4: 'git push'}, 30)
+    args = ['--projects', str(tmp_path / 'projects'),
+            '--audit', str(tmp_path / 'audit.jsonl'), '--company', 'nosuchco']
+    assert sf.main(args) == 0
+    out = capsys.readouterr().out
+    assert 'No run matched company nosuchco' in out
+    assert 'about the selector and not about the company' in out
+    assert 'ursa' in out, 'the key that does exist has to be printed'
+
+
+def test_an_empty_selection_prints_the_seats_of_the_company_that_was_asked_for(tmp_path, capsys):
+    """A mistyped seat is the other half of the same confusion, so the keys
+    printed are scoped to the company the selector named rather than to all of
+    them."""
+    write_audit(tmp_path, [run_row('s1', agent='ursa-exo', turns=30),
+                           run_row('s2', agent='alexandria-pm', turns=30)])
+    write_transcript(tmp_path, 'ursa-exo', 's1', {4: 'git push'}, 30)
+    write_transcript(tmp_path, 'alexandria-pm', 's2', {4: 'git push'}, 30)
+    args = ['--projects', str(tmp_path / 'projects'),
+            '--audit', str(tmp_path / 'audit.jsonl'),
+            '--company', 'Ursa', '--seat', 'nosuchseat']
+    assert sf.main(args) == 0
+    out = capsys.readouterr().out
+    assert 'No run matched seat nosuchseat of company Ursa' in out
+    assert 'ursa-exo' in out
+    assert 'alexandria-pm' not in out, 'another company\'s seats answer nothing here'
+
+
+def test_the_fold_is_ascii_only_and_not_a_unicode_lowercase(tmp_path):
+    """The job is normalizing one alphabet rather than casing anything. A
+    Unicode lowercase maps characters outside that alphabet in ways a selector
+    should not inherit, and an agent key is `ursa-exo`."""
+    assert sf.fold('Ursa-ExO') == 'ursa-exo'
+    assert sf.fold(None) == ''
+    assert sf.fold('İ') == 'İ', 'dotted capital I is left alone'
+    assert 'I'.lower() == 'i' and sf.fold('I') == 'i'
+
+
+def test_the_default_deadline_is_the_number_the_standard_states():
+    """`docs/standards/pm.md` §8 says "The deadline is turn ten" and names this
+    tool as the counter for it. A default of six left the instrument
+    disagreeing with the standard it serves, in the direction that makes the
+    standard look unobeyed: 0.5% of the portfolio met six and about a tenth
+    meets ten."""
+    assert sf.DEADLINE == 10
+    standard = (ROOT / 'docs' / 'standards' / 'pm.md').read_text()
+    assert 'The deadline is turn ten' in standard
+    assert 'tools/ship_first.py' in standard
+
+
+def test_a_session_selector_is_not_folded(tmp_path):
+    """A session id is a uuid the host generated, not a name anybody types, and
+    folding it would make two distinct ids collide. The fold is for agent keys
+    and stops there."""
+    write_audit(tmp_path, [run_row('AbC', turns=30)])
+    write_transcript(tmp_path, 'alexandria-exo', 'AbC', {4: 'git push'}, 30)
+    records, _ = sf.collect(projects=str(tmp_path / 'projects'),
+                            audit=str(tmp_path / 'audit.jsonl'))
+    assert [r['session'] for r in sf.select(records, session='AbC')[0]] == ['AbC']
+    assert sf.select(records, session='abc')[0] == []
+
+
+def test_every_selector_says_in_words_what_it_selected(tmp_path):
+    """The note is what the empty report prints back, so it has to exist for
+    every branch rather than only the one that found the defect."""
+    records = []
+    assert sf.select(records, session='x')[1] == 'session x'
+    assert sf.select(records, company='Ursa', seat='exo')[1] == 'seat exo of company Ursa'
+    assert sf.select(records, every=True)[1] == 'every seat of every company'
+    assert sf.select(records, company='Ursa')[1] == 'company Ursa'
