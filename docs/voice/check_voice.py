@@ -2925,7 +2925,7 @@ def open_findings(row, now):
 
     `docs/agents/cross-repo-law.md` rule 3 settles the collision. A local law's
     preconditions survive a parent override unless the override names them.
-    Section 22 decided that reservations get clocks; it never named the copy
+    Section 22 decided that reservations get clocks. It never named the copy
     pipeline's clause, and nothing suggests it meant to. So the clause stands
     and a copy candidate does not proceed on her silence.
 

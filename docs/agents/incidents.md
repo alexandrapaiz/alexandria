@@ -26206,7 +26206,7 @@ Widening the gate produced a false green of its own. The code was renamed
 `unasked` to `unshown`, the reporting half kept filtering on the old string,
 both lists went empty, and the gate printed `every open candidate carries an
 ask` over thirteen that carry nothing, at exit 0. A case over `open_findings`
-could not catch it, because `open_findings` was correct; the defect was two
+could not catch it, because `open_findings` was correct. The defect was two
 names for one vocabulary, held in two functions. `code_vocabulary` is the
 repair and it reads the gate body's own source against the declared codes.
 

@@ -29331,7 +29331,7 @@ write surface.
   twenty-two. Four of the surfaces are red in `check_voice.py reading` right
   now and one of them carries a claim the quality-claims register marks
   `contradicted`, unhedged, on the mission page. So the drafting half of this
-  seat's copy duty is not behind; it is eleven surfaces ahead of the only step
+  seat's copy duty is not behind. It is eleven surfaces ahead of the only step
   that can clear it.
 - Why the obvious fix is refused, and this is the part to read before
   proposing one. A §22 ask carries a silence rule, so posting these would set
