@@ -521,3 +521,22 @@ def test_a_malformed_agent_key_is_not_read_as_a_company(tmp_path):
                               {'agent': 'ursa-exo'}, {'agent': ''},
                               {'agent': None}])
     assert got == ['ursa']
+
+
+def test_the_company_flag_is_declared_probeable_and_refuses_before_reading_the_disk():
+    """`tools/target_census.py` exempted this flag from its probe on the ground
+    that it "reaches the board API", which was never true of this file. The
+    exemption is gone because the refusal now happens before `collect()` reads
+    a byte, so the probe costs 0.36s rather than the whole corpus.
+
+    Pinned here as well as in the census because the ordering is the property:
+    a roster check placed after `collect()` would pass every test in this file
+    and still be unprobeable."""
+    from tools import target_census
+    j = target_census.DECLARED[('ship_first.py', '--company')]
+    assert j.kind == 'roster'
+    assert j.offline == '', 'the board exemption was built on a false cause'
+    assert ('ship_first.py', '--company') in target_census.roster_flags(probeable=True)
+    src = (ROOT / 'tools' / 'ship_first.py').read_text()
+    assert src.index('resolve_target.check') < src.index('every, unjoined = collect('), \
+        'the roster check has to run before the corpus is read, or the probe hangs'

@@ -261,12 +261,20 @@ DECLARED: dict[tuple[str, str], Judgment] = {
     ("runtime_provenance.py", "--checkout"): Judgment("path"),
     ("runtime_provenance.py", "--install"): Judgment("path"),
     ("runtime_provenance.py", "--staged"): Judgment("path"),
-    ("ship_first.py", "--company"): Judgment(
-        "roster", "reaches the board API; and `--seat` on this tool is the "
-        "hang the incident carded rather than fixed"),
+    # Probed offline from 2026-11-09, and the reason the declaration changed is
+    # worth keeping. It read "reaches the board API", and that was never true:
+    # `tools/ship_first.py` makes no network call, asks no roster and runs no
+    # subprocess. The false cause came from the 2026-11-02 incident and was
+    # copied here, which is how a wrong reason earns an exemption. The flag
+    # refuses in 0.36s because the roster check runs before `collect()` reads
+    # the transcripts, so the one thing that made it unprobeable is gone.
+    ("ship_first.py", "--company"): Judgment("roster"),
     ("ship_first.py", "--seat"): Judgment(
-        "roster", "hangs on a value nothing carries, carded in docs/ideas.md "
-        "on 2026-11-02 because the hang was not established as tool or network"),
+        "roster", "`collect()` parses every transcript on the host, 2.7 GB on "
+        "2026-11-09, before the selector filters anything, so any value costs "
+        "what `--all` costs. Not the board and not a roster fetch, which is "
+        "the correction to the 2026-11-02 carding; carried as a ledger entry "
+        "with the fix's design"),
     ("ship_first.py", "--session"): Judgment("opaque"),
     ("ship_first.py", "--projects"): Judgment("path"),
     ("ship_first.py", "--audit"): Judgment("path"),
