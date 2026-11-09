@@ -7,12 +7,14 @@ it. A test that discovers every `--check` under `skills/_validation/` arms the
 seven instruments already there and every one after."
 
 That is right about the hole and it is worth stating precisely, because it is
-not only CI. `skills/_validation/` holds seven programs whose whole interface is
-an exit status, every one of them written by a seat that cannot add a step to a
-workflow, and the only one of the seven any chain reaches today is
-`trigger_test.py`, through a receipt file that `tests/test_skill_receipts.py`
-compares against a sha. So six instruments have been asserting things about this
-library into a terminal nobody was standing in.
+not only CI. `skills/_validation/` holds ten programs, seven of which offer a
+verification flag whose exit status is their whole interface, every one written
+by a seat that cannot add a step to a workflow. No chain in this repository runs
+any of the seven. The one program under that directory anything reaches is
+`trigger_test.py`, which has no verification flag and is touched only through a
+receipt file that `tests/test_skill_receipts.py` compares against a sha. So
+seven instruments have been asserting things about this library into a terminal
+nobody was standing in.
 
 ## Discovery asks the program, it does not read the program
 
@@ -78,12 +80,19 @@ VERIFY_FLAGS = ("--check", "--probe")
 # not shrink: a name that disappears from skills/_validation/ turns the control
 # below red, so a rename is a decision somebody makes rather than a set that
 # quietly empties.
+#
+# `prose_distribution.py` is the seventh and it landed on `main` in #861 while
+# this branch was open, which is the case this file was written for: it was
+# discovered and run with no edit here, and the only reason its name is in this
+# set is to pin it, so that a later run which breaks it turns red rather than
+# dropping it from the set and staying green.
 KNOWN = {
     "checklist_position.py",
     "claim_receipt.py",
     "earned_pass.py",
     "prediction_basis.py",
     "project_fixture_probe.py",
+    "prose_distribution.py",
     "skill_length.py",
 }
 
@@ -100,7 +109,8 @@ STANDING = {
 
 # Instruments that cost real time. Measured 2026-11-09, worst case first:
 # project_fixture_probe 57s, earned_pass 7.3s, claim_receipt 2.3s,
-# checklist_position 1.3s, skill_length 0.3s, prediction_basis 0.2s.
+# checklist_position 1.3s, prose_distribution 0.4s, skill_length 0.3s,
+# prediction_basis 0.2s.
 TIMEOUT_SECONDS = 300
 
 
