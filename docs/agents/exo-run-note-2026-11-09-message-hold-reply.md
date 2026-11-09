@@ -66,6 +66,13 @@ millisecond.** 03:46:08.067Z is the end of the run behind #844. 04:06:33.497Z
 is the end of the run behind #851. The detector matched each draft to the run
 *before* the one that wrote its tip.
 
+**And re-read at 2026-11-09T04:27:50Z, the draft the block told this run to close is
+`MERGED`.** It is on `main`. Of the three acts the block offered, the two
+destructive ones would have been taken against work that has since landed,
+which is the same cost the 2026-11-02 entry priced against a merged pull
+request. The fourth answer -- that the premise is false -- was the only
+correct one again.
+
 The mechanism is one row that is never written, and it is written up in full
 in
 `docs/agents/incidents/inbox/INC-2026-11-09-the-orphan-detectors-only-liveness-signal-is-a-row-shape-nothing-in-the-fleet-writes-and-nine-test-fixtures-are-its-only-producer.md`
