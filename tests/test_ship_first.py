@@ -488,3 +488,36 @@ def test_an_unreadable_roster_refuses_nothing(tmp_path, monkeypatch):
     args = ['--projects', str(tmp_path / 'projects'),
             '--audit', str(tmp_path / 'audit.jsonl'), '--company', 'anything']
     assert sf.main(args) == 0
+
+
+def test_a_bare_key_is_never_offered_to_a_reader_as_a_company(tmp_path, capsys):
+    """A defect in this change's own first output, caught by running it. The
+    key list split on `-` unconditionally, so the live run printed the nine
+    bare seat keys among the companies, which are the keys the same change had
+    just finished disclosing as not companies."""
+    write_audit(tmp_path, [run_row('s1', agent='ursa-exo', turns=30),
+                           run_row('s2', agent='pm', turns=30)])
+    write_transcript(tmp_path, 'ursa-exo', 's1', {4: 'git push'}, 30)
+    write_transcript(tmp_path, 'pm', 's2', {4: 'git push'}, 30)
+    records, _ = sf.collect(projects=str(tmp_path / 'projects'),
+                            audit=str(tmp_path / 'audit.jsonl'))
+    companies, _seats = sf.keys_present(records)
+    assert companies == ['ursa'], 'pm names a seat, not a company'
+    assert '' not in companies, 'and an empty name is not a key at all'
+    args = ['--projects', str(tmp_path / 'projects'),
+            '--audit', str(tmp_path / 'audit.jsonl'), '--company', 'Epitome']
+    assert sf.main(args) == 0
+    out = capsys.readouterr().out
+    assert 'companies      ursa' in out
+    assert 'no company     pm 1' in out
+    assert 'No --company selector reaches one' in out
+
+
+def test_a_malformed_agent_key_is_not_read_as_a_company(tmp_path):
+    """`-pm` and `pm-` both split into a pair with an empty half, and neither
+    half is a name. Dropped rather than printed, because a key list a reader
+    cannot type back is worse than a shorter one."""
+    got, _ = sf.keys_present([{'agent': '-pm'}, {'agent': 'pm-'},
+                              {'agent': 'ursa-exo'}, {'agent': ''},
+                              {'agent': None}])
+    assert got == ['ursa']

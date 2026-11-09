@@ -235,9 +235,18 @@ def keys_present(records, company=None):
     companies, seats = set(), set()
     for r in records:
         agent = fold(r.get('agent'))
-        if not agent:
+        if not agent or '-' not in agent:
+            # A bare key names a seat and not a company, so it is not a company
+            # key and must not be offered to a reader as one. The first draft of
+            # this function split on `-` unconditionally, and the live run
+            # printed `distribution, engineer, exo, finance, frontend, mba, okr,
+            # pm, yc` among the companies, which are the nine bare seat keys
+            # this same change had just finished disclosing as not companies.
+            # `unprefixed` is where they are counted.
             continue
-        head = agent.split('-', 1)[0]
+        head, tail = agent.split('-', 1)
+        if not head or not tail:
+            continue
         companies.add(head)
         if company is None or head == fold(company):
             seats.add(agent)
@@ -506,11 +515,17 @@ def report(records, deadline, unjoined, selector=None, universe=None, company=No
               ' %d runs are on the record, under the keys below, and none of'
               ' them answers to what was asked for.' % len(universe))
         companies, seats = keys_present(universe, company)
-        print('\n  companies  %s' % (', '.join(companies) or '(none)'))
+        print('\n  companies      %s' % (', '.join(companies) or '(none)'))
         if company is None:
-            print('  seats      %d keys, which `--all` selects' % len(seats))
+            print('  seats          %d keys, which `--all` selects' % len(seats))
         else:
-            print('  seats of %-2s %s' % (fold(company), ', '.join(seats) or '(none)'))
+            print('  %s seats%s%s' % (fold(company), ' ' * max(1, 9 - len(fold(company))),
+                                      ', '.join(seats) or '(none)'))
+        bare = unprefixed(universe)
+        if bare:
+            print('  no company     %s' % ', '.join('%s %d' % kv for kv in bare.most_common()))
+            print('\n  The last row names seats without naming a company. No --company'
+                  ' selector reaches one.')
         return
     counts = collections.Counter(r['state'] for r in records)
     print('%d runs selected. A turn is one `user` entry in the transcript; the deadline'
