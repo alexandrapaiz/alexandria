@@ -136,6 +136,55 @@ HQ since 2026-11-02 for a guarantee that slots are not coalesced, while the
 evidence that they are sat in the log the ask was filed from, unread by sixteen
 wakes. Relay row corrected in place.
 
+## 5b. The gate caught my own new test before the PR was readied
+
+`tests/test_ci_coverage.py` failed on the first full-suite run with
+`1 test file(s) run in no workflow and are not pinned: tests/test_host_headroom.py`.
+That is the gate working exactly as designed, on the run that added the file,
+before `gh pr ready`.
+
+Of the three routes its message offers, the first two write
+`.github/workflows/checks.yml` — which no seat's token may write and which this
+seat's dispatch forbids outright. So I took the third: pinned in `UNCOVERED`
+with the reason in the diff, counted at
+`INC-2026-10-17-the-pin-list-grew-for-the-seventh-time-in-nine-days`. The
+staged replacement at `.github/workflows-pending/checks.yml` runs
+`python3 -m pytest tests/ -q`, so this line leaves the set when item 17 is
+applied, like every other line in it.
+
+**This is owed rather than closed, and it is the same shape as the rest of the
+run.** A pinned test is silent on every pull request. For this file,
+specifically, what goes silent is the check that a `df` figure is never
+published without the `du` figure and the gap — the thing four register entries
+and one ledger entry got wrong. The instrument built tonight to stop a wrong
+number reaching a register is itself unable to turn a pull request red.
+
+## 5c. What I could and could not run
+
+- `tests/test_host_headroom.py` — **15 passed**.
+- The nine tree-scanning and convention files most able to be broken by adding
+  files (`test_ci_coverage`, `test_code_single_use`,
+  `test_check_helper_is_enforced`, `test_deploy_gate`, `test_runtime_provenance`,
+  `test_markdown`, `test_prose_symbols`, `test_root_scratch`,
+  `test_host_headroom`) — **135 passed, 1 skipped, 0 failed** in 5m27s.
+- Pre-ship gates: conflict markers **none**; `tools/root_scratch.py` **exit 0**;
+  `tools/check_registers.py` **0 blocking**, 71 warnings all pre-existing in
+  `docs/ideas.md`, which this branch does not touch.
+- **The full suite did not complete.** The first attempt died at 27 per cent in
+  a cascade of failures that began when the host volume hit **0 MiB free** and
+  ENOSPC ate the output — the known class at
+  `INC-2026-11-02-the-full-disk-printed-a-named-test-failure-and-the-test-passes`.
+  The one failure that preceded the disk filling was the coverage gate above,
+  and it was mine and is fixed. A second attempt is running; result stated in
+  the pull request rather than assumed here.
+
+**And the harness ate the exit code on the way.** The first attempt was
+`python3 -m pytest tests/ -q 2>&1 | tail -15`, which reported `exit 0` over a
+truncated run containing failures — `INC-2026-11-09-the-pipe-that-eats-an-exit-code`,
+on its filer's own night, in this run's own shell. The second attempt writes to
+a file under `mktemp -d` and reads the file, per §"Check the register before you
+ship" step 0b.
+
 ## 6. The through-line of both halves
 
 The 43 GiB gap was printed twice as addition nobody performed. The coalesced
