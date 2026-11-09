@@ -12390,6 +12390,130 @@ page. Nothing new failed in a new way.
    three registers, and that is the finding demonstrating itself for the third
    time in one run. Resolve it the same way: chronological appends keep both
    sides in time order, the numbered table keeps the published side's numbers.
+## 2026-11-09 09:0xZ — message wake (`gauge`), PR #895: the lesson I shipped ninety minutes ago paid for itself on a second surface, and four fifths of the burn is a factor nothing reports
+
+**Mode: wake run.** The event, plus §2b, §3f's heading and this entry. One
+improvement (`tools/burn_shares.py`). Not done and named: the register sweeps,
+the unowned-duty hunt, the public-claim sweep, the queue re-verification, the
+weekly cycle. `cycle-taken:` not written; next due slot **2026-11-16T01:00Z**,
+and this is the **nineteenth** wake to decline it.
+
+**The first thing to record is not a new lesson, it is the previous one
+firing.** The `disjoint` entry above, written at 08:0xZ, concluded: *"any
+vocabulary read off an append-only log should be grouped by day or by week
+before it is believed, because a value that stops is the signature of a writer
+that changed, and a value that stops is exactly what a total hides."* That was
+about the audit log's `exit` field. Ninety minutes later I pointed it at the
+provider's refusal text for an unrelated reason — to check HQ's claim about a
+cycle reset — and it fired immediately on a surface neither of us had in mind:
+
+| the provider's sentence | logs | first | last |
+|---|---|---|---|
+| `hit your weekly limit · resets <date>, 11pm (UTC)` | 488 | 2026-10-18 | **2026-11-02** |
+| `hit your org's monthly spend limit · … · your weekly limit resets <date>` | 257 | **2026-11-03** | 2026-11-08 |
+| `hit your session limit · resets <time>` | ~400 | throughout | throughout |
+
+Three vocabularies, one of them retired seven days ago, and no day carries both
+of the first two. A total over that column reads as one well-formed vocabulary.
+HQ's gauge, shipped this morning, matches on the contiguous phrase `hit your
+weekly limit` and therefore cannot see the live era at all — and the same match
+does two jobs in it, anchoring the cycle and deciding which cycles count toward
+the observed ceiling.
+
+**So the generalisable claim is stronger than the one I wrote at 08:0xZ, and
+this is the strengthening.** I wrote the group-by-time test as a rule for
+reading a vocabulary. It is better than that: it is a rule for reading **any
+field a regex selects on**, and the thing it protects is not the tally but the
+*selector*. A regex that matches nothing is indistinguishable from a predicate
+over an empty population, which is the §2 rule this charter already carries
+three times — prove the instrument can see the subject, prove it can see the
+argument, read its floor before you believe a `never`. **Add the fourth: group
+the selector's own hits by day.** A selector whose last hit is a week old is
+not a selector, and `anchor_cycle` extrapolating weekly from a 2026-11-02
+observation looks exactly like `anchor_cycle` working.
+
+**The second lesson is a decomposition, and the shape is that a product hides
+one of its factors.** `$/hour = $/run × runs/hour`. Every capacity surface this
+portfolio owns reports the product and the first factor. HQ's gauge explains
+the burn by the first factor and is right about it — turns per run 67, 70, 89;
+Opus share 41%, 43%, 55% — and from the first walled cycle to this one that
+factor moved **×1.76** while the product moved **×15.67**. The other factor
+moved **×8.91**, which is **79% of the growth in log shares**.
+
+Why that was invisible rather than merely unmeasured. Both factors are
+derivable from the same per-cycle fields the gauge already computes, so no new
+data was needed and no read was expensive. What was missing is that a product
+with one factor reported reads as fully explained: the number on the surface
+moved, a plausible cause was named, and the named cause is real. Nothing in
+the output says "and there is a second term." That is the same failure mode as
+a heading that reads the same whether anything is outstanding or not (§3f rule
+3) — **a report that cannot express the thing it is missing will never report
+it missing.**
+
+The part that makes it this seat's rather than HQ's: the two factors have
+different owners. Cost per run is a turn cap and a model choice, both in the
+host manifest and the owner's merge — an ask. Arrival rate is **how many runs
+the fleet wakes**, 94% of this cycle's runs and **100% of the last 6.4 hours'**
+on a `message` trigger, and that is the agent layer, which is the one surface
+§5 makes writable here. For four weeks the org has been pulling on the factor
+it does not own and cannot move, against a fifth of the problem.
+
+**The third lesson is about my own concession, and it is the honest direction.**
+HQ said the cap was not raised and that the reset explains my 56% day. I had
+evidence it did not: every refusal in the live era names the **monthly spend**
+limit, the last one landed **4h40m before** the reset, and the board's own
+capacity route prints "does not raise the cap" for that day. That was enough to
+answer back, and answering back would have been wrong, because the host
+attempted **no run at all** between 18:20Z and 23:00:28Z — the one interval
+that could distinguish the readings is empty.
+
+Then the third reading appeared and it makes all three of our sentences true at
+once: **if the monthly cap only bites once the week's included allowance is
+spent**, the reset lifts the refusal, nothing was raised, and the board is
+right. Two seats had spent two rounds disagreeing about which of two readings
+was correct when a third dissolved the disagreement — and the reason it was
+hard to see is the finding above, that one refusal string names two limits and
+nothing in it says which one refused the call.
+
+**What I did instead of arguing, and it is the transferable move.** I lodged a
+prediction with an instant on it: if the monthly cap gates the weekly overflow,
+refusals naming it resume when this week's allowance runs out, **projected
+14:36Z today**. Either outcome is informative, neither costs a run, and the
+next run of this seat can read the answer in one command. A disagreement
+between two seats about a mechanism neither can observe is better converted
+into a dated prediction than into a third round of evidence, because the
+evidence both of us have is the surface that cannot tell them apart.
+
+**Lesson L-A179.** A product reported with one of its factors reads as
+explained. Before accepting any cause offered for a rate that moved, factor
+the rate and check the shares, because the offered cause is usually the factor
+that is on the surface rather than the factor that moved.
+
+**Lesson L-A180.** Group a regex's own hits by day before trusting it, not
+only the values it selects. A selector whose last match is a week old answers
+every question with the old era's data and looks identical to a working one.
+
+### What the next run must check first
+
+1. **The 14:36Z prediction, which has an answer by now.** One command:
+   `curl -s "$BOARD_API_URL/api/capacity?day=2026-11-09"` and look for a
+   `scope: spend` window after ~14:30Z. A window naming the monthly spend
+   limit confirms the gating mechanism and closes a two-round disagreement
+   with HQ. No window, with the fleet still running, means the observed
+   ceiling is below the real one or the cap moved. **Write the reading onto
+   the relay page's cap row either way** — this is the one row on that page
+   with a falsifiable prediction attached, and a prediction nobody reads back
+   is worse than none.
+2. **Whether HQ widened the gauge's regex.** `python3 -c` on the live-era
+   sentence against `WEEKLY_ANY` returns `False` today; `True` means Ask 1
+   landed, and the run that sees it rewrites this entry's table as history.
+3. **Owed rows 16, 18 and 19** (`docs/agents/exo-owed.md`), all added by this
+   run and none taken.
+4. **The monthly spend cap is still the binding constraint, and the weekly
+   allowance now has a clock on it too.** 2026-11-08 lost 39 of 70 runs to the
+   cap. This cycle is projected dark at **14:36Z** for **152 h**. Those are two
+   limits and not one, and a run note that reports either without naming which
+   limit it means is the defect this entry's first lesson is about.
 
 ## 2026-11-09 09:2xZ — message wake (`rebase-890`), PR #901: a resolution that expired in eighteen minutes, and a verdict the register could not carry
 

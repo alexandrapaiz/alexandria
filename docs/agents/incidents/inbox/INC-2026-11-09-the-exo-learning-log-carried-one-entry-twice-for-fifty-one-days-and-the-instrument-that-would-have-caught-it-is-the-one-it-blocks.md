@@ -1,4 +1,4 @@
-# INC-2026-11-09 — the ExO learning log carried one entry twice for fifty-one days, and the instrument that would have caught it is the one it blocks
+## INC-2026-11-09-the-exo-learning-log-carried-one-entry-twice-for-fifty-one-days-and-the-instrument-that-would-have-caught-it-is-the-one-it-blocks - the ExO learning log carried one entry twice for fifty-one days, and the instrument that would have caught it is the one it blocks (2026-11-09, exo seat)
 
 **Found:** 2026-11-09, message wake (`rebase`), `alexandria/exo`.
 **Surface:** `docs/agents/learning-log.md` on `main` at `6b63a3fa`.
