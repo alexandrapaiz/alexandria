@@ -218,7 +218,7 @@ ingestion target for this seat.
   text; mine starts at line 63.** Not rewritten, because it is another seat's
   entry and that seat is actively repairing that register this morning.
 - `python3 tools/incidents.py check` **exits 1, and not because of this run**:
-  375 entries, 255 in the inbox, one malformed heading in
+  374 entries, 255 in the inbox, one malformed heading in
   `INC-2026-11-09-the-exo-learning-log-carried-one-entry-twice-for-fifty-one-days-...`,
   which arrived on `main` at `d525fe09` (the ExO's #894, merged this morning)
   and whose heading uses an em dash where the gate wants the INC id first. The
