@@ -685,6 +685,15 @@ def check(root: str = REPO) -> dict:
                 relative for relative in surveyed
                 if relative not in COUNT_SURFACES
             ),
+            # The rot in the other direction: a disposition for a file that is
+            # no longer there. Reported rather than failed, because `--root`
+            # is routinely pointed at a checkout that holds a subset of these
+            # on purpose, and a test over the real tree is the right place to
+            # require it empty.
+            "missing": sorted(
+                relative for relative in COUNT_SURFACES
+                if not os.path.exists(os.path.join(root, relative))
+            ),
         },
         "marketplace": marketplace_name,
         "plugin": plugin_name,

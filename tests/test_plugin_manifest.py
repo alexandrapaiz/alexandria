@@ -538,3 +538,13 @@ def test_every_guarded_prose_file_carries_a_disposition(repo):
     published in, with no classification, is the gap this census closes."""
     for relative in checker.GUARDED_PROSE:
         assert relative in checker.COUNT_SURFACES, relative
+
+
+def test_no_disposition_names_a_file_this_repository_does_not_have():
+    """The rot in the other direction from the census gate.
+
+    A `COUNT_SURFACES` entry for a deleted file is a judgment about nothing,
+    and it reads as coverage. Required empty against the real tree only,
+    because a fixture holds a deliberate subset.
+    """
+    assert checker.check(str(REPO))["surfaces"]["missing"] == []
