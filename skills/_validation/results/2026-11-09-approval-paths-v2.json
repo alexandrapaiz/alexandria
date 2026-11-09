@@ -13,7 +13,7 @@
   "library": {
     "agent-approval-paths": {
       "path": "skills/agent-approval-paths/SKILL.md",
-      "sha256": "f239608e045ced6c"
+      "sha256": "e98db8b37a1536a6"
     },
     "agent-containment": {
       "path": "skills/agent-containment/SKILL.md",
@@ -99,7 +99,7 @@
     {
       "skill": "agent-approval-paths",
       "source": "skills/agent-approval-paths/triggers.json",
-      "skill_sha256": "f239608e045ced6c",
+      "skill_sha256": "e98db8b37a1536a6",
       "suite_version": 1,
       "cases": [
         {
