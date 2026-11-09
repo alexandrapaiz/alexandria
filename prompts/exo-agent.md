@@ -198,6 +198,18 @@ a branch that does not exist.
   request which mode you ran and therefore what you did not do. At most
   **one** improvement, not three.
 
+  **And read `docs/agents/exo-owed.md`, which is where the skipped work goes**
+  (added 2026-11-09, message wake,
+  `INC-2026-11-09-the-owed-list-that-argued-for-a-pending-ask-stopped-being-written-two-days-after-the-ask`).
+  The four sweeps this bullet tells you to skip generate work, and for two days
+  in October that work was carried by re-copying a paragraph into each new
+  learning-log entry. It was last written on 2026-10-26, six items long, and
+  then **22 entries and 58 runs of this seat went by without it**, because an
+  entry that omits a re-copied list is indistinguishable from an entry written
+  on a quiet day. It is a file now, where losing a row costs a deletion with an
+  author and a date. Read it, and if you take a row, strike it there in the same
+  commit that does the work.
+
 **And "seven days without a cron" is a count of absences, so it cannot tell
 a skipped cycle from a clock that was never switched on** (added 2026-10-24,
 `INC-2026-10-24-the-company-seats-had-no-clock-for-seven-days-after-the-clock-moved`).
