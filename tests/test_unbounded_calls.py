@@ -255,3 +255,48 @@ def test_the_tool_runs_as_a_command_and_bounds_its_own_run(tmp_path):
     )
     assert done.returncode in (0, 1), done.stderr
     assert "unbounded external call" in done.stdout or "in scope" in done.stdout
+
+
+# --- timeout=None, which the first version of this gate called bounded ------
+
+def test_an_explicit_timeout_of_none_is_unbounded():
+    """`subprocess.run(argv, timeout=None)` has no clock and used to pass.
+
+    The gate asked whether the keyword existed. The dimension beside that is
+    what the keyword says, which is the same shape as every defect this gate
+    reports. Nothing in this repository writes it today; it is the spelling
+    the next person silencing this gate would reach for.
+    """
+    src = "import subprocess\nsubprocess.run(['gh', 'x'], timeout=None)\n"
+    rows = uc.scan_source(src, "x.py")
+    assert len(rows) == 1
+    assert rows[0]["bounded"] is False
+
+    control = "import subprocess\nsubprocess.run(['gh', 'x'], timeout=5)\n"
+    assert uc.scan_source(control, "x.py")[0]["bounded"] is True
+
+
+@pytest.mark.parametrize("spelling,bounded", [
+    ("timeout=30", True),
+    ("timeout=SOME_CONSTANT", True),
+    ("timeout=self.timeout", True),
+    ("timeout=None", False),
+    ("check=True", False),
+])
+def test_what_counts_as_a_bound(spelling, bounded):
+    """A non-literal timeout is taken at its word; only `None` is refused.
+
+    A name this scanner cannot resolve could be None at runtime. Reporting
+    every one of those would bury the twenty-three real findings under the
+    whole tree, so the shallow read is deliberate and is stated in the module
+    docstring rather than left for a reader to infer.
+    """
+    src = f"import subprocess\nsubprocess.run(['gh', 'x'], {spelling})\n"
+    assert uc.scan_source(src, "x.py")[0]["bounded"] is bounded
+
+
+def test_the_unbounded_count_over_this_repository_is_unchanged_by_the_guard():
+    """The guard adds no finding here, which is the measurement behind it."""
+    rows = uc.scan_paths(["tools", "pipeline", "mcp"])
+    unbounded = [r for r in rows if not r["bounded"]]
+    assert len(unbounded) == 23, [f"{r['path']}:{r['line']}" for r in unbounded]

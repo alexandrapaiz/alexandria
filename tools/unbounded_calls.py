@@ -33,8 +33,21 @@ is the half the registers rule says the org keeps forgetting: one gate decides
 something gets written down, and a second decides something gets checked
 before it ships.
 
-**What counts as unbounded.** A `subprocess` call or a `urlopen` with no
-`timeout` keyword. That is deliberately syntactic and deliberately shallow.
+**What counts as unbounded.** A `subprocess` call or a `urlopen` whose
+`timeout` keyword is absent or is a literal `None`. That is deliberately
+syntactic and deliberately shallow.
+
+**And `httpx` is deliberately not scanned, which is a measurement rather than
+an omission.** This repository's HTTP calls go through `httpx` in nine
+modules, and `httpx` is bounded by default:
+`httpx._config.DEFAULT_TIMEOUT_CONFIG` reads `Timeout(timeout=5.0)`, so
+`httpx.get(url)` with no keyword already has a clock. `subprocess` has no
+default at all, and `urlopen` inherits `socket.getdefaulttimeout()`, which is
+`None` on this host and is never set anywhere in this tree. Those two are the
+transports whose silence means forever, which is why they are the two scanned.
+The one `httpx` spelling that would be unbounded is an explicit
+`timeout=None`, and that appears nowhere in `tools/`, `pipeline/` or `mcp/`
+today. If it ever does, this is the paragraph that says to widen the scan.
 It cannot see a bound applied by a wrapper, so a wrapper that bounds its own
 call is reported and belongs in the baseline with a one-line reason. It cannot
 see a bound that arrives as a positional argument either, and `subprocess.run`
@@ -84,6 +97,30 @@ SKIP_DIRS = {".git", "node_modules", ".venv", "venv", "__pycache__",
 
 class CannotLook(Exception):
     """The question could not be asked. Never an answer of clean."""
+
+
+def _is_bounded(call: ast.Call) -> bool:
+    """Whether a `timeout` keyword is present *and* is not a literal None.
+
+    The second half was missing until the gate's author ran this question at
+    its own code. `subprocess.run(argv, timeout=None)` is unbounded and reads
+    as bounded to anything that only asks whether the keyword is there, which
+    is the same shape as every defect this file reports: the bound was a
+    decision about whether an argument exists, and the dimension beside it is
+    what the argument says.
+
+    Nothing in this repository writes `timeout=None` today, measured, so this
+    is a guard rather than a finding. It is here because the next person to
+    silence this gate will reach for exactly that spelling.
+    """
+    for keyword in call.keywords:
+        if keyword.arg != "timeout":
+            continue
+        value = keyword.value
+        if isinstance(value, ast.Constant) and value.value is None:
+            return False
+        return True
+    return False
 
 
 def _argv_of(call: ast.Call) -> list[str] | None:
@@ -192,7 +229,7 @@ def scan_source(source: str, path: str) -> list[dict]:
             kind = "urlopen"
         if kind is None:
             continue
-        bounded = "timeout" in {kw.arg for kw in node.keywords}
+        bounded = _is_bounded(node)
         if kind == "urlopen":
             binary, reach = "http", "network"
         else:
