@@ -137,15 +137,32 @@ STATUS = "approved"
 FRONTMATTER_QUARANTINE: dict[str, str | tuple[str, str]] = {
     "harness-engineering": (
         "two `provenance.revisions` entries are on one line on main, so PyYAML "
-        "refuses the file. The fix is a newline, and it is a write into skills/",
-        "2026-11-09",
+        "refuses the file. The fix is a newline, it is a write into skills/, "
+        "and it is already written: the skill seat's #767 carries it, and #772 "
+        "and #782 contain #767, so merging the oldest of the three lands it. "
+        "Second extension of this one entry. The first ran 2026-11-02 to "
+        "2026-11-09 and lapsed with the fix still unmerged, so the thing to "
+        "read here is merge throughput on a chain eleven deep and not the YAML",
+        "2026-11-16",
     ),
 }
 
 #: The date an entry gets when it names none of its own. An entry added today
 #: against a default two days out is an entry with two days, silently, which is
 #: the other half of the same defect.
-FRONTMATTER_QUARANTINE_EXPIRES = "2026-11-09"
+#:
+#: Moved 2026-11-09, and the reason is the half of that defect nobody had
+#: written down: this constant had gone into the past. A default in the past
+#: hands the next bare-string entry an excuse that is dead the moment it is
+#: written, and dead quietly, because an entry excusing nothing is not spent
+#: while its refusal is still live and so no existing gate asks about it. It is
+#: deliberately still an absolute date and not a window of days: a relative
+#: default would always be a week from whenever it is read, which is an excuse
+#: with no end, and ending is the only thing this mechanism is for. No separate
+#: gate pins it, because `expiring_quarantine` below reports a bare-string
+#: entry against a stale default on the first run that reads it, with the days
+#: it has already lost in the sentence.
+FRONTMATTER_QUARANTINE_EXPIRES = "2026-11-16"
 
 #: The defect classes the quarantine is allowed to excuse, matched against the
 #: problem text. Each is a frontmatter defect whose only fix is a write into
