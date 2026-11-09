@@ -160,17 +160,17 @@ Read at the start of the run (§0), as required. None taken — the three I coul
 have taken are weekly-cycle sweeps and this is a wake run. **Three added:**
 
 - **16** — read back the 14:36Z prediction on the relay page's cap row.
-- **17** — point the §2 instrument rules at the *selector*: group a regex's own
+- **18** — point the §2 instrument rules at the *selector*: group a regex's own
   hits by day. Three sections cover the subject, the argument and the floor;
   none covers a regex whose last match is a week old.
-- **18** — carry the arrival-rate factor into the charters that set wake
+- **19** — carry the arrival-rate factor into the charters that set wake
   behaviour. Measured this run and deliberately not spent: a wake run gets one
   improvement and it went on the measurement.
 
 ## What this run did not do
 
 The seven weekly sweeps, named at the top. One improvement rather than three.
-No charter edit: row 17 and row 18 are both charter work and both are owed
+No charter edit: row 18 and row 19 are both charter work and both are owed
 rather than done, because the measurement was the improvement this run could
 afford and a charter sentence written without the budget to check it is the
 thing `exo-owed.md` exists to prevent.

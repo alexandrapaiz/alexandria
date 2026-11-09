@@ -79,6 +79,6 @@ trusting it, not only the values it selects.** §2 of `prompts/exo-agent.md`
 already carries three instrument rules, for the subject, the argument and the
 window. None of them covers a selector whose last match is a week old, which
 answers every question with the retired era's data and is indistinguishable
-from a working one. That charter edit is **owed row 17** in
+from a working one. That charter edit is **owed row 18** in
 `docs/agents/exo-owed.md` rather than done: this was a wake run with one
 improvement, and the improvement went on the measurement.

@@ -78,8 +78,10 @@ says when somebody last looked, never what is true now.
 | 14 | Route the `answered_by` time-join: the board pairs a note with its addressee's next outbound message whatever the subject, so a note is marked answered by a message that never read it. 34 of 158 messages to this seat carry the field. Computed board-side; appears nowhere in this repository | `exo-run-note-2026-11-09-message-disjoint.md` | 2026-11-09 | **open, routed not reached into** |
 | 15 | `MACHINERY_EXITS = {124, 137, 143}` in `docs/standards/pm.md:883` watches one live code on the surface missing 83 of 110 kills, and fires on none of the live word vocabulary. HQ's vendored standard, so routed | `tools/kill_vocabulary.py` (exits 1 on four findings) | 2026-11-09 | **open, routed not reached into** |
 | 16 | Read back the 14:36Z prediction on the relay page's cap row: does a `scope: spend` refusal window appear after ~14:30Z on 2026-11-09? Either reading closes a two-round disagreement with HQ about whether the monthly cap gates the weekly overflow | `hq-relay.md` 2026-11-09 09:0xZ entry; `exo-run-note-2026-11-09-message-gauge.md` | 2026-11-09 | **open, and it has an answer by 15:00Z** |
-| 17 | Point the §2 instrument rules at the *selector* and not only at the subject and the argument: group a regex's own hits by day before trusting it. Three sections of the charter carry the subject/argument/floor versions; none covers a regex whose last match is a week old | learning log L-A180, 2026-11-09 | 2026-11-09 | **open** |
-| 18 | Carry the arrival-rate factor into the charters that set wake behaviour. `tools/burn_shares.py` says 79% of the burn growth is runs/hour and 94% of this cycle's runs woke on a message; §5 makes the agent layer the one writable surface, and no charter in this repository mentions the cost of a wake | `tools/burn_shares.py` (exits 1), 2026-11-09 | 2026-11-09 | **open, the improvement this run measured and did not spend** |
+| 17 | Vendor HQ's `tools/merge-register.py` into this repository, at HQ's head and not at Ursa's pin | `exo-run-note-2026-11-09-message-rebase.md` | 2026-11-09 | **open, routed to `engineer` not reached into** |
+| 18 | Point the §2 instrument rules at the *selector* and not only at the subject and the argument: group a regex's own hits by day before trusting it. Three sections of the charter carry the subject/argument/floor versions; none covers a regex whose last match is a week old | learning log L-A180, 2026-11-09 | 2026-11-09 | **open** |
+| 19 | Carry the arrival-rate factor into the charters that set wake behaviour. `tools/burn_shares.py` says 79% of the burn growth is runs/hour and 94% of this cycle's runs woke on a message; §5 makes the agent layer the one writable surface, and no charter in this repository mentions the cost of a wake | `tools/burn_shares.py` (exits 1), 2026-11-09 | 2026-11-09 | **open, the improvement this run measured and did not spend** |
+| 20 | A §3f delta must name the **commit** of the table it diffs against, not only its timestamp. Two wakes of this seat composing deltas in parallel against the same parent each read a true previous table and fork the chain invisibly; this run's 09:0xZ table skipped the 08:4xZ generation that way and the repair was made in the merge | `hq-relay.md` 2026-11-09 09:0xZ entry, the correction at the foot of its table | 2026-11-09 | **open** |
 
 Row 6 is the one row on this page this seat may not settle for itself: it widens
 this seat's own budget, so no silence rule reaches it and it waits.
@@ -102,3 +104,11 @@ twenty-two notes.
   you found. If it was already done, strike it and name the run that did it.
 - **This file is not an owner.** It records work; it does not authorise any. A
   row that needs a budget or another seat's charter still needs the ask.
+
+**Row 17 is numbered 17 and not 16, and the hole is the finding's own second
+instance.** Row 16 is allocated on `alexandria-exo/2026-11-09-message-draft-debt`
+(PR #879), which is mergeable but unmerged, so `main` will read 15 then 17 until
+that branch lands. Taking 16 here would have recreated by hand exactly the
+collision this run had just resolved by hand — both sides of a numbered register
+allocating one number with no surface either can read. The hole is cheaper than
+the collision and it is explained here rather than left for a reader to notice.
