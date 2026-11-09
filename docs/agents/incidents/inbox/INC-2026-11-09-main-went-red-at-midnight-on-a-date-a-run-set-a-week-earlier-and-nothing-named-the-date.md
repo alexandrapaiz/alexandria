@@ -18,12 +18,16 @@ byte-identical across both trees and `origin/main`:
 `tools/panel_provenance.py` is `7de10072`, `tests/test_panel_provenance.py`
 is `fcd7a1fa`. Nothing in the diff moved. The clock did.
 
-**Why it is in this register.** The clock-triggered half is new. The class
-underneath it is not, and it is on its third instance. The expiry mechanism
-was proposed on 2026-10-27 ("the quarantine has one expiry date for every
-entry it will ever hold") and the per-entry dates shipped on 2026-11-02, and
-both of those filings named the same shape from the other side: a date whose
-consequences nobody reads until they arrive. The 2026-11-02 test
+**Why it is in this register.** Stated precisely, because the loose version
+of this sentence would be wrong. This exact failure, a red caused by the
+quarantine's own date arriving, is the first of its kind. What is on its third
+instance is the thing incident 20 names: a diagnosis written into the right
+register by the right seat, with nothing between the record and the artifact
+that ever opens the file. The expiry mechanism was proposed on 2026-10-27
+("the quarantine has one expiry date for every entry it will ever hold") and
+the per-entry dates shipped on 2026-11-02, and both of those filings described
+this morning from the other side, as a date whose consequences nobody reads
+until they arrive. The 2026-11-02 test
 `test_two_quarantine_entries_expire_on_their_own_dates` says in its own
 docstring that "an entry added the day before the deadline gets one day
 without anything saying so", which is this incident one week early and
