@@ -46,6 +46,20 @@ PLUGIN_MANIFEST = os.path.join(".claude-plugin", "plugin.json")
 MARKETPLACE_MANIFEST = os.path.join(".claude-plugin", "marketplace.json")
 SKILLS_DIR = "skills"
 
+# Distribution manifests are discovered rather than listed, by the directory
+# convention every plugin ecosystem uses: `<ecosystem>-plugin/`. The two names
+# above stay, because the advertised install line is built out of that pair and
+# out of no other, but a second ecosystem's manifest carries its own
+# description, and a description is a count surface.
+#
+# This is the half the hand list cost. `.cursor-plugin/plugin.json` said the
+# library ships nine skills while ten shipped, and this checker reported a
+# clean pass over it, because the only manifests it could see were the two
+# written into these constants. The skill seat put the defect in one sentence
+# on 2026-11-09: what decided the number was the instrument's reach rather
+# than the library's drift.
+MANIFEST_DIR_SUFFIX = "-plugin"
+
 # The prose the install line lives in. Each file carries the block markers
 # below; nothing outside a marked block is read, because both of these files
 # also carry historical sentences with their own, correctly stale, counts.
@@ -55,6 +69,120 @@ BLOCK_OPEN = "<!-- install-line:start -->"
 BLOCK_CLOSE = "<!-- install-line:end -->"
 
 NAME_PATTERN = re.compile(r"^[a-z0-9][a-z0-9-]*$")
+
+# Where a skill count can be read by somebody who is deciding whether to
+# install, and how each file's counts are judged.
+#
+#   "live"      every undated count in the file describes today
+#   "block"     only the install-line block is live, because the rest of the
+#               file quotes rulings that are correct about the day they quote
+#   "internal"  a comment to the next engineer rather than prose a reader
+#               meets. Not checked, and named here anyway, because a reach
+#               that is written down can be argued with and an implicit one
+#               cannot.
+#
+# Every manifest found by `discovered_manifests` is "live" without being
+# listed here: a manifest description has no room for a historical sentence.
+COUNT_SURFACES = {
+    "README.md": "block",
+    os.path.join("docs", "product", "install.md"): "live",
+    os.path.join(SKILLS_DIR, "README.md"): "live",
+    os.path.join("site", "app", "llms.txt", "route.js"): "live",
+    os.path.join("site", "lib", "skill-shelves.js"): "internal",
+    os.path.join("site", "lib", "path.js"): "internal",
+}
+
+# The tree the census walks. Anything here that names a skill count and is
+# absent from COUNT_SURFACES is the finding, because that is the shape the
+# cursor manifest and `/llms.txt` both had: a live count nobody had classified.
+#
+# `docs/product/` is deliberately only its install page. The other files there
+# are internal product notes whose counts are quotations of dated rulings, and
+# deciding which of those describe today is a judgment per sentence rather than
+# per file. Widening the census to them is a separate piece of work and it is
+# filed in the ledger rather than guessed at here.
+COUNT_ROOTS = (
+    "README.md",
+    os.path.join("docs", "product", "install.md"),
+    os.path.join(SKILLS_DIR, "README.md"),
+    os.path.join("site", "app"),
+    os.path.join("site", "lib"),
+)
+
+COUNT_SUFFIXES = (".md", ".js", ".jsx", ".ts", ".tsx")
+
+# A count with a date beside it is a measurement rather than a claim about
+# today, so it is right when it is stale and editing it would be a lie. This
+# is the exemption the marker block used to buy, moved from the file to the
+# passage: `skills/README.md` says "Ten skills as of 2026-11-09" and needs no
+# markers to be read correctly.
+#
+# Two scopes count as "beside it", and the second is narrow on purpose. The
+# count's own sentence, and the sentence that OPENS its paragraph, because a
+# writer dates a passage once at its head: "All eight completed the ADR-38
+# retrofit on 2026-09-30, so every skill now carries ... seven of the eight
+# skills have no section validated" is one dated reading and the second
+# sentence inherits the date from the first.
+#
+# A count of a SUBSET needs no new rule, and the rule it already has is the
+# better sentence. `docs/product/install.md` said a grade was "carried by two
+# skills today", which the census reads as a claim about the library and
+# cannot tell from one about a grade. Written with its denominator, "nine of
+# the ten skills today", the phrase the census matches is "ten skills" and it
+# passes, and the reader is told the share rather than left to work it out.
+#
+# What is deliberately not exempt is a date further down the same paragraph.
+# `docs/product/install.md` had exactly that shape when this gate was
+# written: a paragraph whose last sentence says "filed as of 2026-10-18" and
+# whose middle sentence said "carried by two skills today". A paragraph-wide
+# rule would have exempted a sentence that says "today", which is the one
+# word that cannot be a record.
+DATE = re.compile(r"\b20\d\d-\d\d-\d\d\b")
+
+# ---------------------------------------------------------------- status tables
+#
+# A grade is the other fact a reader leans on, and it drifts the way a count
+# does with one difference that made it invisible: a status is a word rather
+# than a number, so the census above is green on a page whose every grade is
+# wrong. `docs/product/install.md` carried exactly that on 2026-11-09. Its
+# table said `active` for six skills while `main` said `provisional` for nine
+# and `draft` for one, and `agent-approval-paths` had no row at all, so the
+# page a buyer reads was wrong in seven places with the count gate two lines
+# above it passing. Thirteen days on the grades and seven on the missing row,
+# dated by the skill seat from its own commits.
+#
+# The split that found it is the finding worth keeping, and it is why a gate
+# rather than discipline: the seat that writes `status:` in front matter may
+# not open the page that restates it, and the seat that owns the page has no
+# reason to reread front matter on a quiet morning. Neither seat is careless
+# and no habit either of them could adopt would close it, because the habit
+# would have to live in a file one of them is not allowed to open.
+#
+# What is deliberately not the remedy is generating the table. The third
+# column is a hand-written sentence about what each skill decides and it is
+# the best writing on the page; a generator would end the drift and the prose
+# together. So the two mechanical columns are checked and the sentence is left
+# alone, which is the same split the install block already uses.
+STATUS_GRADES = ("draft", "provisional", "active")
+
+# Tables are found by shape rather than by path, and that is this file's own
+# lesson rather than a preference. The hand list of two manifests above is
+# what let `.cursor-plugin/plugin.json` ship a stale count through a clean
+# pass, and a hand list of pages that grade skills would rot the same way the
+# first time a second page grows a table. A table qualifies when its header
+# carries a `Status` column and at least one row's first cell is a backticked
+# skill directory name, so the next page is covered on the day it lands.
+STATUS_HEADER = "status"
+SKILL_CELL = re.compile(r"^`([a-z0-9][a-z0-9-]*)`$")
+TABLE_RULE = re.compile(r"^\|[\s:|-]+\|?$")
+
+# The same tree the count census walks, for the same reason: these are the
+# surfaces somebody deciding whether to lean on a skill actually meets. A
+# dated table under `skills/_validation/results/` is a record of a reading and
+# is right when it is stale, and it is outside this tree rather than exempted
+# by a rule, because a judgment per file there is a separate piece of work.
+STATUS_ROOTS = COUNT_ROOTS
+
 
 # Component keys a plugin manifest may point at. A path here that does not
 # resolve is a load failure at install time, which is the one class of defect
@@ -70,14 +198,112 @@ NUMBER_WORDS = {
     "nineteen": 19, "twenty": 20,
 }
 
+# The lookbehind is the one false positive the census found on its first run
+# and it is worth excluding by hand rather than by a disposition: a markdown
+# section number. `### 2.3 Skills compose` otherwise reads as "3 skills", so
+# the gate's first act would have been to cry wolf on a heading.
+#
+# The noun is two phrasings rather than one because `/llms.txt` used both in
+# four lines, "the nine skill files are in the public repository" and "that
+# installs nine skills", and a census that read one of them would have found
+# half of one surface. What is still outside the reach, and is written down
+# here rather than left to be rediscovered, is a count with the noun elided:
+# that route's "the repository carries a Cursor plugin manifest for the same
+# nine" is a live stale count no pattern short of a parser can see.
 COUNT_PHRASE = re.compile(
-    r"\b(" + "|".join(list(NUMBER_WORDS) + [r"\d+"]) + r")\s+skills\b",
+    r"(?<![.\d])\b(" + "|".join(list(NUMBER_WORDS) + [r"\d+"])
+    + r")\s+(?:skills|skill\s+files)\b",
     re.IGNORECASE,
 )
 
 
 def _as_number(word: str) -> int:
     return int(word) if word.isdigit() else NUMBER_WORDS[word.lower()]
+
+
+def discovered_manifests(root: str) -> list:
+    """Every distribution manifest in the checkout, by directory convention.
+
+    A plugin ecosystem puts its manifest in `<ecosystem>-plugin/`, so the
+    directories are enumerable and the next ecosystem is covered on the day
+    its manifest lands rather than on the day somebody remembers this file.
+    """
+    found = []
+    for entry in sorted(os.listdir(root)):
+        if not entry.endswith(MANIFEST_DIR_SUFFIX):
+            continue
+        directory = os.path.join(root, entry)
+        if not os.path.isdir(directory):
+            continue
+        for name in sorted(os.listdir(directory)):
+            if name.endswith(".json"):
+                found.append(os.path.join(entry, name))
+    return found
+
+
+def manifest_descriptions(data, where: str) -> list:
+    """Every `description` in a manifest, at whatever depth it sits.
+
+    Walked rather than addressed by key path, because the three manifests this
+    repository ships put their descriptions in three different places: a
+    plugin manifest at the top level, a marketplace manifest under `metadata`
+    and again inside each entry of `plugins`, and the cursor manifest at the
+    top level beside a `displayName` the others do not have. A walk needs no
+    update when a fourth shape arrives.
+    """
+    found = []
+    if isinstance(data, dict):
+        for key, value in data.items():
+            if key == "description" and isinstance(value, str):
+                found.append((where, value))
+            else:
+                found.extend(manifest_descriptions(value, f"{where} {key}"))
+    elif isinstance(data, list):
+        for index, value in enumerate(data):
+            found.extend(manifest_descriptions(value, f"{where}[{index}]"))
+    return found
+
+
+def _sentence_end(text: str, after: int) -> int:
+    right = len(text)
+    for mark in (". ", ".\n"):
+        found = text.find(mark, after)
+        if found != -1:
+            right = min(right, found + 1)
+    return right
+
+
+def sentence_around(text: str, start: int, end: int) -> str:
+    """The sentence a match sits in, so a date beside it can be seen.
+
+    Prose here is hard-wrapped, so a sentence is not a line and the line a
+    count lands on routinely carries neither end of it.
+    """
+    left = max(
+        text.rfind(". ", 0, start),
+        text.rfind(".\n", 0, start),
+        text.rfind("\n\n", 0, start),
+        -1,
+    ) + 1
+    return text[left:_sentence_end(text, end)]
+
+
+def opening_sentence(text: str, start: int) -> str:
+    """The first sentence of the paragraph a match sits in.
+
+    This is what makes a dated passage readable as one reading rather than as
+    a dated first line followed by undated claims.
+    """
+    paragraph = text.rfind("\n\n", 0, start) + 2
+    return text[paragraph:_sentence_end(text, paragraph)]
+
+
+def is_dated(text: str, start: int, end: int) -> bool:
+    """Is this count a record of a measurement rather than a claim about today?"""
+    return bool(
+        DATE.search(sentence_around(text, start, end))
+        or DATE.search(opening_sentence(text, start))
+    )
 
 
 def read_json(root: str, relative: str, problems: list) -> dict | None:
@@ -321,35 +547,305 @@ def check_prose(root: str, lines: dict, count: int, problems: list) -> dict:
                     "the manifest have drifted, and the reader pastes the "
                     "sentence."
                 )
-        for match in COUNT_PHRASE.finditer(block):
-            claimed = _as_number(match.group(1))
-            if claimed != count:
-                problems.append(
-                    f"{relative}'s install block says {match.group(0)!r} and "
-                    f"{count} ship from skills/. A reader counts what arrives."
-                )
+        # The counts inside the block, but only for a file whose disposition
+        # is "block". A "live" file's whole text is read by the census, and
+        # its block is part of that text, so checking here too would report
+        # one wrong number as two problems.
+        if COUNT_SURFACES.get(relative) != "live":
+            for match in COUNT_PHRASE.finditer(block):
+                claimed = _as_number(match.group(1))
+                if claimed != count:
+                    problems.append(
+                        f"{relative}'s install block says {match.group(0)!r} "
+                        f"and {count} ship from skills/. A reader counts what "
+                        "arrives."
+                    )
     return blocks
 
 
-def check_manifest_counts(root: str, plugin, market, count: int, problems: list) -> None:
-    """A description is prose too, and it is the first prose a reader meets."""
-    descriptions = []
-    if plugin:
-        descriptions.append((PLUGIN_MANIFEST, plugin.get("description", "")))
-    if market:
-        descriptions.append((MARKETPLACE_MANIFEST, (market.get("metadata") or {}).get("description", "")))
-        for index, entry in enumerate(market.get("plugins") or []):
-            descriptions.append(
-                (f"{MARKETPLACE_MANIFEST} plugins[{index}]", entry.get("description", ""))
+def check_manifest_counts(root: str, count: int, problems: list) -> list:
+    """A description is prose too, and it is the first prose a reader meets.
+
+    Returns the surfaces it read, because the number of surfaces is the thing
+    this check used to get wrong. It reported four problems over four
+    manifests it had been told about, and a reader could not tell that from
+    four problems over every manifest that ships.
+    """
+    surfaces = []
+    for relative in discovered_manifests(root):
+        path = os.path.join(root, relative)
+        try:
+            with open(path, encoding="utf-8") as handle:
+                data = json.load(handle)
+        except json.JSONDecodeError as error:
+            problems.append(f"{relative} is not valid JSON: {error}")
+            continue
+        for where, description in manifest_descriptions(data, relative):
+            surfaces.append(where)
+            for match in COUNT_PHRASE.finditer(description):
+                if _as_number(match.group(1)) != count:
+                    problems.append(
+                        f"{where} says {match.group(0)!r} and {count} ship "
+                        "from skills/. The listing a reader reads before "
+                        "installing is the one place the number has to hold."
+                    )
+    return surfaces
+
+
+def census(root: str) -> list:
+    """Every file under COUNT_ROOTS that names a skill count, with its counts.
+
+    Derived, so a surface that appears tomorrow is in the census tomorrow.
+    This is the half that turns the checker's own reach into something a
+    reader can see and argue with. The gate over it is `check_count_census`
+    below, which fails on a surface carrying no disposition.
+    """
+    paths = []
+    for relative in COUNT_ROOTS:
+        target = os.path.join(root, relative)
+        if os.path.isfile(target):
+            paths.append(relative)
+            continue
+        for current, directories, files in os.walk(target):
+            directories[:] = [
+                name for name in directories
+                if not name.startswith(".")
+                and name not in {"node_modules", "__pycache__"}
+            ]
+            for name in sorted(files):
+                if name.endswith(COUNT_SUFFIXES):
+                    paths.append(
+                        os.path.relpath(os.path.join(current, name), root)
+                    )
+
+    found = []
+    for relative in sorted(set(paths)):
+        try:
+            with open(os.path.join(root, relative), encoding="utf-8") as handle:
+                text = handle.read()
+        except (OSError, UnicodeDecodeError):
+            continue
+        counts = []
+        for match in COUNT_PHRASE.finditer(text):
+            counts.append(
+                {
+                    # Collapsed, because this prose is hard-wrapped and a
+                    # count phrase lands across the break often enough that
+                    # a raw match prints as 'nine\nskills' and a reader
+                    # cannot grep for what the gate just told them.
+                    "phrase": " ".join(match.group(0).split()),
+                    "claimed": _as_number(match.group(1)),
+                    "dated": is_dated(text, match.start(), match.end()),
+                    "line": text.count("\n", 0, match.start()) + 1,
+                }
             )
-    for where, description in descriptions:
-        for match in COUNT_PHRASE.finditer(description or ""):
-            if _as_number(match.group(1)) != count:
+        if counts:
+            found.append({"file": relative, "counts": counts})
+    return found
+
+
+def check_count_census(root: str, count: int, problems: list) -> dict:
+    """The gate: a count surface nobody has classified is the finding.
+
+    `INC-2026-11-02-the-confident-zero-class-was-measured-in-three-more-tools-and-two-sweeps-had-covered-four-of-fifty-six`
+    is this class one level up, and the remedy there was the same: enumerate
+    the population, declare a judgment per member, and fail on the member
+    nobody has judged. A checker that only reads the files it was handed
+    cannot tell a clean library from an unread one.
+    """
+    surveyed = census(root)
+    for entry in surveyed:
+        relative = entry["file"]
+        disposition = COUNT_SURFACES.get(relative)
+        if disposition is None:
+            phrases = ", ".join(sorted({c["phrase"] for c in entry["counts"]}))
+            problems.append(
+                f"{relative} names a skill count ({phrases}) and is not "
+                "classified in COUNT_SURFACES, so nothing checks whether it "
+                "describes today. Classify it live, block or internal; an "
+                "unclassified surface is how a stale count survives a pass."
+            )
+            continue
+        # "internal" is not read, and "block" is read by `check_prose`, which
+        # owns the marker block and the install lines inside it as well.
+        if disposition != "live":
+            continue
+        for item in entry["counts"]:
+            if item["dated"] or item["claimed"] == count:
+                continue
+            problems.append(
+                f"{relative}:{item['line']} says {item['phrase']!r} and "
+                f"{count} ship from skills/. Give the sentence a date if it "
+                "is a record of a measurement, or the live number if it is a "
+                "claim about today."
+            )
+    return {entry["file"]: entry for entry in surveyed}
+
+
+def skill_statuses(root: str) -> dict:
+    """The grade each skill declares in its own front matter.
+
+    Keyed by directory name and never by the declared `name`, because the two
+    disagreeing is already a problem `discovered_skills` reports and a table
+    addresses a skill by the directory a reader can open.
+    """
+    directory = os.path.join(root, SKILLS_DIR)
+    if not os.path.isdir(directory):
+        return {}
+    statuses = {}
+    for entry in sorted(os.listdir(directory)):
+        skill_file = os.path.join(directory, entry, "SKILL.md")
+        if not os.path.isfile(skill_file):
+            continue
+        with open(skill_file, encoding="utf-8") as handle:
+            statuses[entry] = frontmatter(handle.read()).get("status") or ""
+    return statuses
+
+
+def _cells(line: str) -> list:
+    """One markdown table row, as its cells, with the edge pipes dropped."""
+    stripped = line.strip()
+    if stripped.startswith("|"):
+        stripped = stripped[1:]
+    if stripped.endswith("|"):
+        stripped = stripped[:-1]
+    return [cell.strip() for cell in stripped.split("|")]
+
+
+def markdown_tables(text: str) -> list:
+    """Every pipe table in a markdown file, with the line it starts on.
+
+    Deliberately not a markdown parser. A table here is a header row, a rule
+    row of dashes, and the pipe rows that follow, which is every table in this
+    repository. The caption is the nearest preceding non-blank line and it is
+    carried because a date beside a table makes the table a record.
+    """
+    lines = text.splitlines()
+    tables = []
+    index = 0
+    while index < len(lines) - 1:
+        header, rule = lines[index], lines[index + 1]
+        if not header.strip().startswith("|") or not TABLE_RULE.match(rule.strip()):
+            index += 1
+            continue
+        rows = []
+        cursor = index + 2
+        while cursor < len(lines) and lines[cursor].strip().startswith("|"):
+            rows.append((cursor + 1, _cells(lines[cursor])))
+            cursor += 1
+        caption = ""
+        for back in range(index - 1, -1, -1):
+            if lines[back].strip():
+                caption = lines[back]
+                break
+        tables.append({
+            "line": index + 1,
+            "header": _cells(header),
+            "rows": rows,
+            "caption": caption,
+        })
+        index = cursor
+    return tables
+
+
+def status_tables(root: str, known: set) -> list:
+    """Every reader-facing table that grades skills by name.
+
+    Two conditions, and both have to hold. The header carries a `Status`
+    column, and at least one row's first cell is a backticked directory under
+    `skills/`. The first alone would catch a table of unrelated statuses; the
+    second alone would catch the install page's own table of commands.
+    """
+    found = []
+    for relative in STATUS_ROOTS:
+        target = os.path.join(root, relative)
+        paths = []
+        if os.path.isfile(target) and relative.endswith(".md"):
+            paths = [relative]
+        elif os.path.isdir(target):
+            for base, _, names in os.walk(target):
+                for name in sorted(names):
+                    if name.endswith(".md"):
+                        full = os.path.join(base, name)
+                        paths.append(os.path.relpath(full, root))
+        for candidate in sorted(set(paths)):
+            with open(os.path.join(root, candidate), encoding="utf-8") as handle:
+                text = handle.read()
+            for table in markdown_tables(text):
+                headers = [cell.lower() for cell in table["header"]]
+                if STATUS_HEADER not in headers:
+                    continue
+                graded = [
+                    (line, cells) for line, cells in table["rows"]
+                    if cells and SKILL_CELL.match(cells[0])
+                    and SKILL_CELL.match(cells[0]).group(1) in known
+                ]
+                if not graded:
+                    continue
+                table["file"] = candidate
+                table["column"] = headers.index(STATUS_HEADER)
+                table["dated"] = bool(DATE.search(table["caption"]))
+                found.append(table)
+    return found
+
+
+def check_status_tables(root: str, statuses: dict, problems: list) -> list:
+    """The gate: a restated grade has to equal the one in front matter.
+
+    Three ways a table and the library disagree, and all three were live in
+    one page on 2026-11-09, so all three are checked rather than the one that
+    happened to be noticed. A row whose grade is not the declared one, a skill
+    on disk with no row, and a row for a skill that is not on disk.
+    """
+    tables = status_tables(root, set(statuses))
+    for table in tables:
+        where = table["file"]
+        if table["dated"]:
+            continue
+        rowed = {}
+        for line, cells in table["rows"]:
+            match = SKILL_CELL.match(cells[0]) if cells else None
+            if not match or table["column"] >= len(cells):
+                continue
+            name = match.group(1)
+            grade = cells[table["column"]].strip().strip("`")
+            rowed[name] = line
+            if name not in statuses:
                 problems.append(
-                    f"{where} description says {match.group(0)!r} and {count} "
-                    "ship from skills/. The marketplace listing is what a "
-                    "reader reads before installing."
+                    f"{where}:{line} grades `{name}` {grade!r} and there is "
+                    f"no {SKILLS_DIR}/{name}/SKILL.md, so the row advertises "
+                    "a skill a reader cannot install."
                 )
+                continue
+            declared = statuses[name]
+            if not declared:
+                problems.append(
+                    f"{where}:{line} grades `{name}` {grade!r} and "
+                    f"{SKILLS_DIR}/{name}/SKILL.md declares no status, so "
+                    "the table is the only place the grade exists and "
+                    "nothing can confirm it."
+                )
+            elif grade != declared:
+                problems.append(
+                    f"{where}:{line} grades `{name}` {grade!r} and "
+                    f"{SKILLS_DIR}/{name}/SKILL.md says {declared!r}. The "
+                    "front matter is the field; the table restates it."
+                )
+            if declared and declared not in STATUS_GRADES:
+                problems.append(
+                    f"{SKILLS_DIR}/{name}/SKILL.md declares status "
+                    f"{declared!r}, which is not one of "
+                    f"{', '.join(STATUS_GRADES)}."
+                )
+        for name in sorted(statuses):
+            if name not in rowed:
+                problems.append(
+                    f"{where}:{table['line']} grades skills by name and has "
+                    f"no row for `{name}`, which ships from {SKILLS_DIR}/. A "
+                    "table a reader takes for the library is worse than no "
+                    "table when it is silent about a skill."
+                )
+    return tables
 
 
 def check(root: str = REPO) -> dict:
@@ -378,12 +874,48 @@ def check(root: str = REPO) -> dict:
         ),
     }
     blocks = check_prose(root, lines, len(skills), problems)
-    check_manifest_counts(root, plugin, market, len(skills), problems)
+    manifest_surfaces = check_manifest_counts(root, len(skills), problems)
+    surveyed = check_count_census(root, len(skills), problems)
+    statuses = skill_statuses(root)
+    graded = check_status_tables(root, statuses, problems)
 
     return {
         "ok": not problems,
         "problems": problems,
         "skills": skills,
+        "manifests": discovered_manifests(root),
+        # The denominator, printed and never asserted, the way
+        # `tools/target_census.py` prints its own: a count of surfaces that is
+        # asserted trains the next reader to raise the number rather than to
+        # classify the surface.
+        "surfaces": {
+            "manifest descriptions": sorted(manifest_surfaces),
+            "classified": {
+                relative: COUNT_SURFACES[relative]
+                for relative in sorted(surveyed)
+                if relative in COUNT_SURFACES
+            },
+            "unclassified": sorted(
+                relative for relative in surveyed
+                if relative not in COUNT_SURFACES
+            ),
+            # The rot in the other direction: a disposition for a file that is
+            # no longer there. Reported rather than failed, because `--root`
+            # is routinely pointed at a checkout that holds a subset of these
+            # on purpose, and a test over the real tree is the right place to
+            # require it empty.
+            "missing": sorted(
+                relative for relative in COUNT_SURFACES
+                if not os.path.exists(os.path.join(root, relative))
+            ),
+            # Printed for the same reason: a page that restates the grades
+            # and is not in this list is a page the gate never opened, and
+            # that is the one thing a passing run cannot otherwise tell you.
+            "status tables": sorted(
+                f"{table['file']}:{table['line']}" for table in graded
+            ),
+        },
+        "statuses": statuses,
         "marketplace": marketplace_name,
         "plugin": plugin_name,
         "repository": slug,

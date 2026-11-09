@@ -1,0 +1,23 @@
+# the probe before the fix, at commit HEAD~1 (the gates unchanged)
+
+earned-pass probe: does each gate refuse to report a pass it did not earn?
+
+  UNEARNED trigger_test.py --receipts        exit 0, refusal sentence absent
+  UNEARNED claim_receipt.py --check          exit 0, refusal sentence absent
+  UNEARNED claim_receipt.py --check --json   plain run exits 1 on the planted defect, this invocation exits 0
+  UNEARNED prediction_basis.py --check       exit 0, refusal sentence absent
+  UNEARNED project_fixture_probe.py --check  exit 0, refusal sentence absent
+
+5 of 5 gates report a pass over an input they never examined. Route the verdict through `earned_pass.verdict` and give it the denominator.
+
+# the probe after the fix
+
+earned-pass probe: does each gate refuse to report a pass it did not earn?
+
+  ok      trigger_test.py --receipts        exit 2, refusal sentence present
+  ok      claim_receipt.py --check          exit 2, refusal sentence present
+  ok      claim_receipt.py --check --json   plain run exits 1 on the planted defect, this invocation exits 1
+  ok      prediction_basis.py --check       exit 2, refusal sentence present
+  ok      project_fixture_probe.py --check  exit 2, refusal sentence present
+
+All 5 gates refuse. A pass from any of them was earned on a denominator above zero.

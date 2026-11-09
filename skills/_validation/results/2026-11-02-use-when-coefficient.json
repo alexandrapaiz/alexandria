@@ -1,0 +1,327 @@
+{
+  "arms": {
+    "boost_live": {
+      "fired": 51,
+      "narrow_flags": 6,
+      "passed": 62,
+      "under_floor": 1
+    },
+    "boost_off": {
+      "fired": 53,
+      "narrow_flags": 7,
+      "passed": 61,
+      "under_floor": 1
+    },
+    "boost_uniform": {
+      "fired": 53,
+      "narrow_flags": 6,
+      "passed": 61,
+      "under_floor": 1
+    }
+  },
+  "asymmetry": {
+    "idf_mass_as_scored": {
+      "library_boosted_share": 0.8104,
+      "panel_boosted_share": 0.9426,
+      "per_decoy": {
+        "decoy-api-integration": 0.938,
+        "decoy-cluster-capacity": 0.9384,
+        "decoy-data-pipeline-ops": 0.919,
+        "decoy-dependency-management": 0.9806,
+        "decoy-frontend-layout": 0.9541,
+        "decoy-incident-response": 0.9435,
+        "decoy-postgres-tuning": 0.9171,
+        "decoy-product-copy": 0.95
+      },
+      "per_skill": {
+        "agent-containment": 0.7852,
+        "agent-memory-selection": 0.6976,
+        "agent-security-measurement": 0.7636,
+        "context-window-engineering": 0.8776,
+        "evaluation-integrity": 0.7985,
+        "harness-engineering": 0.8979,
+        "recursive-harness-self-improvement": 0.7594,
+        "self-improving-post-training-loops": 0.8482,
+        "skill-library-engineering": 0.8655
+      },
+      "ratio": 0.8598,
+      "ratio_exact": 0.8597654839491568,
+      "trips_tolerance": true
+    },
+    "stem_count_as_shipped": {
+      "library_boosted_share": 0.8019,
+      "panel_boosted_share": 0.9441,
+      "per_decoy": {
+        "decoy-api-integration": 0.9365,
+        "decoy-cluster-capacity": 0.9394,
+        "decoy-data-pipeline-ops": 0.9219,
+        "decoy-dependency-management": 0.9821,
+        "decoy-frontend-layout": 0.9571,
+        "decoy-incident-response": 0.9455,
+        "decoy-postgres-tuning": 0.9206,
+        "decoy-product-copy": 0.95
+      },
+      "per_skill": {
+        "agent-containment": 0.7759,
+        "agent-memory-selection": 0.6833,
+        "agent-security-measurement": 0.7656,
+        "context-window-engineering": 0.8636,
+        "evaluation-integrity": 0.7879,
+        "harness-engineering": 0.8889,
+        "recursive-harness-self-improvement": 0.7407,
+        "self-improving-post-training-loops": 0.8462,
+        "skill-library-engineering": 0.8654
+      },
+      "ratio": 0.8494,
+      "ratio_exact": 0.8493882749531012,
+      "trips_tolerance": true
+    },
+    "tolerance": 1.15
+  },
+  "coefficient_sweep": [
+    {
+      "boost": 0.269,
+      "in_literature_range": true,
+      "live": {
+        "fired": 52,
+        "narrow_flags": 14,
+        "passed": 49,
+        "under_floor": 11
+      },
+      "uniform": {
+        "fired": 45,
+        "narrow_flags": 17,
+        "passed": 59,
+        "under_floor": 23
+      }
+    },
+    {
+      "boost": 0.5,
+      "in_literature_range": true,
+      "live": {
+        "fired": 56,
+        "narrow_flags": 11,
+        "passed": 57,
+        "under_floor": 1
+      },
+      "uniform": {
+        "fired": 53,
+        "narrow_flags": 10,
+        "passed": 61,
+        "under_floor": 10
+      }
+    },
+    {
+      "boost": 0.695,
+      "in_literature_range": true,
+      "live": {
+        "fired": 54,
+        "narrow_flags": 8,
+        "passed": 60,
+        "under_floor": 1
+      },
+      "uniform": {
+        "fired": 53,
+        "narrow_flags": 8,
+        "passed": 61,
+        "under_floor": 6
+      }
+    },
+    {
+      "boost": 1.0,
+      "in_literature_range": true,
+      "live": {
+        "fired": 53,
+        "narrow_flags": 7,
+        "passed": 61,
+        "under_floor": 1
+      },
+      "uniform": {
+        "fired": 53,
+        "narrow_flags": 7,
+        "passed": 61,
+        "under_floor": 1
+      }
+    },
+    {
+      "boost": 1.25,
+      "in_literature_range": true,
+      "live": {
+        "fired": 51,
+        "narrow_flags": 6,
+        "passed": 62,
+        "under_floor": 1
+      },
+      "uniform": {
+        "fired": 53,
+        "narrow_flags": 6,
+        "passed": 61,
+        "under_floor": 1
+      }
+    },
+    {
+      "boost": 1.363,
+      "in_literature_range": true,
+      "live": {
+        "fired": 51,
+        "narrow_flags": 6,
+        "passed": 62,
+        "under_floor": 0
+      },
+      "uniform": {
+        "fired": 53,
+        "narrow_flags": 6,
+        "passed": 61,
+        "under_floor": 0
+      }
+    },
+    {
+      "boost": 1.5,
+      "in_literature_range": false,
+      "live": {
+        "fired": 51,
+        "narrow_flags": 5,
+        "passed": 62,
+        "under_floor": 0
+      },
+      "uniform": {
+        "fired": 53,
+        "narrow_flags": 6,
+        "passed": 61,
+        "under_floor": 0
+      }
+    }
+  ],
+  "comparisons": {
+    "boost_off_vs_boost_live": {
+      "fired_moved": [
+        "cwe-neg-1",
+        "he-conf-2",
+        "rhsi-conf-1"
+      ],
+      "narrow_moved": [
+        {
+          "boost_live": -0.0358,
+          "boost_off": -0.0127,
+          "case": "ei-neg-1"
+        }
+      ],
+      "passed_moved": [
+        {
+          "boost_live": true,
+          "boost_off": false,
+          "case": "cwe-neg-1"
+        },
+        {
+          "boost_live": false,
+          "boost_off": true,
+          "case": "he-conf-2"
+        },
+        {
+          "boost_live": true,
+          "boost_off": false,
+          "case": "rhsi-conf-1"
+        }
+      ],
+      "under_floor_moved": []
+    },
+    "boost_off_vs_boost_uniform": {
+      "fired_moved": [],
+      "narrow_moved": [
+        {
+          "boost_off": 0.0179,
+          "boost_uniform": 0.0224,
+          "case": "he-conf-2"
+        }
+      ],
+      "passed_moved": [],
+      "under_floor_moved": []
+    },
+    "boost_uniform_vs_boost_live": {
+      "fired_moved": [
+        "cwe-neg-1",
+        "he-conf-2",
+        "rhsi-conf-1"
+      ],
+      "narrow_moved": [
+        {
+          "boost_live": -0.0358,
+          "boost_uniform": -0.0158,
+          "case": "ei-neg-1"
+        },
+        {
+          "boost_live": -0.0034,
+          "boost_uniform": 0.0224,
+          "case": "he-conf-2"
+        }
+      ],
+      "passed_moved": [
+        {
+          "boost_live": true,
+          "boost_uniform": false,
+          "case": "cwe-neg-1"
+        },
+        {
+          "boost_live": false,
+          "boost_uniform": true,
+          "case": "he-conf-2"
+        },
+        {
+          "boost_live": true,
+          "boost_uniform": false,
+          "case": "rhsi-conf-1"
+        }
+      ],
+      "under_floor_moved": []
+    }
+  },
+  "engine": "lexical/2.2",
+  "floor": [
+    {
+      "case": "sle-neg-1",
+      "library_score": 0.0492,
+      "null_margin": -0.0629,
+      "ranking_silences_it_first": true
+    }
+  ],
+  "literature": {
+    "cells_below_description": 5,
+    "cells_total": 6,
+    "ours_inside_published_range": true,
+    "ours_is_above_description": true,
+    "presence_paper": "arXiv:2510.22670",
+    "weight_cells_max": 1.363,
+    "weight_cells_min": 0.269,
+    "weight_median": 0.695,
+    "weight_paper": "arXiv:2602.05366"
+  },
+  "stopword_decomposition": {
+    "all_three_lexical_2.2": {
+      "delta": 0.0,
+      "long_123w": 0.685,
+      "short_41w": 0.685
+    },
+    "got_only": {
+      "delta": 0.1501,
+      "long_123w": 0.6553,
+      "short_41w": 0.5052
+    },
+    "last_only": {
+      "delta": 0.0,
+      "long_123w": 0.5052,
+      "short_41w": 0.5052
+    },
+    "none_of_three_lexical_2.1": {
+      "delta": 0.1311,
+      "long_123w": 0.5777,
+      "short_41w": 0.4466
+    },
+    "think_only": {
+      "delta": 0.1501,
+      "long_123w": 0.6553,
+      "short_41w": 0.5052
+    }
+  },
+  "total_cases": 68,
+  "use_when_boost_shipped": 1.25
+}

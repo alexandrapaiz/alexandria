@@ -1,0 +1,132 @@
+{
+  "subsets": 255,
+  "cases": 67,
+  "engine": "lexical/2.2",
+  "reliability_min": 0.7612,
+  "reliability_max": 0.9403,
+  "reliability_at_full_panel": 0.9104,
+  "worst_panel": {
+    "size": 1,
+    "decoys": [
+      "decoy-dependency-management"
+    ],
+    "reliability": 0.7612,
+    "by_kind": {
+      "positive": 1.0,
+      "negative": 0.2222,
+      "confusion": 0.9
+    }
+  },
+  "best_panel": {
+    "size": 6,
+    "decoys": [
+      "decoy-api-integration",
+      "decoy-cluster-capacity",
+      "decoy-data-pipeline-ops",
+      "decoy-frontend-layout",
+      "decoy-postgres-tuning",
+      "decoy-product-copy"
+    ],
+    "reliability": 0.9403,
+    "by_kind": {
+      "positive": 1.0,
+      "negative": 0.8889,
+      "confusion": 0.9
+    }
+  },
+  "by_size": {
+    "1": {
+      "panels": 8,
+      "min": 0.7612,
+      "max": 0.8209,
+      "mean": 0.7873,
+      "by_kind_mean": {
+        "positive": 0.9957,
+        "negative": 0.2986,
+        "confusion": 0.925
+      }
+    },
+    "2": {
+      "panels": 28,
+      "min": 0.791,
+      "max": 0.8507,
+      "mean": 0.823,
+      "by_kind_mean": {
+        "positive": 0.9914,
+        "negative": 0.4544,
+        "confusion": 0.9107
+      }
+    },
+    "3": {
+      "panels": 56,
+      "min": 0.791,
+      "max": 0.8955,
+      "mean": 0.8526,
+      "by_kind_mean": {
+        "positive": 0.9889,
+        "negative": 0.5794,
+        "confusion": 0.9009
+      }
+    },
+    "4": {
+      "panels": 70,
+      "min": 0.8209,
+      "max": 0.9104,
+      "mean": 0.8753,
+      "by_kind_mean": {
+        "positive": 0.9892,
+        "negative": 0.6738,
+        "confusion": 0.8914
+      }
+    },
+    "5": {
+      "panels": 56,
+      "min": 0.8358,
+      "max": 0.9254,
+      "mean": 0.8915,
+      "by_kind_mean": {
+        "positive": 0.992,
+        "negative": 0.7421,
+        "confusion": 0.8804
+      }
+    },
+    "6": {
+      "panels": 28,
+      "min": 0.8806,
+      "max": 0.9403,
+      "mean": 0.9088,
+      "by_kind_mean": {
+        "positive": 0.9963,
+        "negative": 0.7897,
+        "confusion": 0.8893
+      }
+    },
+    "7": {
+      "panels": 8,
+      "min": 0.8955,
+      "max": 0.9254,
+      "mean": 0.9142,
+      "by_kind_mean": {
+        "positive": 1.0,
+        "negative": 0.8194,
+        "confusion": 0.875
+      }
+    },
+    "8": {
+      "panels": 1,
+      "min": 0.9104,
+      "max": 0.9104,
+      "mean": 0.9104,
+      "by_kind_mean": {
+        "positive": 1.0,
+        "negative": 0.8333,
+        "confusion": 0.85
+      }
+    }
+  },
+  "kind_correlation_with_panel_size": {
+    "positive": 0.11,
+    "negative": 0.816,
+    "confusion": -0.434
+  }
+}

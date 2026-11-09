@@ -39,8 +39,8 @@ In a Claude Code session:
 /plugin install alexandria-skills@alexandria
 ```
 
-That installs nine skills, and none of them loads until a session needs it.
-The standing cost is the nine descriptions, about 1,900 tokens.
+That installs ten skills, and none of them loads until a session needs it.
+The standing cost is the ten descriptions, about 1,700 tokens.
 
 <!-- install-line:end -->
 

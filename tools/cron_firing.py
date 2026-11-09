@@ -278,11 +278,13 @@ MAX_RUN_HOURS = 4
 UTC = timezone.utc
 
 
-def classify_refusal(result_text, api_error_status):
-    """Which of the provider's limits refused this run, if one did.
+def classify_refusal(result_text, api_error_status, stop_reason=None):
+    """Which of the provider's refusals stopped this run, if one did.
 
-    They all arrive as `api_error_status: 429` and the only discriminator is
-    the sentence, which is the finding
+    Three of them are limits, and the count is three rather than two because
+    two seats found a class each and this docstring is the merge of both. All
+    three limits arrive as `api_error_status: 429` and the only discriminator
+    is the sentence, which is the finding
     `INC-2026-10-25-the-weekly-slot-is-scheduled-inside-the-hours-the-weekly-provider-budget-is-spent`
     turns on. A weekly limit resets at a week boundary and a session limit
     resets in hours, so reading them as one refusal makes a lost week look
@@ -309,7 +311,51 @@ def classify_refusal(result_text, api_error_status):
     So `monthly-spend` is tested first, because it is the only one of the
     three whose sentence names another limit inside itself. The order is the
     fix, and a test pins it.
+
+    **It was a confident wrong answer and not a gap, which is why nothing
+    caught it** (measured on this branch, 2026-11-08, and kept here when this
+    branch's own duplicate of the fix gave way to the one above). The old
+    chain returned `weekly-limit` for **257 of 257** spend refusals across
+    `/srv/asc/state/.epito/logs` and `unclassified-429` for none of them, so
+    no surface anywhere had a row to be curious about. Seventy-four of the 257
+    were cron slots, which is 74 of the 177 slot refusals this file exists to
+    name, and `alexandria-market`'s 2026-11-06T11:00Z slot is the one that
+    found it: the register asked which wall took the slot, the slot's own log
+    said the monthly spend cap, and this function said the weekly limit.
+
+    **And the sentence has a second real variant**, quoted in the tests
+    alongside the one above: the same text ending `your weekly limit resets
+    11pm (UTC)`, with no date. Both forms account for all 257.
+
+    **The general rule, because this was the fourth reader of the same
+    sentence to get it wrong in the same direction and the second independent
+    fix for it:** when a refusal class is added, grep the whole repository for
+    the old class's name rather than fixing the reader that found it. A
+    classifier is copied far more often than it is imported --
+    `INC-2026-11-08-the-third-limit-class-shut-the-portfolio-for-six-days-and-the-classifier-that-names-classes-called-it-the-second`
+    fixed the charter's published chain and named `tools/capacity.py`'s two in
+    the parent, and did not know this file carried the identical `if` chain.
+    Two branches then fixed this file at the same time under two different
+    class names, which is the same lesson arriving one layer up.
+
+    The third is not a limit and it is why `stop_reason` is read here
+    (security seat, 2026-11-02,
+    `INC-2026-11-02-a-content-safeguard-refusal-is-not-capacity-and-waiting-for-it-to-clear-waits-forever`).
+    A content safeguard declines the message itself: this seat's 03:48:09Z run
+    stopped at turn 17 with `stop_reason: "refusal"`, `terminal_reason:
+    "api_error"`, a sentence naming the provider's use policy and the
+    classifier `[bio]`, and **`api_error_status: null`**. So the 429 gate above
+    returned None, `reason_of` fell through to `nonzero-exit`, and a refusal by
+    the provider was reported in the same word as this seat's own crash.
+
+    Keeping it apart from the limits is the whole point rather than tidiness.
+    A limit clears by waiting and the provider says when; a safeguard refusal
+    has no reset, and its own guidance is to rephrase or change model. An hour
+    of waiting buys a limit its reset and buys this nothing, so a reader who
+    cannot tell them apart holds a slot for a window that never comes.
     """
+    if stop_reason == "refusal":
+        return "safeguard-refusal"
     if api_error_status != 429:
         return None
     text = (result_text or "").lower()
@@ -320,6 +366,36 @@ def classify_refusal(result_text, api_error_status):
     if "session" in text or "5-hour" in text or "5 hour" in text:
         return "session-limit"
     return "unclassified-429"
+
+
+# The provider's limit sentences, as text, for the one question
+# `classify_refusal` deliberately cannot answer: did this log *mention* a wall.
+#
+# Keep the two uses apart, because collapsing them is a measured defect rather
+# than a tidiness argument
+# (`INC-2026-11-09-the-three-runs-that-closed-the-corpus-question-never-met-a-wall`).
+# A refusal is the error record — `api_error_status: 429` — and the sentence is
+# only its discriminator. The sentence *on its own* is prose, and the seats most
+# likely to write it are the ones whose job is to report on refusals: all three
+# logs on this host that carry a limit sentence without an error record are exo
+# seats quoting other runs' walls, at 77, 98 and 118 turns, every one exit zero.
+# Counted as refusals they read as runs that met a wall mid-run and survived it,
+# which is the opposite of what they are, and of the 1,159 genuine walls on this
+# host not one was survived.
+WALL_SENTENCE = re.compile(
+    r"You've hit your (?:session|weekly) limit"
+    r"|You've hit your org's monthly spend limit",
+    re.IGNORECASE)
+
+
+def mentions_a_wall(result_text):
+    """Does this prose quote a limit sentence, refusal or not.
+
+    Never a substitute for `classify_refusal`. This is the needle a corpus
+    grep finds, and `tools/wall_encounters.py` exists to report the two
+    answers side by side so neither is read as the other.
+    """
+    return bool(WALL_SENTENCE.search(result_text or ""))
 
 
 def parse_run(path):
@@ -352,6 +428,7 @@ def parse_run(path):
         "api_error_status": None,
         "refusal": None,
         "refusal_text": None,
+        "wall_prose": False,
         "truncated": True,
         "retry_claimed": False,
         "retried_by": None,
@@ -411,7 +488,8 @@ def parse_run(path):
             if run["turns"] is None:
                 run["turns"] = result.get("num_turns")
             run["refusal"] = classify_refusal(
-                result.get("result"), result.get("api_error_status"))
+                result.get("result"), result.get("api_error_status"),
+                result.get("stop_reason"))
             # The sentence as well as the class, because a weekly refusal
             # announces its own reset instant — `resets Nov 8, 11pm (UTC)` —
             # and that is the only authoritative statement of where the
@@ -419,6 +497,15 @@ def parse_run(path):
             # it rather than assuming the Sunday rule.
             if run["refusal"]:
                 run["refusal_text"] = result.get("result")
+            # A limit sentence with no error record beside it. Kept rather
+            # than dropped because its absence is what sent the corpus
+            # question to a grep: `refusal` is correctly None for such a run,
+            # so nothing downstream could tell it from a quiet run, and a
+            # file-wide grep is the only reading left — which counts it as a
+            # refusal. Three runs on this host are this, and they were read
+            # as proof that an in-run retry survives a wall.
+            run["wall_prose"] = (run["refusal"] is None
+                                 and mentions_a_wall(result.get("result")))
 
     return run
 
@@ -631,9 +718,22 @@ def pr_absence_is_evidence(run):
     is absent for two different reasons and they need telling apart. A run that
     exited 0 with no error chose to stop, and if it had opened a pull request it
     would have named it, so `pr=-` is evidence: that is `silent`, incident 3's
-    failure mode. A run that was refused, errored, exited non-zero or left no
-    trailer at all was stopped, and under the ship-first rule its draft pull
-    request is more likely open than not, so `pr=-` is evidence of nothing.
+    failure mode. A run that was refused, errored, exited non-zero, was killed
+    on the wall clock or left no trailer at all was stopped, and under the
+    ship-first rule its draft pull request is more likely open than not, so
+    `pr=-` is evidence of nothing.
+
+    **The wall kill is named separately above because it is the case this
+    docstring used to describe wrongly** (security seat, 2026-11-02). The old
+    wording offered "left no trailer at all" as the stopped-run case, and a
+    reader carried that into an ask to HQ as "a wall kill writes no trailer".
+    It does write one. Measured over every log this host holds: 36 of 36
+    `exit=timeout` runs end with `# exit=timeout pr=- session=- turns=-`, so
+    the trailer is present and it is the three fields that are placeholders.
+    The code below has always been right about this, because `exit=timeout`
+    leaves `exit_code` None and the final clause then fails, but the prose
+    said something the code does not do. The empty half of a killed run's log
+    is the body between the `---` fences, not the trailer.
 
     A run with a url needs no judgement, which is why that case answers True:
     there is no absence to weigh.
@@ -654,6 +754,24 @@ def pr_absence_is_evidence(run):
         # request of that seat inside its window belongs to it. Widening the
         # same reasoning to every exit-0 run would dissolve `silent`, which is
         # the state incident 3 exists to keep visible.
+        #
+        # THE PREMISE ABOVE IS FALSE AND THE WIDENING WAS THE WRONG REMEDY TO
+        # REACH FOR (security seat, 2026-11-02,
+        # `INC-2026-11-02-a-clean-exit-0-run-names-no-pull-request-and-the-settlement-is-gated-off`).
+        # `retry_of` was added because a re-fired run shipped without saying
+        # so, and the case was read as something re-firing does. It is not.
+        # Two runs of this seat on 2026-11-02 exited 0 at 104 and 80 turns,
+        # wrote a complete final answer, re-fired nothing, and named neither
+        # of the pull requests they had opened (#715, since merged, and #724)
+        # because their closing prose wrote `#715` rather than a url. Whether
+        # a run names its pull request is a property of its prose, not of how
+        # it stopped, so no predicate over exit codes can recover it.
+        #
+        # So this function is deliberately left as it is. It answers the
+        # question it is asked -- is the absence, on its own, evidence -- and
+        # for a caller holding no better evidence the answer is still yes.
+        # The repair belongs in `resolve_shipped`, which does hold better
+        # evidence and used to skip these runs before consulting it.
         return False
     return (not run["refusal"]
             and not run["api_error_status"]
@@ -729,8 +847,32 @@ def resolve_shipped(runs, pr_index, max_run_hours=MAX_RUN_HOURS):
     for the newest run of a seat, which is exactly the run a reading of today
     asks about.
 
-    Only runs whose absence is not evidence are resolved, so a `silent` run
-    stays silent. Nothing here is a fallback for a trailer that already has a
+    A run whose absence is not evidence is settled outright, as before. A run
+    whose absence *is* evidence keeps its `silent` verdict and now also
+    records `pr_candidate`, which is the thing this function used to compute
+    and throw away: a pull request of this seat created inside this run's
+    window. Nothing is reclassified by it. The point is that `silent` stops
+    being reported with a confidence nothing behind it has.
+
+    WHY IT IS NOT A STRAIGHT SETTLEMENT (security seat, 2026-11-02,
+    `INC-2026-11-02-a-clean-exit-0-run-names-no-pull-request-and-the-settlement-is-gated-off`).
+    The scraper misses a clean run's pull request often, because a clean run
+    writes a closing summary and a summary is free to say `#715` instead of a
+    url. Measured on this host: 21 alexandria cron and hook runs are classed
+    `silent` with a pull request of their own seat in their window, two of
+    them merged (#645, #660), and 78 rows fleet-wide are eligible. So the gate
+    is wrong often. But the obvious repair -- delete the gate and settle these
+    the same way -- was tried here and backed out, because
+    `test_a_silent_run_stays_silent_even_with_the_list` is not a restatement
+    of the gate. It forbids lending one run's pull request to another, and the
+    branch name cannot tell those apart: #530 is a `cron` run's pull request
+    on a branch named `...-2026-10-26-message`, so a trigger-word check that
+    looks principled declines correct attributions. A timestamp inside a
+    window is not enough evidence to overturn incident 3's failure mode, and
+    it is ample evidence to stop asserting the opposite.
+
+    A reading with no index is untouched: `pr_index` empty returns early one
+    line below. Nothing here is a fallback for a trailer that already has a
     url; a url the host wrote is better evidence than a timestamp match.
     """
     if not pr_index:
@@ -757,15 +899,30 @@ def resolve_shipped(runs, pr_index, max_run_hours=MAX_RUN_HOURS):
         candidates.sort()
 
         for index, run in enumerate(seat_runs):
-            if pr_absence_is_evidence(run):
+            if run["pr"]:
+                # The host already named it, and that beats a timestamp match.
                 continue
             opens = run["started"]
             closes = opens + timedelta(hours=max_run_hours)
             if index + 1 < len(seat_runs):
                 closes = min(closes, seat_runs[index + 1]["started"])
+            settles = not pr_absence_is_evidence(run)
             for created, entry in candidates:
                 if opens <= created < closes:
-                    run["pr"] = entry.get("url") or f"#{entry.get('number')}"
+                    url = entry.get("url") or f"#{entry.get('number')}"
+                    if not settles:
+                        # The run stopped on its own terms, so the absence is
+                        # evidence and this match does not get to overturn it.
+                        # But it is not nothing either, and the old code threw
+                        # it away before anybody saw it. Recording it is the
+                        # whole repair: `silent` keeps its meaning, and a
+                        # reader is told that a pull request of this seat sits
+                        # inside this run's window and wants a human.
+                        run["pr_candidate"] = url
+                        run["pr_candidate_branch"] = (
+                            entry.get("headRefName") or "")
+                        break
+                    run["pr"] = url
                     run["pr_source"] = "pull request list"
                     # A draft is not a shipped cycle. `isDraft` is absent from
                     # an index built without it, and an absent field is read as
@@ -979,6 +1136,8 @@ def judge(runs, day, tolerance=15, history_days=14, now=None, pr_index=None,
             "pr": run["pr"],
             "pr_source": run.get("pr_source", "trailer" if run["pr"] else None),
             "pr_unknown": not pr_absence_is_evidence(run),
+            "pr_candidate": run.get("pr_candidate"),
+            "pr_candidate_branch": run.get("pr_candidate_branch"),
             "pr_index_blind": bool(run.get("pr_index_blind")),
             "pr_is_draft": bool(run.get("pr_is_draft")),
             "retry_claimed": bool(run.get("retry_claimed")),
@@ -1197,9 +1356,26 @@ def render(result, root, prs_given=False):
                 deferred = (f", and the slot had coalesced at "
                             f"{finding['coalesced_at']} and was dispatched "
                             f"{late} minute(s) late" if late is not None else "")
-                lines.append(f"  LOST     {finding['seat']} {finding['slot']} "
-                             f"{finding['why']}{turns}, no pull "
-                             f"request{deferred}")
+                line = (f"  LOST     {finding['seat']} {finding['slot']} "
+                        f"{finding['why']}{turns}, no pull "
+                        f"request{deferred}")
+                if finding.get("pr_candidate"):
+                    # The verdict is unchanged and deliberately so, see
+                    # `resolve_shipped`. What changes is that it stops being
+                    # the only thing printed: the scraper reads a run's
+                    # closing prose, a clean run is free not to quote a url,
+                    # and this seat's own #715 and #724 of 2026-11-02 are
+                    # what that looks like. A reader settling this opens the
+                    # branch and looks.
+                    line += (f". But {finding['pr_candidate']} "
+                             f"({finding['pr_candidate_branch']}) was opened "
+                             f"inside this run's window by this seat, and the "
+                             f"host scrapes `pr=` out of a run's closing "
+                             f"answer, so a clean run that wrote `#1234` "
+                             f"rather than a url reads exactly like this. "
+                             f"Settle it against the branch before you treat "
+                             f"the cycle as lost")
+                lines.append(line)
         elif finding["state"] == "coalesced":
             into = finding.get("absorbed_into")
             into = (f", which had started at {into}" if into
@@ -1275,11 +1451,14 @@ def main(argv=None):
     parser.add_argument("--history-days", type=int, default=14,
                         help="how far back to look for a slot's other firings")
     parser.add_argument("--now", default=None,
-                        help="an ISO stamp to read the day as of, rather than "
-                             "the wall clock. The grace window in `reason_of` "
-                             "makes one verdict a function of the time of "
-                             "asking, so a reading that has to be reproduced "
-                             "needs the clock pinned")
+                        help="an ISO stamp that pins the clock a verdict is "
+                             "reached at, which is not the day being read: "
+                             "`--day` chooses that. The grace window in "
+                             "`reason_of` makes one verdict a function of the "
+                             "time of asking, so a reading that has to be "
+                             "reproduced needs the clock pinned. Passing "
+                             "`--now` alone still reads today, which the first "
+                             "clause here used to claim otherwise")
     parser.add_argument("--prs", default=None,
                         help="a file of `gh pr list --json "
                              "number,url,headRefName,createdAt` output, which "

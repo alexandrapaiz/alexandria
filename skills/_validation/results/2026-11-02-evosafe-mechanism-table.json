@@ -1,0 +1,210 @@
+{
+  "cells_carrying_nl_policy": 9,
+  "columns": [
+    {
+      "cell": "os-filesystem/S",
+      "deterministic_code": 1,
+      "domain": "os-filesystem",
+      "mechanisms": 4,
+      "model": "Sonnet 4.6",
+      "nl_policy": 1,
+      "quarantined_judge": 2
+    },
+    {
+      "cell": "os-filesystem/G",
+      "deterministic_code": 5,
+      "domain": "os-filesystem",
+      "mechanisms": 7,
+      "model": "GLM-5",
+      "nl_policy": 1,
+      "quarantined_judge": 1
+    },
+    {
+      "cell": "os-filesystem/K",
+      "deterministic_code": 2,
+      "domain": "os-filesystem",
+      "mechanisms": 5,
+      "model": "Kimi-K2.5",
+      "nl_policy": 1,
+      "quarantined_judge": 2
+    },
+    {
+      "cell": "os-filesystem/Q",
+      "deterministic_code": 1,
+      "domain": "os-filesystem",
+      "mechanisms": 2,
+      "model": "Qwen3.7-plus",
+      "nl_policy": 0,
+      "quarantined_judge": 1
+    },
+    {
+      "cell": "os-filesystem/D",
+      "deterministic_code": 3,
+      "domain": "os-filesystem",
+      "mechanisms": 4,
+      "model": "DeepSeek-V4-Flash",
+      "nl_policy": 1,
+      "quarantined_judge": 0
+    },
+    {
+      "cell": "finance/S",
+      "deterministic_code": 5,
+      "domain": "finance",
+      "mechanisms": 7,
+      "model": "Sonnet 4.6",
+      "nl_policy": 1,
+      "quarantined_judge": 1
+    },
+    {
+      "cell": "finance/G",
+      "deterministic_code": 4,
+      "domain": "finance",
+      "mechanisms": 5,
+      "model": "GLM-5",
+      "nl_policy": 0,
+      "quarantined_judge": 1
+    },
+    {
+      "cell": "finance/K",
+      "deterministic_code": 2,
+      "domain": "finance",
+      "mechanisms": 3,
+      "model": "Kimi-K2.5",
+      "nl_policy": 0,
+      "quarantined_judge": 1
+    },
+    {
+      "cell": "finance/Q",
+      "deterministic_code": 4,
+      "domain": "finance",
+      "mechanisms": 4,
+      "model": "Qwen3.7-plus",
+      "nl_policy": 0,
+      "quarantined_judge": 0
+    },
+    {
+      "cell": "finance/D",
+      "deterministic_code": 6,
+      "domain": "finance",
+      "mechanisms": 7,
+      "model": "DeepSeek-V4-Flash",
+      "nl_policy": 0,
+      "quarantined_judge": 1
+    },
+    {
+      "cell": "telecom/S",
+      "deterministic_code": 4,
+      "domain": "telecom",
+      "mechanisms": 6,
+      "model": "Sonnet 4.6",
+      "nl_policy": 1,
+      "quarantined_judge": 1
+    },
+    {
+      "cell": "telecom/G",
+      "deterministic_code": 3,
+      "domain": "telecom",
+      "mechanisms": 4,
+      "model": "GLM-5",
+      "nl_policy": 1,
+      "quarantined_judge": 0
+    },
+    {
+      "cell": "telecom/K",
+      "deterministic_code": 3,
+      "domain": "telecom",
+      "mechanisms": 3,
+      "model": "Kimi-K2.5",
+      "nl_policy": 0,
+      "quarantined_judge": 0
+    },
+    {
+      "cell": "telecom/Q",
+      "deterministic_code": 2,
+      "domain": "telecom",
+      "mechanisms": 4,
+      "model": "Qwen3.7-plus",
+      "nl_policy": 1,
+      "quarantined_judge": 1
+    },
+    {
+      "cell": "telecom/D",
+      "deterministic_code": 3,
+      "domain": "telecom",
+      "mechanisms": 5,
+      "model": "DeepSeek-V4-Flash",
+      "nl_policy": 1,
+      "quarantined_judge": 1
+    }
+  ],
+  "dropped_prose_by_domain": {
+    "finance": 4,
+    "os-filesystem": 1,
+    "telecom": 1
+  },
+  "families_fixed_realization": [
+    "NL policy preamble",
+    "argument hygiene",
+    "caller/entity scope gate",
+    "compromise-armed gating",
+    "content head/tail clip",
+    "content/injection auditor",
+    "credential/PII redaction",
+    "egress/destination scope",
+    "obfuscated-exec ban",
+    "provenance/taint ledger",
+    "scope-vs-task judge",
+    "trade-parameter scope",
+    "verdict cache (retries)",
+    "volume/velocity cap",
+    "wash/drain trade ledger"
+  ],
+  "families_total": 16,
+  "families_varying_realization": {
+    "action-nature gate": {
+      "by_realization": {
+        "d": [
+          "os-filesystem/G",
+          "os-filesystem/D"
+        ],
+        "s": [
+          "os-filesystem/S",
+          "os-filesystem/K",
+          "os-filesystem/Q"
+        ]
+      },
+      "cells_present": 5,
+      "realizations": [
+        "d",
+        "s"
+      ]
+    }
+  },
+  "harnesses_with_deterministic_code": 15,
+  "harnesses_without_judge": [
+    "os-filesystem/D",
+    "finance/Q",
+    "telecom/G",
+    "telecom/K"
+  ],
+  "harnesses_without_prose": [
+    "os-filesystem/Q",
+    "finance/G",
+    "finance/K",
+    "finance/Q",
+    "finance/D",
+    "telecom/K"
+  ],
+  "n_columns": 15,
+  "overlap": {
+    "both": 2,
+    "without_judge": 4,
+    "without_prose": 6
+  },
+  "paper": "arxiv.org/abs/2609.05903",
+  "pure_deterministic_code": [
+    "finance/Q",
+    "telecom/K"
+  ],
+  "table": "A6 (Appendix E, Per-Cell Mechanism Inventory)"
+}

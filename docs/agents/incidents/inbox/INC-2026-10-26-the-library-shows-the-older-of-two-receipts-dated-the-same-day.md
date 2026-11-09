@@ -76,3 +76,61 @@ number from wrong to right.
 already assigns it. The ledger entry is raised again in this pull request with
 today's evidence attached, because a proposal that sat for 26 days did not need
 a better argument, it needed a symptom somebody could see.
+
+**Update, 2026-11-09, skill seat: it recurred, as this entry predicted, and the
+count is now three.** Two bundles landed on 2026-11-09 from two runs of this
+seat: `2026-11-09-containment-plan-integrity.json` from the `agent-containment`
+v9 run (#838, merged) and `2026-11-09-evaluation-integrity-aggregate.json` from
+the `evaluation-integrity` v7 run. Both carry `generated: 2026-11-09` and both
+are pre-registered, so `rank_bundles` ties on both sort keys, `sorted()` is
+stable, and the input order is the alphabetical glob, so `containment` wins on
+the letter c and the library's receipt for `evaluation-integrity` was the one
+measured before that skill was edited. `--receipts` reported it as STALE
+(`SKILL.md is sha f4e55973a4b26b99, newest receipt measured 1badc5a43035e6c5`),
+which is the check working, and the suite would have reported it after the
+commit rather than before. The mitigation was the same as this entry's: the
+older bundle moved to `results/superseded/` with a README note. The ranking
+defect is still untouched, and the remedy is still one sentence of code in a
+file this seat may not write. Prior instances: 2026-09-30 (two bundles on one
+branch), 2026-10-26 (this entry), 2026-11-02 (recorded in
+`results/superseded/README.md` rather than here), 2026-11-09 (this update). So
+four occurrences, of which two reached this register, and the one that did not
+is why this update names the README as a place instances go to die.
+
+**Second update, 2026-11-09, skill seat: the tie fired a fifth time inside a
+change that was then withdrawn, so the count of shipped occurrences is still
+four. What the fifth one bought is a correction to this entry's own mitigation
+advice.** A later run of the same day replaced the em-dash separator in
+`provenance.papers` across seven skills, re-ran the suite, and hit this tie
+exactly as predicted. That change was reverted for an unrelated reason recorded
+in
+`INC-2026-11-09-cleaning-the-library-of-ban-list-findings-trips-a-tripwire-in-another-seats-file`,
+so nothing here changed on `main` and no bundle moved. The mechanism findings
+survive the revert and are the reason for this update.
+
+**This entry's "rejected mitigations" paragraph is wrong in one direction, and a
+seat following it can pick the wrong filename.** It says renaming a bundle so it
+sorts earlier "relies on directory listing order, which is not a recency order
+and is not alphabetical on every filesystem". The first half understates the
+problem and the second half is not the operative one. The run tried to name its
+bundle so it would sort **last**, reading `panel_validator.py`'s
+`sorted(..., reverse=True)` as the rule. That is the wrong half of the
+disagreement this entry already documents. `rank_bundles` in
+`skills/_validation/trigger_test.py` and `rankBundles` in
+`site/lib/skill-provenance.js` both tie-break on a **stable sort over the
+ascending glob**, so the alphabetically **first** same-day bundle wins there,
+while the panel takes the lexically last. **The two consumers want opposite
+filenames**, which means no single rename can satisfy both and a seat that picks
+one has silently chosen which consumer to be correct for. That is a stronger
+argument for the timestamp fix than any of the four earlier instances made, and
+it cost two turns to rediscover from the code rather than from this entry.
+
+**And the churn is pure bookkeeping whenever no description changes, now
+measured.** Because the withdrawn edit touched only a frontmatter list, the two
+bundles are comparable case for case: both **74 of 84** at reliability
+**0.881**, identical case sets, **zero of 84 cases changing verdict**, and
+exactly the seven edited skills' `skill_sha256` differing. So in the
+no-description-change case, which is what any mechanical repair produces, a
+tie-break on a timestamp would have made the whole episode a no-op. Four shipped
+occurrences, three of which reached this register, and the remedy is still one
+sentence of code in a file this seat may not write.
