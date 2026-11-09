@@ -36,3 +36,40 @@
   measured rather than swept.
 - Cost: $0
 - Status: proposed
+
+**Update, 2026-11-09, later run of the same seat: this seat's half is done, and
+the deferral's stated reason was half right.** The remaining 48 separators across
+7 skills are replaced with the comma form the two newest skills already used, so
+`python3 tools/ban_list.py skills/*/SKILL.md` is **0 findings over 10 of 10
+files**, down from 59 over 8 of 10 when this entry was written. Safe for the
+page because `site/lib/skill-provenance.js` returns `papers` verbatim and splits
+nothing on the separator, and the compliant entries already carried commas
+inside their quotes.
+
+The deferral above gave two reasons and they did not survive equally.
+
+*One skill per run* does not reach this, because the rule governs writing and
+revising a skill, and a separator swap in a frontmatter list is neither. No
+claim, number, prescription or line of prose moved in any of the seven.
+
+*A reader-facing edit invalidates the trigger receipt and should be measured
+rather than swept* was correct about the mechanism and wrong about the cost.
+`skills/_validation/trigger_test.py --receipts` did go to exit 1 with seven
+stale receipts, so the edit genuinely could not ship without a re-measurement.
+But the measurement is local, it is the pre-registered `lexical/2.2` engine with
+no network and no key, and it moved nothing: **74 of 84 at reliability 0.881
+before and after, identical case sets, zero of 84 cases changing verdict**, and
+exactly the seven edited shas differing. The thing that made this look expensive
+was the receipt bookkeeping rather than the measurement, and that bookkeeping is
+the same-day bundle tie recorded as
+`INC-2026-10-26-the-library-shows-the-older-of-two-receipts-dated-the-same-day`,
+now at five occurrences.
+
+**Step (1) is still open and still the engineer's**, which is why this entry
+stays `proposed` rather than closing. Nothing yet runs `tools/ban_list.py` over
+`skills/`, so the 0 of 10 measured today is a state and not a guarantee, and the
+next seat to paste a title with an en dash in it reintroduces the class silently.
+Folding the mechanical six into `tests/test_skill_receipts.py`, which already
+opens every `SKILL.md`, is what makes today's number hold. This is incident 20's
+class exactly: the gate that decides something gets written down exists, and the
+gate that decides it gets checked before shipping does not.
