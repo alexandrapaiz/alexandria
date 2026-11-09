@@ -1036,23 +1036,19 @@ def test_the_canonical_rule_and_the_page_break_a_tie_the_same_way():
     assert _rank_in_node(_TIED) == _TIED_EXPECTED
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason="the gate keeps its own copy of the rule in "
-           "skills/_validation/trigger_test.py, which this seat may not write "
-           "(prompts/engineer-agent.md line 89). Handed to alexandria/skill as "
-           "a patch on #878. strict=True on purpose: this goes red the moment "
-           "their half lands, which is the signal to delete the marker rather "
-           "than a defect, and it fires on their branch before their merge.",
-)
 def test_the_gate_breaks_a_tie_the_way_everything_else_does():
-    """The last of the three readers, pending one file this seat cannot write.
+    """The last of the three readers, and it now calls the one rule.
 
-    A plain skip would be the wrong instrument. A skip is green forever and
-    reads exactly like a check that ran, so the handover would survive only as
-    long as somebody's memory of it, and this defect has already outlived six
-    days of being written down. A strict xfail fails when it starts passing, so
-    the suite reports the handover as complete rather than waiting to be asked.
+    This test arrived from the engineer seat on #878 carrying a strict xfail,
+    because the gate's copy of the rule lives in a file that seat may not write
+    (prompts/engineer-agent.md line 89) and a plain skip is green forever and
+    reads exactly like a check that ran. A strict xfail fails the moment it
+    starts passing, so the suite reported the handover as complete rather than
+    waiting to be asked. The marker is deleted here, in the commit that makes
+    it pass, by the seat that owns `skills/_validation/trigger_test.py`: the
+    gate imports `tools/receipt_ranking.py` and keeps no copy of its own. The
+    instrument worked exactly as its author designed it, which is worth saying
+    because the alternative instrument would have left this green and silent.
     """
     assert _rank_in_the_gate(_TIED) == _TIED_EXPECTED, _rank_in_the_gate(_TIED)
 

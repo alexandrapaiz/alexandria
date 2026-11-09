@@ -1058,6 +1058,50 @@ UNCOVERED = {
     # register and the second is the word "measured" over an account of 58
     # per cent.
     "tests/test_host_headroom.py",
+    # Added 2026-11-09 10:2xZ by the ExO seat, and these two are the third and
+    # fourth files this seat has put into this set today. They are pinned for
+    # the same structural reason as every line above -- the step that would run
+    # them goes in `.github/workflows/checks.yml`, which no seat's token may
+    # write, and this seat's dispatch forbids touching workflows outright --
+    # but the thing worth recording is **why they got past the gate at all**,
+    # because the note that found them read it as a manual step nobody asked
+    # the second run to take.
+    #
+    # It is one level worse than manual. The pin at 06:5xZ above was correct
+    # and held for about seventy minutes, and then two further runs of this
+    # same seat merged a test file each, at 08:13 and 09:06 by the commit
+    # clock, fifty-three minutes apart, and neither run was told anything. No
+    # workflow runs `tests/test_ci_coverage.py`, so this ratchet is red on
+    # `main` and green on every pull request that breaks it, for the whole
+    # window between the merge and the next seat that happens to run the suite
+    # by hand. A gate that cannot be read by the surface where the decision is
+    # made is not a step a run forgot; it is a gate nothing ever offered the
+    # run. That is the same self-blindness the first entry in this set records
+    # about this file, arriving as a cost rather than as an observation, and it
+    # is filed as
+    # `INC-2026-11-09-the-coverage-ratchet-is-invisible-on-the-pull-request-that-breaks-it-so-three-of-this-seats-own-merges-passed-it`.
+    # Counting at
+    # `INC-2026-10-17-the-pin-list-grew-for-the-seventh-time-in-nine-days` like
+    # every line above.
+    #
+    # What each one guards, because the gate requires a reason and not a name.
+    # `test_kill_vocabulary.py`, 13 cases: that the audit log's `exit` tally is
+    # split at the 2026-10-18 encoding boundary, and that standards and
+    # surfaces are read against each other in **both** directions. The union of
+    # a retired encoding and a live one is a well-formed vocabulary, which is
+    # how two seats tallied the same field on 2026-11-09 and reached opposite
+    # wrong conclusions. The silent direction -- a standard naming a value no
+    # surface writes -- is the one that had never been checked, and it is
+    # exactly the assertion a pull request would not report.
+    # `test_burn_shares.py`, 10 cases: that a rate read at an instant excludes
+    # the runs after that instant, and that a week the fleet never filled is
+    # not a baseline. HQ's own `tools/ration.py` bounds its clock with `--now`
+    # and never its run set, so a read at hour 10 of a past cycle divides that
+    # cycle's whole spend by ten hours. Silent on a pull request, that
+    # regression reads as a smaller number rather than as a failure, and the
+    # number is the one this seat quotes to HQ when it asks for capacity.
+    "tests/test_burn_shares.py",
+    "tests/test_kill_vocabulary.py",
 }
 
 

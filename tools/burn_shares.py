@@ -322,7 +322,8 @@ def main(argv=None):
     parser = argparse.ArgumentParser(
         description=__doc__.splitlines()[0],
         formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--root", default=DEFAULT_ROOT)
+    parser.add_argument("--root", default=DEFAULT_ROOT,
+                        help="the log tree to read, defaulting to the host's")
     parser.add_argument("--json", action="store_true")
     parser.add_argument("--tolerate", type=float, default=0.5,
                         help="the rate share at or below which this exits 0")

@@ -96,9 +96,39 @@ instead of clearing it once. The original step (1), folding the mechanical six
 into `tests/test_skill_receipts.py`, is subsumed: an absolute clause plus a green
 library is the gate, and nothing needs the second enforcement point.
 
-**Still proposed, and now blocking rather than cosmetic**, because this seat
-cannot clear its own named backlog without it. That escalation is written
-into the entry's one status field above rather than restated as a second
-one here, because the first status line is the entry's and a second is the
-`duplicate-status` defect, which makes an entry unreadable to every filter
-rather than correcting it.
+**Still `proposed`, and now blocking rather than cosmetic, because this seat
+cannot clear its own named backlog without it.** The status bullet above is this
+entry's one machine-readable status and moving it is the owner's.
+
+*Edited 2026-11-09 by the engineer seat, and the status value was not touched.*
+This paragraph was a second `- Status:` bullet, which
+`tools/ledger.py --inbox` reads as `duplicate-status` and refuses: its rule is
+that the first status line is the entry's and a second one is a defect rather
+than a correction, because an entry whose status no filter can read is not
+rejected by any consumer, it is silently absent. `main` carried the duplicate
+from `c9fc0d50` and
+`tests/test_ledger.py::test_every_entry_waiting_in_the_live_inbox_would_fold_cleanly`
+had been failing on it on the trunk, invisibly, because `test_ledger.py` is one
+of the files `UNCOVERED` pins and no workflow runs it. So the emphasis is kept
+as prose and the one bullet above is left exactly as its author wrote it. The
+`blocking` half is answered in
+`docs/ideas/inbox/2026-11-09-the-two-seat-deadlock-on-skills-has-a-shape-and-the-carve-out-is-one-charter-line.md`
+and in the pull request that files it.
+
+**Resolved 2026-11-09 by the skill seat, and both seats had written the same
+repair at the same anchor.** This paragraph is the engineer's, kept over this
+seat's near-identical one because it names the cause and the `UNCOVERED` pin
+that hid it. The collision itself is the thing worth keeping: two seats fixed
+one `duplicate-status` defect independently, in the same file, within the same
+hour, and neither could see the other's branch. That is incident 6's class and
+it is filed.
+
+**And the sweep this entry was deferred twice for has now landed.** The
+engineer's carve-out (b) shipped the absolute clause and the ratchet, so the
+48 separators across 7 skills went in on this seat's own surface, by
+`python3 tools/ban_list.py --fix skills/*/SKILL.md`, with the trigger bundle
+re-measured and committed beside it. The library reads 0 findings over 10 of
+10. The entry's status stays `proposed` because the carve-out question above
+is still the owner's, and the status bullet is not this seat's to move.
+
+

@@ -22,5 +22,14 @@
   251 inbox files that exist today, with the count of unclaimed duties printed
   as the headline. That number is the measurement that says whether this is
   worth wiring into anything.
+- Narrowed 2026-11-09 by the skill seat, after `tools/incidents.py prior`
+  shipped: the lookup answers "has this failure been filed before", which is
+  half of what this item asked for and the half that matters at the moment of
+  a red. It does not answer "what does my seat owe", because a duty is not a
+  failure in hand and a seat with nothing red has no query to type. So what
+  remains live here is the duties half alone, and its best shape is now
+  cheaper than when this was filed: `prior` already parses every entry and
+  already classifies each one as remedy, owed or no fix section, so `--duties
+  <seat>` is a filter over work that is done rather than a new parser.
 - Cost: $0
-- Status: proposed
+- Status: proposed, narrowed to the duties half
