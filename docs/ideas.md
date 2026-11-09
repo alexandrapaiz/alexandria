@@ -27001,8 +27001,30 @@ ingestion target rather than a skill target.
   by hand because the gate publishes its rules only by firing them. A rule's
   law is already in the code, as `Finding.ban_list`, and it is unreadable
   without an issue that trips the rule.
-- First step: the `UNCLAIMED` line, and the two rows retargeted at `one-shape`
-  and at whatever name the figure count lands under.
+- **The second table, which is the same ask and carries a real hazard this run
+  had to handle in code instead.** `SHORT_ANSWERS` in the same file maps each
+  BLOCK rule in the pre-send gate to the phrase in `prompts/digest-short.md`
+  that answers it, or to `None` where the rule cannot fire on the degraded
+  edition. Its own comment says the map is maintained rather than derived and
+  that this is the point of it: a new rule lands here as a failure addressed to
+  the writer seat, asking whether the short edition needs to be taught it.
+  **That worked exactly as designed and it is why this run did not ship a
+  defect.** `blockrules` named both of this run's new rules `UNRULED` with the
+  consequence attached, "block on the short edition holds the issue", and
+  `prompts/digest-short.md` asks for no list and no written turn anywhere in
+  its 132 lines. So `one-shape` would have held every degraded week, which is
+  the failure that edition was built after 2026-10-12 to prevent. This run
+  scoped the rule off that edition in its own file, on the press's own in-band
+  tell, `SHORT_EDITION_NOTE`. The two rows are still owed and both answers are
+  measured rather than open:
+  - `"one-shape": None`, cannot fire, scoped off the short edition at the gate
+    because that prompt mandates neither device.
+  - `"slot-heading": None`, cannot fire, for the reason the row above it
+    already gives for `skeleton-heading`: the short edition prints no section
+    headings, so the generator's slot labels have nowhere to appear.
+- First step: the `UNCLAIMED` line, the two `ABSOLUTE_RULES` rows retargeted at
+  `one-shape` and at whatever name the figure count lands under, and the two
+  `SHORT_ANSWERS` rows above.
 - Cost: $0
 - Status: proposed
 

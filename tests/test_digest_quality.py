@@ -742,3 +742,42 @@ def test_the_shape_finding_cites_the_ban_list_entry_that_is_about_it():
     assert entry == ["49"]
     listed = (REPO / "docs" / "voice" / "ban-list.md").read_text(encoding="utf-8")
     assert "49. One shape for a whole issue" in listed
+
+
+def test_the_short_edition_is_not_held_by_the_shape_rule():
+    """`check_voice.py blockrules` found this one, which is the whole reason
+    that command exists.
+
+    It reports every BLOCK rule here against the prompt that writes the
+    degraded edition and named this rule UNRULED with the consequence attached,
+    "block on the short edition holds the issue". `prompts/digest-short.md`
+    asks for no list and no written turn anywhere and says "No other sections",
+    so blocking there would hold every degraded week, and that edition exists
+    because 2026-10-12 was a week with no issue at all.
+    """
+    prose = ("# A finding stated as a sentence\n\n"
+             + ("One column of prose, at length and without a turn. " * 12) + "\n")
+    assert [f.rule for f in blocking(prose)] == ["one-shape"]
+    short = prose.replace("\n\n", f"\n\n{gate.SHORT_EDITION_NOTE}\n\n", 1)
+    assert [f for f in blocking(short) if f.rule == "one-shape"] == []
+
+
+def test_the_short_edition_note_is_the_one_the_press_actually_writes():
+    """A parity test rather than a parity comment. A comment between two files
+    is the class `INC-2026-10-26-a-parity-comment-between-two-files-is-the-
+    third-instance-in-two-days` is about: it tells a reader the two agree and
+    cannot notice when they stop. The press is the writer of this line, so the
+    press's copy is the authority and this gate's copy is the one that has to
+    follow it.
+    """
+    weekly = (REPO / "pipeline" / "weekly.py").read_text(encoding="utf-8")
+    assert f'SHORT_EDITION_NOTE = "{gate.SHORT_EDITION_NOTE}"' in weekly
+
+
+def test_the_short_edition_is_still_held_by_the_rules_it_can_break():
+    """The other half, so the scope above cannot be satisfied by a gate that
+    stops reading the degraded edition. Only law 14's shape is scoped out."""
+    short = ("# A finding stated as a sentence\n\n"
+             f"{gate.SHORT_EDITION_NOTE}\n\n"
+             "We delve into the tapestry of the realm.\n")
+    assert "slop-lexicon" in rules(blocking(short))

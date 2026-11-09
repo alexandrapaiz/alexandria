@@ -94,6 +94,15 @@ SKELETON_HEADINGS = (
 # hold two vocabularies for one rule. A derived list does not drift.
 # `tests/test_digest_quality.py` pins this pass to the canon's own asserted
 # cases, so widening the ban there fails here until both agree.
+# The short edition's standing line, as `pipeline/weekly.py` writes it into
+# the body. The degraded edition declares itself in band, and it does so
+# because the press attaches this line rather than asking the generator for it:
+# "a label the model can forget is a label that goes missing on the week it
+# matters". That makes it the one tell this gate can trust about which edition
+# it is reading, and `tests/test_digest_quality.py` pins the literal against
+# the press's own copy of it.
+SHORT_EDITION_NOTE = "*A short edition. This week's issue is the week in brief.*"
+
 # A Markdown list item's opening row. Canon law 14's first device.
 BULLET = re.compile(r"^([-*+]|\d+\.)\s")
 
@@ -507,7 +516,19 @@ def check(body: str, kind: str = "weekly") -> list[Finding]:
     # the likely end of it. If it survives the retry the email is held and the
     # body is still written to the digests table, which is `hold_for_quality`'s
     # contract and not new here.
-    if kind == "weekly":
+    # Not on the short edition, and this is the one scope decision in this rule
+    # that was found by a gate rather than by reading. `check_voice.py
+    # blockrules` reports every BLOCK rule here against the prompt that writes
+    # the degraded edition, and it named this one UNRULED with the consequence
+    # attached: "block on the short edition holds the issue". Measured rather
+    # than assumed, `prompts/digest-short.md` asks for no list and no written
+    # turn anywhere in its 132 lines, and says "No other sections", so this
+    # rule would hold every degraded week. The degraded edition exists because
+    # 2026-10-12 was a week with no issue at all, so a rule that blocks it
+    # recreates the failure the edition was built to prevent. The full edition
+    # is where law 14 is mandated and it is the edition every healthy Monday
+    # prints.
+    if kind == "weekly" and SHORT_EDITION_NOTE not in body:
         devices = []
         for block in re.split(r"\n\s*\n", body):
             rows = [x.strip() for x in block.strip().split("\n") if x.strip()]
