@@ -23,8 +23,9 @@ somewhere a person can run it by hand is what makes the judgement reviewable.
                  the version and the trigger, and its delta is not below the
                  previous version's own lower bound on the same subject model,
                  with the controls unchanged.
-    ban list     the revision introduces no new finding against the mechanical
-                 entries of docs/voice/ban-list.md.
+    ban list     the revision leaves no finding against the mechanical entries
+                 of docs/voice/ban-list.md in the file it touched. An absolute
+                 since 2026-11-09, inherited findings included.
     trigger test skills/_validation/trigger_test.py exits 0 on this tree.
     page         tests/test_skill_receipts.py passes, which is what "the skill's
                  page still renders" means in this repository.
@@ -42,16 +43,36 @@ stopped arriving is worse than no gate.
 
 Given `NEON_RO_URL` or `DATABASE_URL` it asks the database directly and says so.
 
-## Why the ban list is judged on the diff and not on the file
+## Why the ban list was judged on the diff, and why it is now judged on the file
 
 Measured on 2026-09-30, before this gate existed: all six skills in the library
 carry findings against the mechanical entries, mostly em dashes inside the
 `papers:` list in their own frontmatter, plus two uses of "very" and one
 "unlock". A gate that failed the whole file would block every revision of every
 skill on a debt none of those revisions created, which is how a check gets turned
-off. So the clause is that the revision adds none, and the pre-existing count is
-reported in the comment as the skill seat's backlog. It is a ledger entry, not a
-merge blocker.
+off. So the clause was that the revision adds none, and the pre-existing count
+was reported in the comment as the skill seat's backlog.
+
+**Amended 2026-11-09, and the amendment is about the repair rather than about
+the debt.** The delta reading rested on an unstated premise: that a seat meeting
+an inherited finding had no cheap way to clear it, so failing the file would
+cost it a run it could not afford. That premise stopped being true when
+`tools/ban_list.py --fix` landed. The mechanical half of the ban list is now one
+command on the seat's own file, inside the scope clause's own allowance, and a
+clause that names the command in its own failure text is not a check anybody has
+a reason to turn off.
+
+What the delta cost in the meantime was measured rather than guessed. On
+2026-11-09 the library carried 48 mechanical findings across 7 of 10 skills,
+every one of them a U+2014 separator in a `papers:` list, and the oldest of them
+had survived every revision of every skill the gate had ever waved through,
+because none of those revisions introduced it. A clause that tolerates what it
+measures reports a backlog forever and clears none of it.
+
+So the clause is now an absolute: any mechanical finding in the revised
+SKILL.md fails it. The before count is still measured and still reported,
+because which findings a revision introduced is the most useful sentence in the
+report even when it is no longer the verdict.
 """
 
 from __future__ import annotations
@@ -322,15 +343,14 @@ def eval_clause(slug: str, base: str) -> Clause:
     return Clause("eval", state, reasons, notes)
 
 
-def ban_list_clause(slug: str, base: str) -> Clause:
-    if not slug:
-        return Clause("ban list", UNKNOWN,
-                      ["the scope clause found no single skill to read"])
-    path = f"skills/{slug}/SKILL.md"
-    now = ban_list.check((ROOT / path).read_text())
-    before_text = file_at(base, path)
-    before = ban_list.check(before_text) if before_text else []
+def ban_list_verdict(now: list[dict], before: list[dict], path: str,
+                     base: str) -> Clause:
+    """The clause's decision, with no tree and no git, so it can be smoked.
 
+    An absolute since 2026-11-09: the state is read off `now` alone. `before`
+    is still measured, because which findings this revision introduced is the
+    most useful sentence in the report even when it is no longer the verdict.
+    """
     def fingerprint(findings):
         counted = {}
         for f in findings:
@@ -339,19 +359,42 @@ def ban_list_clause(slug: str, base: str) -> Clause:
         return counted
 
     after, prior = fingerprint(now), fingerprint(before)
-    added = []
+    reasons = []
     for key, count in sorted(after.items()):
-        extra = count - prior.get(key, 0)
-        if extra > 0:
-            entry, found = key
-            added.append(f"entry {entry} of docs/voice/ban-list.md, {extra} new "
-                         f"occurrence of {found!r}")
-    notes = [f"{len(before)} findings already in the file on {base}, "
-             f"{len(now)} now. Pre-existing tells are the skill seat's backlog, "
-             "not this revision's"]
+        entry, found = key
+        was = prior.get(key, 0)
+        introduced = count - was
+        if introduced > 0 and was:
+            how = (f"{count} occurrences of {found!r}, {introduced} of them "
+                   "introduced by this revision")
+        elif introduced > 0:
+            how = f"{count} occurrences of {found!r}, introduced by this revision"
+        else:
+            how = (f"{count} occurrences of {found!r}, inherited from {base} "
+                   "and carried forward by this revision")
+        reasons.append(f"entry {entry} of docs/voice/ban-list.md, {how}")
+
+    notes = [f"{len(before)} findings in the file on {base}, {len(now)} now. "
+             "This clause is an absolute, so an inherited tell fails it too: "
+             "the revision that touches the file is the one that owns it"]
+    if reasons:
+        notes.append("the mechanical half of this is one command on your own "
+                     f"file, which this gate will not run for you: "
+                     f"python3 tools/ban_list.py --fix {path}")
     notes.append("six entries of the ban list are mechanical and were checked. "
                  "The rest need a reader, so this clause is a floor")
-    return Clause("ban list", FAILING if added else OK, added, notes)
+    return Clause("ban list", FAILING if reasons else OK, reasons, notes)
+
+
+def ban_list_clause(slug: str, base: str) -> Clause:
+    if not slug:
+        return Clause("ban list", UNKNOWN,
+                      ["the scope clause found no single skill to read"])
+    path = f"skills/{slug}/SKILL.md"
+    now = ban_list.check((ROOT / path).read_text())
+    before_text = file_at(base, path)
+    before = ban_list.check(before_text) if before_text else []
+    return ban_list_verdict(now, before, path, base)
 
 
 # ADR-40's refinement items 1, 2, 3 and 4, added 2026-10-05 on the owner's
@@ -918,6 +961,13 @@ def smoke() -> int:
         len(ban_list.check(after_clean)) == len(ban_list.check(before)))
     checks["a revision that adds slop is caught"] = (
         len(ban_list.check(after_slop)) > len(ban_list.check(before)))
+
+    tell = {"entry": 5, "found": "very", "line": 1, "why": ""}
+    inherited = ban_list_verdict([tell], [tell], "skills/a/SKILL.md", "origin/main")
+    clean = ban_list_verdict([], [], "skills/a/SKILL.md", "origin/main")
+    checks["the ban-list clause is an absolute, so an inherited tell fails"] = (
+        inherited.state == FAILING and clean.state == OK and
+        any("--fix skills/a/SKILL.md" in n for n in inherited.notes))
 
     checks["a mixed diff is not the automatic path at all"] = (
         applies(["skills/a/SKILL.md"]) and
