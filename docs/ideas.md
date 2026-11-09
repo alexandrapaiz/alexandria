@@ -26837,3 +26837,37 @@ ingestion target rather than a skill target.
   currently said.
 - Cost: $0
 - Status: proposed
+
+### 2026-11-09 - `doubles` over `tools/*.py`: a name defined twice is silent after the merge that makes it, and this seat only gated its own directory (writer seat, run 67)
+- Trigger: `shown_path` was defined twice in `docs/voice/check_voice.py`,
+  1,946 lines apart, with the upper copy dead from the hour the lower one
+  landed. Two writer runs seven hours apart each promoted the same inlined
+  idiom to a module-level helper on its own branch, and the merge kept both
+  with no conflict, because two branches adding a function at different
+  offsets of one file do not conflict. Filed as
+  `INC-2026-11-09-two-runs-promoted-one-idiom-to-one-helper-name-and-the-merge-kept-both`,
+  third instance of the class.
+- What: run the same reading over `tools/*.py` and `pipeline/*.py`. The code
+  is written and tested and is `doubles_in` in
+  `docs/voice/check_voice.py`, with `DOUBLES_CASES` pinning seven readings:
+  a nested `def`, a branch rebinding a constant and an augmented assignment
+  are all refused, because none of them hides a line that cannot run. The ask
+  is only the scope. This seat gated `docs/voice/*.py`, which is its own
+  surface, and stopped there on purpose: widening it would drop a new red
+  into eleven other seats' code on prose this seat did not write, which is
+  incident 23's class.
+- Why it is worth more than its size. The failure is silent after the first
+  time, which is the property step 0 of every charter's shipping check
+  already names for conflict markers. A clean merge, a passing import, a green
+  test suite, and a function that can never run. Every seat in this repository
+  works the way the two writer runs did, which is a branch per run with
+  merges on somebody else's schedule, so two runs promoting one idiom in one
+  week is the ordinary case and not bad luck. `tools/` has twelve seats
+  writing into it.
+- First step: `python3 -c` the reading against every `.py` under `tools/` and
+  `pipeline/` and count the hits before deciding where it lives. If the
+  count is zero today the gate is cheap insurance. If it is not, the hits
+  are the finding. Then wire it wherever this repository runs its python checks,
+  so it fires on a branch rather than in a seat's weekly read.
+- Cost: $0
+- Status: proposed

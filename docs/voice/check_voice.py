@@ -2054,19 +2054,17 @@ READING = re.compile(
     re.I)
 
 
-def shown_path(path):
-    """A hit's path as a reader of this output can act on it.
-
-    Seven gates already wrap `relative_to` in this exact `try`, with the
-    comment at `measure` recording why: it "used to raise rather than measure
-    it (2026-10-06)". `reading` joined the path-taking gates on 2026-10-23,
-    after that repair, and so never received it. That is the whole defect, and
-    it is a repair applied in seven places missing the one caller added next.
-    """
-    try:
-        return str(path.resolve().relative_to(ROOT))
-    except ValueError:
-        return str(path)
+# `shown_path` was defined here and again 1,946 lines below, and the lower
+# definition is the one every caller in this file has ever reached, because
+# Python binds the last one. So this copy was dead for as long as both have
+# existed. It was also the worse of the two: it took `path.resolve()` without
+# coercing, so a string argument raised `AttributeError`, and it returned the
+# path as handed rather than resolved when the artifact sat outside the
+# checkout, which is every artifact `--live` fetches. Its docstring, quoted in
+# full at the live definition, is the one that argues for the helper.
+# Deleted rather than merged: the two bodies agree on every input a caller has
+# ever passed, so nothing moves. `doubles` is the gate that would have found
+# it, and it did not exist either.
 
 
 def reading_domain(paths):
@@ -3443,6 +3441,114 @@ SCOPE_CASES = (
 )
 
 
+#: What `doubles` has to read, asserted on sources rather than on this file,
+#: so the cases say what the rule is instead of what today's tree happens to
+#: hold. Each case is (source, the names defined more than once).
+DOUBLES_CASES = (
+    # The live shape of the defect it was written for: one name, two
+    # top-level definitions, and the lower one is the only one that runs.
+    ("def a():\n    return 1\n\n\ndef b():\n    return 2\n\n\ndef a():\n"
+     "    return 3\n", ("a",)),
+    # A name defined once and called many times is not a double.
+    ("def a():\n    return 1\n\n\nb = a()\nc = a()\n", ()),
+    # A nested definition shadows nothing at the top level, and a gate that
+    # counted it would fire on every closure and every local helper.
+    ("def a():\n    def a():\n        return 1\n    return a\n", ()),
+    # A module constant rebound at the top level IS a double, and it is the
+    # same defect wearing a different hat: the first value is unreachable and
+    # a reader of the first line has read a lie.
+    ("X = 1\nY = 2\nX = 3\n", ("X",)),
+    # A conditional rebinding is not. One of the two branches runs, which is
+    # a choice the author made rather than a line they forgot.
+    ("import os\nX = 1\nif os.environ.get('Q'):\n    X = 2\n", ()),
+    # Augmented and annotated assignment at the top level, for the same
+    # reason: neither one hides an earlier value a reader could mistake for
+    # the live one.
+    ("X = 1\nX += 1\n", ()),
+    # Two names each doubled, reported in the order the file defines them.
+    ("A = 1\nB = 2\nA = 3\nB = 4\n", ("A", "B")),
+)
+
+
+def doubles_in(src):
+    """Every top-level name this source defines more than once, in file order.
+
+    Top level only, and by plain assignment or `def` or `class` only. The
+    narrowness is the reading: a nested `def` shadows a name inside one scope
+    on purpose, a branch rebinding a constant is a choice, and `+=` needs the
+    earlier value. What this catches is the one shape where a line of a file
+    cannot run and nothing says so.
+    """
+    seen = collections.defaultdict(list)
+    for node in ast.parse(src).body:
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef,
+                             ast.ClassDef)):
+            seen[node.name].append(node.lineno)
+        elif isinstance(node, ast.Assign):
+            for target in node.targets:
+                if isinstance(target, ast.Name):
+                    seen[target.id].append(node.lineno)
+    order = {}
+    for name, lines in seen.items():
+        if len(lines) > 1:
+            order[name] = min(lines)
+    return tuple(sorted(order, key=order.get)), seen
+
+
+def doubles():
+    """Is any name in this seat's own python defined twice?
+
+    The gate for a class this file has already shipped once. `shown_path` was
+    defined at two top levels 1,946 lines apart, the lower one bound every
+    caller, and the upper one was dead from the hour the lower one landed. No
+    check here could see it: `selfcheck` reads the lines a run ADDS, so it
+    sees the second definition arriving and has nothing to compare it to, and
+    `sweep` reads prose. A duplicate definition is silent by construction,
+    exactly like a committed conflict marker: it is wrong once, at the moment
+    it is written, and ordinary text forever after.
+
+    Scoped to `docs/voice/*.py`, which is this seat's own surface. The same
+    reading applies to `tools/*.py` and widening it from here would drop a new
+    red into lanes this seat does not own, which is incident 23's class and
+    the same boundary entry 159's repair drew for the same reason.
+    """
+    bad = [(src, want, doubles_in(src)[0]) for src, want in DOUBLES_CASES
+           if doubles_in(src)[0] != want]
+    if bad:
+        for src, want, got in bad:
+            print(f"  CASE    {src!r}")
+            print(f"            want {want}")
+            print(f"            got  {got}")
+        print()
+        print("DOUBLES_CASES says what this reading has to do. Nothing below")
+        print("was read, because a duplicate check failing its own cases")
+        print("reports a clean file for the wrong reason.")
+        return 1
+    print(f"  the reading's own cases    {len(DOUBLES_CASES)} pass")
+    files = sorted((ROOT / "docs/voice").glob("*.py"))
+    print(f"  python under docs/voice    {len(files)}: "
+          f"{', '.join(p.name for p in files)}")
+    rc = 0
+    for p in files:
+        names, seen = doubles_in(p.read_text(encoding="utf-8"))
+        if not names:
+            continue
+        rc = 1
+        for name in names:
+            where = ", ".join(str(n) for n in seen[name])
+            print(f"  FAIL    {shown_path(p)}  {name} defined "
+                  f"{len(seen[name])} times at lines {where}")
+            print( "            the last one binds every caller, so the")
+            print( "            others are lines that cannot run")
+    if not rc:
+        print("  no name under docs/voice is defined twice at the top level")
+    print()
+    print("A line that cannot run is not an error and not a warning. It")
+    print("reads exactly like a line that can, which is why this needed a")
+    print("command rather than a reader.")
+    return rc
+
+
 def scope_reading(read, served, retired, source):
     """The verdict on a pass's scope, kept apart from the printing of it.
 
@@ -3509,7 +3615,14 @@ def scope(paths, retired, given=None):
     if code == "WHOLE":
         print( "  WHOLE       every edition the product serves was read")
     elif code == "UNKNOWN":
-        print( "  SCOPE?      the product went unreached, so how short this")
+        # The verdict is UNKNOWN both ways and the sentence is not, because a
+        # blind spot a run declared and one it walked into are the same size
+        # and not the same kind. `editions` draws that line in its SKIP and
+        # this keeps it drawn where the count is.
+        why = ("this run declared ALEXANDRIA_OFFLINE"
+               if os.environ.get("ALEXANDRIA_OFFLINE")
+               else "the product went unreached")
+        print(f"  SCOPE?      {why}, so how short this")
         print( "              scope is is unknown. A count below is a verdict")
         print( "              on the files named above and on nothing else")
     else:
@@ -10155,6 +10268,7 @@ def main():
                 ("apparatus", apparatus),
                 ("captions", captions),
                 ("blockrules", blockrules),
+                ("doubles", doubles),
                 ("dispatch", dispatch),
                 ("columns", columns),
                 ("flags", flags),
