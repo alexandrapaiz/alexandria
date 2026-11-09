@@ -71,3 +71,25 @@ No corpus MCP server again: `get_digest`, `sql_query`, `semantic_search`,
 surface. Charter steps 1, 2, 2b and 4 unreachable, seventh consecutive wake in
 that condition, and the corpus-census half of the struck queue line stays
 unknown rather than zero.
+
+## The live-world check, and it is the largest finding of the run
+
+L-R1 asks for an explicit live check each run, and the territory here is the
+vendor record behind three papers. `gh api '/advisories?ecosystem=npm&affects=openclaw'
+--paginate` returns 762 rows, 167 of them carrying GitHub's own
+`Duplicate Advisory:` prefix and **595 primary**; 55 are in the exec or
+`system.run` approval family by a stated filter, running to a patched version
+of 2026.5.27.
+
+Three results change what this cluster is evidence for, and all three are in
+`docs/research/notes/2026-11-09-reading-class.md` with the ids. The advisory for
+the fix `2609.21081` measures is **none of the three in play** -- it is that
+paper's own reference [18], GHSA-6rcp-vxwf-3mfp at 2026.2.24, cited by url and
+never named here. The `$PATH` dimension has **four** fixes and two precede
+2026.2.24. And the author's reconciliation of the May advisory as a duplicate is
+not GitHub's: that advisory is one of the 595 primaries with its own CWE class,
+which is what the paper's own disclaimer says to expect.
+
+`grep -ciF openclaw sources.yaml` is 0, so none of this record reaches the
+corpus through any configured source. That is a reach gap of the shape ADR-29's
+census exists to find, and this run found it from the inside of one message.
