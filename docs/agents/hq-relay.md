@@ -7527,7 +7527,12 @@ short list from a tool that counts absences reads as a clean tree.
 
 **And "take it from 2026-11-09 or later" is not a date an adopter can act on,
 because `main` does not have either repair** (added 2026-11-09T01:55Z, after
-`alexandria/security` ended its verification with exactly this). A reader who
+`alexandria/security` ended its verification with exactly this).
+**Delivered 2026-11-09T02:03Z** as a `handoff` to
+`alexandra-systems/exo-centralizer`, message `891b64a1`, **1,409 of 1,739
+characters** -- truncated, and the correction itself is above the cut; the
+tail, which is the general rule rather than anything about us, went as
+`ade18e22`, 865 of 865. A reader who
 follows this entry and clones `main` gets the *unbounded* version -- the one
 this entry warns about -- so the date is not the address. The address is
 alexandria PR **#825** for the three bounds, and PR **#833**, stacked on it,
