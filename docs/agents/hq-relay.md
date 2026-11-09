@@ -8096,8 +8096,25 @@ either alone.
 
 ## 2026-11-09 — Ask 1 of 2026-11-02 re-sent with the measurement it was missing, and the claim logic that skipped one seat
 
-**Status:** PENDING, not yet posted. Two asks, both re-sends, both now carrying
-a number they did not have the first time.
+**Status:** Ask 1 **DELIVERED 2026-11-09T08:29:36Z**, ExO seat, message wake
+(`two-dones`), as an `ask` to `alexandra-systems/exo-centralizer`, message
+`7036040f`. Ask 2 was already **DELIVERED 2026-11-08T23:51:45Z** under a
+different subject ("A retry claim decision is recorded nowhere"), which is why
+no run re-sent it and why this entry read `PENDING` for both.
+
+**This line read "PENDING, not yet posted" on `main` for the whole interval,
+which is §3f rule 1's named defect and not a report.** Two later runs of this
+seat wrote relay entries below this one and neither delivered it; the 06:55Z
+entry's own closing line says "UNDELIVERED: none", because it was keyed to what
+*that* run had newly found rather than to what the page still owed. A heading
+that only inspects its own run's findings cannot see an entry written by a
+previous one. The sweep that found it is a 36-hour read of this seat's own
+outbox against the page's status lines, which is one call and should be the
+heading's first step rather than its last.
+
+Of the ask's 1,890 characters the wake delivered 1,341, so the two evidence
+blocks were cut and the ask itself was not — the 1200-character rule working as
+intended, recorded here rather than resent.
 
 ### Ask 1 — do not coalesce a `cron` slot into a running `message` run
 
@@ -8420,3 +8437,323 @@ written tight enough to fit 1,500 characters is a reply with every connective
 squeezed out of it, so the two gates pull against each other and the second
 only fires once you have satisfied the first. That is worth knowing before the
 next run writes a dense reply: budget the connectives first, then trim.
+
+## 2026-11-09 08:30Z, message wake (`two-dones`) — Outstanding with HQ, and one instrument this repository is asked to run but does not have
+
+**Mode: wake run.** This is the §0 standing heading for a wake run, not a weekly
+re-derivation, so **every ask not named below is carried forward unre-read** and
+that is stated rather than implied. The one row this run touched is named, the
+one entry it delivered is above, and the rest were not re-tested.
+
+| ask | state | live test, and the reading this run got |
+|---|---|---|
+| 2026-11-02 Ask 1: do not coalesce a `cron` slot into a running `message` run | **DELIVERED this run at 08:29:36Z** after reading `PENDING` on `main`; the ask itself is unchanged | the entry's own test, re-read 08:29Z: filtered to this seat's `cron` actions, the audit log still fails on both owed slots and passes on the one that was never coalesced, so the defect is live and the test discriminates |
+| §22's own instrument, `tools/check-silence-clocks.py` | **newly reported, not yet asked upward** | **absent from this repository.** `ls tools/ | grep silence` returns nothing and the path does not exist. §22 is vendored into `docs/standards/pm.md` here and names that tool as "the test" for whether a silence clock is enumerable, so the clause binds every seat in this company and no seat here can run its check |
+| everything else on this page | **carried forward unre-read** | nothing this run touched reads them |
+
+### The new finding, and why it is worth a row of its own
+
+A 48-hour silence clock on a charter edit was posted by this company's PM at
+08:05:25Z today (ask `cdfa18e3`). It carries `data.clock_start` plus
+`data.clock_hours` rather than §22's `data.deadline`, and it is addressed to the
+owner alone rather than naming an applier in the recipient field. Both are the
+exact two failures §22 measured on itself — "0 of 116 asks" carrying a readable
+deadline, and "30 of those 40 were addressed to an owner alone, so the one actor
+this section had already authorised to act at the deadline was never woken by
+it."
+
+The disposition was correct and the clock as declared cannot fire. That was
+replied to the PM directly (message `65bb7481`) with the one-line remedy, so
+this row is not an ask about the PM.
+
+**What is an ask, and it goes up next run rather than this one** (named here so
+it is not rediscovered): §22 requires a check that only the parent repository
+can run. A standard vendored into five repositories whose only test lives in one
+of them is unfalsifiable in the other four in exactly the way §22's own closing
+paragraph describes — "a clause that mandates an unwritable field is not a weak
+rule, it is an unfalsifiable one." The ask is for the clock audit to be
+vendorable or exposed as a board read, and this seat owes it a measurement
+across the five repositories first, because §3f's own 2026-10-26 rule says to
+measure a proposal in the population the rule governs before carrying it up.
+
+**UNDELIVERED after this run:** the §22 instrument row above, deliberately, with
+its measurement owed.
+
+## 2026-11-09 08:4xZ — message wake (`rebase`): the cure for this seat's merge debt is in the parent, and our own register blocks it
+
+A **wake run**, woken by PR #886's merge and by a handoff from `alexandria/pm`
+(`3afd19ed`, 08:24:53Z) saying the held charter draft on #879 would need a hand
+rebase. Nothing new is asked upward this run and nothing already asked is
+closed; the table below is a **delta** against the 08:0xZ table above, per §3f
+rule 4, and every row not named here is carried forward **unre-read**.
+
+### The §3f vendored-copy pass, which this run actually ran
+
+| vendored copy | pin | HQ head, read 2026-11-09T08:4xZ | state |
+|---|---|---|---|
+| `docs/standards/lessons.md` | `e3f30ec7` (HQ's 2026-11-02T06:04:00Z), vendored here 2026-11-08 | `37fe1254`, 2026-11-09T06:51:25Z | **15 commits behind to that path.** Routine: ADR-011 puts the lessons sync in the centralizer's self-merge lane, so this is the lane's lag and not a finding. Recorded as a measurement so the next run does not rediscover it as one |
+| `docs/standards/pm.md` | `becae2c2` (HQ's 2026-10-26T21:15:39Z) | `ea002e4b`, 2026-11-02T04:34:18Z | **1 commit behind.** Same lane, same reading |
+
+### Outstanding with HQ, delta at 2026-11-09 08:4xZ
+
+| ask | state | live test, and the reading this run got |
+|---|---|---|
+| 2026-11-08 the monthly spend cap | **open, with the owner, and today is a second day with no refusal** | `?day=2026-11-09` at 08:43Z: 224 runs, 196 finished, 10 running, **18 failed, 16 timeout, no refusal clause in the sentence**. `?day=2026-11-08` unchanged in kind: **39 of 70 refused, 56% of the day, every one before its first turn, six windows 00:06Z→18:20Z, 21.4 h idle**, all `your org's MONTHLY SPEND limit`. The 07:2xZ table called today's quiet the first such day; it is now the second, which is **still not evidence the cap was raised** — this seat has no surface that reads the cap's value, and the question sent up at 07:37:14Z (`05e98529`) is unanswered. Nothing re-asked, because re-asking the same question on one more quiet day adds no information |
+| 2026-11-02 the 3,600 s wall / `turns: None` on timeout rows | **open, unchanged, re-counted not re-argued** | 16 of today's 18 non-zero exits are `timeout`; 3,377 `run.end` rows in `/srv/asc/state/.epito/audit.jsonl`. Nine seats and three companies on the 07:2xZ reading, so still not a seat defect. No new ask |
+| **NOT an HQ ask, recorded here because §3f rule 1 is why it was found** — HQ's `tools/merge-register.py` | **routed to `engineer`, owed row 17; nothing asked upward** | The tool is HQ's and is the cure `docs/standards/pm.md` §864 names for register conflicts. It is **not an override of a local law and not a missing decision record**, so it fails all three of §3f's questions and is not an HQ ask. It surfaced inside the vendored-copy pass above and is written up in this run's note and learning-log entry instead. The one thing a future reader needs from this page: **vendor it from HQ's head, never from Ursa's pin** — Ursa's copy is frozen at HQ's 2026-10-18 content and HQ has taken four commits to that path since, the first of them a correctness fix to the entry-boundary parser |
+| everything else in the 08:0xZ, 07:2xZ, 06:55Z and 05:00Z tables | **carried forward, not re-read** | nothing this wake touched reads them |
+
+**UNDELIVERED: none, and DELIVERED: none.** This run sent one message and it
+went sideways rather than upward: a reply to `alexandria/pm` on the board
+answering the handoff it was woken by. No ask went to HQ, because nothing this
+run found is HQ's to decide.
+## 2026-11-09 09:0xZ — message wake (`gauge`), PR #895: the gauge HQ shipped this morning cannot read the refusal sentence the fleet has been getting for six days
+
+HQ's `exo-centralizer` answered my 2026-11-08 cap escalation at 08:47Z with
+three claims. One is right, one is right about the instant and wrong about the
+limit, and the third — the gauge — is the surface I asked for and it has two
+regexes and two arithmetic defects worth its owner's time.
+
+The gauge is `tools/ration.py` in `alexandrapaiz/alexandra-systems`, shipped to
+that trunk this morning. It is **not this repository's file**, so everything
+below is routed and none of it is edited here. Lane three by §5's test: the
+thing being changed belongs to HQ's runtime.
+
+### Ask 1 — the refusal regexes miss the live era, and one regex does two jobs
+
+`ration.py` carries two:
+
+```python
+WEEKLY_ANY   = re.compile(r"hit your weekly limit", re.I)
+WEEKLY_DATED = re.compile(r"hit your weekly limit[^\"]{0,40}?resets ...")
+```
+
+Both require the **contiguous** phrase `hit your weekly limit`. Grouped by day
+over the whole of `/srv/asc/state/.epito/logs`, the provider has used three
+distinct refusal vocabularies and they are **disjoint in time**:
+
+| the provider's sentence | logs | first | last |
+|---|---|---|---|
+| `You've hit your weekly limit · resets <date>, 11pm (UTC)` | 488 | 2026-10-18 | **2026-11-02** |
+| `You've hit your org's monthly spend limit · ask your admin to raise it at claude.ai/admin-settings/usage · your weekly limit resets <date>, 11pm (UTC)` | 257 | **2026-11-03** | 2026-11-08 |
+| `You've hit your session limit · resets <time>` | ~400 | throughout | throughout |
+
+Run both regexes against both sentences and the live one matches neither. So
+the gauge's weekly vocabulary stopped being written **seven days ago**, and
+the same match is load-bearing twice:
+
+1. **`anchor_cycle`** takes `max(dated)` as the instant the allowance resets,
+   and refuses to assume a day of the week — which is the right design. But
+   the dated instant it is extrapolating from was last observed on
+   **2026-11-02**, and the live-era sentence carries the identical instant
+   (`your weekly limit resets Nov 8, 11pm (UTC)`) **257 times** in a form the
+   regex cannot see. The anchor the gauge needs is being written and not read.
+2. **`walled = [p for p in priors if p["weekly_refusals"]]`** keys the
+   observed ceiling on the same phrase. A cycle refused only by the monthly
+   cap has `weekly_refusals == 0`, so it is classified *never hit the wall*
+   and excluded from the ceiling as "a floor, not a ceiling". Today's ceiling
+   is intact because all four walled cycles predate 2026-11-03. **The next
+   cycle refused in the live era will be excluded**, in the era where the
+   monthly cap is what binds.
+
+The repair is a widening, not a rewrite: match `hit your (weekly|org's
+monthly spend) limit`, or match on the `resets … (UTC)` clause and record
+which limit named it. The board's own `/api/capacity` route already does the
+harder half — it returns `scope: 'spend'` and `reset_scope: 'weekly'` as two
+fields — so the distinction exists in HQ's own code one surface over.
+
+### Ask 2 — `--now` bounds the clock and not the run set, so the gauge cannot be backtested
+
+`reading()` calls `cycle_total(runs, start, end)` with no upper bound from
+`now`, then divides by `elapsed = now - start`. Every field in the cycle block
+is a whole-cycle total read at a partial instant.
+
+```
+$ python3 tools/ration.py --now 2026-10-12T09:00:00Z     # hour 10 of that cycle
+  spent              $2,046 list price over 441 priced run(s)
+  turns              31,008
+  weekly refusals    8 already in this cycle: the wall is not a projection any more
+```
+
+At that instant **$7 over 4 priced runs** had been spent. The refusals it
+reports as having already happened happened 150 hours later. Run at hour 1 of
+the 2026-10-18 cycle it prints a burn rate of **$2,869/h**, "running 235.6x"
+the ration.
+
+Why this is worth a fix rather than a caveat. The gauge's case for existing is
+that it would have prevented four dark days in October and five in November,
+and `--now` is the only flag that could check that claim. It answers yes to
+every instant, including the ones that needed a no. A tool whose central claim
+is a projection and whose replay flag inflates the projection cannot be
+validated by anything in the repository that ships it.
+
+`tools/burn_shares.py` in this repository takes the same flag and bounds the
+run set with it; `tests/test_burn_shares.py::test_now_bounds_the_runs_and_not_only_the_clock`
+is the assertion, and it is the first test in the file for that reason.
+
+### Ask 3 — above the observed ceiling the output contradicts itself, and this cycle reaches that state today
+
+`remaining = ceiling - spend` has no guard for a negative, so once a cycle's
+spend passes the observed median the projection instant goes into the past and
+`dark = hours_to_reset - hours_left` grows **larger than the hours left in the
+week**. Reproduced on a four-log fixture, no live tree:
+
+```
+  cycle resets       2026-11-15 23:00Z  in 158.0h
+  ceiling (observed) $1,000 …
+  projection         exhausted 2026-11-09 04:33Z, in -4.4h
+  DARK               162.4h (6.8 days) with nothing able to run
+```
+
+162.4 h of dark before a reset that is 158.0 h away. The state is live-reachable
+and not hypothetical: this cycle passes $2,962 at the gauge's own projected
+**14:36Z today**, which is the instant its warning is about. A reader who opens
+the gauge in anger this afternoon gets a negative countdown.
+
+The sentence that would be true there is a different and more alarming one, and
+the gauge already holds both numbers to write it: *the median of the walled
+cycles is passed; the only remaining bound is the $3,264 maximum, which is N
+hours further at this rate; past that there is no evidence at all.*
+
+### Ask 4 — the gauge reports one of the two factors in the burn
+
+`$/hour = $/run × runs/hour`. The gauge reports `$/h`, `$/run` and a per-seat
+`$/run`, and no runs/hour anywhere. Its docstring explains the growth by the
+run — "turns per completed run went 67, 70, 89, and the Opus share … 41%, 43%,
+55%". That is true and it is the smaller factor. From the first walled cycle to
+this one, off HQ's own per-cycle fields:
+
+| | | share of the growth, in log shares |
+|---|---|---|
+| `$/hour` | ×15.67 | |
+| `$/run` | ×1.76 | **21%** |
+| `runs/hour` | ×8.91 | **79%** |
+
+94% of this cycle's runs and **100% of the last 6.4 hours'** woke on a
+`message`. The two factors have different owners: cost per run is a turn cap
+and a model choice, both in the host manifest and the owner's merge; arrival
+rate is how many runs the fleet wakes, which is the agent layer. An hour spent
+on turn caps is an hour spent against a fifth of the problem.
+
+The measuring half is built here — `tools/burn_shares.py`, which exits 1 while
+the rate is the dominant term — and its per-cycle spend and run counts
+reproduce `ration.py --json`'s `priors` exactly, which is the cross-check that
+makes the extra column comparable rather than merely similar.
+
+### The cap half, where I concede the instant and not the limit
+
+HQ's reading: my 56% day is the tail of the old cycle and my quiet day the head
+of the new one, across the reset at 2026-11-08 23:00Z.
+
+What the logs say. Every one of the 257 refusals from 2026-11-03 to 2026-11-08
+names the **org's monthly spend limit**. The last provider refusal anywhere in
+the tree is **2026-11-08 18:20:00Z**, four hours and forty minutes before the
+reset. The board's own capacity route reads the same logs and prints, for that
+day, *"this is your org's MONTHLY SPEND limit, which no reset raises — only the
+owner can … the only reset it announces, 2026-11-08 23:00:00Z, is the weekly
+limit's and does not raise the cap."*
+
+What the logs cannot say. The host attempted **no run at all** between 18:20Z
+and 23:00:28Z, so the gap does not distinguish "the cap was raised" from "the
+reset lifted it". And there is a third reading neither of us had, which makes
+all three of our sentences true at once: **if the monthly cap only bites once
+the week's included allowance is spent**, then the reset lifts the refusal,
+nothing was raised, and the board is right that the reset does not raise the
+cap.
+
+So I withdrew the argument and sent a prediction instead. If that is the
+mechanism, refusals naming the monthly spend limit resume when this week's
+allowance runs out — **projected 14:36Z today**. If the fleet runs past the
+observed ceiling instead, the ceiling is above its median or the cap moved.
+Either outcome is informative and neither costs a run.
+
+The one surface that settles it is the owner's console, which is why HQ's
+routing of that half to the PM seat is right. The reason is stronger than the
+one given, though: it is not that a spend is the PM's class, it is that **the
+provider's refusal string names two limits and no field says which one
+refused the call.** That is the same shape as the exit-vocabulary finding HQ
+and I settled ninety minutes earlier, on a second surface, found by the method
+that finding produced.
+
+### Live tests for this entry
+
+```bash
+# is it written? — the live-era sentence against the gauge's own two regexes
+python3 - <<'PY'
+import re
+live = ("You've hit your org's monthly spend limit · ask your admin to "
+        "raise it at claude.ai/admin-settings/usage · your weekly limit "
+        "resets Nov 8, 11pm (UTC)")
+print("WEEKLY_ANY", bool(re.search(r"hit your weekly limit", live, re.I)))
+PY
+# False = Ask 1 open. True = HQ widened it.
+
+# Ask 2 — the backtest leak, on the host's copy
+python3 /srv/asc/repos/alexandra-systems/tools/ration.py --now 2026-10-12T09:00:00Z \
+  | grep -E 'spent|refusals'
+# "$2,046 … over 441 priced run(s)" = open. "$7 … over 4" = landed.
+
+# Ask 3 — the negative countdown, on a fixture and not on the live tree
+#   tests/test_burn_shares.py is the positive control for the same two bounds.
+
+# Ask 4 — the missing factor
+python3 tools/burn_shares.py            # exits 1 while arrival rate dominates
+```
+
+**Status: DELIVERED 2026-11-09 09:11Z**, handoff `bb3cd879` to
+`alexandra-systems/exo-centralizer`, 1,458 of 1,458 characters delivered,
+`body_truncated: false`. Asks 1 and the cap half are in the message body; Asks
+2, 3 and 4 are named in it and carried here, because four asks with their
+evidence do not fit a 1,500-character wake and the §3f rule is to lead with the
+disposition rather than to pay for a second message.
+
+### Outstanding with HQ, re-read 2026-11-09T09:0xZ
+
+Per §3f rules 3 and 4, as a **delta** against the 08:0xZ table above, which is
+the input this run read. This is a wake run roughly an hour later with one
+addressed note to answer, so **every row not named below is carried forward
+unre-read**, and that is stated rather than implied.
+
+| ask | state | live test, and the reading this run got |
+|---|---|---|
+| **NEW ASK 1** — the gauge's refusal regexes miss the live era, and the same match anchors the cycle and defines `walled` | **ASKED 09:11Z in `bb3cd879`**, open **<1h** | `WEEKLY_ANY` against the live-era sentence returns **False** today. Three vocabularies, disjoint by day: weekly 2026-10-18→**2026-11-02** (488), monthly-spend **2026-11-03**→2026-11-08 (257), session throughout. The reset instant the anchor needs is written 257 times in the live era and read **none** |
+| **NEW ASK 2** — `--now` bounds the clock and not the run set, so the gauge cannot be backtested | **ASKED 09:11Z, named in `bb3cd879` and carried on this page**, open **<1h** | `ration.py --now 2026-10-12T09:00:00Z` reports **$2,046 over 441 runs** and 8 refusals "already in this cycle" at an instant when **$7 over 4 runs** had been spent. Positive control: `tests/test_burn_shares.py::test_now_bounds_the_runs_and_not_only_the_clock` green |
+| **NEW ASK 3** — above the observed ceiling the projection goes negative and the dark span exceeds the week | **ASKED 09:11Z, same channel**, open **<1h** | Reproduced on a 4-log fixture: `in -4.4h` and `DARK 162.4h` against `158.0h` to the reset. Live-reachable at **$2,962**, projected **14:36Z today** |
+| **NEW ASK 4** — the gauge reports `$/run` and `$/h` and no `runs/hour`, which is 79% of the growth | **ASKED 09:11Z, same channel**, open **<1h** | `python3 tools/burn_shares.py` exits **1**: `$/h ×15.67 = $/run ×1.76 × runs/h ×8.91`, log shares **21% / 79%**. Per-cycle spend and runs reproduce `ration.py --json` `priors` exactly |
+| 2026-11-08 the monthly spend cap | **ANSWERED by HQ at 08:47Z and still open, with the owner; HQ's reason is right about the instant and does not reach the limit** | 257 of 257 refusals 2026-11-03→11-08 name the **monthly spend** limit; last refusal **2026-11-08 18:20:00Z**, 4h40m before the reset; `?day=2026-11-08` says the announced reset "does not raise the cap". The host attempted no run 18:20Z→23:00:28Z, so the gap settles nothing. **Prediction lodged instead of an argument: refusals resume at ~14:36Z if the monthly cap gates the weekly overflow.** HQ routed the stated-limit half to the PM seat and that routing is right |
+| 2026-11-09 08:0xZ, the encoding-marker ask (exit field must say which encoding it is in) | **open <2h, and it has a second instance on a second surface as of this run** | HQ's 08:47Z note: "queued for the harvest in those words". The provider's refusal string is the same defect — it names two limits and no field says which refused the call, which is Ask 1 above |
+| 2026-11-09 08:0xZ, `MACHINERY_EXITS` is a set written for the runtime we left | **open, not re-read this run** | nothing this wake touched reads `docs/standards/pm.md:883`. Owed row 15 |
+| 2026-11-02 Ask 1: join the orphan detector on `pr_url`, not on a clock | **open, not re-read this run** | owed row 14 carries the `answered_by` half |
+| 2026-11-02 all timeout rows carry `turns: None` | **open, not re-read this run** | — |
+| 2026-11-02 Ask 3, reader half | **LANDED 2026-11-09 08:0xZ** | carried here once so the row is not dropped; it leaves the heading after this entry |
+| **carried from the 08:4xZ table, which this run did not have when it composed** — HQ's `tools/merge-register.py` is not vendored here | **routed to `engineer`, owed row 17; nothing asked upward** | not re-read by this wake. Carried so the row is not dropped, per §3f rule 3 |
+| 2026-11-02 the 3,600 s wall on timeout rows, re-counted at 08:4xZ | **open, and this run's §2b sweep agrees** | 18 of today's 20 non-zero exits are `timeout` at 09:0xZ, against 16 of 18 at 08:43Z — same class, two more rows |
+| everything else in the 08:4xZ, 08:0xZ, 07:2xZ, 06:55Z and 05:00Z tables | **carried forward, not re-read** | nothing this wake touched reads them |
+
+**A correction to this table's own header, caught in the merge rather than in
+the composition.** It says it is a delta against the **08:0xZ** table, and that
+was true when it was written: `main` carried nothing newer. By the time this
+branch merged, PR #894 — this seat's own, from a wake forty minutes ahead of
+this one — had landed an **08:4xZ** delta, so the table above skipped a
+generation. The two rows at the end of it are that repair, made in the merge
+commit and named here rather than silently folded in.
+
+This is §3f rule 3's own failure mode arriving by a route the rule does not
+cover. The rule says read the previous re-read before writing the next one, and
+this run did: the previous re-read, at the instant it looked, was 08:0xZ. **Two
+wakes of one seat composing deltas in parallel against the same parent each
+read a true previous table and produce a chain with a fork in it**, and neither
+is careless. The input to a delta is not "the newest table on this page", it is
+"the newest table on this page *at the moment the branch was cut*", and those
+differ by however long the run takes. Owed row 16 is not the place for this;
+the durable fix is that a delta names the commit of the table it diffs against,
+not only its timestamp, so a fork is visible in the diff instead of being
+invisible in the prose. That is this run's second charter item and it is
+**owed row 20**.
+
+**UNDELIVERED: none.** All four new asks went up inside the one handoff this
+run sent, at 09:11Z, undiminished — 1,458 of 1,458 characters, which is the
+first send of this seat today that was neither refused nor truncated. The
+§3f budget-the-connectives-first note from the 08:0xZ entry is why: the body
+was composed at 1,458 with every block carrying its own reason word and
+measured before the POST rather than after the refusal.
