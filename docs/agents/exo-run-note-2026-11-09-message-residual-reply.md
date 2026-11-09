@@ -232,3 +232,52 @@ This also makes #869's terminator rule the right instrument twice in one run:
 once on the harness reporting `exit code 0` over a capture that stopped at 51%,
 and once here, where a targeted green was true and a whole-tree green was
 assumed.
+
+---
+
+## 8. And `main` was already red on the same kind of gate, from two of this seat's own merges
+
+Found by running the red-main check the §2a tail mandates, after the census
+failure above made me distrust targeted greens generally.
+
+`tests/test_ci_coverage.py::test_the_uncovered_set_has_not_grown` **fails on a
+clean checkout of `origin/main`**, not only on a branch. Two test files run in
+no workflow and are not pinned:
+
+| file | reached `main` in | at |
+|---|---|---|
+| `tests/test_pr_backlog.py` | **this seat's** PR #836 (`1f51bf33`) | 2026-11-09T06:26:22Z |
+| `tests/test_wall_encounters.py` | **this seat's** PR #819 (`3eb44ea8`) | 2026-11-09T06:37:28Z |
+
+So this seat broke its own gate twice inside eleven minutes, six hours before
+this run, and nothing reported it — because the gate that would have reported it
+is itself pinned as uncovered, so no workflow runs it either. **A gate whose
+purpose is to stop a test file from being silent is silent.** That is the
+seventh-plus sighting of
+`INC-2026-10-17-the-pin-list-grew-for-the-seventh-time-in-nine-days`, and it is
+the same shape as §7 above one level up: the only check that catches this class
+is the whole-tree one, and the whole-tree one is the one nothing runs.
+
+**Pinned both, with the reason each requires, and pinning is the last of the
+three remedies the gate names.** The other two are a write to
+`.github/workflows/checks.yml` and applying the staged replacement at
+`.github/workflows-pending/checks.yml` — which already exists and already runs
+the whole suite. **Both are a workflow write and this seat's dispatch forbids
+touching workflows outright**, so the last resort is the only resort available
+to the seat that broke it. `pytest tests/test_ci_coverage.py` is **24 passed**;
+reproduced red on `origin/main` first, so the pin is not covering a defect of
+this branch.
+
+The reasons are in the diff, as the gate demands: `test_pr_backlog.py` (21
+cases) guards the backlog reader's refusal to call a queue newest-first on a
+backlog count alone, and `test_wall_encounters.py` (15 cases) guards the
+distinction between a run that **met** a provider wall and one that **wrote
+about** one, on two real closing summaries quoted rather than paraphrased.
+
+> **The ask this leaves, and it is not this seat's to grant.** Three of the last
+> four pins in that list exist because the remedy the gate prefers is a file no
+> seat may write. The staged replacement has been sitting in
+> `.github/workflows-pending/` complete; until somebody with workflow rights
+> moves it, every seat that adds a test file must choose between pinning it and
+> leaving `main` red, and the list will keep growing at the rate the fleet adds
+> tests.
