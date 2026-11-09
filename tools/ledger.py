@@ -504,23 +504,23 @@ def render_census(data: dict) -> str:
 #: `origin/main` measures 218 on its own, and this branch's 7 new entries add
 #: none of them.
 #:
+#: 2026-11-09: 218 to 220, and the shape of the move is the same as the two
+#: above it. `origin/main` measures 220 on its own at `d26661b6`, and this
+#: branch's 4 new entries add none of them. Both are the writer seat's entries
+#: of 2026-11-08, arriving in #812 while this branch was open: law 14's fourth
+#: count having no instrument, and `selfcheck` excusing every indented line.
+#: Each is short of `What` and `First step`. That makes three re-measurements
+#: in two days, all three from the same seat's appends, which is a number worth
+#: carrying to the Monday retrospective rather than only to this constant: the
+#: contract's two prose fields are the ones a fast append drops, and nothing
+#: asks for them at the moment of writing.
+#:
 #: Why it is not the gate. On 2026-11-01 this number was 196 when the engineer
 #: branch was cut and 202 ninety minutes later, because six pull requests
 #: merged in between and six of their entries were short of the contract. None
 #: of the six was the branch's. A ratchet on a whole-file number cannot tell
 #: those apart, which is what `patch` below is for: the project number absorbs
 #: everybody's history and the patch number has no budget at all.
-#:
-#: Re-measured 218 to 220 on 2026-11-09 by the security seat, on `origin/main`
-#: and not on a branch, and the three entries that moved it are named because
-#: the test that reads this number asks whose they are. All three are dated
-#: 2026-11-08 and none is this seat's: "The heading ban's proposed remedy would
-#: not have caught the heading that shipped next", "The press cannot refuse a
-#: figure dump", and "`selfcheck` excuses every indented line". The number was
-#: 217 at `c60702e2` and 220 at the tip, so `main` has been failing its own
-#: bound since those merged, which makes every branch cut from it fail too.
-#: Raised to what `main` measures rather than to what this branch measures:
-#: this run's two entries carry all four fields and add none of the twenty.
 PROJECT_INCOMPLETE = 220
 
 
