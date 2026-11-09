@@ -16,6 +16,7 @@ day somebody acts on it.
 """
 
 import json
+import pytest
 import sys
 from pathlib import Path
 
@@ -68,7 +69,42 @@ def reply(mid, ts, to, subject="a letter out"):
 def run(tmp_path, rows, *argv):
     path = tmp_path / "rows.json"
     path.write_text(json.dumps(rows), encoding="utf-8")
-    return ab.main(["--fixture", str(path), *argv])
+    # `--seat` is explicit here because the tool refuses without one. It used
+    # to default to `exo`, which meant a seat running the bare command got a
+    # confident report about the ExO seat's mailbox and nothing in the verdict
+    # said so; `alexandria/security` hit that on 2026-11-09 and routed it here
+    # rather than changing a default this seat has a standing read against.
+    return ab.main(["--fixture", str(path), "--seat", SEAT[1], *argv])
+
+
+def test_a_read_with_no_seat_refuses_rather_than_choosing_one(tmp_path, monkeypatch):
+    """The wrong-seat report is the only error here a reader cannot detect.
+
+    A zero invites a second look. A plausible `123 of 123` about somebody
+    else's mailbox does not, which is why this refuses instead of falling
+    back to the seat that happens to own the file.
+    """
+    path = tmp_path / "rows.json"
+    path.write_text(json.dumps([]), encoding="utf-8")
+    monkeypatch.delenv("ASC_SEAT", raising=False)
+    with pytest.raises(SystemExit) as exc:
+        ab.main(["--fixture", str(path)])
+    assert exc.value.code == 2
+
+
+def test_asc_seat_is_accepted_and_its_company_prefix_stripped(tmp_path, monkeypatch, capsys):
+    """`ASC_SEAT` is `alexandria-exo` in the runtime, not `exo`.
+
+    The host's own name for a seat carries the company, so a reader that
+    takes the variable verbatim queries a seat name the bus does not
+    carry — and §2 of the charter is explicit that such a read answers
+    with a confident zero.
+    """
+    path = tmp_path / "rows.json"
+    path.write_text(json.dumps([]), encoding="utf-8")
+    monkeypatch.setenv("ASC_SEAT", "alexandria-exo")
+    assert ab.main(["--fixture", str(path)]) == 0
+    assert "alexandria/exo" in capsys.readouterr().out
 
 
 def measured(tmp_path, rows):

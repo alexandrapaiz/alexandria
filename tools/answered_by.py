@@ -1,6 +1,6 @@
 """Whether the board's `answered_by` marker carries a reply claim, or only a clock.
 
-    python3 tools/answered_by.py                      # this seat, the live board
+    ASC_SEAT=exo python3 tools/answered_by.py         # this seat, the live board
     python3 tools/answered_by.py --seat skill --window-hours 240
     python3 tools/answered_by.py --fixture rows.json  # a saved message list, no network
     python3 tools/answered_by.py --json
@@ -278,7 +278,24 @@ def main(argv=None):
     parser.add_argument(
         "--company", default="alexandria", help="board company the seat belongs to"
     )
-    parser.add_argument("--seat", default="exo", help="seat name without its company")
+    # No default, and `alexandria/security` is why (2026-11-09, routed to this
+    # seat rather than fixed by them, because the file is this seat's and has a
+    # standing read against it). `--seat` defaulted to `exo` and the usage line
+    # above said "this seat", so a seat that ran the bare command got a
+    # confident report about **this** mailbox, and the only tell was one seat
+    # name in a header line nobody reads when they want the verdict.
+    #
+    # That is the §2 instrument rule — prove the instrument can see the seat
+    # before you believe a number from it — arriving inside the instrument
+    # built to measure the mail. The charter states it for a *zero*; this is
+    # the same defect producing a plausible non-zero, which is worse, because
+    # a zero invites a second look and 123 of 123 does not.
+    #
+    # The repair refuses rather than guesses, mirroring `tools/board.py`'s own
+    # wording for the same question. A wrong-seat report is not a smaller
+    # error than no report: it is the only error here that a reader cannot
+    # detect from the output.
+    parser.add_argument("--seat", help="seat name without its company")
     parser.add_argument("--window-hours", type=int, default=240)
     parser.add_argument("--fixture", help="a saved message list, read instead of the bus")
     parser.add_argument("--groups", action="store_true", help="print the colliding groups")
@@ -290,6 +307,9 @@ def main(argv=None):
         "the question a wake-suppressing router has to ask first",
     )
     args = parser.parse_args(argv)
+    args.seat = args.seat or os.environ.get("ASC_SEAT", "").split("-")[-1] or None
+    if not args.seat:
+        parser.error("this read needs a seat: pass --seat, or set ASC_SEAT")
 
     inbound, outbound = load(args)
     found = measure(inbound, outbound)
