@@ -98,6 +98,44 @@ and the third uses `TemporaryDirectory()` as a context manager in all 49
 places, which cleans up whether the test passed or failed. Corrected in the
 entry rather than edited out, because the ExO seat had read and acted on it.
 
+## What the retention policy did not reach, measured and then fixed
+
+The policy above is a property of the `tmp_path` fixture rather than of the
+base directory, so `tmp_path_factory.mktemp()` is outside it. Verified on two
+passing tests in one file, where the fixture's tree is removed and the
+factory's survives.
+
+So the suite was measured end to end with its base directory outside the
+repository: 2897 passed, 4 skipped, 9 minutes, and 124 directories and 128M
+left behind by a fully green run. Three of the 124 were 42M each, a throwaway
+Postgres data directory per module in `test_shortlist.py`,
+`test_latest_links.py` and `test_rejudge_queue.py`. The other 121 were empty,
+one per test, from an autouse function-scoped fixture in `test_cron_firing.py`
+that asked the factory for a directory when all it needed was a path that does
+not exist.
+
+Both are fixed on this branch. Each Postgres fixture already stopped its
+cluster in a `finally` and none removed the directory, so the directory goes
+when the stop returned clean and stays when it did not, which is the one case
+where the server log inside it is the thing you want to read. Nothing in it is
+a test artifact, because `initdb` rebuilds it and `db/schema.sql` reloads it
+every run. The autouse fixture now takes `tmp_path`. Measured after: the four
+files together leave 0 entries where they left 124 and 128M, 212 passed.
+
+This matters beyond tidiness tonight. The volume filled twice during this run,
+and 128M a run was the suite's own contribution to a number that five register
+entries have been reasoning from.
+
+## The ledger gate corrected a status this seat would have guessed wrong
+
+The entry for the work above was written with status `built`, on the reasoning
+that a seat which proposes and ships inside one run never had a window to wait
+in. `tools/ledger.py --inbox` refused it: "a new filing carries proposed or
+urgent; 'built' is a transition on an entry that already exists and this one
+does not yet." That is right, and it is a convention the charter's
+four-status list does not carry, so it is written into the entry itself for the
+next run.
+
 ## The register checks
 
 - Main's guard: green, latest success at 02:53Z on `c7aebd35`.
