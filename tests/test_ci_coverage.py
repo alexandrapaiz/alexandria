@@ -945,6 +945,34 @@ UNCOVERED = {
     # the same word it writes for the sixty-minute wall. Pinned, the gate
     # exits 1 on nobody's pull request.
     "tests/test_unbounded_calls.py",
+    # Added 2026-11-09, later the same evening again, with the full-history
+    # scan for credential-shaped content. Pinned for the same structural reason
+    # as every line above: the step that would run it goes in
+    # `.github/workflows/checks.yml`, which no seat's token may write, and this
+    # seat's charter forbids it touching a workflow at all. Thirteenth line of
+    # `INC-2026-10-17-the-pin-list-grew-for-the-seventh-time-in-nine-days`,
+    # which counts itself there rather than opening another incident.
+    #
+    # This one caught its subject twice before it shipped, which is the
+    # evidence that it works. The scanner's first revision quoted a PEM
+    # private-key header in full inside the paragraph explaining that a
+    # scanner's needles must be assembled from fragments, so the tool reported
+    # itself on its first full-history pass. And the first version of its
+    # generic pattern read "credential word, then a colon or equals, then a
+    # quoted value", which cannot see `"api_key": "<value>"`, because JSON puts
+    # a quote between the word and the colon. That is the commonest way a key
+    # reaches a repository and it was the one shape the pattern missed.
+    #
+    # What it guards is the charter's first audit duty, which ten audits
+    # answered with an ad-hoc script and whose clean answer was silence. The
+    # 2026-11-08 audit wrote in its own report that "the history scan is
+    # reproducible from this description and the script is not". Of the two
+    # errors that shape can make it makes a false clean, and on the host's
+    # `--depth 1` clone it makes one by default: `--all` reaches one grafted
+    # commit. Pinned, the duty's instrument is silent on every pull request
+    # that could break it, including one that widens a baseline row from an
+    # object to a path.
+    "tests/test_history_secrets.py",
 }
 
 

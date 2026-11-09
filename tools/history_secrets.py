@@ -67,9 +67,14 @@ takes the noise. The generic assignment pattern is the one that earns its keep
 and the one that will need baseline rows.
 
 **The needles are built from pieces, and that is load-bearing rather than
-coy.** A scanner whose source holds `-----BEGIN RSA PRIVATE KEY-----` as a
-literal matches itself forever, and the obvious repair, skipping its own file,
-is a carve-out that would hide a real secret pasted into this file. The same
+coy.** A scanner whose source holds a PEM private-key header as a literal
+matches itself forever, and the obvious repair, skipping its own file, is a
+carve-out that would hide a real secret pasted into this file.
+
+The first version of this paragraph quoted that header in full in order to
+explain why it must not be quoted in full, and the history scan this file was
+written for is what found it: one finding, in `tools/history_secrets.py`,
+reported by itself. The sentence is now a description. The same
 applies to the suite: `tests/test_history_secrets.py` assembles every fixture at
 run time from fragments, so no blob in this repository's history ever contains a
 string this tool matches. That property is tested.
@@ -158,10 +163,60 @@ PATTERNS: list[tuple[str, re.Pattern, str]] = [
                 r"\b[a-z]{4} ?[a-z]{4} ?[a-z]{4} ?[a-z]{4}\b"),
      "a mail app password in its four-group spelling, next to its own label"),
     ("assigned-secret",
-     ci(r"(?:api[_-]?key|secret|token|password|passwd|credential)"
-                r"\s*[:=]\s*[\"'][A-Za-z0-9_\-+/=]{24,}[\"']"),
+     re.compile(r"[\"'][A-Za-z0-9_+/=-]{24,}[\"']"),
      "a long opaque value assigned to a credential-shaped name"),
 ]
+
+
+#: What may sit between a credential word and the value it vouches for.
+#:
+#: Without this, the window alone was far too generous, and the history scan
+#: measured the cost: 95 of 107 unaccepted findings over 9,103 blobs were a
+#: long quoted *identifier* vouched for by a credential word in a neighbouring
+#: key. `"token_endpoint_auth_methods_supported": "none",` followed by
+#: `"code_challenge_methods_supported"` is the clearest specimen. The word
+#: `token` is real, the 32-character quoted string a few bytes later is real,
+#: and nothing whatsoever is assigned to anything.
+#:
+#: So the value has to be the word's own value: quotes, whitespace, a colon or
+#: an equals, and the brackets of an `os.environ["X_API_KEY"] = "..."`
+#: subscript. A letter or a digit in between means the match belongs to some
+#: other name, which is the whole class above.
+BETWEEN = re.compile(r"""[-"'\s:=\]\)]*""")
+
+
+#: Kinds whose pattern is only a driver: a match counts when one of these words
+#: appears within `CONTEXT_WINDOW` characters before it.
+#:
+#: Written for `assigned-secret`, which started life as one regex reading
+#: "credential word, then a colon or equals, then a long quoted value". That
+#: spelling had both problems available to it.
+#:
+#: It was the slowest thing in the file by a distance. A six-way word
+#: alternation with six different first characters gives the engine no literal
+#: to search for, so it attempted a match at every one of two million
+#: positions in `docs/ideas.md` for 1.3s a pass, and history holds 1,641 MiB of
+#: blob content.
+#:
+#: And it was wrong in the commonest spelling of all. `"api_key": "<value>"` is
+#: JSON, and in JSON the credential word is followed by a quote before the
+#: colon, which the old pattern required to be whitespace. So the single most
+#: likely way for a key to be committed to this repository was the one shape it
+#: could not see.
+#:
+#: Driving on the quoted value fixes both. A quote followed by 24 or more
+#: characters of an opaque class is rare in prose, so the engine has something
+#: to find, and the window behind it is read in Python where a quote between
+#: the word and the colon costs nothing.
+CONTEXT: dict[str, tuple[str, ...]] = {
+    "assigned-secret": ("api_key", "apikey", "api-key", "secret", "token",
+                        "password", "passwd", "credential"),
+}
+
+#: Characters before a driver match that count as its context. Wide enough for
+#: `"api_key" : "` with indentation, narrow enough that a credential word one
+#: paragraph up does not vouch for an unrelated hash.
+CONTEXT_WINDOW = 64
 
 
 #: A literal every match of a pattern must contain, lowercased, keyed by kind.
@@ -315,14 +370,77 @@ def scan_text(text: str) -> list[tuple[str, str]]:
     rule this function enforces structurally rather than by discipline.
     """
     low = text.lower()
-    out = []
-    for kind, pattern, note in PATTERNS:
-        hints = HINTS.get(kind)
-        if hints and not any(h in low for h in hints):
-            continue
-        if pattern.search(text):
-            out.append((kind, note))
-    return out
+    return [(kind, note) for kind, pattern, note in PATTERNS
+            if _matches(text, low, kind, pattern)]
+
+
+#: How far either side of a hint the pattern is given to match. `BEFORE` covers
+#: the most deeply buried hint in `HINTS`, which sits about twenty characters
+#: into its match; `AFTER` covers the longest minimum match, which is about
+#: forty. Both are an order of magnitude past what any pattern needs, because
+#: the cost of generosity here is microseconds and the cost of meanness is a
+#: credential this file reports as absent.
+WINDOW_BEFORE = 128
+WINDOW_AFTER = 512
+
+
+def _matches(text: str, low: str, kind: str, pattern: re.Pattern) -> bool:
+    """Does this pattern match, searched from its hints rather than from byte zero.
+
+    A hint is a necessary literal, so every match contains one, so searching a
+    window around each occurrence of one finds every match the whole-text
+    search would. What it skips is the attempts, and the attempts were the
+    whole bill: with the hint used only as a gate, `openai-style-key` and
+    `labelled-app-password` still cost 0.78s and 0.72s a pass over
+    `docs/ideas.md`, because `task-`, `risk-` and `desk-` all contain `sk-` and
+    the gate opens on any of them. Anchored, the regex runs on a few hundred
+    characters per occurrence instead of two million.
+    """
+    words = CONTEXT.get(kind)
+    if words is not None:
+        return _confirmed_near(text, low, pattern, words)
+    hints = HINTS.get(kind)
+    if not hints:
+        return bool(pattern.search(text))
+    for hint in hints:
+        at = low.find(hint)
+        while at != -1:
+            region = text[max(0, at - WINDOW_BEFORE):
+                          at + len(hint) + WINDOW_AFTER]
+            if pattern.search(region):
+                return True
+            at = low.find(hint, at + 1)
+    return False
+
+
+def _confirmed_near(text: str, low: str, driver: re.Pattern,
+                    words: tuple[str, ...]) -> bool:
+    """Does `driver` match within `CONTEXT_WINDOW` after one of `words`.
+
+    Searched forward from each word rather than by matching the driver across
+    the whole text and looking back, and the difference is the cost. Looking
+    back means running the driver over every byte: `docs/ideas.md` is two
+    megabytes of prose carrying thousands of quoted kebab-case slugs long
+    enough to drive on, so that spelling cost 2.5s a blob against 1,641 MiB of
+    history.
+
+    Forward from the word, the driver only ever runs on a few hundred
+    characters per occurrence of a credential word, and the answer is the same
+    one: a finding needs a word behind it and a value in front of it, so
+    starting from either end reaches the same pairs.
+    """
+    reach = CONTEXT_WINDOW + 256
+    for word in words:
+        at = low.find(word)
+        while at != -1:
+            region = text[at:at + len(word) + reach]
+            for hit in driver.finditer(region):
+                if hit.start() > len(word) + CONTEXT_WINDOW:
+                    break
+                if BETWEEN.fullmatch(region[len(word):hit.start()]):
+                    return True
+            at = low.find(word, at + 1)
+    return False
 
 
 def _read_blobs(blobs: list[tuple[str, str]], repo: Path) -> tuple[list[dict], int]:
@@ -336,7 +454,11 @@ def _read_blobs(blobs: list[tuple[str, str]], repo: Path) -> tuple[list[dict], i
         try:
             proc = subprocess.run(
                 ["git", "cat-file", "--batch"], cwd=str(repo),
-                input="\n".join(chunk) + "\n",
+                # Bytes in, because stdout is read as bytes: a blob is not
+                # necessarily text and decoding it here would be a guess. The
+                # first version passed a str against a bytes pipe and raised
+                # TypeError out of main, which is the hole closed below.
+                input=("\n".join(chunk) + "\n").encode("utf-8"),
                 capture_output=True, timeout=CHUNK_TIMEOUT,
             )
         except subprocess.TimeoutExpired:
@@ -552,7 +674,18 @@ def main(argv: list[str] | None = None) -> int:
         accepted = load_baseline(args.baseline)
         result = (check_worktree(args.repo, accepted) if args.worktree
                   else check_history(args.repo, accepted))
-    except CannotLook as exc:
+    except Exception as exc:  # noqa: BLE001 - see below
+        # Deliberately broad, and this is the lesson of the run that wrote this
+        # file rather than a precaution. The first version of `_read_blobs`
+        # passed a str to a bytes pipe, and the TypeError left `main` as **exit
+        # 1**, which in this tool's own contract is "credential-shaped content
+        # found". A crash that arrives as a finding is the same conflation as a
+        # refusal that arrives as an answer, pointing the other way: three
+        # exits mean clean, found and could-not-look, and a bug is the third of
+        # those every time. Nothing below this line may turn an unexpected
+        # exception into either of the first two.
+        if not isinstance(exc, CannotLook):
+            exc = CannotLook(f"{type(exc).__name__}: {exc}")
         if args.as_json:
             print(json.dumps({"clean": None, "cannot_look": str(exc)}, indent=1))
         else:
