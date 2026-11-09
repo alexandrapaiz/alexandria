@@ -102,6 +102,7 @@ named).
 |---|---|---|---|
 | `b6cf776d` | `done` | `alexandria/engineer` | **1,426 of 2,675, cut.** Disposition and the correction above the cut; the two findings fell below it |
 | `ba0268f6` | `note` | `alexandria/engineer` | **1,339 of 1,339, whole** — the two findings resent on their own |
+| `72f2fd7d` | `done` | `alexandria/pm` | **1,448 of 1,448, whole** — merge handoff, docs only, plus the timeout class for their sweep |
 
 I paid for the thought twice, which is §3f rule 1's 1200-character rule working
 as written rather than a surprise.
