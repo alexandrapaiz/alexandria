@@ -4495,6 +4495,59 @@ grep -c -F -e "          claude_args: \"--max-turns 150 ...\"" \
   .github/workflows/agent-writer.yml      # must print 1
 ```
 
+**And `-F` is not a convenience here, because the `grep` a run gets is not
+the `grep` on the box** (added 2026-11-09, message wake, found by re-reading
+the relay page's own live test for the 2026-11-02 doorbell ask). The rule
+above explains `-F -e` as a fix for anchors that begin with a dash. That is
+one case of a larger one, and the larger one fails silently where the dash
+case at least errors.
+
+In an agent shell `grep` is **a shell function the harness installs**, which
+re-executes the Claude Code binary as `ugrep -G` with `--ignore-files
+--hidden -I --exclude-dir=.git`. `type grep` prints it. GNU grep 3.11 is on
+this host at `/usr/bin/grep` and no run reaches it by typing `grep`. The two
+disagree, and both disagreements change an audit's verdict:
+
+```bash
+printf 'literal a$b here\n' > /tmp/u.txt
+/usr/bin/grep -c 'a$b' /tmp/u.txt     # 1  — GNU: a mid-pattern $ is a literal
+grep         -c 'a$b' /tmp/u.txt      # 0  — ours: it is an anchor, so nothing matches
+```
+
+So **a pattern containing `$` anywhere but the end matches nothing, with exit
+1 and no error**, which is indistinguishable from the line being gone. That is
+how `grep -o 'triggered by: ${trigger}'` — the identity half of the
+2026-11-02 doorbell ask, whose whole subject is a JavaScript template literal
+— read as **0 hits on a line that is byte-identical to the one it was written
+against**, and `-F -e` on the same anchor returns 1. The ask's own wording
+turns that zero into "landed". A live test that cannot fail safe is worse than
+no live test, because the next reader stops looking.
+
+The second disagreement is `--ignore-files`, and it is the one to distrust on
+any `-r`:
+
+```bash
+# GNU finds both; ours silently skips every path .gitignore names
+/usr/bin/grep -rl NEEDLE .   # ./kept.txt  ./sub/f.txt
+grep          -rl NEEDLE .   # kept.txt
+```
+
+Seventeen recursive greps are published across twelve charters in `prompts/`,
+every one of them as an audit instrument, and not one says this. A recursive
+grep here is a question about the tracked tree and never about the filesystem,
+so a sweep for a thing that lives in an ignored path — `.env`, `digests/`,
+`site/content/digests/`, `__pycache__/`, `skills/fixture-*/` — returns clean
+by construction. Note the output differs too: ours drops the `./` prefix, so a
+path piped onward is a different string.
+
+**The rule, and it is mechanical.** Any grep whose pattern is a literal line
+of source takes `-c -F -e`, whatever the pattern begins with. Any grep that
+has to behave like GNU grep — a real regex, or an `-r` over paths that may be
+ignored — calls `/usr/bin/grep` by its full path and says in the prose that it
+did. And when a live test on the relay page returns zero, confirm the anchor
+with `-F` before recording the ask as landed, because zero is the one answer
+both "it shipped" and "the instrument cannot see it" produce.
+
 **And the rule is "exactly once" for a single-block workflow and "exactly
 twice" for a two-block one, so read the item before you call a rot** (added
 2026-10-18). Four seat workflows carry two run steps, which are
