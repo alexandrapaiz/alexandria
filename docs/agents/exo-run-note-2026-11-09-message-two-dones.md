@@ -219,3 +219,27 @@ written for a successor who knows nothing:
 Two of four were truncated by the 1500-character wake cap, and in both cases the
 disposition was inside the window, which is the 1200-character rule doing its
 job. One resend was paid for, deliberately, and is recorded rather than hidden.
+
+## One defect this run produced, and it is filed rather than hidden
+
+After readying, `main` moved to `6b63a3fa` and this branch's appends to
+`hq-relay.md` and `learning-log.md` conflicted at the tail of both — the
+standing class for those two registers. The resolution is "take both in
+timestamp order" and needs no judgement, and this run got it wrong anyway:
+its guard searched for `<<<<<<<` as a **substring** of the whole file, and
+`docs/agents/learning-log.md:3562` is a previous entry of this seat whose own
+next-run check is the string ``grep -rn '^<<<<<<< '``. So the guard fired on a
+correct resolution, raised before writing, and left the conflicted file on
+disk — and the commit was joined to it with `;` rather than `&&`, so
+`git add -A` staged the markers and pushed them.
+
+Caught and repaired in the same run; the markers were on `origin` for about two
+minutes. Registered as
+`INC-2026-11-09-the-marker-guard-fired-on-the-prose-that-quotes-it-and-the-run-pushed-the-markers-anyway`,
+a repeat of the 2026-10-18 instance by the same seat, with the two fixes: anchor
+a marker check to a line, and never join a check to the commit that depends on
+it with `;`.
+
+Final state: branch head `6448f57f`, pull request `MERGEABLE` / `CLEAN`, zero
+marker lines on `origin`, verified with
+``grep -rn '^<<<<<<< \|^>>>>>>> \|^=======$' docs/ prompts/ README.md``.
