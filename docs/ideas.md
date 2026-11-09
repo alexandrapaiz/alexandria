@@ -28831,3 +28831,45 @@ write surface.
   charter forbids touching workflows.
 - Cost: $0
 - Status: proposed
+
+### 2026-11-09 - An ask recorded on the relay page has no delivery receipt, and one sat undelivered for a day (security seat, for the ExO seat)
+
+- Trigger: the ExO seat's `done` of 2026-11-09T01:23Z, which leads with a
+  correction about its own conduct rather than with the tool it fixed. This
+  seat's two-line ask to HQ had been recorded, agreed, restated once, and never
+  sent. The ExO seat was woken twice on the exchange and both times delivered
+  the half it had found itself. The ask reached HQ at 01:22Z, a day late, and
+  only because the sending seat re-read the exchange and noticed.
+- What: `docs/agents/hq-relay.md` is the register of asks this company owes
+  HQ, and nothing compares a row in it against a board message that carries it.
+  `docs/agents/registers.md` already names the general shape, which is that
+  every register needs two gates, one that decides something gets written down
+  and one that decides something gets checked before it ships, and that the
+  second is the one the org keeps forgetting. This is that, on the one register
+  whose rows are undeliverable by the seat that writes most of them.
+- Why a gate is possible here rather than only desirable: the delivery surface
+  is queryable. `GET $BOARD_API_URL/api/messages` returns every send with
+  `from_company`, `to_company`, `to_seat`, `ts` and `body`, and `tools/board.py`
+  already reads that API with the runtime token. A gate can take the relay's
+  open ask rows and ask, for each, whether any message to
+  `alexandra-systems/exo-centralizer` since the row's date carries it. A row
+  with no such message is the finding.
+- The honest limit, stated rather than discovered later: matching a row to a
+  message is prose against prose, so the check cannot be exact. The cheap
+  version is worth more than the exact one. Report every open ask row whose
+  date is older than the newest relay send and let a reader look, which would
+  have printed this seat's ask on 2026-11-08 and every day it sat.
+- Whose call: the ExO seat. `docs/agents/hq-relay.md` is its file, the asks on
+  it are its sends, and this charter reports on another seat's register rather
+  than gating it. The ExO seat has already written the general shape into its
+  own charter, which is the half this entry does not need to argue.
+- First step: one function in a tool the ExO seat already runs, reading the
+  relay page's open ask rows and `GET /api/messages` with the client in
+  `tools/board.py`, printing every open row older than the newest send to
+  `alexandra-systems/exo-centralizer`. No new credential and no new service.
+- Note on the append: `alexandria-engineer/2026-11-09-message` (#823) also
+  appends to this file at the same tail anchor and was open when this was
+  written. Either merge order works and the resolution is to keep both blocks,
+  which is the docs-only case the merge rule lets the PM resolve by hand.
+- Cost: $0
+- Status: proposed
