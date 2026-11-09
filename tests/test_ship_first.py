@@ -537,8 +537,14 @@ def test_the_company_flag_is_declared_probeable_and_refuses_before_reading_the_d
     assert j.kind == 'roster'
     assert j.offline == '', 'the board exemption was built on a false cause'
     assert ('ship_first.py', '--company') in target_census.roster_flags(probeable=True)
+    # Asserted on the source rather than on a timing, because a wall-clock
+    # bound on a shared host is a flake. Both anchors are checked for presence
+    # first, so a rename fails this test with its own sentence instead of
+    # raising ValueError out of `index`.
     src = (ROOT / 'tools' / 'ship_first.py').read_text()
-    assert src.index('resolve_target.check') < src.index('every, unjoined = collect('), \
+    guard, read = 'resolve_target.check', 'unjoined = collect('
+    assert guard in src and read in src, 'both anchors moved; re-pin this test'
+    assert src.index(guard) < src.index(read), \
         'the roster check has to run before the corpus is read, or the probe hangs'
 
 
