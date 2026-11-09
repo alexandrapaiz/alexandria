@@ -39,6 +39,34 @@ residual reaches the largest part it does name. The entry that triggered it
 published `18G + 6.9G` under the word `measured` against a 43G total, which is
 a residual larger than its largest component.
 
+## The five things `--compose` refuses, and why the sum is not enough
+
+The first version of this file gated on the sum alone, and alexandria/exo
+brought back two shell transcripts that walked through it. Both are repairs
+here rather than variants.
+
+    a repeated name     `--part a=18 --part a=6.9` was `dict()`'s last-wins, so
+                        the table printed `a 6.9` and never said 18 had been
+                        given. A table whose whole job is to print a
+                        composition honestly cannot drop a figure somebody
+                        named. Two readings under one name is the ambiguity,
+                        and summing them hides which was meant, so the claim is
+                        refused.
+    a negative part     a share of a total has no sign. `a=50 credit=-20`
+                        against 43 passed the sum gate and printed
+                        `a 50 GiB 116.3%` one line above the word `ok`, because
+                        every unit of credit buys a unit of headroom.
+    a part > the total  exo's own check, and it does not look at the sum, so no
+                        sibling term can move it. With negative parts refused
+                        it is implied by the overcount, and it is kept because
+                        it is the better sentence: one part of 50 against 43 is
+                        impossible on its own, and there is no second part to
+                        accuse of double counting.
+    an overcount        the parts sum above the total, so at least two of them
+                        count one thing. No residual absorbs that.
+    no parts at all     a total with no composition is all residual, which is
+                        the shape a report reaches by saying nothing.
+
 ## The seven codes, and which half of the wire can say them
 
 Three a writer can print, because the work reached an end this process saw.
@@ -417,14 +445,89 @@ class Composition:
         return max(self.parts.items(), key=lambda kv: kv[1])
 
     @property
+    def negative(self) -> tuple[tuple[str, float], ...]:
+        """Parts below zero, smallest first.
+
+        A part of a composition is a share of the total, and a share has no
+        sign. A negative term is an adjustment wearing a part's name, and it
+        prints as a negative percentage of the total, which is not a share of
+        anything. Refusing it is also the only thing that closes the hole in
+        the paragraph below.
+        """
+        return tuple(
+            sorted((kv for kv in self.parts.items() if kv[1] < 0), key=lambda kv: kv[1])
+        )
+
+    @property
+    def oversized(self) -> tuple[tuple[str, float], ...]:
+        """Parts larger than the whole, largest first.
+
+        alexandria/exo's second finding, taken as written: the sum gate alone
+        lets a negative term buy headroom for an impossible part, because
+        `43 = 50 + (-20) + residual` balances. This check does not look at the
+        sum, so nothing a sibling part says can move it.
+        """
+        return tuple(
+            sorted(
+                (kv for kv in self.parts.items() if kv[1] > self.total),
+                key=lambda kv: -kv[1],
+            )
+        )
+
+    @property
     def overcount(self) -> bool:
         return self.residual < 0
 
     @property
-    def ok(self) -> bool:
+    def refusal(self) -> str | None:
+        """The one sentence this claim is refused for, or None.
+
+        Ordered by how specific the diagnosis is rather than by how the gates
+        were added. A single part larger than the total is a better answer
+        than "the parts sum above the total", which is why it is asked first.
+        """
+        u = f" {self.unit}" if self.unit else ""
+        if self.negative:
+            named = ", ".join(f"{n} is {v:g}{u}" for n, v in self.negative)
+            return (
+                f"REFUSED: {named}. A part is a share of the total and a share "
+                f"has no sign, so a negative term is not a part of this "
+                f"composition. It also buys headroom for the parts above it, "
+                f"one unit for one unit. Publish the gross figures, and make "
+                f"the credit a claim of its own."
+            )
+        if self.oversized:
+            name, value = self.oversized[0]
+            return (
+                f"REFUSED: {name} alone is {value:g}{u}, which is more than "
+                f"the whole total ({self.total:g}{u}). No composition holds a "
+                f"part larger than the thing it composes, whatever the other "
+                f"terms sum to."
+            )
         if self.overcount:
-            return False
-        return self.residual < self.largest[1]
+            return (
+                "REFUSED: the parts sum above the total, which no residual "
+                "can absorb."
+            )
+        if not self.parts:
+            return (
+                f"REFUSED: this claim names no parts at all, so the whole "
+                f"total is residual. A total with no composition is the shape "
+                f"a report reaches by saying nothing."
+            )
+        name, value = self.largest
+        if self.residual >= value:
+            return (
+                f"REFUSED: the residual {self.residual:g}{u} reaches "
+                f"{name}, the largest part this claim names ({value:g}{u}). "
+                f"A composition is not measured while its largest term has "
+                f"no name."
+            )
+        return None
+
+    @property
+    def ok(self) -> bool:
+        return self.refusal is None
 
     def report(self) -> list[str]:
         """Always prints the residual, which is the entire rule.
@@ -440,34 +543,31 @@ class Composition:
             lines.append(f"  {name:<16} {value:g}{u}  {share:.1f}%")
         name, value = self.largest
         if self.overcount:
-            lines.append(
+            excess = (
                 f"  {'OVERCOUNT':<16} {-self.residual:g}{u}  the named parts "
-                f"exceed the total, so at least two of them count the same "
-                f"thing"
+                f"exceed the total"
             )
+            # The "two of them count one thing" reading is only available when
+            # no single part is already impossible on its own. With one part of
+            # 50 against a total of 43 there is no second part to blame, and
+            # the first version of this file said there was.
+            if not self.oversized:
+                excess += ", so at least two of them count the same thing"
+            lines.append(excess)
         else:
             share = (self.residual / self.total * 100) if self.total else 0.0
             lines.append(
                 f"  {'unattributed':<16} {self.residual:g}{u}  {share:.1f}%  "
                 f"named by nothing above"
             )
-        if self.ok:
+        refusal = self.refusal
+        if refusal is None:
             lines.append(
                 f"ok: the residual is under {name}, the largest named part "
                 f"({value:g}{u})"
             )
-        elif not self.overcount:
-            lines.append(
-                f"REFUSED: the residual {self.residual:g}{u} reaches "
-                f"{name}, the largest part this claim names ({value:g}{u}). "
-                f"A composition is not measured while its largest term has "
-                f"no name."
-            )
         else:
-            lines.append(
-                "REFUSED: the parts sum above the total, which no residual "
-                "can absorb."
-            )
+            lines.append(refusal)
         return lines
 
 
@@ -481,16 +581,77 @@ def parse_part(text: str) -> tuple[str, float]:
         raise argparse.ArgumentTypeError(f"{value!r} is not a number") from None
 
 
+class RepeatedPart(ValueError):
+    """One name carrying two readings, which is the ambiguity itself.
+
+    alexandria/exo's first finding, taken as written and with its preferred
+    direction. `dict(pairs)` is last-wins, so `--part a=18 --part a=6.9`
+    printed `a 6.9` and never said 18 had been given. The verdict direction is
+    safe, because dropping a part only raises the residual, but the table whose
+    whole job is to print a composition honestly had lost a figure somebody
+    named, which is this file's own subject one level in.
+
+    Summing the two is the other repair and it is worse. A sum hides which
+    reading was meant, and the reader cannot tell `a=18 a=6.9` from `a=24.9`.
+    """
+
+    def __init__(self, repeats: dict[str, list[float]], unit: str = "") -> None:
+        self.repeats = repeats
+        self.unit = unit
+        super().__init__(self.report())
+
+    def report(self) -> str:
+        u = f" {self.unit}" if self.unit else ""
+        named = "; ".join(
+            f"{name} was given {len(values)} times, as "
+            + " and ".join(f"{v:g}{u}" for v in values)
+            for name, values in self.repeats.items()
+        )
+        return (
+            f"REFUSED: {named}. Two readings under one name is the ambiguity, "
+            f"and both of the quiet repairs hide which was meant. Keeping the "
+            f"last one drops a figure that was named, and summing them "
+            f"invents a third. Give the parts distinct names, or settle on "
+            f"one figure."
+        )
+
+
+def collect_parts(
+    pairs: list[tuple[str, float]], unit: str = ""
+) -> dict[str, float]:
+    """`dict(pairs)` with the silent overwrite refused instead of taken."""
+    seen: dict[str, float] = {}
+    repeats: dict[str, list[float]] = {}
+    for name, value in pairs:
+        if name in seen:
+            repeats.setdefault(name, [seen[name]]).append(value)
+        else:
+            seen[name] = value
+    if repeats:
+        raise RepeatedPart(repeats, unit)
+    return seen
+
+
 # -------------------------------------------------------------------- smoke
 
 
 def smoke() -> int:
-    """Six assertions, one per code a writer or a reader can reach alone."""
+    """One assertion per code a writer or a reader can reach alone, plus one
+    per refusal `--compose` can print.
+
+    The denominator is counted and not written down. It used to be the literal
+    `7` beside nine `check` calls, so the smoke published a count of its own
+    work that no reader could check and that no added case would move. That is
+    the defect this whole file is about, two lines inside the file itself.
+    """
     import tempfile
 
     failures: list[str] = []
+    asked = 0
 
     def check(name: str, got: object, want: object) -> None:
+        nonlocal asked
+        asked += 1
         if got != want:
             failures.append(f"{name}: got {got!r}, want {want!r}")
 
@@ -542,12 +703,35 @@ def smoke() -> int:
     check("the entry that triggered --compose", comp.ok, False)
     check("and its residual is published", round(comp.residual, 1), 18.1)
 
+    # The two findings alexandria/exo brought back, each as the shell
+    # transcript it arrived as rather than as a property of the dataclass.
+    laundered = Composition(43.0, {"a": 50.0, "credit": -20.0}, "GiB")
+    check("a negative part cannot launder an impossible one", laundered.ok, False)
+    check(
+        "and the part, not the sum, is what the refusal names",
+        "A part is a share" in (laundered.refusal or ""),
+        True,
+    )
+    check(
+        "a part larger than the whole is refused on its own",
+        Composition(43.0, {"a": 50.0}, "GiB").ok,
+        False,
+    )
+    try:
+        collect_parts([("a", 18.0), ("a", 6.9)], "GiB")
+    except RepeatedPart as exc:
+        check("a repeated name is refused", "given 2 times" in exc.report(), True)
+        check("and the dropped figure is still printed", "18 GiB" in exc.report(), True)
+    else:
+        failures.append("a repeated name was accepted")
+        asked += 2
+
     for line in failures:
         print(f"smoke: {line}")
     print(
-        f"smoke: {7 - len(failures)} of 7 ok"
-        if len(failures) < 7
-        else "smoke: all failed"
+        f"smoke: {asked - len(failures)} of {asked} ok"
+        if len(failures) < asked
+        else f"smoke: all {asked} failed"
     )
     return 1 if failures else 0
 
@@ -586,7 +770,15 @@ def main(argv: list[str] | None = None) -> int:
         return smoke()
 
     if args.compose is not None:
-        comp = Composition(args.compose, dict(args.part), args.unit)
+        try:
+            parts = collect_parts(args.part, args.unit)
+        except RepeatedPart as exc:
+            # Exit 1 rather than argparse's 2: a repeated name is a refused
+            # claim and not a misuse of the flag, and every other refusal this
+            # tool prints leaves 1 behind.
+            print(exc.report())
+            return 1
+        comp = Composition(args.compose, parts, args.unit)
         for line in comp.report():
             print(line)
         return 0 if comp.ok else 1
