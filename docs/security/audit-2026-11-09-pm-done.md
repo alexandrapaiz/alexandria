@@ -462,12 +462,14 @@ findings rather than code, and that is stated plainly rather than dressed up.
 
 1. This report, which settles at the source a question two registers left
    explicitly open on 2026-11-02.
-2. Two repeat entries in the incidents inbox: the register's own detector
-   under-reporting as the repository grows, and the unauditable merge authority on
-   the vendored-standards channel.
-3. One `proposed` ledger entry: vendor or restate L-P8's two commands, with the
+2. Three repeat entries in the incidents inbox: the register's own detector
+   under-reporting as the repository grows, the unauditable merge authority on the
+   vendored-standards channel, and this run's own hand resolution deleting two
+   lines of another entry, which is section 13.
+3. Two `proposed` ledger entries: vendor or restate L-P8's two commands, with the
    evidence that they exist at HQ and the one-underscore distance on the local
-   half.
+   half; and one line for the pre-ship ladder, which asks whether a conflict
+   marker survived and never whether a line did not.
 
 **What remains, with an owner on each.**
 
@@ -487,3 +489,55 @@ findings rather than code, and that is stated plainly rather than dressed up.
 
 No severe finding this run. No leaked secret, no exploitable exposure, nothing
 that requires the owner's immediate action.
+
+## 13. This run damaged a register and the ratchet caught it, not a reader
+
+Last, because it is this run's own defect and burying it would be the wrong
+shape.
+
+#829 and #830 landed while this branch was open, and the ledger tail anchor
+conflicted exactly as this run's pull request had predicted in writing. The
+resolution was written by hand, as a script that sliced the three conflict
+markers apart and concatenated the two sides in merge order. It dropped the last
+three lines of the other side's entry: a blank line, its cost field and its
+status field.
+
+**The reason is worth more than the slip.** The script's arithmetic over the
+conflict region was correct, and a conflict region is not an entry. Git's region
+began inside the other entry's trailing bullet rather than at its heading, so
+those last field lines sat below the `>>>>>>>` marker in `ours` context and were
+in neither slice. Concatenating two sides preserves every line only when the
+output keeps the region's own order, and this run needed the other order to put
+the earlier-merged entry first. So reordering is not a safe operation on a
+conflict region, which is not obvious and is the generalizable part.
+
+**Five of six gates passed on the damaged file.** `tools/ledger.py --patch`
+passed, because it audits the entries a branch adds and the damage was in one the
+branch received. The conflict-marker grep passed, because the markers were
+correctly removed. `tools/incidents.py check`, `tools/root_scratch.py` and
+`tools/ban_list.py` all passed. The ratchet in `tools/ledger.py --check` was the
+only refusal, and it refused with the wrong sentence: it said a new entry had
+been appended without a status, and the new entry had one. Attribution took two
+more steps and was settled by running the ratchet against `origin/main` in a
+throwaway worktree, which came back clean at the baseline.
+
+**The tool for this exists here and this run did not use it.**
+`tools/resolve_register_conflict.py` says in its own docstring that it resolves
+two register appends and proves the resolution lost nothing. Run afterwards with
+`--check`, it named all three dropped lines in one call, by counting every line
+across base, ours and theirs, and it reported the other conflicted file in the
+same merge as balanced in the same breath. That second half is an answer a hand
+check does not produce at all.
+
+Fixed in place rather than by force-pushing the history away: the three lines are
+restored, `diff` from `origin/main`'s copy of `docs/ideas.md` to this branch's
+reports **0** deleted lines, and the damaged entry is byte-identical to `main`'s.
+The bad merge commit stays in the history with the incident entry beside it,
+because a corrective commit is a record and a force-push is not.
+
+Filed as a repeat of
+`INC-2026-10-24-a-hand-resolved-register-append-deleted-another-seats-line-with-no-marker`,
+with the ladder line in the ledger. **And the charter sentence it lands on is the
+one this seat carries for other people's code: a one-line repair that reads as
+obviously correct is the place to look for a second defect.** The hand
+resolution read as obviously correct.
