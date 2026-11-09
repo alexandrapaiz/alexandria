@@ -193,6 +193,13 @@ DECLARED: dict[tuple[str, str], Judgment] = {
     ("graph_audit.py", "--labels"): Judgment("path"),
     ("graph_audit.py", "--seed"): Judgment("number"),
     ("graph_audit.py", "--snapshot"): Judgment("path"),
+    # Added 2026-11-09 with tools/host_headroom.py. `--path` is a mount point
+    # and `--compose` is a list of NAME=PATH pairs, so both are paths; neither
+    # raises on an absent one, because the tool reports an unreadable component
+    # by name rather than letting it silently shrink the residual, which is a
+    # regression test in tests/test_host_headroom.py.
+    ("host_headroom.py", "--path"): Judgment("path"),
+    ("host_headroom.py", "--compose"): Judgment("path"),
     ("incidents.py", "--base"): Judgment("opaque"),
     ("incidents.py", "--slug"): Judgment("text"),
     ("incidents.py", "--date"): Judgment("date"),
