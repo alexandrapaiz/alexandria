@@ -246,22 +246,50 @@ def pending(text: str, limit: int | None = MAX_PER_RUN,
             continue
         lines.setdefault(item.paper_id, []).append(item)
 
-    blocked: list[Item] = []
-    rest: list[Item] = []
+    # Each entry is `(the group's earliest line, the item to serve)`. The two
+    # are not always the same line and that is the whole of the 2026-11-09
+    # repair below.
+    blocked: list[tuple[int, Item]] = []
+    rest: list[tuple[int, Item]] = []
     for group in lines.values():
+        earliest = min(item.line_no for item in group)
         deciding = [item for item in group if is_blocked(item)]
         if deciding:
-            blocked.append(min(deciding, key=lambda i: i.line_no))
+            blocked.append((earliest, min(deciding, key=lambda i: i.line_no)))
         else:
-            rest.append(min(group, key=lambda i: i.line_no))
+            rest.append((earliest, min(group, key=lambda i: i.line_no)))
 
-    # Oldest line first within each group, from the kept line rather than from
-    # the order the ids happened to be met in. Both of these are already sorted
-    # when no id repeats; the sort is what makes the output a function of the
-    # file's content and not of its line order.
-    blocked.sort(key=lambda i: i.line_no)
-    rest.sort(key=lambda i: i.line_no)
-    out = blocked + rest
+    # Oldest line first within each group, keyed on the group's EARLIEST line
+    # rather than on the line of the item being served. The sort is what makes
+    # the output a function of the file's content and not of its line order,
+    # and keying it on the served item's line did not finish that job.
+    #
+    # ## Why the key had to change on 2026-11-09
+    #
+    # The item served from a blocked group is the earliest of the lines that
+    # DECIDED the group, which is deliberate and stays: the asker reported has
+    # to be the asker the priority is owed to. But that is a subset of the
+    # group, so its line is not the group's earliest, and a subset's position
+    # is exactly what moves when the file's duplicate lines are permuted.
+    #
+    # Eight of the twelve ids repeating on the live queue today are signed by a
+    # skill on one of their two lines and unsigned on the other, so for each of
+    # them `deciding` holds one line and which physical position that line
+    # occupies is decided by whichever merge landed last. Swapping such a pair
+    # in place moved the served order, which is the defect the 2026-10-05 and
+    # 2026-11-02 notes above each removed one layer of. The earliest line of
+    # the group is invariant under permuting the group's own lines, because
+    # both positions stay in the group, so this is the key that finishes it.
+    #
+    # `tests/test_reading_queue.py::
+    # test_the_live_queue_order_does_not_move_when_its_duplicates_are_reordered`
+    # is the assertion, and it was red on `main` when this landed. That test's
+    # docstring said no live duplicate was signed by a skill at all, which was
+    # true when it was written and is not true now, and the condition it
+    # described as unreachable is what made it fail.
+    blocked.sort(key=lambda pair: pair[0])
+    rest.sort(key=lambda pair: pair[0])
+    out = [item for _, item in blocked] + [item for _, item in rest]
     return out[:limit] if limit else out
 
 

@@ -23,10 +23,14 @@ claude plugin marketplace add alexandrapaiz/alexandria
 claude plugin install alexandria-skills@alexandria
 ```
 
-That installs nine skills. None of them loads until a session needs it, so
-the standing cost is the nine descriptions and nothing else, about 1,900
-tokens measured with `claude plugin details alexandria-skills` on
-2026-10-18. A skill's body is read only when the work in front of the agent
+That installs ten skills. None of them loads until a session needs it, so
+the standing cost is the ten descriptions and nothing else, about 1,700
+tokens, counted over the ten `description` fields with `tiktoken`'s
+`cl100k_base` on 2026-11-09. The figure it replaces was 1,900 over nine, from
+`claude plugin details alexandria-skills` on 2026-10-18, and that instrument
+needs an installed plugin so no agent seat can re-run it. Two surfaces
+carrying one number measured two ways is worse than one method named, so both
+now say what this one was computed over. A skill's body is read only when the work in front of the agent
 matches what the skill says it is for, and those bodies run from 1,500 to
 6,700 tokens each.
 
@@ -34,7 +38,7 @@ matches what the skill says it is for, and those bodies run from 1,500 to
 
 ## What arrives
 
-Nine skills, each one written from papers read in full rather than from
+Ten skills, each one written from papers read in full rather than from
 abstracts, and each one carrying the claim ids and papers it stands on in its
 own front matter. Read the `status` field before you lean on one.
 

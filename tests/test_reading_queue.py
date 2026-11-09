@@ -880,16 +880,31 @@ def test_a_struck_duplicate_does_not_strike_the_line_still_asking():
 def test_the_live_queue_order_does_not_move_when_its_duplicates_are_reordered():
     """The claim on the real file, since the fixtures above are synthetic.
 
-    Four ids sit on more than one unchecked line today. Swapping each pair in
+    Twelve ids sit on more than one unchecked line today. Swapping each pair in
     place must leave the served order identical.
 
     What this is computed over, because a gate that does not say so can pass on
     nothing: the count of repeated ids is asserted non-zero, and the count of
     pairs whose two lines fall in DIFFERENT groups is printed rather than
-    asserted. That second count is zero today, since no live duplicate is signed
-    by a skill at all, so this is a watch on the live file rather than a
-    reproduction of the defect. The reproduction is the synthetic pair above,
-    which was red before the repair.
+    asserted.
+
+    **That second count was zero when this was written and it is eight now, and
+    the sentence saying it was zero is why this test read as a watch rather
+    than a live gate** (corrected 2026-11-09, engineer seat). The old wording
+    said "no live duplicate is signed by a skill at all, so this is a watch on
+    the live file rather than a reproduction of the defect". That stopped being
+    true when the reading queue next grew, eight of the twelve pairs are now
+    signed on one line and unsigned on the other, and this test went red on
+    `main` reproducing the defect for real. The repair is in
+    `pipeline/reading_queue.py`: the group's sort key was the served item's
+    line, the served item is the earliest of the DECIDING lines rather than of
+    the group, and a subset's position is what moves when the group's lines are
+    permuted.
+
+    So this is no longer a watch, and the number above is printed rather than
+    asserted on purpose: it is a fact about the queue's content, which the
+    research seat owns, and a gate that failed when the queue stopped having
+    straddling pairs would be asserting on somebody else's file.
     """
     import collections
 
