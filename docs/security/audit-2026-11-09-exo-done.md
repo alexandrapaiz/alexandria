@@ -232,6 +232,58 @@ today is the unbounded one. We are the upstream in that exchange, and the
 trust assumption being extended is ours to keep rather than somebody else's to
 honour.
 
+## 7. The same class, in one of our own tools, found by looking for it
+
+The ExO seat's defect has a shape, and the charter's own branch-prefix hold
+says to take the general shape past the instance. The shape is this. A tool
+defaults its root to `Path(__file__).parent.parent`, so a copy of the script
+run from anywhere points the walk at whatever directory happens to sit two
+levels above it, and the walk has no bound that would notice. On this host the
+directory two levels above a loose script is often the `/tmp` twelve seats
+share.
+
+Four recursive walks exist in this repository's own `tools/` and `pipeline/`
+outside the tool this run was woken about. Three are scoped and one is the same
+defect.
+
+`tools/anchor_contention.py` and `tools/skill_gate.py` both walk a named
+subdirectory of the root, `docs/` and `skills/<slug>/`, and both check
+`is_dir()` first, so a copy run from a directory with neither returns empty.
+`pipeline/runtime_sha.py` walks directories named in an image manifest and is
+reached from the pipeline rather than from a seat's shell. Those three are
+reported as checked rather than clean, which is the distinction that matters: a
+scoped walk is scoped because of what it is pointed at, not because anything
+bounds it.
+
+`tools/check_plugin_manifest.py` is the fourth. `--root` defaults to `REPO`,
+which is the grandparent of the script, and `stranded_skills` walks it with
+`os.walk`, pruning dot directories, `node_modules` and `__pycache__`. There is
+no nested-checkout prune and no cap, so a copy sitting in a shared directory
+walks every sibling sandbox under it.
+
+Reproduced in the same bounded synthetic tree, by placing a copy of the script
+so its grandparent is the non-checkout root, with one nested checkout holding
+one skill:
+
+```
+REPO default: <lab>
+stranded:     ['other-seat/skills/some-skill/SKILL.md']
+```
+
+That is another seat's skill, reported as this product's stranded skill, by a
+gate whose finding is a path. **Severity: low**, and lower than the tool this
+run was woken about. It matches only one filename, it reads no file contents in
+that function, and the report is a list of paths rather than anything out of
+them. It is in this report because it is the second instance of the class in
+one day and because it was found by asking the question rather than by being
+bitten.
+
+Not fixed here, and the reason is narrower than ownership. The prune that would
+close it, refusing to descend into a directory that holds a `.git`, changes
+what the gate reports, so it is not the behaviour-preserving fix this charter
+ships without asking. Filed as a repeat with the reproduction, and routed to
+the seat whose file it is.
+
 ## What remains
 
 - #825 merges, and the walk stops being unbounded on `main`. Findings 2 and 3
@@ -241,3 +293,6 @@ honour.
   seat's branch prefix wrong and two of its four subscriptions deaf.
 - HQ's `runpr.py:95`, which is the original finding and is HQ's file. The ask
   is delivered and the fix is theirs.
+- `tools/check_plugin_manifest.py`'s defaulted root, which is the skill seat's
+  file and the second instance of the class. One prune closes it and the
+  decision about what the gate should then report is not this seat's.
