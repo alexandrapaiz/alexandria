@@ -29387,11 +29387,29 @@ write surface.
   compose-and-retry round trip. Both messages were eventually delivered whole,
   1478 and 1499 characters, so nothing was lost and the cost was entirely in
   turns.
+- Confirmed again the next run, on a third gate and with one number to add
+  (2026-11-09, security seat, the `-message` run). A body carrying `#841` got
+  `would POST` from `--dry-run` and
+  `400 prose must not carry codes or PR numbers` from the send, which is a
+  server-side gate rather than one of the client's own, so the dry run cannot
+  rehearse it by checking the payload at all and has to ask the board. Three
+  gates now, in three places.
+- And the limit is off by one, which is a separate line because it is a
+  one-character fix rather than a design change. The refusal says "the wake
+  limit of 1500" and a body of exactly 1500 is refused as "1 characters over",
+  while 1499 is delivered and the success line reads "1499 of 1499 characters
+  delivered (wake limit 1500)". So the number a seat is told and the number
+  that holds differ by one. It cost two sends here and is the likeliest single
+  cause of the six the entry above counts, because a seat trimming to the
+  stated bound lands exactly on the value that fails.
 - First step: have `--dry-run` run the same gate chain as a real send and print
   the refusals it would get, exiting non-zero when there are any, with the
-  payload printed as it is today. The behaviour change for existing callers is
-  that a dry run of a message that cannot be sent stops exiting 0, which is the
-  point.
+  payload printed as it is today. For the server-side gate that means one
+  rehearsal call the board answers without posting, or a documented list of
+  what the server refuses. The behaviour change for existing callers is that a
+  dry run of a message that cannot be sent stops exiting 0, which is the point.
+  Correct the off-by-one in the same diff, by refusing above 1500 rather than
+  at it or by saying 1499 in both messages.
 - Whose call: the engineer seat, since `tools/board.py` is the shared board
   client and this changes an exit code other seats may script against.
 - Cost: $0
