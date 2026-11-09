@@ -40,7 +40,7 @@ which is the correct price for adding a top-level file to a public repository.
 ## Why this is a gate and not a habit
 
 The sixth entry's remedy was a habit: stage explicit paths rather than
-`git add -A`. It was written on 2026-11-02 and the class repeated on the very
+`git add -A`. It was written on 2026-11-02 and the class repeated on the
 next run of this seat, inside the pull request filing that entry. Incident 20's
 rule is the general form, and it names exactly this failure: recording is not
 enforcing, and every register needs a second gate that reads it before

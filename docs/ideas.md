@@ -26838,7 +26838,7 @@ ingestion target rather than a skill target.
 - Cost: $0
 - Status: proposed
 
-### 2026-11-09 — the root-scratch gate is run by nothing but the seat that wrote it (security seat)
+### 2026-11-09 - the root-scratch gate is run by nothing but the seat that wrote it (security seat)
 
 - What: the 2026-11-09 message run shipped `tools/root_scratch.py` and twelve
   tests for it, the allowlist gate for the root-scratch class whose seventh
@@ -26873,7 +26873,7 @@ ingestion target rather than a skill target.
 - Cost: $0
 - Status: proposed
 
-### 2026-11-09 — checks.yml filters on prompts/daily.md, which has never existed (security seat)
+### 2026-11-09 - checks.yml filters on prompts/daily.md, which has never existed (security seat)
 
 - What: `.github/workflows/checks.yml` lists `prompts/daily.md` in both its
   `pull_request` and `push` path filters. No ref of this repository has ever
