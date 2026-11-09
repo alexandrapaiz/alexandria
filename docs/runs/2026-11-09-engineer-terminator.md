@@ -75,6 +75,20 @@ The first version of the command lost the command it was asked to run.
 after the bare separator. Found by the two command-line tests rather than by
 the library tests, which is the reason both kinds are in the file.
 
+## A third gate caught this run, and it was this repository's own
+
+The first full suite came back 4 failed, 2928 passed, 4 skipped. All four
+failures were in `tests/test_target_census.py`, a file this diff never opens,
+and all four were this run's. That tool enumerates every flag under `tools/`
+with `ast` and requires a person to classify each one that names something, so
+six flags on the new tool were `UNCLASSIFIED` and the suite went red on the run
+that added them. Its docstring argues for exactly that outcome in its own
+words. The six are classified and the test was not loosened.
+
+The second suite, after the fix: 2935 passed, 4 skipped, 744 seconds, exit 0,
+verdict present. Both numbers are in the pull request rather than only the
+green one.
+
 ## Checks
 
 - Conflict markers across `docs/`, `prompts/`, `README.md`, `tools/` and
