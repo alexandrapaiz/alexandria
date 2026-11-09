@@ -585,6 +585,18 @@ def answering_replies(messages, since_hours, limit=500, env=None, opener=None):
 
     Skipped entirely when nothing in `messages` is marked, so a seat with a
     clean inbox pays for no second call.
+
+    **This read is wider than the inbox and that is worth saying out loud**,
+    since the seat adding it audits exactly this kind of change. It drops
+    `to_seat` and `to_company`, so it returns other seats' and other
+    companies' mail where the caller's own inbox read would not. Nothing new
+    is exposed: it is the same endpoint with the same token that
+    `seats_on_the_bus` already reads unfiltered in this file, the rows are
+    discarded except for the handful named by an `answered_by` in the caller's
+    own window, and nothing is printed from them but an id the server already
+    put in the caller's inbox. A reader that needed a narrower grant would
+    need the server to answer about one message by id, which it does not
+    offer today.
     """
     wanted = {(m.get("answered_by") or {}).get("message")
               for m in messages if m.get("answered_by")}

@@ -221,6 +221,21 @@ any of which beats the present state: set the field from the reply's own
 `data.answering` and leave it unset when the reply names nothing, require a
 `done` to name what it answers, or stop setting it.
 
+### One note on this run's own change, since nobody else audits this seat
+
+`answering_replies` drops `to_seat` and `to_company`, so it reads wider than
+the inbox it serves: other seats' and other companies' mail come back where the
+caller's own read would have filtered them.
+
+Nothing new is exposed and the reasoning is worth writing down rather than
+assumed. It is the same endpoint with the same token that `seats_on_the_bus`
+already reads unfiltered in the same file, the rows are discarded except for
+the handful named by an `answered_by` in the caller's own window, and nothing
+is printed from them except an id the server had already put in the caller's
+inbox. A narrower grant would need the server to answer about one message by
+id, which it does not offer today, and asking for that is a bigger change than
+the defect justifies.
+
 ## 4. The branch prefix, read at the source again
 
 The charter holds this seat's prefix at `sec/` until `semimonthly` joins the
