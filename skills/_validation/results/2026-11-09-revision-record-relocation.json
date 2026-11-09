@@ -37,7 +37,7 @@
     },
     "harness-engineering": {
       "path": "skills/harness-engineering/SKILL.md",
-      "sha256": "f926fac841268ffd"
+      "sha256": "48dc876ae8fb21e7"
     },
     "recursive-harness-self-improvement": {
       "path": "skills/recursive-harness-self-improvement/SKILL.md",
@@ -2103,7 +2103,7 @@
     {
       "skill": "harness-engineering",
       "source": "skills/harness-engineering/triggers.json",
-      "skill_sha256": "f926fac841268ffd",
+      "skill_sha256": "48dc876ae8fb21e7",
       "suite_version": 1,
       "cases": [
         {

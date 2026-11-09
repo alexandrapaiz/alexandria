@@ -169,7 +169,7 @@ provenance:
   validated: ""   # leave empty; the ADR-13 validator fills this at promotion, never fabricate a result here
   reviews:
     - "none filed yet. The lane is open at reviews/ (ADR-38); see reviews/README.md for what this skill most wants reported."
-  revisions: []   # one LINE per revision once there are any, with the narrative in revisions.md (see below)
+  revisions: []   # one LINE per revision once there are any, with the narrative in REVISIONS.md (see below)
   claims: [<every claim id the body cites, as a flat list>]
   papers:
     - "<paper title> — <arxiv or source url>"
@@ -181,7 +181,7 @@ field records a real recorded A/B trial result; that trial is the ADR-13
 validator's job, not this prompt's. A draft skill ships with `validated: ""`.
 
 **`revisions` is one line per revision, and the narrative goes in
-`skills/<slug>/revisions.md`.** This paragraph was added 2026-11-09 after a
+`skills/<slug>/REVISIONS.md`.** This paragraph was added 2026-11-09 after a
 measurement, and the measurement is the argument. ADR-37 puts the maintenance
 record in `provenance.revisions`, one entry per revision, forever. Nothing reads
 that field: `site/lib/content.js` `parseSkill` returns `name`, `description`,
@@ -197,7 +197,7 @@ a gate deleting advice to make room for metadata about having deleted advice.
 
 So each frontmatter entry is one line that names the date, the trigger, and what
 changed, which is what ADR-37 asks the record to carry, and the full narrative
-goes under a dated heading in `skills/<slug>/revisions.md`. Nothing is deleted;
+goes under a dated heading in `skills/<slug>/REVISIONS.md`. Nothing is deleted;
 the text moves. The relocation on `harness-engineering` took it from 229 rendered
 lines to 160 without touching a sentence of the body.
 

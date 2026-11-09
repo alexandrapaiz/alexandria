@@ -21,6 +21,22 @@ parser read out of the frontmatter, character for character, and the one-line
 entries that replaced it name the trigger and what changed, which is what
 ADR-37 asks the record to carry.
 
+`skills/agent-containment/REVISIONS.md` is the first file of this shape, moved
+earlier the same day. It differs in one way worth knowing about: it keeps its
+newest revision in the frontmatter in full and replaces the older six with a
+single pointer line, so the frontmatter no longer names what fired for those
+six. This file keeps one line per revision naming the trigger and what changed,
+which is what `prompts/skill-extract.md` now prescribes, and bringing
+`agent-containment` to the same shape is a next-run job rather than this one's.
+
+The cause stated above is deliberately not the cause the earlier move stated.
+That one rested on a rule-3 checklist-position number measured from byte zero
+of the file, which counts the frontmatter and belongs to no reading of rule 3,
+and it is corrected in
+`docs/agents/incidents/inbox/INC-2026-11-09-a-library-bar-was-measured-in-a-unit-that-does-not-match-the-rules-subject-twice-in-one-day.md`.
+The share of the file and the fact that nothing reads the field are the grounds
+that survive that correction, and they are the only grounds used here.
+
 ## 2026-11-02: frontmatter repair, no finding changed
 
 2026-11-02 (frontmatter repair, no finding changed): this file's frontmatter did not load under a YAML parser on main. Two `revisions` entries had been joined onto one physical line, so the second item's dash was read as a sequence entry inside the first item's scalar and PyYAML raised ScannerError at line 14 column 2287. `skills/_validation/trigger_test.py --receipts` had been reporting it and exiting 1 while the `checks` workflow stayed green, because no workflow runs that flag. The newline is restored and all nine skills load. Restoring it took the file to 120 lines and ADR-38 rule 4 caps a skill under 120, and this entry costs a line of its own, so two clauses were cut to pay for both: delta 3's closing clause about the prompt growing by fewer lines than the backlog holds, which restated the procedure directly above it, and the itemised list inside the last caveat, which the receipt file named on the next line already holds. Both are content cuts rather than rewraps: joining two wrapped body lines would have bought the same line back and reduced nothing a reader pays, which is the shape of measurement-gaming this seat's own skills exist to catch. No claim, number, paper or description changed, and the trigger receipt was re-run against the new text.
