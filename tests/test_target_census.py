@@ -28,6 +28,7 @@ value nothing carries, which is the one input that cannot do work.
 
 import io
 import pathlib
+import shutil
 import subprocess
 import sys
 
@@ -196,3 +197,90 @@ def test_the_listing_runs_and_classifies_every_row():
     out = io.StringIO()
     assert tc.listing(stream=out) == tc.EXIT_OK
     assert "UNCLASSIFIED" not in out.getvalue()
+
+
+# ------------------------- a judgment declared twice is a judgment discarded
+
+
+def test_no_target_is_declared_twice_in_the_table():
+    """The repeat that was live on `main` when this test was written.
+
+    `("prose_symbols.py", "--root")` and `("prose_symbols.py", "paths")` each
+    appeared twice in `DECLARED`, once from #813's reader and once from the
+    engineer seat, so the table held 139 written rows and the gate printed
+    `137 declared`. Both pairs agreed on the kind, so no answer was wrong. What
+    was discarded was a reason: two comment blocks each explaining a row, one
+    of each pair attached to nothing, and no way for a reader to tell which.
+    """
+    assert tc.repeated_declarations() == []
+
+
+def test_a_duplicate_declaration_is_caught_in_a_real_file(tmp_path):
+    """Against an artifact known to fail it, per incident 32, and the artifact
+    is this module's own source with one line duplicated rather than a fixture
+    written to look wrong."""
+    source = (ROOT / "tools" / "target_census.py").read_text()
+    row = '    ("pr_backlog.py", "--prs"): Judgment("path"),'
+    assert row in source
+    damaged = source.replace(
+        row, row + '\n    ("pr_backlog.py", "--prs"): Judgment("opaque"),', 1
+    )
+    found = tc.repeated_declarations(damaged)
+    assert len(found) == 1
+    key, lines = found[0]
+    assert key == ("pr_backlog.py", "--prs")
+    assert len(lines) == 2 and lines[0] + 1 == lines[1]
+
+
+def test_the_dict_itself_cannot_answer_the_question(tmp_path):
+    """Why the check reads text and not `DECLARED`.
+
+    A dict literal keeps the last value for a repeated key and reports
+    nothing, so the duplicate is already gone by the time the module is
+    imported. This is the same shape alexandria/exo found in
+    `tools/sentinel.py` the same morning, where `dict(args.part)` dropped a
+    part somebody had named.
+    """
+    assert len({"a": 1, "a": 2}) == 1  # noqa: F601 - the defect, asserted
+    assert dict([("a", 18.0), ("a", 6.9)]) == {"a": 6.9}
+
+
+def test_a_file_with_no_declared_table_is_refused_rather_than_called_clean():
+    """An empty answer from a source that was never read is the confident zero
+    this whole module exists to refuse, so it raises instead."""
+    with pytest.raises(tc.CannotRead):
+        tc.repeated_declarations("X = 1\n")
+
+
+def test_check_fails_on_a_repeat_and_says_how_short_the_count_is(tmp_path):
+    """The whole tool, run as a command, over a copy of the tree with one row
+    duplicated. A monkeypatch would be testing the assertion and not the gate,
+    because the gate's input is the file on disk under its own `__file__`.
+    """
+    shutil.copytree(ROOT / "tools", tmp_path / "tools")
+    target = tmp_path / "tools" / "target_census.py"
+    row = '    ("pr_backlog.py", "--now"): Judgment("date"),'
+    source = target.read_text()
+    assert row in source
+    target.write_text(source.replace(row, row + "\n" + row, 1))
+    done = subprocess.run([sys.executable, str(target), "--check"],
+                          capture_output=True, text=True)
+    assert done.returncode == tc.EXIT_PROBLEM, done.stdout
+    assert "--now is declared 2 times" in done.stdout
+    assert "short by 1" in done.stdout
+    # And the undamaged tool answers clean on the same copied tree, so the
+    # failure above is the duplicate and not the copy.
+    target.write_text(source)
+    clean = subprocess.run([sys.executable, str(target), "--check"],
+                           capture_output=True, text=True)
+    assert clean.returncode == tc.EXIT_OK, clean.stdout
+
+
+def test_the_four_flags_pr_backlog_brought_to_main_are_declared():
+    """#836 landed `tools/pr_backlog.py` at 06:26Z on 2026-11-09 with four
+    unclassified targets, which turned `main` red for every seat. The judgments
+    are asserted here and not only the fact of them."""
+    assert tc.DECLARED[("pr_backlog.py", "--prs")].kind == "path"
+    assert tc.DECLARED[("pr_backlog.py", "--merged")].kind == "path"
+    assert tc.DECLARED[("pr_backlog.py", "--since")].kind == "date"
+    assert tc.DECLARED[("pr_backlog.py", "--now")].kind == "date"

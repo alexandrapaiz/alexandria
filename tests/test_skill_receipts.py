@@ -227,11 +227,27 @@ def test_the_excuse_is_narrow_enough_to_still_be_a_gate():
     )
 
 
+# A bare day or a full ISO-8601 stamp, and nothing else. The stamp half was
+# added 2026-11-09 for alexandria/skill: this assertion was what refused a
+# timestamped `generated`, and a timestamp is what stops two bundles of one day
+# ranking equal and letting a filename decide which result the page publishes.
+# Still anchored, because the point of the assertion is that a receipt's date
+# is a date and not free prose, and `formatDate` renders anything it cannot
+# parse by handing it to the reader verbatim.
+RECEIPT_DATE = re.compile(
+    r"\d{4}-\d{2}-\d{2}"                        # the calendar day, always
+    r"(?:[T ][\d:.]+(?:Z|[+-]\d{2}:?\d{2})?)?"   # optionally the time within it
+)
+
+
 def test_every_skill_the_page_receives_shows_a_dated_validation_result():
     for s in _list_skills():
         v = s["validation"]
         assert v, f"{s['name']}: no validation result reached the page"
-        assert re.fullmatch(r"\d{4}-\d{2}-\d{2}", v["date"]), s["name"]
+        assert RECEIPT_DATE.fullmatch(v["date"]), (
+            f"{s['name']}: `generated` is {v['date']!r}, which is neither a "
+            "calendar day nor an ISO-8601 stamp, so the page will print it raw"
+        )
         assert v["engine"], s["name"]
         assert v["total"] > 0, s["name"]
         assert v["current"] is True, (
@@ -830,3 +846,249 @@ def test_no_live_quarantine_entry_is_inside_its_warning_window():
     assert registrar.quarantine_entry(
         "plain", quarantine={"plain": "a reason"}, expires="2026-12-01") == (
         "a reason", "2026-12-01")
+
+
+# --------------------------------------------------------------- the ranking
+#
+# Two implementations of one rule, and until 2026-11-09 nothing executed them
+# against the same input. rank_bundles() in skills/_validation/trigger_test.py
+# and rankBundles() in site/lib/skill-provenance.js each said in a comment that
+# they were the other's rule, which is the sentence that stopped anyone
+# checking. For two bundles recorded on one bare date neither of them had a key
+# left, so the winner was whichever the caller listed first: `sorted(glob())`
+# on the gate's side and `readdirSync` on the page's, and Node does not promise
+# readdirSync is sorted. Two accidents, agreeing by luck.
+#
+# alexandria/skill found it from the other end on #873: `--receipts` said to
+# clear a stale receipt by re-running, the re-run wrote the same bare date as
+# the bundle it replaced, and it lost the tie on filename, so the prescribed
+# remedy could not clear the thing it was prescribed for.
+#
+# One warning about how these are built, because the first version of them
+# passed against the pre-fix code. Both sorts are stable, Python's by
+# implementation and JavaScript's by specification since ES2019, so handing
+# both rankers one list in one order makes them agree on a tie whether or not
+# either has a key left to break it. They agree by preserving the input, which
+# is not agreeing on a rule. So each fixture below reaches the two sides in
+# opposite orders, the way production does, and every group of equally-ranked
+# bundles arrives reversed from the order the answer wants.
+
+_RANKED = [
+    # (sourceFile, generated, pre_registered) -- no two of these are equal on
+    # (generated, pre_registered), so this fixture is decided entirely by the
+    # two keys both rankers have carried since 2026-09-24. Listed in neither
+    # the answer's order nor its reverse, which the guard below enforces.
+    ("2026-10-13-only-one.json", "2026-10-13", True),
+    ("2026-11-09-mmm-experiment.json", "2026-11-09", False),
+    ("2026-09-30-decoys-v1.json", "2026-09-30", False),
+    ("2026-11-09-zzz-rerun.json", "2026-11-09T06:12:03Z", True),
+    ("2026-11-09-aaa-earlier.json", "2026-11-09", True),
+]
+_RANKED_EXPECTED = [
+    "2026-11-09-zzz-rerun.json",       # a stamp outranks a bare day of that day
+    "2026-11-09-aaa-earlier.json",     # then the bare day, pre-registered
+    "2026-11-09-mmm-experiment.json",  # then that day's experiment
+    "2026-10-13-only-one.json",
+    "2026-09-30-decoys-v1.json",
+]
+
+
+def _bundles(rows):
+    return [
+        {"generated": gen, "policy": {"pre_registered": pre},
+         "_path": f"skills/_validation/results/{name}"}
+        for name, gen, pre in rows
+    ]
+
+
+def _rank_in_python(rows):
+    """The canonical rule, tools/receipt_ranking.py, which the panel calls and
+    which the gate is being handed."""
+    sys.path.insert(0, str(REPO / "tools"))
+    import receipt_ranking               # noqa: E402
+
+    return [Path(b["_path"]).name for b in receipt_ranking.rank(_bundles(rows))]
+
+
+def _rank_in_the_gate(rows):
+    """The gate's own copy of the rule, in a file this seat may not write."""
+    sys.path.insert(0, str(REPO / "skills" / "_validation"))
+    import trigger_test as tt            # noqa: E402
+
+    return [Path(b["_path"]).name for b in tt.rank_bundles(_bundles(rows))]
+
+
+def _rank_in_node(rows):
+    bundles = [
+        {"generated": gen, "policy": {"pre_registered": pre}, "sourceFile": name}
+        for name, gen, pre in rows
+    ]
+    script = (
+        'const m = await import("./lib/skill-provenance.js");'
+        f"const input = {json.dumps(bundles)};"
+        "process.stdout.write(JSON.stringify("
+        "m.rankBundles(input).map((b) => b.sourceFile)));"
+    )
+    proc = subprocess.run(
+        [node(), "--input-type=module", "-e", script],
+        cwd=SITE,
+        capture_output=True,
+        text=True,
+    )
+    assert proc.returncode == 0, proc.stdout + proc.stderr
+    return json.loads(proc.stdout)
+
+
+def test_each_fixture_still_tests_the_key_it_was_built_for():
+    """The guard on the tests below, because they are only worth having while
+    their fixtures still discriminate. The first version of this block went
+    green against the code it was written to catch, and this is what makes that
+    mistake loud rather than silent.
+
+    Two different conditions, because the two fixtures test different keys.
+    `_RANKED` must contain no tie at all, or it stops being a clean test of the
+    first two keys. `_TIED` must be nothing but a tie, and must not arrive in
+    the answer's order, or a stable sort with no third key would produce the
+    expected answer by handing the input straight back.
+    """
+    shared = [(gen, bool(pre)) for _n, gen, pre in _RANKED]
+    assert len(set(shared)) == len(shared), (
+        f"_RANKED now contains two bundles equal on (generated, "
+        f"pre_registered): {shared}. It is meant to be decided by those two "
+        "keys alone, so a tie in it tests the third key by accident."
+    )
+
+    tied_shared = {(gen, bool(pre)) for _n, gen, pre in _TIED}
+    assert len(tied_shared) == 1, (
+        f"_TIED is no longer a single tie: {tied_shared}. Every bundle in it "
+        "has to be equal on both shared keys or the third key is not what "
+        "orders it."
+    )
+    assert [name for name, _g, _p in _TIED] != _TIED_EXPECTED, (
+        "_TIED now arrives in the answer's order, so a ranker with no third "
+        "key would pass by returning its input unchanged. Reverse it."
+    )
+
+
+def test_both_rankers_order_one_fixture_identically_from_opposite_inputs():
+    """The parity the two comments claim, executed rather than claimed.
+
+    Opposite input orders on purpose: the gate enumerates with `sorted(glob())`
+    and the page with `readdirSync`, so a rule that only holds for one
+    enumeration is not a shared rule.
+    """
+    in_python = _rank_in_python(_RANKED)
+    in_node = _rank_in_node(_RANKED[::-1])
+    assert in_python == in_node, (
+        "the gate and the page disagree about which bundle is the library's "
+        f"result.\n  trigger_test.py: {in_python}\n  the page:        {in_node}"
+    )
+    assert in_python == _RANKED_EXPECTED, in_python
+
+
+def test_a_stamped_rerun_outranks_the_bare_day_it_supersedes():
+    """The property that makes `--receipts`' own prescription followable.
+
+    Without it the remedy the failure message prints cannot clear the failure,
+    which is how alexandria/skill found this. Both rankers already had it, for
+    free, because both compare `generated` as a plain string and a bare date is
+    a prefix of a stamp that starts with it. What refused the stamp was never
+    the ranking: it was the two assertions above that demanded a bare date and
+    `formatDate`, which would have handed the reader `2026-11-09T06:12:03Z`.
+    """
+    rows = [
+        ("2026-11-09-aaa-earlier.json", "2026-11-09", True),
+        ("2026-11-09-zzz-rerun.json", "2026-11-09T06:12:03Z", True),
+    ]
+    for order in (rows, rows[::-1]):
+        assert _rank_in_python(order)[0] == "2026-11-09-zzz-rerun.json"
+        assert _rank_in_node(order)[0] == "2026-11-09-zzz-rerun.json"
+
+
+# Three bundles equal on both of the keys the rankers share, so only a third
+# key can order them. The page has one as of this branch. The gate's half is
+# alexandria/skill's, whose #873 owns that file, and this seat may not write
+# into `skills/` (prompts/engineer-agent.md line 89, ADR-13).
+_TIED = [
+    ("2026-09-30-lexical-2.1.json", "2026-09-30", True),
+    ("2026-09-30-decoys-v1.json", "2026-09-30", True),
+    ("2026-09-30-bbb-middle.json", "2026-09-30", True),
+]
+_TIED_EXPECTED = [
+    "2026-09-30-bbb-middle.json",
+    "2026-09-30-decoys-v1.json",
+    "2026-09-30-lexical-2.1.json",
+]
+
+
+def test_the_canonical_rule_and_the_page_break_a_tie_the_same_way():
+    """Three bundles equal on both shared keys, so only the third key can order
+    them, and the two sides have to land on one answer from opposite inputs."""
+    in_python = _rank_in_python(_TIED)
+    in_node = _rank_in_node(_TIED[::-1])
+    assert in_python == in_node, (
+        f"receipt_ranking.py: {in_python}\n  the page:           {in_node}"
+    )
+    assert in_python == _TIED_EXPECTED, in_python
+    # and each side alone is order-independent, which is the property that
+    # makes the two of them agreeing mean something
+    assert _rank_in_python(_TIED[::-1]) == _TIED_EXPECTED
+    assert _rank_in_node(_TIED) == _TIED_EXPECTED
+
+
+def test_the_gate_breaks_a_tie_the_way_everything_else_does():
+    """The last of the three readers, and it now calls the one rule.
+
+    This test arrived from the engineer seat on #878 carrying a strict xfail,
+    because the gate's copy of the rule lives in a file that seat may not write
+    (prompts/engineer-agent.md line 89) and a plain skip is green forever and
+    reads exactly like a check that ran. A strict xfail fails the moment it
+    starts passing, so the suite reported the handover as complete rather than
+    waiting to be asked. The marker is deleted here, in the commit that makes
+    it pass, by the seat that owns `skills/_validation/trigger_test.py`: the
+    gate imports `tools/receipt_ranking.py` and keeps no copy of its own. The
+    instrument worked exactly as its author designed it, which is worth saying
+    because the alternative instrument would have left this green and silent.
+    """
+    assert _rank_in_the_gate(_TIED) == _TIED_EXPECTED, _rank_in_the_gate(_TIED)
+
+
+def test_the_panel_reads_the_receipt_through_the_canonical_rule():
+    """The third reader, which had the opposite tie-break and never read
+    `generated` at all.
+
+    Asserted through the panel's own entry point rather than by reading its
+    source, because the defect was three files each claiming to implement one
+    rule. `tied` is the panel's own account of how it chose.
+    """
+    sys.path.insert(0, str(REPO / "tools"))
+    import panel_validator as pv          # noqa: E402
+
+    for s in _list_skills():
+        receipt = pv.trigger_receipt(SKILLS, s["name"])
+        assert receipt is not None, f"{s['name']}: the panel found no receipt"
+        assert receipt["tied"] == [], (
+            f"{s['name']}: the panel's receipt {receipt['file']} ranked equal "
+            f"to {receipt['tied']}, so it won on its filename"
+        )
+        # the panel and the page have to name the same bundle, which is the
+        # thing that was false for six days
+        assert receipt["file"] == s["validation"].get("sourceFile", receipt["file"])
+
+
+def test_the_library_as_it_stands_publishes_no_receipt_chosen_by_filename():
+    """The gate on the real tree, through the page's own reader.
+
+    Asked of what the page actually received, rather than of the gate's copy of
+    the rule, because the whole defect was that the two were only claimed to be
+    one rule. Green today: every skill resolves to the single bundle recorded
+    on 2026-11-09. It goes red the first time a second bundle is written on a
+    day that already has one, which is exactly the situation #873 is in.
+    """
+    for s in _list_skills():
+        assert s["validation"]["tiedWithFiles"] == [], (
+            f"{s['name']}: the page calls {s['validation']['date']} the newest "
+            f"result, but these bundles rank equal to the one it chose: "
+            f"{s['validation']['tiedWithFiles']}. Give the newer one a full "
+            "ISO-8601 `generated` stamp."
+        )

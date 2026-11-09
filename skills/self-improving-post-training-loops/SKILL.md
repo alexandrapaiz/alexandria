@@ -18,13 +18,13 @@ provenance:
     - "2026-09-30 (ADR-38 retrofit, owner directive): per-section Validation tags, an Apply checklist, and caveats that name their floor. No claim, number or prescription changed."
   claims: [30, 31, 32, 33, 116, 117, 118, 119, 120, 141, 142, 143, 144, 96, 97, 98, 99, 39, 40, 41, 42]
   papers:
-    - "RISE: Recursive Improvement via Self-Extrapolating Policy Distillation — arxiv.org/abs/2609.05295"
-    - "Verify Before You Distill: Prompt-Level Teacher Gating for On-Policy Distillation — arxiv.org/abs/2609.02998"
-    - "NeoHorse-1: Towards Recursive Self-Improvement via Agentic Post-Training with Routing Harness — arxiv.org/abs/2609.08183"
-    - "FlowBalance: Verifier-Grounded Self-Improvement from On-Policy Reasoning Experience — arxiv.org/abs/2609.03241"
-    - "AppWorld: A Controllable World of Apps and People for Benchmarking Interactive Coding Agents (read 2026-10-27 for the test-normal and test-challenge split behind DRACO's numbers) — arxiv.org/abs/2407.18901"
-    - "tau-bench: A Benchmark for Tool-Agent-User Interaction in Real-World Domains (read 2026-10-27 for what its evaluation actually verifies) — arxiv.org/abs/2406.12045"
-    - "DRACO: Fine-Grained Credit Assignment with Dynamic Rubrics for Long-Horizon Agent Training — arxiv.org/abs/2609.04094"
+    - "RISE: Recursive Improvement via Self-Extrapolating Policy Distillation, arxiv.org/abs/2609.05295"
+    - "Verify Before You Distill: Prompt-Level Teacher Gating for On-Policy Distillation, arxiv.org/abs/2609.02998"
+    - "NeoHorse-1: Towards Recursive Self-Improvement via Agentic Post-Training with Routing Harness, arxiv.org/abs/2609.08183"
+    - "FlowBalance: Verifier-Grounded Self-Improvement from On-Policy Reasoning Experience, arxiv.org/abs/2609.03241"
+    - "AppWorld: A Controllable World of Apps and People for Benchmarking Interactive Coding Agents (read 2026-10-27 for the test-normal and test-challenge split behind DRACO's numbers), arxiv.org/abs/2407.18901"
+    - "tau-bench: A Benchmark for Tool-Agent-User Interaction in Real-World Domains (read 2026-10-27 for what its evaluation actually verifies), arxiv.org/abs/2406.12045"
+    - "DRACO: Fine-Grained Credit Assignment with Dynamic Rubrics for Long-Horizon Agent Training, arxiv.org/abs/2609.04094"
 ---
 
 # Self-improving post-training loops
