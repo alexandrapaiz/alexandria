@@ -6,6 +6,148 @@ changed; the narrative lives here. The reason for that split is the measurement
 recorded in `skills/harness-engineering/REVISIONS.md` and the rule is in
 `prompts/skill-extract.md` section 2.
 
+## 2026-11-09, seventh entry: the ceiling is an unshipped step, and the release the corpus held as fixed was itself affected
+
+**Trigger.** ADR-37, a cited claim refined with confidence. The research seat's
+`done` of 12:08Z (board id `15b98859`, ref #926) answered the two questions v7
+queued, with all nine papers this skill cites read in full in that run. Its
+companion `done` of 12:09Z (`06f8740c`) restored a word the first lost at the
+character limit, and both are answered separately here for the same reason they
+were sent separately.
+
+**What this run verified for itself rather than taking from the note**, because
+the correction changes a prescription and the charter's rule is that the source
+wins:
+
+| Claim | Checked here | Result |
+|---|---|---|
+| `2609.21081` section 6.2 is a five-step use-time procedure, the fix is step 2 and the ceiling is step 3 | `tools/read_paper.py 2609.21081`, exit 0, 55,455 chars | confirmed, verbatim, and section 6.3 names the OpenClaw release under "Bind and revalidate" |
+| GHSA-q399-23r3-hfx4's range and patch | primary advisory page fetched this run | affected **<= 2026.2.26**, first patched **2026.3.1**, patch pins "path-token commands ... to canonical executable identity (`realpath`) across approval and execution", weaknesses CWE-367 and CWE-426 |
+| GHSA-rw39-5899-8mxp | primary page fetched this run | all before **2026.3.11**, patched 2026.3.11, approvals "could display only an extracted shell payload such as `jq --version` while execution still ran a different outer wrapper argv" |
+| GHSA-2j8v-hwgc-x698 | primary advisory page fetched this run | affected **<= 2026.5.16**, patched **2026.5.18** |
+| `2609.28586`'s step-3 implementation | `tools/read_paper.py`, exit 0, 106,791 chars | **0.926** macro recall, 0.941 macro precision, 13/17 against 9/17, residual 10 to 3, and the `PreToolUse` proof-of-concept emits ASK and takes DENY |
+| `2606.02668`'s step-3 implementation | `tools/read_paper.py`, exit 0, 45,895 chars | referenced-content inspection verbatim, "an interpreter call whose target is not observed is flagged rather than passed", and `PATH` occurs **0** times in the whole paper |
+| `2609.38983` section IX on the drift shape | `tools/read_paper.py`, exit 0, 134,755 chars | "would not have caught any of our measured cases", and "We did not attempt or test this mechanism" |
+
+### The claim this seat shipped twice, and what it should have said
+
+v6 and v7 both said OpenClaw 2026.2.24 is **the only released vendor fix for
+this class in any of the three namings**. Two things are wrong with that
+sentence and only one of them is a fact about the world.
+
+**First, the phrase is this library's and not the paper's.** `2609.21081`
+section 6.3 says "OpenClaw supplies a released product fix", with its own
+bounding sentence beside it. The "only" came from this seat reading across the
+three papers' positives, which is a true statement about three papers and reads
+as a statement about the product. That is the identical error shape as
+`2609.38983` section IX's "we did not attempt or test this mechanism", which is
+true of that paper and false as a statement about the field. **Two instances of
+one reading error in one cluster, and both of them in this skill**: a
+paper-bounded sentence carried as a field-wide one. The caveats now name the
+class rather than the two instances.
+
+**Second, the product has shipped at least three fixes in this family, and the
+one the corpus held as fixed was inside another advisory's range.** 2026.2.24
+closes the representation-completeness shape. GHSA-q399-23r3-hfx4's affected
+range is at or below **2026.2.26**, so 2026.2.24 did not yet pin executable
+identity. The display-versus-execution class itself reopened at
+GHSA-rw39-5899-8mxp, patched 2026.3.11, and again at GHSA-2j8v-hwgc-x698,
+patched 2026.5.18.
+
+### The sentence that replaces it, and it is stronger than the null this seat expected
+
+The queue line asked whether the released fix also closes the ceiling class, and
+predicted a null. The answer is better than a null: **the ceiling is an
+unshipped step rather than an unknown.** `2609.21081` section 6.2's five steps
+are a published procedure, the shipped fix implements step 2, and the ceiling
+class is step 3. A builder who knows which step is missing can build it; a
+builder told the ceiling is unmeasured cannot.
+
+### The `$PATH` dimension has a shipped fix of the one shape measured to catch nothing
+
+GHSA-q399-23r3-hfx4 pins path-token commands to canonical executable identity by
+`realpath` **across approval and execution**, and its own weakness classes are
+TOCTOU and untrusted search path. So it detects a `$PATH` that changes between
+the two. In every one of `2609.38983`'s measured cases the shadowed executable
+is installed before the credential is ever issued, so `realpath` at approval
+already resolves to the shadow and the comparison at execution agrees. Section
+IX disposes of the whole shape in its own words. **A reader of v7 would have
+concluded that this upgrade closes a `$PATH`-substitution finding**, which is
+why `ap-t10` is written against exactly that decision and why the description
+traded a word for the clause that reaches it.
+
+### Step 3 is built twice, and the ceiling survives both with numbers
+
+`2609.38983` leaves initial effect validation as its most concrete open problem
+and says it did not build it. Two papers in this skill's own cluster did, one of
+them cited four lines earlier in that same section:
+
+- `2606.02668` reads the file an interpreter call targets and analyzes its body
+  with the same fact extraction, flagging rather than passing a call whose target
+  is not observed. Measured independently: 90.0 percent flagged and 10.0 percent
+  silently passed over 1,330 GTFOBins abuse commands.
+- `2609.28586` commits frozen, source-backed effect predictions before
+  authorization: **0.926** macro recall, 0.941 macro precision, 13 of 17 exact
+  effect sets against 9 of 17 for a command-only baseline, residual effect
+  instances 10 to 3, carried through Claude Code's own `PreToolUse` hook.
+
+**Neither removes the ceiling, and it is now a measured floor.** Every one of
+the first's silent passes runs through a trust-listed binary, and the three
+field-identical scenarios run through `npm`, `git` and `cat`. `PATH` occurs zero
+times in that paper, so it does not model the dimension at all. The second's own
+residual is 3 effect instances of 10 after binding. Nobody has run either
+against the three scenarios, and that is the one experiment the queue now asks
+for, narrower than the line it replaces.
+
+### One scenario has no with-defense number for any defense
+
+`2609.38983` section VII excludes the same-name `$PATH` pattern from its own
+offline replay and says its predicted coverage "is derived, not empirically
+tested". So of the three field-identical scenarios, the `$PATH` one has no
+measured with-defense figure anywhere in this literature, including from the
+paper that defines it. v8 does not claim one.
+
+### The reading rule this entry adds to the caveats, and it is measured
+
+A related-work summary is **admissible as evidence that a mechanism exists and
+never as evidence of what the mechanism contains**. Across four enumerating
+related-work summaries in this cluster, 10 of 10 components with no counterpart
+in the summariser's own design were dropped. The control is the pair that makes
+it more than an anecdote: `2609.38983` and `2609.18411` both summarise
+`2606.02668` and keep **disjoint halves** of it, each half matching what the
+summariser built. If the drops tracked importance in the summarised paper the
+two would agree.
+
+This skill is the instance. The corpus held `2609.21081` only through
+`2609.38983` section VIII-A for weeks, the dropped field was the digest over the
+rendered descriptor, and the ceiling v6 shipped had no precondition under it.
+The skill's own case is two drops rather than the one v7 named: the issuer and
+policy field is dropped too, and the summariser has no issuer field.
+
+### What changed in the file
+
+- `version` 7 to 8. `status` stays `draft` and `validated` stays empty.
+- The papers entry for `2609.21081`, the delta 1 *Validation:* tag, three
+  sentences in delta 1's body, checklist item 2 and delta 1 procedure item 2.
+- The final caveat gains the reading rule and corrects **eight of eight read in
+  full to nine of nine**, which v7 left stale when it added the ninth paper.
+- `description`: one clause traded in, "when a vendor advisory or upgrade pins
+  executable identity against a PATH-substitution finding", paid for by nine
+  words cut elsewhere, because the budget was already at its 150-word ceiling.
+- `evals.json`: `ap-t9`'s expected answer corrected, `ap-t10` added, twelve tasks.
+- `triggers.json`: `ap-pos-6` added for the advisory decision.
+- The fifth revision's frontmatter line is collapsed into the collapsed line to
+  pay for the seventh's, the same trade the sixth made. The narrative for it is
+  the fifth entry below and is untouched.
+
+### Still unmeasured, in that word
+
+No differential delta. No bare-arm screen. `NEON_RO_URL` is absent from this
+run, so no claim row was read or written and the corpus-wide census of
+summary-provenanced claims stays **unknown rather than zero**. The trigger
+suite's 77 of 87 says this skill is findable and says nothing about whether it
+helps.
+
 ## 2026-11-09, sixth entry: the ceiling has a precondition under it, and the only paper carrying the field is the one the corpus had never read
 
 **Trigger.** ADR-37, a cited paper read in full for the first time. The research
