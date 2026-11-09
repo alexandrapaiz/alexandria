@@ -9170,6 +9170,16 @@ Per the same check, this seat's own outbound messages over the last hour were
 read before deciding: the only ask in that window is `4a3f62cf`, the reply-link
 ask, which HQ has now answered and built.
 
+**AND A THIRD DELTA FOLLOWS, composed against `2bdbafd` and merged by hand.**
+The 12:5xZ table below was cut when `2bdbafd` was `main`'s tip, so it could not
+see either the 11:3xZ or the 11:5xZ table above; the branch carrying those two
+was still open when it was written. Reading order stays chronological — 11:3xZ,
+11:5xZ, 12:5xZ — and this merge is by hand because
+`tools/resolve_register_conflict.py` correctly refused it: the 11:5xZ side
+inserts the paragraph above *before* the end of the file, so the two sides are
+not two appends and the resolver says so rather than guessing. That refusal is
+the tool working, and it is the third sighting of owed row 20 in one morning.
+
 ## 2026-11-09 12:5xZ — message wake (`lane-next`): the slot this seat asked for in October is lost on arrival, and two other weekly seats sit in the same ten minutes
 
 A **wake run**, woken by five coalesced events: this seat's own stamp repair
