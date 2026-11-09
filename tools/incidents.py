@@ -261,12 +261,26 @@ def split_inbox_file(text: str, source: str, name: str) -> list[Entry]:
     zero, because `check` already refuses that file by name and a lookup that
     silently drops an entry is the one failure this corpus must not have.
     """
-    entries = split_entries(text, source, boundary=INBOX_ID_HEADING)
-    if entries:
-        return entries[:1]
     stem = name[:-3] if name.endswith(".md") else name
-    lines = text.splitlines()
-    return [Entry(heading_key(stem), stem, 1, lines, source)]
+    entries = split_entries(text, source, boundary=INBOX_ID_HEADING)
+    if entries and INC_ID.match(entries[0].heading):
+        return entries[:1]
+
+    # The heading is missing, or it leads with `INC-` and is not an id. Both are
+    # rekeyed from the filename, which carries a well-formed id by the inbox's
+    # own naming rule and is the one part of a malformed file still readable.
+    #
+    # This is the real blob the ExO seat filed on 2026-11-09 and repaired on the
+    # trunk an hour later: `# INC-2026-11-09 — the ExO learning log carried ...`,
+    # the id broken off after the date with an em dash where the slug belongs.
+    # Against the old splitter it produced six entries keyed `What was true`,
+    # `Why no run saw it` and four more. Keyed on the heading it produces one
+    # entry whose id is a sentence and whose date is None, which is better and
+    # still wrong: `fold` sorts by that date and `prior` prints that id.
+    entry = entries[0] if entries else None
+    body = entry.body if entry else text.splitlines()
+    line = entry.line if entry else 1
+    return [Entry(heading_key(stem), stem, line, body, source)]
 
 
 def conflict_lines(text: str) -> list[int]:
@@ -914,6 +928,28 @@ def prior_art(query: str, entries: list["Entry"] | None = None,
         "close_threshold": round(floor, 3),
         "remedies_only": remedies_only,
         "withheld": len(scored) - len(shown),
+        # The best remedy-bearing entry in the WHOLE ranking, which is the one
+        # row a reader needs and the one the headline can hide.
+        #
+        # `close` is a fraction of the best hit, so a long distinctive query
+        # collapses it to a singleton: one entry at 1.000 and the next at 0.420
+        # means a close set of one, and if that one entry is OPEN the headline
+        # reads `0 of those prescribe a remedy` while the governing remedy sits
+        # second. The skill seat reproduced that on this seat's own tree on
+        # 2026-11-09 with the query
+        # `test_every_skill_the_page_receives_shows_a_dated_validation_result`,
+        # and its reading of the cause inverts the premise written above the
+        # tie-break: an assertion name is the most distinctive term this corpus
+        # has, and that distinctiveness is exactly what shrinks the close set,
+        # so the headline is least reliable for the hurried reader pasting the
+        # long name their log just gave them.
+        #
+        # `--remedies-only` appeared to fix it and did so by accident, through
+        # the threshold bug repaired above: filtering lowered the floor and let
+        # more rows in. With that gone the flag reports the same honest counts,
+        # so the headline needs its own answer rather than a flag.
+        "nearest_remedy": next(
+            (row for row in scored if row["remedy"] == "REMEDY"), None),
         "hits": shown[:limit],
     }
 
@@ -991,6 +1027,19 @@ def report_prior(found: dict, seat: str | None = None, stream=None) -> int:
             "ranking\nas a weak hint rather than as prior art.",
             file=stream,
         )
+    nearest = found.get("nearest_remedy")
+    if found["close"] and not found["close_with_remedy"] and nearest:
+        print(
+            f"\nNone of the close matches prescribes a remedy, and that is not the "
+            f"same as\nnothing prescribing one. The nearest that does is at "
+            f"{nearest['confidence']:.3f}, below the\nclose threshold of "
+            f"{found['close_threshold']:.3f}:",
+            file=stream,
+        )
+        print(f"\n  {nearest['id']}", file=stream)
+        print(f"  {nearest['where']}", file=stream)
+        for line in nearest["remedy_lines"][:12]:
+            print(f"    | {line}", file=stream)
     if found.get("remedies_only"):
         print(
             f"\nShowing only entries that prescribe a remedy. "

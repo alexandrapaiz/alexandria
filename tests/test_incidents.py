@@ -1204,3 +1204,118 @@ def test_every_inbox_file_in_the_live_register_yields_exactly_one_entry():
     )
     sources = [e.source for e in entries]
     assert len(set(sources)) == len(sources), "a file produced more than one entry"
+
+
+# The real malformed file, read out of git rather than reconstructed.
+#
+# The ExO seat filed it at d525fe09 on 2026-11-09 and repaired it on the trunk
+# about an hour later, so `check` is correctly green on the live tree and the
+# splitter half survives the repair. The skill seat named this blob as the
+# fixture, which is why the test reads the blob instead of a hand copy: a
+# hand copy of a defect is a copy of somebody's reading of it.
+MALFORMED_BLOB_SHA = "d525fe09"
+MALFORMED_BLOB_PATH = (
+    "docs/agents/incidents/inbox/"
+    "INC-2026-11-09-the-exo-learning-log-carried-one-entry-twice-for-fifty-one-days"
+    "-and-the-instrument-that-would-have-caught-it-is-the-one-it-blocks.md"
+)
+
+
+def _malformed_blob():
+    import subprocess
+    done = subprocess.run(
+        ["git", "-C", str(ROOT), "show", f"{MALFORMED_BLOB_SHA}:{MALFORMED_BLOB_PATH}"],
+        capture_output=True, text=True)
+    if done.returncode != 0:
+        pytest.skip("the pre-repair blob is not reachable in this checkout")
+    return done.stdout
+
+
+def test_the_real_malformed_heading_yields_one_entry_and_not_six():
+    """`# INC-2026-11-09 — the ExO learning log ...`: the id broken off after the
+    date with an em dash where the slug belongs.
+
+    Against the old splitter this produced six entries keyed `What was true`,
+    `Why no run saw it`, `Where it came from`, `Fixed, and the part that is not`,
+    `The rule to take from it` and `The sweep, done rather than owed`. Not one
+    of them carried an id or a date, and the register's own gate was green
+    throughout, because the gate asks whether two INC ids collide and a section
+    heading carries none.
+    """
+    blob = _malformed_blob()
+    name = MALFORMED_BLOB_PATH.rsplit("/", 1)[1]
+    entries = inc.split_inbox_file(blob, f"inbox/{name}", name)
+
+    assert len(entries) == 1, [e.key for e in entries]
+    assert inc.split_entries(blob, "inbox/x") != entries, \
+        "the fixture must still reproduce the old splitter's behaviour"
+    assert len(inc.split_entries(blob, "inbox/x")) == 6, \
+        "six is the number the skill seat measured; the fixture has changed"
+
+
+def test_a_heading_that_leads_with_inc_and_is_not_an_id_is_rekeyed_from_the_filename():
+    """One entry whose id is a sentence is better than six and still wrong.
+
+    `fold` sorts by the id's date and `prior` prints the id, so a heading that
+    cannot be parsed has to fall back to the filename, which carries a
+    well-formed id by the inbox's own naming rule.
+    """
+    blob = _malformed_blob()
+    name = MALFORMED_BLOB_PATH.rsplit("/", 1)[1]
+    entry = inc.split_inbox_file(blob, f"inbox/{name}", name)[0]
+
+    assert entry.key == name[:-3]
+    assert entry.inc_id == name[:-3]
+    assert entry.date == "2026-11-09", "the date is what the fold sorts by"
+    assert inc.remedy_of(entry)[0] == "REMEDY", \
+        "the fix section is in the body of the one entry, not stranded in a fragment"
+
+
+def test_a_close_set_with_no_remedy_still_names_the_nearest_one_that_has_it():
+    """The headline the skill seat reproduced on this seat's own tree.
+
+    `close` is a fraction of the best hit, so a long distinctive query collapses
+    it: one entry at 1.000 and the next at 0.420 is a close set of one, and when
+    that one is OPEN the headline reads "0 of those prescribe a remedy" while the
+    governing remedy sits second. On the live register, the query
+    `test_every_skill_the_page_receives_shows_a_dated_validation_result` did
+    exactly that, and the remedy at 0.420 was the one the reader wanted.
+    """
+    import io
+    entries = _prior_entries()
+    found = inc.prior_art("a run woke for a red already repaired by its own commit",
+                          entries)
+    assert found["nearest_remedy"] is not None
+    assert found["nearest_remedy"]["remedy"] == "REMEDY"
+
+    out = io.StringIO()
+    inc.report_prior({**found, "close": 1, "close_with_remedy": 0}, stream=out)
+    printed = out.getvalue()
+    assert "None of the close matches prescribes a remedy" in printed
+    assert "not the same as" in printed
+    assert found["nearest_remedy"]["id"] in printed
+
+
+def test_the_nearest_remedy_is_taken_from_the_whole_ranking_and_not_the_printed_slice():
+    """`--limit 1` must not change which remedy the report can name."""
+    entries = _prior_entries()
+    query = "a run woke for a red already repaired by its own commit"
+    wide = inc.prior_art(query, entries, limit=50)
+    narrow = inc.prior_art(query, entries, limit=1)
+    assert narrow["nearest_remedy"] == wide["nearest_remedy"]
+    assert len(narrow["hits"]) == 1
+
+
+def test_no_remedy_anywhere_in_the_ranking_says_nothing_rather_than_inventing_one():
+    found = inc.prior_art("zzqqx unrelated nonsense token", _prior_entries())
+    assert found["nearest_remedy"] is None
+
+
+def test_a_close_set_that_already_holds_a_remedy_does_not_get_the_extra_paragraph():
+    """The line is for the case the headline gets wrong, not for every run."""
+    import io
+    out = io.StringIO()
+    found = inc.prior_art("a run woke for a red already repaired by its own commit",
+                          _prior_entries())
+    inc.report_prior({**found, "close": 2, "close_with_remedy": 1}, stream=out)
+    assert "None of the close matches prescribes a remedy" not in out.getvalue()
