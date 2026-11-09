@@ -872,3 +872,131 @@ def test_an_unreadable_manifest_refuses_nothing_rather_than_everything(monkeypat
     """A source of roster names, never a source of absences."""
     monkeypatch.setattr(ledger, "seat_names", lambda: ())
     assert ledger.main(["--seat", "nonesuch", "--inbox", "--inbox-dir", "/nonexistent"]) == 0
+
+
+# --- the branch's own appends, which no predicate above could see ------------
+#
+# `tools/incidents.py` carries this predicate for a reason worth restating:
+# every other check in this file inspects an entry already in the inbox or
+# already in the register, so a seat that ignores the inbox entirely produces a
+# clean read. The question none of them asks is what the branch did.
+#
+# These build a real repository, because the predicate's subject is a diff
+# against a merge base and a fixture cannot have one.
+
+def _git(repo, *args):
+    import subprocess
+    done = subprocess.run(["git", "-C", str(repo), *args],
+                          capture_output=True, text=True)
+    assert done.returncode == 0, done.stderr
+    return done.stdout
+
+
+@pytest.fixture
+def branch_repo(tmp_path):
+    """A repository with a register, an inbox and a `base` branch to diff."""
+    (tmp_path / "docs" / "ideas" / "inbox").mkdir(parents=True)
+    (tmp_path / "docs" / "ideas.md").write_text(OTHER_SEATS_RUN)
+    _git(tmp_path, "init", "-q", "-b", "base")
+    _git(tmp_path, "config", "user.email", "t@example.com")
+    _git(tmp_path, "config", "user.name", "t")
+    _git(tmp_path, "add", "-A")
+    _git(tmp_path, "commit", "-qm", "the register as it stands")
+    _git(tmp_path, "checkout", "-q", "-b", "work")
+    return tmp_path
+
+
+def test_a_branch_that_appends_to_the_register_with_no_inbox_file_is_caught(branch_repo):
+    (branch_repo / "docs" / "ideas.md").write_text(OTHER_SEATS_RUN + "\n" + INBOX_ENTRY)
+    _git(branch_repo, "add", "-A")
+    _git(branch_repo, "commit", "-qm", "straight in")
+    unclaimed, skipped = ledger.branch_appends("base", [], root=branch_repo)
+    assert skipped == ""
+    assert unclaimed == ["2026-11-09 - a thing worth building (engineer seat)"]
+
+
+def test_a_branch_that_files_into_the_inbox_passes(branch_repo):
+    (branch_repo / "docs" / "ideas" / "inbox" / "2026-11-09-a-thing.md").write_text(
+        INBOX_ENTRY)
+    _git(branch_repo, "add", "-A")
+    _git(branch_repo, "commit", "-qm", "through the inbox")
+    inbox = ledger.read_inbox(branch_repo / "docs" / "ideas" / "inbox")
+    assert ledger.branch_appends("base", inbox, root=branch_repo) == ([], "")
+
+
+def test_the_claim_is_the_heading_and_not_the_filename(branch_repo):
+    """A filename join would claim any entry that merely shares a date.
+
+    The slug in a filename is the author's shorthand; the heading is the
+    identifier. `tools/incidents.py` can join on the filename because there the
+    filename *is* the id, and here it is not.
+    """
+    (branch_repo / "docs" / "ideas.md").write_text(
+        OTHER_SEATS_RUN + "\n" + INBOX_ENTRY.replace(
+            "a thing worth building", "a different thing entirely"))
+    (branch_repo / "docs" / "ideas" / "inbox" / "2026-11-09-a-thing.md").write_text(
+        INBOX_ENTRY)
+    _git(branch_repo, "add", "-A")
+    _git(branch_repo, "commit", "-qm", "same date, different entry")
+    inbox = ledger.read_inbox(branch_repo / "docs" / "ideas" / "inbox")
+    unclaimed, _ = ledger.branch_appends("base", inbox, root=branch_repo)
+    assert unclaimed == ["2026-11-09 - a different thing entirely (engineer seat)"]
+
+
+def test_the_fold_is_exempt_because_it_is_a_move_and_not_an_append(branch_repo):
+    """The exemption keys on the file the diff deletes, not the branch it runs on.
+
+    A folded entry's identity has to be read from the merge base, because the
+    fold has deleted the only file that carried it.
+    """
+    inbox_dir = branch_repo / "docs" / "ideas" / "inbox"
+    (inbox_dir / "2026-11-09-a-thing.md").write_text(INBOX_ENTRY)
+    _git(branch_repo, "add", "-A")
+    _git(branch_repo, "commit", "-qm", "filed")
+    _git(branch_repo, "checkout", "-q", "base")
+    _git(branch_repo, "merge", "-q", "--no-edit", "work")
+    _git(branch_repo, "checkout", "-q", "-b", "merger")
+
+    register = branch_repo / "docs" / "ideas.md"
+    inbox = ledger.read_inbox(inbox_dir)
+    register.write_text(ledger.fold_text(register.read_text(), inbox, "2026-11-09"))
+    (inbox_dir / "2026-11-09-a-thing.md").unlink()
+    _git(branch_repo, "add", "-A")
+    _git(branch_repo, "commit", "-qm", "folded")
+
+    unclaimed, skipped = ledger.branch_appends("base", [], root=branch_repo)
+    assert skipped == ""
+    assert unclaimed == [], "a fold read as an append"
+
+
+def test_a_checkout_with_no_merge_base_is_a_skip_and_not_a_pass(tmp_path):
+    """A predicate that saw nothing must not read as a quiet pass (L-A21)."""
+    (tmp_path / "docs" / "ideas").mkdir(parents=True)
+    (tmp_path / "docs" / "ideas.md").write_text(OTHER_SEATS_RUN)
+    _git(tmp_path, "init", "-q", "-b", "work")
+    _git(tmp_path, "config", "user.email", "t@example.com")
+    _git(tmp_path, "config", "user.name", "t")
+    _git(tmp_path, "add", "-A")
+    _git(tmp_path, "commit", "-qm", "only one branch")
+    unclaimed, skipped = ledger.branch_appends("nosuchref", [], root=tmp_path)
+    assert unclaimed == []
+    assert "skipped" in skipped and "merge base" in skipped
+
+
+def test_the_cli_reaches_the_predicate_with_the_inbox_it_read(branch_repo):
+    """The regression this file did not have, and it cost a traceback.
+
+    `branch_appends` took filenames in its first draft and identities in its
+    second, and the call site in `main` kept passing filenames. Every unit test
+    above called the function directly, so the only broken path was the one a
+    seat actually runs, and it raised `ValueError` under a bare exit 1.
+    """
+    (branch_repo / "docs" / "ideas.md").write_text(OTHER_SEATS_RUN + "\n" + INBOX_ENTRY)
+    _git(branch_repo, "add", "-A")
+    _git(branch_repo, "commit", "-qm", "straight in")
+    code = ledger.main([
+        "--ledger", str(branch_repo / "docs" / "ideas.md"),
+        "--inbox-dir", str(branch_repo / "docs" / "ideas" / "inbox"),
+        "--check", "--base", "base",
+    ])
+    assert code == 1

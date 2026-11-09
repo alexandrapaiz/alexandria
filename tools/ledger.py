@@ -962,9 +962,37 @@ def git(*args: str, root: Path | None = None) -> tuple[int, str]:
     return done.returncode, done.stdout
 
 
-def branch_appends(base: str, inbox_names: list[str],
+def inbox_identities(inbox: list[tuple[str, str]]) -> set[tuple[str, str]]:
+    """The `(date, name)` each inbox file claims, read from its own heading.
+
+    Not from the filename. The filename's slug is the author's shorthand and
+    the heading is the identifier, so joining on the filename would claim any
+    entry that merely shares a date. `tools/incidents.py` can join on the
+    filename because there the filename *is* the id; here it is not.
+    """
+    claimed = set()
+    for _, text in inbox:
+        for entry in parse(text):
+            claimed.add((entry.date, entry.name))
+    return claimed
+
+
+def repo_root_for(path: Path) -> Path:
+    """The git root containing `path`, or this repository's own root.
+
+    `branch_appends` runs `git -C <root>` and passes repository-relative
+    pathspecs, so the two have to agree about where the root is. Taking it from
+    the ledger under test is what lets `--ledger` and `--inbox-dir` point at a
+    scratch repository and still mean the same thing they mean here, and the
+    first draft of the CLI path skipped every run for want of it.
+    """
+    code, top = git("rev-parse", "--show-toplevel", root=path.parent)
+    return Path(top.strip()) if code == 0 and top.strip() else ROOT
+
+
+def branch_appends(base: str, inbox: list[tuple[str, str]],
                    root: Path | None = None) -> tuple[list[str], str]:
-    """Entry identifiers this branch adds to the register that no inbox claims.
+    """Entries this branch adds to the register that no inbox file claims.
 
     The one predicate here that reads the branch rather than the files, and
     `tools/incidents.py` carries the same one for the same reason: every other
@@ -976,7 +1004,16 @@ def branch_appends(base: str, inbox_names: list[str],
 
     The fold is exempt, and the exemption keys on the inbox file the diff
     deletes rather than on the branch it runs from, so a fold is a fold wherever
-    it happens and an append that only resembles one is not.
+    it happens and an append that only resembles one is not. A folded file's
+    identities are read from the merge base, where the file still exists, which
+    is the only place they can be read from once the fold has deleted it.
+
+    **One property to know before trusting the number.** On a branch that
+    supersedes another, every entry the superseded branch appended reads as
+    unclaimed here, because it was appended before this surface existed and the
+    merge makes it part of this branch's diff. That is a true answer to the
+    question asked and the wrong answer to the question meant, so the caller
+    gets the list and decides.
     """
     code, merge_base = git("merge-base", base, "HEAD", root=root)
     if code != 0 or not merge_base.strip():
@@ -984,40 +1021,35 @@ def branch_appends(base: str, inbox_names: list[str],
             f"skipped: no merge base between {base} and HEAD, so this checkout "
             f"cannot say what the branch added"
         )
-    code, diff = git("diff", f"{merge_base.strip()}...HEAD", "--", LEDGER_PATH, root=root)
+    merge_base = merge_base.strip()
+
+    code, diff = git("diff", f"{merge_base}...HEAD", "--", LEDGER_PATH, root=root)
     if code != 0:
         return [], f"skipped: git diff against {base} failed"
 
-    added: list[str] = []
+    added: list[tuple[str, str]] = []
     for line in diff.splitlines():
         if not line.startswith("+") or line.startswith("+++"):
             continue
         entry = ENTRY.match(line[1:])
         if entry:
-            added.append(f"{entry.group(1)} - {entry.group(2)}")
+            added.append((entry.group(1), entry.group(2)))
 
-    code, deleted = git("diff", "--name-status", f"{merge_base.strip()}...HEAD",
-                        "--", INBOX_PATH, root=root)
-    folded = {
-        Path(row.split("\t")[-1]).name
-        for row in deleted.splitlines()
-        if row.startswith("D")
-    } if code == 0 else set()
+    claimed = inbox_identities(inbox)
 
-    claimed = set()
-    for name in list(inbox_names) + sorted(folded):
-        match = INBOX_FILENAME.match(name)
-        if match:
-            claimed.add(match.group(1))
+    code, names = git("diff", "--name-status", f"{merge_base}...HEAD",
+                      "--", INBOX_PATH, root=root)
+    if code == 0:
+        for row in names.splitlines():
+            if not row.startswith("D"):
+                continue
+            path = row.split("\t")[-1]
+            shown, body = git("show", f"{merge_base}:{path}", root=root)
+            if shown == 0:
+                claimed |= inbox_identities([(Path(path).name, body)])
 
-    # An append is claimed when some inbox file on this branch, or some inbox
-    # file this branch folded away, carries the entry's own date. The slug a
-    # seat chose for the file is its own prose and need not match the entry
-    # name word for word, so the date is the join: it is the half of the
-    # identifier both surfaces have to agree on anyway, because `check_inbox`
-    # refuses a file whose heading and filename disagree about it.
-    unclaimed = [a for a in added if a[:10] not in claimed]
-    return unclaimed, ""
+    return [f"{date} - {name}" for date, name in added
+            if (date, name) not in claimed], ""
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -1218,7 +1250,9 @@ def main(argv: list[str] | None = None) -> int:
                 f"{INBOX_PATH}: python3 tools/ledger.py --fold --apply"
             ]
         if args.base:
-            unclaimed, skipped = branch_appends(args.base, [n for n, _ in pending])
+            unclaimed, skipped = branch_appends(
+                args.base, pending,
+                root=repo_root_for(Path(args.ledger).resolve()))
             if skipped:
                 print(skipped, file=sys.stderr)
             blocking = blocking + [
