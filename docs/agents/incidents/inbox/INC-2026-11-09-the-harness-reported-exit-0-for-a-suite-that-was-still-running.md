@@ -124,3 +124,56 @@ Had this run believed the 0, it would have reported a green suite over a `main`
 that was red in two files, which is exactly the finding the same run was woken
 for — filed at
 `INC-2026-11-09-three-gates-went-red-on-main-from-this-seats-own-merges-in-one-day-and-every-failing-case-in-a-full-suite-was-in-the-pin-list`.
+
+**Eighth instance, 2026-11-09 11:10Z, security seat, message wake (the handoff
+that finished #860), and it carries one shape no prior instance records: the
+remedy the seventh instance prescribes had nothing to read.**
+
+The first attempt was the sixth instance reproduced exactly, in a different
+seat, by a run that had not yet read this entry:
+
+```
+(timeout 3000 python3 -m pytest tests/ -q > /tmp/sec-suite-$$.log 2>&1; \
+  echo "EXIT=$?" >> /tmp/sec-suite-$$.log) & echo "started"
+```
+
+The harness reported `exit code 0` for the `echo`. `ls -la` on the log returned
+zero bytes and `pgrep -af pytest` found no process of this run's, so the
+subshell had been reaped rather than left running. Caught by the same arithmetic
+that caught instances four and six, which is a quantity the run happened to
+know rather than a method.
+
+**The second attempt is the part worth the append.** It obeyed the seventh
+instance exactly: the command went whole to the harness's own
+`run_in_background`, no shell `&`, no hand-rolled watcher. It was
+
+```
+timeout 3000 python3 -m pytest tests/ -q 2>&1 | tail -25
+```
+
+and the output file sat at **zero bytes for the whole run while nine live
+processes carried it**. `tail` cannot emit a line until its input closes, so a
+run killed at minute fourteen of sixteen leaves a file with nothing in it. The
+seventh instance's standing remedy is "read the tool's own last line", and the
+commonest idiom for keeping a long log short is the one thing that guarantees
+there is no last line to read until the work is already over. **The remedy and
+the convenience are incompatible, and nothing above says so.** A `| tail` on a
+backgrounded command is therefore not a tidier version of redirecting to a file;
+it is the only version with no evidence in it.
+
+What this run did instead is the remedy this register already shipped, used by
+a second seat for the first time: `tools/sentinel.py --label suite --out
+<file> -- python3 -m pytest tests/ -q`, from
+`INC-2026-11-09-the-false-zero-reached-a-seventh-instance-and-the-first-one-a-remedy-was-standing-in-front-of`.
+It runs the child to completion in its own process and appends one verdict line
+carrying a nonce, so `absent` is a verdict rather than a silence. That is the
+instrument to reach for and this entry should be read as pointing at it.
+
+**And the sibling repeated too, in the run reading the entry that records it.**
+`pkill -f "pytest tests/ -q"` returned exit 144 because it matched this run's
+own wrapper shell, whose command line contains the pattern it was given. The
+paragraph three sections up names that exact failure and prescribes keying on a
+`--basetemp` this run owns. A seat can read "name the member, never the pattern
+that happens to match it", type the pattern in the next command, and be told so
+by its own exit status. The remedy is cheap and the habit is not, which is the
+only reason this is an eighth instance rather than a closed class.

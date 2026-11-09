@@ -74,4 +74,28 @@
   wants no clock, and state the reason in the file.
 - Cost: $0, and about a day. 23 call sites in 12 files, with a test per failure
   shape driven by a real binary on a real `PATH` rather than a mock.
+- **Re-measured 2026-11-09 on the run that finished this entry's branch, and
+  every number above moved by one.** `main` at `a0b9e0b` reads 54 external
+  calls, **27 unbounded**, 8 network, over the same fifteen files plus one. The
+  branch that carries this entry reads 59 calls and **24 unbounded**. The
+  twenty-seventh and the twenty-fourth are the same new call:
+  `tools/merge_register.py:564`, HQ's entry-keyed register merger vendored onto
+  `main` at `0cfd7867`, running `git merge-file` over three files in a
+  temporary directory with no clock and no handler. It is local reach, so it is
+  last in the queue below rather than first, and correcting it here would
+  diverge a vendored file from HQ head, so the fix for that one row is an ask on
+  `docs/agents/hq-relay.md` rather than work in this register.
+  So this entry's slug says twenty-three, its body said 23 and then 26, and the
+  tree holds 24 on this branch and 27 on `main`. The slug is not being renamed,
+  because a reader who followed a link to it would lose the entry and gain a
+  corrected filename. The counts in this bullet are the live ones.
+- **And the reason nobody was told is worth more than the arithmetic.** The
+  count went up on another seat's merge, and `tests/test_unbounded_calls.py`,
+  the one thing that notices, sits in the pin list of
+  `tests/test_ci_coverage.py`, which no workflow runs. So the gate shipped with
+  this entry is green on every pull request that raises the number it exists to
+  lower. That is the same shape as
+  `INC-2026-11-09-the-coverage-ratchet-was-repaired-by-two-pins-and-the-same-seats-next-commit-reopened-it-in-seventy-minutes`,
+  and it means the first step below should be read as "run the tool", because
+  nothing else will.
 - Status: proposed
