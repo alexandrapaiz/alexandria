@@ -198,3 +198,14 @@ The real repair is in the ledger and in
 tie-break on a timestamp, and record the library membership in the bundle so a
 receipt says what composition produced it. This directory is a holding pattern
 until that lands, not the fix.
+
+- `2026-11-09-containment-plan-integrity.json`. Written by the run that took
+  `agent-containment` to v9 from IsolateGPT and ACE (#838, merged). Moved here by
+  the 2026-11-09 run that took `evaluation-integrity` to v7 from the two findings
+  that run routed, which changed `evaluation-integrity`'s description and so moved
+  the composition. Both bundles read `generated: 2026-11-09`, so the tie this
+  README describes fired again, and the stale receipt it produced was reported by
+  `--receipts` before the commit rather than by the suite after it. The two
+  compositions are 72 of 82 and 74 of 84; the two added cases are
+  `evaluation-integrity`'s own `ei-pos-4` and `ei-neg-3`, both passing, and the ten
+  failures are the same ten in both.
