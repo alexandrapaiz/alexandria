@@ -306,6 +306,12 @@ with the recommendation in the ask's own body, and opens a row here carrying
 here with no clock is the shape that let one answer sit unread for four days
 and eighteen hours.
 
+**This paragraph governs this table and not the one above it.** A question no
+wording can answer belongs here and takes the clock. A copy candidate belongs
+in the open table and does not, for the reason the closing section gives: the
+silence rule would set lines she never ruled on. Moving a candidate down here
+to borrow a clock is the one move this register forbids.
+
 ## Resolved on the clock, without her word
 
 A row here was a question for her and is not one any more, because the
@@ -329,10 +335,42 @@ the record shows what was asked rather than only what came of it.
 ## What this file is honestly worth
 
 It is a register, and the lesson this seat keeps writing down is that recording
-is not enforcing. Nothing fires when a row here goes stale. Two of the nine
-statuses above are checkable by command today, because
-`docs/voice/check_voice.py claims` and `check_voice.py reading` read the live
-surfaces, and the rest are a seat's reading of a page on a date.
+is not enforcing. Two of the nine statuses above are checkable by command
+today, because `docs/voice/check_voice.py claims` and `check_voice.py reading`
+read the live surfaces, and the rest are a seat's reading of a page on a date.
+
+**"Nothing fires when a row here goes stale" stood here for fourteen days and
+something does now.** `check_voice.py deadlines` read only the questions table
+below, on a premise written into its own source: that the rows up here wait on
+a seat's diff and so nothing about them expires. That premise is false, and it
+was the half holding the whole arrangement up. A row leaves the open table when
+she rules or when the frontend seat sets it, and that seat sets APPROVED copy,
+so a candidate she has never ruled on is not waiting on anybody's diff. It is
+waiting on her.
+
+So the gate read the one table whose every row had been asked, `unasked` was a
+code it could produce and never would, and on 2026-11-09 it printed green over
+thirteen rows carrying no ask, no clock and no trail between them, the oldest
+forty-four days old, four of them red in `reading` that same minute. It reads
+both tables now and prints each open row with its age.
+
+**What it does not do is put a clock on them, and that is a ruling rather than
+an omission.** The obvious repair is to post each row as a section 22 ask,
+which is what the first version of the widened gate told its reader to do. That
+is wrong and it is worth stating why, because the advice reads as diligence.
+Section 22's ask proceeds as recommended after forty-eight hours of her
+silence, so taking it here would set thirteen lines of copy she never ruled on,
+on the recommendation of the seat whose last eight unsupervised rounds she
+rejected one after another. `docs/agents/copy-pipeline.md` reserves the ruling
+to her in terms that leave no room, "Her verdict is the only verdict. This step
+is hers and it does not move", and that is a safety clause with evidence under
+it rather than a courtesy. `docs/agents/cross-repo-law.md` rule 3 is what
+settles it: a local law's preconditions survive a parent override unless the
+override names them, and section 22 names none of this.
+
+The open table therefore has no silence rule and will not get one from this
+seat. What the rows are owed is to be in front of her with their age attached,
+and the age is the thing that was missing for forty-four days.
 
 So the duty is the smallest one that could work: a writer run opens this file,
 and a candidate for a surface already listed here either builds on that
