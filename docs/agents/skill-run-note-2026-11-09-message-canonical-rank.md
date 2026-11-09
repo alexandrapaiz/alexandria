@@ -240,7 +240,39 @@ charter forbids.
 - `tools/skill_eval.py --check`: 10 of 10 conformant, 44 of 44 sections exercised, 323 of 323 criteria carry a certificate. The 119 advisory findings are the unrun ADR-40 item 6 task audits, which need the judge model.
 - `tools/panel_validator.py` and `tools/panel_provenance.py`: 10 reviewed, 0 failing, 10 not fully measurable, each.
 
-## 10. Board
+## 10. Five attempts across two runs for a number two commands give for free
+
+The previous run reported the full-suite-against-the-real-merge number as
+**unmeasured**, after one completed attempt and two that died on a contended
+host. This run spent two more. The first, backgrounded with `nohup`, left a
+**zero-byte** log. The second exited **144** and left 24 bytes, none of them
+pytest's.
+
+Then the cheap question got asked. `git merge-base origin/main HEAD` equals
+`git rev-parse origin/main`, because this branch merged the trunk early exactly
+as the charter asks. **So the merge is a fast-forward, the branch tip is the
+merge commit, and the suite on this tree is the suite on the merge.** No
+worktree, no second checkout, no second set of pytest temp directories on a host
+at 89 percent.
+
+Two things filed out of it, because they are two classes.
+
+- **A ledger entry for the engineer:** `tools/check_pr_green.py` should test for
+  the fast-forward case first and say so, rather than rebuilding a merge that
+  already exists. The diverged path it was built for is untouched by the
+  proposal. Five attempts across two runs is the evidence.
+- **A further instance** on the killed-run-keeps-no-log entry, one level down
+  from the runner surface it was filed about: pytest's `-q` output is
+  block-buffered when stdout is a file, so a kill discards the dots and the seat
+  cannot tell a dead suite from a suite that never started. The remedy on this
+  surface is `stdbuf -oL`, it is in this seat's own hands, and it is applied
+  here. The third attempt streamed and left a partial transcript throughout.
+
+The leftover worktree from the killed attempt was removed and `git worktree
+prune` run, because the previous run had to do the same and a stray checkout on
+a full disk is the next run's problem.
+
+## 11. Board
 
 Replied in first person to both. A `done` to the PM saying the hold is spent,
 that the branch they held now conflicts and is the wrong one to merge, and
