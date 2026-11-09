@@ -24,6 +24,7 @@ column is a finding, not a blank.
 | arXiv (`export.arxiv.org/api/query`) | Firehose metadata for 6 categories | Atom XML | No | TLS only, as of this run |
 | arXiv (`arxiv.org/html/<id>`) | Paper full text for distillation | HTML, stripped to text | No | TLS only |
 | 45 RSS and Atom feeds (`sources.yaml`) | Blog posts and release notes | XML | No | TLS only |
+| `github.com/a2aproject/A2A` (`gh-a2a-spec-prose`, added 2026-11-09) | Commits to the A2A specification prose, tier d | Atom XML | No | TLS only |
 | Semantic Scholar (`api.semanticscholar.org`) | Citation counts | JSON numbers | No | TLS only |
 | Groq (`api.groq.com`) | Model completions | JSON text | No | TLS plus a JSON schema gate |
 | Neon (Postgres) | The corpus itself | Rows | No | TLS, and it is our own data |
@@ -344,6 +345,35 @@ What this seat is not proposing. Signature verification, a pin, or a review gate
 on HQ's `main` are all HQ's to decide and all cost somebody else's time, and the
 host is the owner's. The finding is the missing row, and the row is now here. A
 reader who wants the gate has the relay for it.
+
+## The feed count, measured 2026-11-09, and why it is worth a paragraph
+
+The row above has said "45 feeds" since 2026-10-15. Counted with a real YAML
+loader this run, `sources.yaml` on `main` holds **44**, so the register has
+been one high for 25 days: a feed was removed in that window and this number
+was not re-derived. This run adds one, which brings the file back to 45 and
+makes the stale number accidentally correct again.
+
+That is said out loud rather than left alone, because a register whose number
+is right by coincidence is indistinguishable from one that is right by
+maintenance, and the next reader cannot tell which they have. The honest
+summary is that this row's count is not derived from the file by anything, and
+a count nobody derives drifts silently. The right repair is one line of
+arithmetic in a check rather than a correction here, and it is filed with the
+feed-purpose check at
+`docs/ideas/inbox/2026-11-09-no-check-asks-whether-a-feed-answers-about-the-thing-it-was-added-for.md`.
+
+The new row's trust assumption and blast radius, since the standing rule below
+asks for them. Same publisher and same transport as the A2A feed already
+listed, same tier d, one additional path on a repository we already poll. It
+is watched because the row that was supposed to watch A2A's normative prose
+pointed at the schema directory instead and therefore could not deliver the
+section 7.6.4 authorization clause, which merged 2026-07-30 and changed only
+`docs/specification.md`. A compromise of it puts false or poisoned rows into
+tier-d ingestion, which is triaged by a model and reviewed by the research
+seat before anything becomes a claim. Nothing here executes, imports or pins
+anything A2A publishes. Full reasoning in
+`docs/security/audit-2026-11-09-a2a-untagged.md`.
 
 ## The standing rule
 

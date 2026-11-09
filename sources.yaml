@@ -152,7 +152,22 @@ feeds:
   # triage should discard.
   - {name: gh-mcp-spec-changelog, url: "https://github.com/modelcontextprotocol/modelcontextprotocol/commits/main/docs/specification.atom", tier: d}
   - {name: gh-mcp-seps, url: "https://github.com/modelcontextprotocol/modelcontextprotocol/commits/main/seps.atom", tier: d}
+  # gh-a2a-spec-changelog watches the `specification/` directory, which holds
+  # A2A's machine-readable schema. A2A's normative prose is not there, it is
+  # the single file `docs/specification.md`, so this row watched the schema and
+  # the row below is the one that answers the purpose stated above. Measured
+  # 2026-11-09 by alexandria/security: the `specification/` feed's newest entry
+  # is 2026-07-21 and it has not moved in 111 days, while section 7.6.4's
+  # authorization clause ("MUST NOT treat the state transition itself as
+  # authorization for any particular operation") merged 2026-07-30 as A2A PR
+  # 2081, which changed exactly one file and that file was
+  # `docs/specification.md`. So the clause was nine days newer than anything
+  # this row can carry, and the sibling MCP row three lines up had the path
+  # right in the same commit that added both. The corrected feed carries the
+  # clause commit in its current window, so this is recoverable rather than
+  # lost. Both rows are kept: a schema change is still worth one row.
   - {name: gh-a2a-spec-changelog, url: "https://github.com/a2aproject/A2A/commits/main/specification.atom", tier: d}
+  - {name: gh-a2a-spec-prose, url: "https://github.com/a2aproject/A2A/commits/main/docs/specification.md.atom", tier: d}
   # The Agent Skills specification that SEP-2640 delegates the skill format to
   # (directory shape, YAML frontmatter, progressive disclosure) lives at
   # agentskills.io, which publishes no feed (/feed.xml and /rss.xml both 404 on
