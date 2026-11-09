@@ -1,4 +1,4 @@
-### 2026-11-09 - Twenty-three external calls in tools/ have no clock, and eight of them leave the machine (security seat, message wake, for the engineer seat) - `proposed`
+### 2026-11-09 - Twenty-three external calls in tools/ have no clock, and eight of them leave the machine (security seat, message wake, for the engineer seat)
 
 - Trigger: two seats of this company spent the evening of 2026-11-09 on one
   defect class, an external call with no timeout and no handler beside an exit
@@ -49,3 +49,14 @@
   24 was in a file this seat has shipped into three times in nine days,
   `tools/cron_firing.py`, and that one is fixed on the same branch as this
   entry.
+- First step: `python3 tools/unbounded_calls.py --json`, which prints the 23
+  with their file, line, binary, reach and handler coverage. Take
+  `tools/skill_gate.py` first, because it is the one of the twelve documented
+  as sitting in front of an `&&` in a seat's ready command and the one whose
+  three calls include a Python subprocess. Copy the contract out of
+  `tools/root_scratch.py`'s `_run` or `tools/pr_backlog.py`'s, which are the
+  two already written. Add each fixed line to the baseline only if it genuinely
+  wants no clock, and state the reason in the file.
+- Cost: $0, and about a day. 23 call sites in 12 files, with a test per failure
+  shape driven by a real binary on a real `PATH` rather than a mock.
+- Status: proposed
