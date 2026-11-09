@@ -225,6 +225,26 @@ UNCOVERED = {
     # And the second file this run added, caught by this gate the same way
     # and pinned for the same reason: no seat can add it to a workflow.
     "tests/test_voice_enforcements.py",
+    # Added 2026-11-09 09:3xZ by the engineer seat, and like the two above it
+    # is not this run's file. It reached `main` in the ExO seat's #886, merged
+    # at 6b63a3fa, and has been unpinned and uncovered since. Reproduced on a
+    # clean checkout of `origin/main` before pinning, so this is not a defect
+    # of the branch that carries the fix. Pinning is still the last of the
+    # gate's three remedies and still the only one available, because the other
+    # two are a workflow write that no seat's dispatch permits.
+    #
+    # What it guards, because the gate requires a reason and not a name.
+    # `test_kill_vocabulary.py`, 13 cases: that the audit log's `exit` field is
+    # tallied **split at the runtime boundary** of 2026-10-17 rather than over
+    # its whole history, since the field changed encoding there and carries no
+    # marker saying so, and that the standards are checked against the surfaces
+    # in both directions. The second direction is the one that had never been
+    # checked: a standard naming a code no surface writes is a rule watching a
+    # dead value, and a wake that never fires looks exactly like a fleet with
+    # no kills. Silent on a pull request, the era split is what rots first,
+    # because the next seat to touch the tally has no red to tell it that a
+    # whole-history count returns the union of two vocabularies.
+    "tests/test_kill_vocabulary.py",
     "tests/accounts.test.mjs",
     # Added 2026-10-13 with the Polar integration, pinned for the same
     # structural reason as every line above and worth more than any of them.

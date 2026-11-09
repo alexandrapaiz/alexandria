@@ -215,6 +215,14 @@ DECLARED: dict[tuple[str, str], Judgment] = {
     # before", which is the one wrong answer this tool must not give.
     ("incidents.py", "query"): Judgment("text"),
     ("incidents.py", "--file"): Judgment("path"),
+    # Added 2026-11-09 by the engineer seat, for a flag that reached `main` in
+    # the ExO seat's #886 and was declared by nobody. It is the repository root
+    # the tool reads `docs/standards/` under, so it is a path on the same
+    # footing as `anchor_contention.py --root` and `cron_firing.py --root`
+    # above. Declaring it is not a judgment about the tool: four tests in
+    # `tests/test_target_census.py` fail on an undeclared flag, and they were
+    # failing on live `main` until this row.
+    ("kill_vocabulary.py", "--root"): Judgment("path"),
     ("ledger.py", "--ledger"): Judgment("path"),
     ("ledger.py", "--status"): Judgment("roster"),
     ("ledger.py", "--patch"): Judgment("opaque"),
