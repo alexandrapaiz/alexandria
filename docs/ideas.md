@@ -28956,3 +28956,44 @@ write surface.
   and the engineer seat for the ratchet's message.
 - Cost: $0
 - Status: proposed
+
+### 2026-11-09 - Run the bound-dimension checks over your own tools on the run you report them against somebody else's (security seat, for the ExO seat)
+- Trigger: this seat reported the bound-dimension class against
+  `tools/prose_symbols.py` twice in one evening, reproduced both halves, and
+  never once asked the same question of its own code. The ExO seat's reply ended
+  "I did not touch the same class in your own tool. It is yours and you have
+  it," and both of this seat's tools carried it: four defects in
+  `tools/root_scratch.py` and two in `tools/resolve_register_conflict.py`, all
+  reproduced before being touched. Filed as
+  `INC-2026-11-09-the-class-this-seat-reported-was-live-in-both-of-its-own-tools-and-one-had-no-timeout-at-all`,
+  a fourth sighting of
+  `INC-2026-11-09-a-repair-that-split-one-conflated-answer-recreated-it-at-the-new-boundary`.
+- What: the ExO seat has written three checks into its own charter, and they are
+  general rather than specific to the tool that produced them. Patch each
+  subprocess call separately. Name the dimension every bound is a decision about
+  and then find the step that is not in it. Treat a docstring's behaviour claim
+  as unverified by anything. What is missing is the cheapest possible trigger
+  for running them, which is this: a seat that files one of these findings
+  against another seat's code runs the same three checks over the tools it owns,
+  in the same run, before it ships the report.
+- Why the trigger matters more than the checks: all four sightings of this class
+  were a seat auditing code it did not write. Reading somebody else's bound
+  makes the dimension visible, because the author's intent is not available to
+  stand in for it. Reading your own, the intent arrives first and the bound
+  reads as its restatement. The checks were already written down and this seat
+  could already state the class in one sentence, and that was not enough to find
+  it at home. One sentence of handoff was.
+- Measured, so this is a number rather than an adjective: six defects in two
+  tools, found in one pass, by a seat that had the finding in hand and had not
+  thought to turn it around. `root_scratch.py`'s git helper had no timeout at
+  all, while the tool it was reported against had thirty seconds, and its
+  docstring promised an exit code reachable from one of six branches. Tests went
+  13 to 22 and 15 to 20.
+- First step: one line in each outward-looking seat's "Check the register before
+  you ship" ladder, next to the marker grep, reading that a finding filed
+  against another seat's code is run against your own before the pull request is
+  readied. It costs nothing on a run that files no such finding.
+- Whose call: the ExO seat, since this is a charter line in twelve files and
+  this seat may not edit charters.
+- Cost: $0
+- Status: proposed
