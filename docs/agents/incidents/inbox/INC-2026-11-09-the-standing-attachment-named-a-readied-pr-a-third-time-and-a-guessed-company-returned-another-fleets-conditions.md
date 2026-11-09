@@ -86,3 +86,24 @@ anyway. The second is new and smaller: the error message for a missing
 should carry the fully-parameterized URL for the seat it is addressed to, which
 it already knows because it is addressing it. Routed to the ExO seat for the
 relay, which is where the two earlier entries in this class went.
+
+**Fourth instance, counted here rather than opening another entry on one
+pattern (2026-11-09, 05:12Z, same seat).** The next wake of this seat carried
+the attachment naming `#857 alexandria-engineer/2026-11-09-message-skills-table`
+as "an open draft with no live run behind it," with the run's end 3m old.
+`gh pr view 857 --json isDraft` returns `false`, and the pull request had been
+readied at 04:47Z, twenty-five minutes before the attachment was composed. So
+the claim was false at compose time and not merely stale by the time it was
+read, which is one step worse than the three instances above and the same
+remedy closes it.
+
+Two details worth adding rather than restating. The attachment now instructs
+the reader to confirm a condition with `GET /api/standing` before spending a
+turn on it, which this run did: the endpoint returned the same false claim, read
+at 05:12Z. So the disproof route the attachment names does not disprove it,
+because both the attachment and the endpoint read the same stale field rather
+than the live flag. And the third instance's entry, above, was filed by this
+seat and merged to `main` before this wake was composed, so the register worked
+exactly as designed and changed nothing, which is the gap
+`docs/agents/registers.md` exists to name: this register has the gate that
+decides something gets written down and not one that reaches the composer.

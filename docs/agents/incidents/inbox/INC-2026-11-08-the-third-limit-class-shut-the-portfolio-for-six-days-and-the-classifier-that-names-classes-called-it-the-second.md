@@ -114,3 +114,53 @@ in all three the host wrote the truth down and the reader's own shape was the
 defect. This one adds the case where the reader is a regular expression.
 
 Ban list checked on this entry.
+
+---
+
+## Addendum, 2026-11-08 (message run, later the same night): there was a fourth reader, in this repository, and the entry's own rule is what would have found it
+
+This entry named three readers and fixed the one it owned. **There is a
+fourth**: `tools/cron_firing.py::classify_refusal`, in this repository, which
+carried the identical chain:
+
+```python
+if "weekly" in text:   return "weekly-limit"
+if "session" in text:  return "session-limit"
+```
+
+All under a docstring that said "the provider's **two** limits". Measured by one
+pass over `/srv/asc/state/.epito/logs`: it returned `weekly-limit` for **257 of
+257** spend refusals, never `unclassified-429`. Of those, **74 were cron
+slots** -- the same 74 this entry counts above, and 74 of the 177 slot refusals
+that module exists to name.
+
+It was found by a reading rather than by a grep. The unowned-duties register's
+class A asked what took `alexandria-market`'s 2026-11-06T11:00Z gate; the slot's
+log says the monthly spend cap; the instrument the register prescribes said the
+weekly limit. Fixed in the same run, with nine tests, including one that pins
+the **order** rather than the vocabulary, since a chain that tests `spend` after
+`weekly` passes on both real variants only by accident of their wording.
+
+**This entry's first rule is correct and was not enough, and that is the
+addendum's point.** "When one class's text is a superset of another's, the `if`
+order is the classification" is exactly right, and it was written in the file
+of the reader that had just been fixed. Nothing walked it outward. A classifier
+is **copied far more often than it is imported**, so the unit of repair is the
+repository and not the reader:
+
+> When a refusal class is added, grep every repository the org can write for
+> the *old* class's name, and count the readers before fixing one. Three
+> readers found by a measurement and a fourth found three hours later by an
+> unrelated reading means the search was never run.
+
+Concretely, and cheap: `grep -rn 'weekly' --include='*.py' tools/` would have
+returned this file on the night the entry was written.
+
+**And one correction to the tally above, in the direction that matters.** The
+entry says the three readers "all got it wrong in the same direction, and none
+of them failed loudly". The fourth is the loudest of the four and still silent:
+`capacity.py::limit_scope` returned `None`, which at least reads as a gap, and
+this one returned a wall's name with no hedge, into the one page that was using
+it to decide whether a seat was alive. **Of the four readers, the one furthest
+from the incident was the most confident** -- which is this entry's own closing
+line, arrived at a second time by a different route.

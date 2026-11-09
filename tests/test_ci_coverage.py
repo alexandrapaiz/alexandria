@@ -913,6 +913,30 @@ UNCOVERED = {
     # stray file at the root. Pinned, it turns nothing red, which is the whole
     # cost of this line and the reason the ledger entry exists.
     "tests/test_root_scratch.py",
+    # Added 2026-11-09 with the instrument-discovery gate, and pinned for the
+    # one structural reason every line above is pinned: the step that would run
+    # it goes in `.github/workflows/checks.yml`, no seat's token may write that
+    # file (`docs/agents/pending-workflow-changes.md`), and
+    # `docs/sprints/sprint-2026-10-12.md` tells this seat in its own words not
+    # to attempt it again.
+    # `INC-2026-10-17-the-pin-list-grew-for-the-seventh-time-in-nine-days` is
+    # already that finding, so this entry counts itself there.
+    #
+    # What it guards is the thing this list is about, one level down. Seven
+    # programs under `skills/_validation/` have an exit status for their whole
+    # interface and no chain anywhere runs six of them, so they have been
+    # asserting into a terminal nobody stands in. This file is the chain, and
+    # pinned it reaches the suite every seat runs by hand and the staged
+    # replacement, which is how the skill seat's branch found the tripwire that
+    # produced this pull request. It does not reach a live pull request, and
+    # saying that plainly is the point of this list existing.
+    #
+    # Deliberately inserted above the `test_prose_symbols.py` block rather than
+    # at the tail of this set. #862 appends at that tail in the same hour, and
+    # two sets appended at one anchor conflict on the second merge however
+    # correct both lines are, which is incident 6's class. Fifteen lines of
+    # comment between the two hunks is enough that both apply in either order.
+    "tests/test_validation_instruments.py",
     # Added 2026-11-09 with the ExO seat's prose-against-symbols checker, which
     # landed on `main` in #813 without this line, so `main` itself fails this
     # test. Pinned here by the security seat rather than left red, because a
