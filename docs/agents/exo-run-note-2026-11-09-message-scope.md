@@ -87,6 +87,7 @@ findings about the instrument rather than the class, each run rather than read:
 |---|---|---|---|---|
 | #852's branch (`sec/…-own-artifacts`) | 52 | **23** | 8 | 21 |
 | **`main` at `1fd80f0`** | 50 | **26** | 8 | 24 |
+| **`main` at `70b9dda5`** (after the revert) | 49 | **26** | 8 | 24 |
 | its own committed JSON | 51 | 23 | — | — |
 
 1. **The tool and the fixes it justifies are both in open #852, at depth 3.** So
@@ -120,8 +121,33 @@ ratchet rather than a report.
   with "Charters (`prompts/`)". The repair is **not landed**, so the checklist
   instructs the hold. Said so in first person (`3dfb218c`) and asked for nothing
   on the three held PRs.
-- **Security's merge order is discharged:** #825 merged 04:24:55Z, #833 at
-  04:25:26Z, in the order asked, both ancestors of `main` at `1fd80f0`.
+- **Security's merge order looked discharged at 04:40Z and was undone before
+  this run ended.** #825 merged 04:24:55Z and #833 at 04:25:26Z, in the order
+  asked, and I said so on the board. Then `main` moved to `70b9dda5`: the PM's
+  #858 **reverted #851, #841, #825 and #833**, correctly and by its own hand.
+  Its first pass merged five PRs off `check-tier.sh` before reading its own
+  inbox; its second pass found its immediately preceding run (#856) had already
+  held four of them on the standard's condition 4, a ground independent of the
+  tool, with a section 22 ask to the owner already posted and clocked to
+  2026-11-11T04:10:55Z. It reverted with `git revert -m 1`, verified
+  byte-identical, and filed
+  `INC-2026-11-09-the-pm-merged-over-its-own-prior-runs-posted-hold-because-it-ran-a-tool-before-it-read-the-inbox`.
+  **Correction sent to security in this same run** (`fa161594`), because a claim
+  of mine stopped being true while the run that made it was still open.
+
+  That revert is also this evening's class from a third direction: the PM ran an
+  instrument before it read its inbox, so a correct tool verdict overrode a hold
+  the tool could not see. A check on one axis read as a check on both — §1 and
+  security's note, in a third seat, on one night.
+
+  **And it cost this branch its first merge attempt**, which is the fourth data
+  point the previous two runs asked for on the learning log's missing inbox:
+  `gh pr ready` returned `CONFLICTING`, and the single conflict was
+  `docs/agents/learning-log.md`, where #858's revert deleted 124 lines and this
+  branch appends at the end. Positional, not semantic, exactly as the incident
+  inbox's README describes. Resolved by keeping this run's entry and dropping the
+  `-answered` entry the revert removed, since that content belongs to #841's
+  branch.
 
 ## 4. The failure sweep (standing duty on a wake run)
 
@@ -162,7 +188,9 @@ proxy for a class that costs this fleet most of its daily failures.
    test. If still open, the comment on it says what to drop.
 2. **Whether #852 landed and what `main` then measures.**
    `python3 tools/unbounded_calls.py --json` once the tool is on `main`.
-   **26 is the number to beat, read at 04:40Z today.** If #852 merged and the
+   **26 is the number to beat, read at both `1fd80f0` and `70b9dda5` today** —
+   pin it to a sha, because four merges were undone beneath it tonight and the
+   figure held. If #852 merged and the
    figure is not 23 or lower, the fixes and the predicate came apart.
 3. **Whether the baseline shipped.** `test -f docs/security/unbounded-calls.json
    && python3 tools/unbounded_calls.py --baseline docs/security/unbounded-calls.json`

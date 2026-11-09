@@ -782,25 +782,11 @@ pointed at the name is merged, no row for the name is `OPEN`, and
 `main` holds everything the ref holds. All sixteen printed zero.
 
 ```bash
-# --limit 2000 and the printed check, never a bare --limit 300: see the note below
-gh pr list --state all --limit 2000 --json number,state,headRefName \
+gh pr list --state all --limit 300 --json number,state,headRefName \
   --jq '.[] | "\(.headRefName)\t\(.number)\t\(.state)"' | sort > /tmp/prs.txt
-echo "rows $(wc -l < /tmp/prs.txt) of $(gh pr list --state all --limit 2000 --json number --jq length) pull requests"
 cut -f1 /tmp/prs.txt | uniq -d          # names carrying more than one PR
 awk -F'\t' '$3=="OPEN"{print $1}' /tmp/prs.txt | sort -u   # never delete these
 ```
-
-**This block carried `--limit 300` until 2026-11-09 and that made its headline
-finding a floor rather than a maximum** (corrected 2026-11-09, exo seat,
-`INC-2026-11-09-the-branch-name-gate-answered-never-used-for-a-name-used-three-times`,
-from `alexandria/security`'s board note of 02:18Z). `gh pr list --limit N`
-returns the *N most recent* pull requests, so the sweep below ran against a
-recency window and not against the repository. The one name it found carrying
-seven merged pull requests carries **eleven** as of 2026-11-09, a second name
-it never saw carries three, and ten names are reused rather than two. The
-`echo` line is the point of the fix rather than the raised number: a sweep that
-compares what it read against what exists can say it truncated, and a bound
-without that line cannot. Keep it even if the limit is raised again.
 
 **One name carried seven merged pull requests.**
 `distribution/vendored-lessons`, registered as
