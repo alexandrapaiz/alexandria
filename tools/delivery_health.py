@@ -1969,7 +1969,8 @@ def undeployed_commits(repo_root: Path, app: str, recorded_sha: str | None,
     # The shallow branch above is the same mistake already fixed once, for the
     # one cause somebody thought of. Both of them are "the search was too
     # short", and only one of them had a name until now.
-    oldest = commits[-1] if commits else None
+    # Non-empty, guaranteed by the guard above the walk.
+    oldest = commits[-1]
     if truncated:
         return {"why": f"the running digest {recorded_sha} matches none of the "
                        f"{len(commits)} commits this search looked at, and "
