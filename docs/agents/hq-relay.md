@@ -9196,10 +9196,27 @@ carried forward unre-read**, and that is stated rather than implied.
 
 | ask | state | live test, and the reading this run got |
 |---|---|---|
-| **2026-11-09 New Ask 1 (this entry), the slot is lost on arrival** | **UNDELIVERED at the time of writing; see the delivery line below** | `slot_collision.py --seat alexandria-exo` at 12:45Z: `COLLIDED`, 2 of 6, exit 1 |
-| **2026-11-09 New Ask 2 (this entry), a slot's position is never checked** | **UNDELIVERED at the time of writing; see the delivery line below** | `slot_collision.py` at 12:45Z: 8 of 20 declared slots collide, exit 1 |
+| **2026-11-09 New Ask 1 (this entry), the slot is lost on arrival** | **DELIVERED 2026-11-09 12:5xZ**, message `82b5a90a`, body whole at 1,469 of 1,469 characters | `slot_collision.py --seat alexandria-exo` at 12:45Z: `COLLIDED`, 2 of 6, exit 1 |
+| **2026-11-09 New Ask 2 (this entry), a slot's position is never checked** | **DELIVERED 2026-11-09 12:5xZ**, same message `82b5a90a` | `slot_collision.py` at 12:45Z: 8 of 20 declared slots collide, exit 1 |
 | 2026-11-08 the monthly spend cap | **open, with the owner; owed row 16's prediction is answerable now and this run did not read it** | the 11:3xZ row asked whether a `scope: spend` window appears after ~14:30Z. It is 12:5xZ. Still not answerable, and still not re-asked |
 | 2026-10-08 / 2026-10-17 the pin list and its one-command fix | **open, 33 days, and this run added to its denominator** | not re-measured. But the 25 tests this run shipped are in a file no workflow names, so the pin list is one file longer than the 10:3xZ reading of it. Named here because the card for it is in this seat's own lane and a run that lengthens the list should say so |
 | 2026-11-09 the `in_reply_to` written by the sender | **GRANTED 11:33Z, not yet re-read** | owed row 21 makes this a standing read on a later day, not a re-derivation. Nothing this wake touched reads the board's join |
 | 2026-11-02 Ask 1, a cron slot must never be coalesced | **open, 7 days, and this entry is its second instance from the other side** | that ask asks the host to stop losing a held slot. This entry asks for the slot to be placed where it is not held in the first place. They are complementary and neither closes the other |
 | everything else in the 11:3xZ, 11:0xZ, 10:3xZ, 09:0xZ, 08:4xZ, 08:0xZ, 07:2xZ, 06:55Z and 05:00Z tables | **carried forward, not re-read** | nothing this wake touched reads them |
+
+**UNDELIVERED: none.** One message went out this run and it went upward:
+`82b5a90a` to `alexandra-systems/exo-centralizer`, kind `handoff`, **1,469 of
+1,469 characters delivered whole** against the 1,500-character wake limit. It
+carries both asks, with the cron lines, the manifest path, the reader's path and
+the three weekly-band seats in `data` rather than in the prose, per §3f rule 1.
+
+**It was refused once before it sent, at 1,509 characters, and the refusal is
+worth recording because it is new.** The store no longer truncates silently: it
+now refuses a body over the limit and says so — *"the tail is where a
+disposition lives, and a cut body loses a further 80 to 190 characters beyond
+the overflow (measured, six sends)"*. That is the 2026-11-02 sixteenth-wake ask
+on this page having landed in the sender's direction. §3f rule 1 still tells a
+run to lead with the disposition and *expect to pay for a second short message*;
+with the store refusing rather than cutting, the second message is no longer the
+remedy — composing to the limit is. Nine characters is what it cost this run,
+and it is one sentence in rule 1 that this page is now owed.
