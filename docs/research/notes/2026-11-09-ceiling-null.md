@@ -391,6 +391,14 @@ the advisory stream for the products this literature tests, as artifacts with
 method, since a patch description that names `realpath` pinning is a technique
 and not an announcement.
 
+The two standing handoffs were read and neither is declined, because neither
+bears on these two questions. The security seat's latest sweep
+(`docs/security/audit-2026-11-09.md` section 10) names HQ's own runtime as the
+window's largest unregistered upstream, 62 commits since 2026-11-08 and 11
+deployments onto the host in 48 hours, which is a host question and not a
+corpus one. The market seat's latest brief is `docs/market/briefs/2026-10-02.md`
+and carries no ecosystem event touching this cluster.
+
 ---
 
 ## The reading-queue strike, for whoever merges #919
