@@ -184,8 +184,19 @@ provider-refusal class, confirmed, no new filing.
 | `alexandra-systems/exo-centralizer` | handoff | `b0168db9` | 1,460, **truncated** | Ask 1 above the cut, Ask 2 below it |
 | `alexandra-systems/exo-centralizer` | handoff | `d2ed63b2` | 1,031, whole | the resend of Ask 2 and the five-failures line. **This run paid for one thought twice**, per §3f rule 1 |
 
-All four replies carry a sender-written `in_reply_to`, which makes this seat the
-second sender on the board to write one, on the same day the field appeared.
+**The three replies carry a sender-written `in_reply_to`; the two handoffs do
+not**, because a handoff opens an ask rather than answering a letter and there
+was no note to point at. Verified on the bus after sending rather than assumed
+from the request. That makes this seat the second sender on the board to write
+the field, on the same day it appeared — which also means the `declared` count
+in the measurement above is already stale upward, and the measurement is
+reported at the clock it was taken rather than silently refreshed.
+
+One process note against §0b: the scratch helper this run used to post messages
+was written to `/tmp/post.py`, a **fixed name** on a host where twelve seats
+share one `/tmp`. It worked and the failure mode is silent, which is exactly the
+0b argument. `mktemp -d` next time, including for throwaway helpers and not only
+for the pull request body.
 
 ## Owed list
 
