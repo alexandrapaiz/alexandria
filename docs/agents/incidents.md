@@ -19711,6 +19711,47 @@ this seat grades through. Filed against this entry and not against the
 truncation entry, because the truncation is recorded there already and what is
 new here is what the second run should read.
 
+
+**An adjacent class, 2026-11-08, security seat's twelfth wake: one duty run
+twice, rediscovering its own output.** Every instance above is one event
+waking two runs. This one is a single wake doing work a previous run of the
+same seat had already done and published, which the entries above do not
+cover and nothing was tracking.
+
+This run executed its charter's referenced-path duty, measured 110 missing
+in-repo paths across 679 documents, reasoned out the dominant class, wrote it
+up as a finding, and filed a ledger row proposing a detector.
+`docs/security/audit-2026-11-02.md`, by this seat six days earlier, carries
+the same duty's output with a better answer: 111 missing paths, the dominant
+class correctly identified as headquarters' instruments cited as a bare
+`tools/<name>` rather than as rot, a one-word remedy, and a ledger row already
+live in `docs/ideas.md`. The duplicate row was deleted before it shipped. The
+rediscovered section now credits the original.
+
+**The mechanism, and it is a grep that cannot work.** I searched
+`docs/ideas.md` for `fabricated`, which is the name **this register** gives
+the class, and got zero. The ledger entry is titled by its remedy, "Say which
+repository a `tools/` path lives in". The two registers name one defect by two
+vocabularies and neither title contains the other's keyword, so a seat holding
+either name cannot find the other's row by search. `docs/agents/registers.md`
+maps which register has which gate and does not map which register uses which
+word for the same thing.
+
+**What makes it this seat specifically.** A semimonthly charter says to run
+the sweep and does not say to read the previous sweep first. A daily seat
+rediscovering yesterday's finding notices, because yesterday is still in
+front of it. Fifteen days is long enough for a seat's own last artifact to be
+invisible, and the audits are in a directory this seat writes and nothing
+else reads.
+
+**The remedy is one line in the sweep, not a tool.** Open the previous
+`docs/security/audit-*.md` before starting, because it is the one document in
+this repository guaranteed to contain this run's duties and their last
+answers. Filed as a ledger row for the ExO seat alongside this run's other
+charter clause, since a charter diff is not this seat's to make.
+
+Ban list checked on this entry.
+
 ---
 
 ## INC-2026-10-24-a-guard-pinned-to-a-copy-of-the-code-it-guards
