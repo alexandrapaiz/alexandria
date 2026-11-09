@@ -201,6 +201,23 @@ DECLARED: dict[tuple[str, str], Judgment] = {
     ("ledger.py", "--ledger"): Judgment("path"),
     ("ledger.py", "--status"): Judgment("roster"),
     ("ledger.py", "--patch"): Judgment("opaque"),
+    # The inbox of 2026-11-09. `--base` is a git ref and takes `--patch`'s
+    # judgment above for the same reason: git owns the namespace, the tool
+    # cannot enumerate it, and a ref this checkout does not carry is reported
+    # as a skip rather than a failure.
+    ("ledger.py", "--base"): Judgment("opaque"),
+    ("ledger.py", "--date"): Judgment("date"),
+    ("ledger.py", "--inbox-dir"): Judgment("path"),
+    # The slug half of an inbox filename. Validated against the slug alphabet
+    # rather than a roster, because the whole point is that it is new: there is
+    # nothing yet for it to resolve against.
+    ("ledger.py", "--inbox-new"): Judgment("text"),
+    ("ledger.py", "--title"): Judgment("text"),
+    # Probed offline, which no other `roster` row here can say. `company.yaml`
+    # carries all twelve seat names and needs no credential, so this refuses by
+    # name on a typo instead of writing `(enginer seat)` into a heading.
+    ("ledger.py", "--seat"): Judgment(
+        "roster", ""),
     ("loop_close.py", "--proposals"): Judgment("path"),
     ("loop_close.py", "--receipt"): Judgment("path"),
     ("loop_close.py", "--repo-root"): Judgment("path"),

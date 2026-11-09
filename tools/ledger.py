@@ -72,6 +72,21 @@ ROOT = Path(__file__).resolve().parents[1]
 LEDGER = ROOT / "docs" / "ideas.md"
 
 
+def seat_names() -> tuple[str, ...]:
+    """The seats `company.yaml` declares, or empty when it cannot be read.
+
+    Delegated to `tools/board.py`, which has parsed this manifest with the
+    standard library since 2026-11-02 and is authoritative only about its own
+    company. Empty means no refusal rather than a refusal of everything: this is
+    a source of roster names, never a source of absences.
+    """
+    try:
+        import board
+        return tuple(sorted(board.manifest_seats("alexandria")))
+    except Exception:
+        return ()
+
+
 def _today() -> str:
     """The filing date. A function so a test can pin it without patching time."""
     return datetime.date.today().isoformat()
@@ -1036,13 +1051,35 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--base", metavar="REF", default="",
                         help="with --check, also fail when this branch appends an "
                              "entry to the register that no inbox file claims")
-    parser.add_argument("--inbox-dir", default=str(INBOX))
+    parser.add_argument("--inbox-dir", default=str(INBOX),
+                        help="the inbox directory; the repository's own by default")
     parser.add_argument("--json", action="store_true")
     args = parser.parse_args(argv)
 
     text = Path(args.ledger).read_text(encoding="utf-8")
     entries = parse(text)
     inbox_dir = Path(args.inbox_dir)
+
+    # `--seat` is a roster flag and `company.yaml` is the roster that needs no
+    # network, so a typo refuses by name rather than reaching the register as
+    # `(enginer seat)` in a heading no reader will fix. `tools/board.py` already
+    # parses that manifest, standard library only, and reading the set off the
+    # place that holds it beats restating it: two implementations agree only on
+    # the day they are written.
+    #
+    # Checked here rather than inside `--inbox-new`, which is the only surface
+    # that uses the value. A check reachable only through the flag that consumes
+    # it is a check `tools/target_census.py --probe` cannot see, and that probe
+    # is the thing which decides whether this declaration is honest. It said so:
+    # declared `roster` with the check one branch deeper, the probe passed the
+    # tool a seat nothing carries and got exit 0.
+    known = seat_names()
+    if known:
+        refusal = resolve_target.check(
+            "seat", args.seat, known,
+            hint="`company.yaml` is the roster, and it needs no network.")
+        if refusal is not None:
+            return refusal
 
     if args.inbox_new:
         date = args.date or _today()

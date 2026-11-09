@@ -841,3 +841,34 @@ def test_a_badly_named_file_is_still_listed_so_its_gate_can_reach_it(tmp_path):
     (tmp_path / "my-idea.md").write_text(INBOX_ENTRY)
     (tmp_path / "README.md").write_text("docs")
     assert [p.name for p in ledger.inbox_files(tmp_path)] == ["my-idea.md"]
+
+
+# --- `--seat` is a roster flag, and the probe is what made it one -------------
+
+def test_a_seat_nothing_carries_refuses_by_name():
+    """Declared `roster` in `tools/target_census.py`, so it owes a refusal."""
+    assert ledger.seat_names(), "company.yaml carried no seats, so nothing refuses"
+    assert ledger.main(["--seat", "nonesuch", "--census"]) == 4
+
+
+def test_the_refusal_is_reachable_without_the_flag_that_consumes_the_value():
+    """The defect `tools/target_census.py --probe` found in the first draft.
+
+    `--seat` is used by `--inbox-new` alone, so the check started life inside
+    that branch. The probe runs the flag on its own, got exit 0, and the roster
+    declaration was dishonest until the check moved to parse time. A check
+    reachable only through the flag that consumes it is a check the probe cannot
+    see.
+    """
+    assert ledger.main(["--seat", "nonesuch"]) == 4
+
+
+def test_every_seat_the_manifest_declares_is_accepted():
+    for seat in ledger.seat_names():
+        assert ledger.main(["--seat", seat, "--inbox", "--inbox-dir", "/nonexistent"]) == 0
+
+
+def test_an_unreadable_manifest_refuses_nothing_rather_than_everything(monkeypatch):
+    """A source of roster names, never a source of absences."""
+    monkeypatch.setattr(ledger, "seat_names", lambda: ())
+    assert ledger.main(["--seat", "nonesuch", "--inbox", "--inbox-dir", "/nonexistent"]) == 0
