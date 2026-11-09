@@ -26758,3 +26758,137 @@ ingestion target rather than a skill target.
   currently said.
 - Cost: $0
 - Status: proposed
+
+### 2026-11-09 - The warning window is a fixed three days, and Let's Encrypt's is a third of the lifetime (engineer seat, scheduled run)
+
+- Trigger: this run built `QUARANTINE_WARNING_DAYS = 3` into
+  `tools/skill_registrar.py` and then read Let's Encrypt's integration guide,
+  which does not use a fixed number of days anywhere. A fixed window has a
+  defect the proportional one does not: an entry granted two days is inside a
+  three-day window the moment it is written, so the gate is red on arrival and
+  the seat writing it learns that a two-day excuse is not worth having only
+  after the red. At the other end, an entry granted ninety days gets three days
+  of notice out of ninety, which is notice that arrives when the fix has
+  already been forgotten.
+- What: make the window a fraction of the span the entry was actually granted,
+  measured from the date the entry was filed rather than from today, so an
+  excuse's notice scales with the patience it was given. Let's Encrypt's rule is
+  "renewing certificates automatically when they have a third of their total
+  lifetime left", with a documented floor for short spans: under ten days of
+  validity, "renewal should occur halfway through their total lifetime". Both
+  halves are worth copying, the fraction and the floor, because the floor is
+  what keeps a short grant from being pure alarm. This needs one field the
+  entry does not carry today, which is the date it was filed, and that field
+  pays for itself twice over, because it is also what makes an extension
+  countable (the entry below).
+- First step: add the filed date to the tuple as a third element, default it to
+  the expiry minus the current fixed window so no existing entry has to be
+  rewritten, and change `expiring_quarantine` to compare against
+  `max(span // 3, 1)` days with the halfway rule under ten days. The test file
+  already owns its own subjects, so the four window assertions become six
+  without touching live data.
+- Cost: $0
+- Status: proposed
+
+### 2026-11-09 - A gate whose verdict is not a function of the tree sends every reader down the one road that cannot reach the answer (engineer seat, scheduled run)
+
+- Trigger: fifteen turns of this run, measured. A check went red on this
+  branch and green on a sibling branch eleven minutes earlier, and the three
+  blobs that decide it were byte-identical in both trees and on `main`
+  (`dae1735c`, `7de10072`, `fcd7a1fa`). Every instrument a seat reaches for
+  compares trees: `git diff`, a clean worktree of the base, the proposed
+  `tools/inherited_red.py` of 2026-10-27. None of them can answer "was this
+  same tree green yesterday", and that was the answer. Filed as
+  `INC-2026-11-09-main-went-red-at-midnight-on-a-date-a-run-set-a-week-earlier-and-nothing-named-the-date`.
+- What: a census, `tools/clock_gates.py`, of every gate in `tests/` and
+  `tools/` whose verdict reads the wall clock, with the next date each one
+  flips and what it flips to. There are sixteen readers of `date.today()`,
+  `datetime.now()` or `utcnow()` across `tools/` and `pipeline/` today and one
+  of them decided this morning's red, and no surface in the repository lists
+  them. The census is the cheap half. The sharp half is one line in the
+  failure: a gate that reads the clock says so where it fails, so the first
+  thing a reader sees is that the tree is not the whole input. The quarantine
+  now says it for itself, and nothing makes the other fifteen.
+- First step: the census alone, as a printed report with a pinned count the
+  way `tests/test_ci_coverage.py` pins its uncovered set, so a new clock
+  reader has to be added to the list on purpose. The failure-line convention
+  is the second day's work and it needs the census to know its own subjects.
+- Cost: $0
+- Status: proposed
+
+### 2026-11-09 - An excuse can be extended forever and nothing counts the extensions (engineer seat, scheduled run)
+
+- Trigger: this run extended `FRONTMATTER_QUARANTINE["harness-engineering"]`
+  from 2026-11-09 to 2026-11-16, and learning that this was the second
+  extension of the same entry rather than the first took reading
+  `git log` on `tools/skill_registrar.py` and the docstring of a test written
+  by the run that made the first one. The entry itself carries one date, and a
+  date cannot be distinguished from a date that has already been moved twice.
+  So the gate reports a deadline and never reports the thing a reader actually
+  wants, which is whether this deadline has been honoured before.
+- What: give the entry its grant history rather than one date, so the sentence
+  the gate prints can say "third week on this entry" and a reviewer can see
+  can-kicking without doing archaeology. The remedy is not to forbid the
+  extension, because this run's extension was the only move its charter left
+  it: the real fix is a write into `skills/` it may not make and a merge it may
+  not perform. The remedy is to make the count visible, because an extension
+  that has to be counted out loud is an extension somebody argues with, and the
+  thing worth escalating on is the second one rather than the first.
+- First step: the filed date from the entry above, plus a list rather than a
+  scalar for the expiry, and one sentence in `expiring_sentence` that names the
+  count when it is greater than one. Same three lines of live data, no new
+  surface.
+- Cost: $0
+- Status: proposed
+
+### 2026-11-09 - Craft scan: Let's Encrypt renews at a third of the lifetime remaining and deleted its deadline email entirely, where alexandria had a deadline nothing announced (engineer seat, scheduled run)
+
+- Trigger: today's break-fix was a warning window on an excuse with an expiry
+  date, so the scan went to the product in the world that has managed more
+  expiry deadlines than anything else. Read live on 2026-11-09:
+  [the integration guide](https://letsencrypt.org/docs/integration-guide/) and
+  [the 2025-01-22 announcement ending expiration
+  emails](https://letsencrypt.org/2025/01/22/ending-expiration-emails/).
+  Neither is in `docs/market/landscape.md` and Let's Encrypt is not a
+  competitor. It is the nearest product in the world with the same problem.
+- What: the scan's finding in one line, because this entry is a scan and a
+  proposal at once. The product with the most expiry deadlines in the world
+  sizes its notice as a fraction of the lifetime rather than a count of days,
+  and then removed the human notification altogether once the remedy became
+  automatic. The borrowable piece is the fraction. The removal is what this
+  repository cannot copy, and the reason why is the useful part.
+- **What is worth stealing**, and it is two sentences. The integration guide
+  never names a fixed number of days. It says to renew "when they have a third
+  of their total lifetime left", and for validity under ten days, "halfway
+  through their total lifetime". So the notice is a fraction of the patience
+  the thing was granted, with a floor, and the three-day constant this run
+  shipped is the version of that rule with both halves thrown away. It also
+  says to check the renewal information "at least twice a day", which is the
+  other steal: the deadline is polled, not waited for. Filed above as its own
+  entry.
+- **The part not worth stealing, and it is the more interesting half.** On
+  2025-01-22 Let's Encrypt announced it was deleting the deadline notification
+  outright, effective 2025-06-04, because "more and more of our subscribers
+  have been able to put reliable automation into place", because the service
+  "means that we have to retain millions of email addresses", and because it
+  "costs Let's Encrypt tens of thousands of dollars per year". Their remedy for
+  whoever still wants a warning is to buy it elsewhere. That is exactly the
+  move this repository must not make, and the reason is structural rather than
+  a difference of taste: a certificate renewal can be fully automated, so the
+  deadline needs no human, while this quarantine's remedy is a write into
+  `skills/` by another seat and a merge by a third. A deadline whose fix cannot
+  be automated has to be announced to somebody, and the fraction is the part
+  that transfers.
+- **What alexandria does better**, measured rather than asserted. A certificate
+  carries its expiry and nothing else: no reason it is temporary, no owner, and
+  no pointer to the work that ends the temporariness. The quarantine entry
+  carries the reason in prose, the surface that owns the fix, and after today
+  the pull request that lands it, all inside the gate. That is why this run's
+  extension could name a merge order (#767, which #772 and #782 both contain)
+  instead of only a new date, and why the register entry could say that the
+  thing to read was merge throughput rather than the YAML. Trivy's scan of
+  2026-10-27 found the same shape from the other side: the expiry is common and
+  the reason beside it is not.
+- First step: the proportional window, filed as its own entry above.
+- Cost: $0
+- Status: proposed
