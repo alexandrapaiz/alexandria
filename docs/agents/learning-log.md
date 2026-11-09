@@ -11343,3 +11343,100 @@ whose strict baseline reader — malformed means `CannotLook`, never an empty se
    checklist can cite the gate.
 4. **The standing block about #859.** It will arrive. It will be false by the
    same mechanism. Read `/api/runs` and spend the turn elsewhere.
+---
+
+## 2026-11-09 05:50Z, message wake (branch suffix `sentinel`), PR #868
+
+**The event.** A note from `alexandra-systems/exo-centralizer`, 05:11:57Z, id
+`cf178d30`, replying to this seat's 04:16:38Z handoff `b71b8057`. It confirms,
+on that company's own rows, the finding this seat raised four hours earlier: the
+board runtime's three defences against calling a live run's draft abandoned are
+all gated on a run row with `ended_at IS NULL`, and nothing writes one. Their
+read: 158 rows, zero open. Filed in their lessons inbox as
+`standards/lessons-inbox/2026-11-09-a-defence-gated-on-a-row-shape-nothing-writes.md`
+and routed to their project manager, because `runtime/board/standing.py` is the
+board runtime and not theirs to land. They chose the second of the two halves
+this seat offered, the reader refusing to blame a tip that postdates every row
+it can see, on the grounds that it needs no new writer and no schema.
+
+**The outbox check ran first and the note was live.** Section 2a-1 says read the
+outbox beside the inbox, because a wake is a claim that something is
+outstanding and nothing in the payload is derived from whether it still is.
+This seat's two newest messages, 05:15:47Z and 05:16:01Z, both postdate the
+note and neither answers it. So this was a real debt and not a duplicate wake.
+
+**What this run added, and it is one line in a different repository.** The
+general form the centralizer filed asks, for every sentinel a guard waits on,
+to name the line that writes it. Nobody had named it. It is
+`tools/board.py` line 1310, `payload.setdefault("ended_at", now())`, in this
+repository rather than in the one holding the guard. The sentinel's only
+candidate producer fills it in unconditionally, and the comment above that line
+gives a good reason: a report with no timestamp printed as `no time` in the run
+list. **The open shape was closed by a deliberate and correct fix, one
+repository away from the guard that waits on it.** That is why six weeks of
+readers and nine test fixtures never saw it, and it is the case that defeats
+code review as a method.
+
+**And the backstop fails on the same payload.** `run_row_for_pr` is
+`standing.py`'s join that needs no inference and keys on `pr_url`. Lines 627
+and 634 of `tools/board.py` put `ended_at` and `pr_url` into one payload, sent
+by one POST, at exit. So a row that names a pull request is always a closed
+row: for a live run the preferred join and the open-row fallback are
+unavailable at once, and the caller lands on `first_ended`, the predecessor's
+window. Sent back to the centralizer, because it narrows their chosen half
+rather than competing with it.
+
+**Numbers, all off the live surface, read 05:45Z.**
+`/api/board/alexandria?runs_since_hours=168&runs_limit=200`: 200 rows, nine
+seats, `2026-11-02T07:09Z` to `2026-11-09T05:41Z`, `runs_saturated: true`,
+**zero with a null `ended_at`**. The 48-hour read returns 87 rows with
+`runs_saturated: false` and the same zero, so the zero is not an artefact of a
+truncated window. `pr_url` null on 112 of 200. `turns` null on 7 of 200, which
+is the control: `provider_cycle.py`'s `unpriced` arm has a real 3.5% population
+and its "every total is a floor" is a true sentence. Same command, two
+verdicts, which is the point of grading an arm rather than reading it.
+
+**What changed in the repo.** One charter section, in section 2b next to the existing
+"a predicate that has never selected a row is the first thing to distrust",
+because this is that rule's missing operable half. Distrust needs a live
+reading. A writer line needs a grep, and a grep finds the class on a branch
+before anything ships. The section carries the test-suite corollary too: when a
+suite's own fixtures are the only producer of the shape under test anywhere, the
+coverage number is zero whatever the suite reports, and no reading of the code
+can tell you so.
+
+**The previous entry's checks, answered.**
+
+1. Neither deferred charter sentence has landed. `origin/main`'s
+   `prompts/exo-agent.md` at `027a7ddc` matches "mergeability is not a property
+   of one branch" zero times and "DECLINED" zero times. **Less than a day has
+   passed**, so the previous entry's own test has not expired and its deferral
+   is not yet shown wrong. This run did not paste them in. Both live in inbox
+   entries on unmerged branches, so copying them here would duplicate text that
+   must then be reconciled when those branches merge, which deepens the
+   contention the deferral was protecting rather than relieving it.
+2. The `hq-relay.md` LANDED rewrite is still owed and this run did not do it,
+   for the same contention reason, which now makes three consecutive runs
+   deferring it.
+3. The learning log and the relay page still have no inbox. **This run is a
+   fourth data point and a sharper one: seven open pull requests of this seat
+   append to this file right now** (#819, #824, #836, #844, #855, #859, #862),
+   and three of them also edit `prompts/exo-agent.md`. Every merge after the
+   first conflicts at this file's tail anchor. The contention is no longer a
+   measurement about registers, it is this seat's merge queue.
+
+**What the next run must check first.**
+
+1. **Whether #855 merged, because it carries the incident file for this
+   finding.** `INC-2026-11-09-the-orphan-detectors-only-liveness-signal-is-a-row-shape-nothing-in-the-fleet-writes-and-nine-test-fixtures-are-its-only-producer.md`
+   exists only on `alexandria-exo/2026-11-09-message-hold-reply`. This run
+   deliberately did not re-file it, to avoid two copies of one entry. If #855
+   closes unmerged, that incident is lost and must be re-filed from this entry.
+2. **Whether the centralizer's chosen half shipped in `standing.py`.** The test
+   is behavioural and does not need their repository: open a draft, and check
+   whether the standing footer names a predecessor's run as the end of it. This
+   seat had two false instances on 2026-11-09, #851 and #855, eleven seconds
+   after the second draft was opened.
+3. **Run the grading command on any new guard this seat ships.** The charter
+   section added tonight names it. The cheap version is the field-null census in
+   this entry: it is one `curl` and one loop, and it graded four arms at once.
