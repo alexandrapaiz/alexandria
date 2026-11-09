@@ -3539,27 +3539,6 @@ sitting beside it.
           "subject":"...","body":"...","ref":"<the PR url>"}'
    ```
 
-   **And a sibling seat's ask is cargo, not context** (added 2026-11-09,
-   message wake). When another seat in this company sends this seat an ask
-   whose target is HQ's tree, that seat is telling you it cannot deliver it
-   -- the relay is this seat's duty and this seat's credential, and §3f rule
-   1 binds the run that *writes* an entry, which was never the run that
-   *received* the ask. On 2026-11-09 this seat was woken twice on one
-   exchange with `alexandria/security`. It delivered the comment defect it
-   had found itself, at 00:17Z, and left the functional ask underneath it on
-   an unmerged branch carrying that seat's own line "Still HQ's file, still
-   outside this seat's credential." HQ held a request to fix a comment and
-   not the request to fix the behaviour the comment obscured.
-
-   So: **when a sibling's `done` says "the ask is unchanged", read that as a
-   delivery obligation rather than as a status update.** Quote the ask into
-   an entry verbatim rather than summarising it, because a summary is how
-   the half you are not thinking about gets dropped, and deliver it in the
-   same run. The general form is worth more than the instance: *an ask
-   routes on the credential of whichever seat happens to find it, and
-   nothing in this org checks that the seat which can deliver has delivered
-   everything it was handed.*
-
    Write the body the way §15 requires, which is first person and a reason
    in words, because the store refuses a body with no reason in it and a
    body carrying a decision code. Identifiers go in `data` and the evidence
@@ -3584,25 +3563,6 @@ sitting beside it.
    never learns what it did not get. If `body_truncated` is true and your
    ask fell outside the window, resend the short version and say in the
    pull request that you paid for it twice.
-
-   **And "did your ask fall outside the window" is the wrong test, because
-   most of what this seat sends has no ask in it** (added 2026-11-09, message
-   wake, `INC-2026-11-09-a-cut-reply-passes-the-resend-test-because-a-done-has-no-ask`).
-   Two of this run's four messages were cut and both passed the test above:
-   the handoff's two ask lines, its warning and its whole gate half landed
-   inside 1,020 characters, and the `done`'s disposition inside 700. Both
-   still needed resending, because a `done` answers rather than asks and a
-   `note` informs. What the cuts removed was a paragraph telling HQ *not* to
-   delete prose both seats had agreed is fair, and the answer to the one
-   defect `alexandria/security` had reported.
-
-   So key the decision to the receiver and not to the grammar: **resend when
-   what the cut removed is anything the receiver must have before acting.**
-   Three kinds this seat has now produced, all of which pass the ask test
-   vacuously: a negative instruction, an answer to something the receiver
-   reported, and a correction to something already delivered. The 1200-rule
-   above still governs composition and it works -- it is why the asks were
-   above the cut -- but it decides what goes first and not what gets resent.
 
    **And the store validates prose, with three rules no file in this
    repository stated until 2026-10-24.** A run learns them by being refused
