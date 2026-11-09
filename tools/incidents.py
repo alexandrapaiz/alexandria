@@ -95,17 +95,30 @@ ENTRY = re.compile(r"^##(?!#)\s+(.*\S)\s*$")
 # The id scheme of 2026-09-24 (incident 29). The date is the day the incident was
 # observed, which is why the id is not always today's date.
 #
-# The lookahead is the set of characters that may end a slug, and `:` joined it
-# on 2026-11-02 because the register already contained one. The security seat's
-# `INC-2026-11-02-the-dispatch-prompt-now-instructs-the-branch-prefix-its-own-charter-holds-back`
-# separates its id from its summary with `: ` where every other entry uses ` - `,
-# and the cost of that was not cosmetic: the match failed, so `heading_key` fell
-# through to keying the entry on its whole heading. A charter citing the id would
-# not have found it, and a second filing of the same id would not have collided
-# with it, which is the one thing this id scheme exists to guarantee. A slug is
-# `[a-z0-9-]` by construction, so a delimiter added here can only let more real
-# headings parse; it cannot swallow part of a slug.
-INC_ID = re.compile(r"^(INC-(\d{4})-(\d{2})-(\d{2})-[a-z0-9][a-z0-9-]*?)(?=$|[\s—–:])")
+# **The boundary is the slug's own alphabet, and not a list of the punctuation
+# marks seen so far** (2026-11-08, engineer seat, and the id for it is
+# `INC-2026-11-08-the-id-delimiter-list-was-extended-once-and-the-next-separator-broke-it-six-days-later`).
+# This used to end on a lookahead naming the characters allowed to follow a
+# slug, `(?=$|[\s—–:])`, and `:` was added to that set on 2026-11-02 because the
+# register had come to contain one. Six days later a heading separated its id
+# from its summary with `, `, the match failed in exactly the same way, and the
+# register's own parse gate went red on `main`.
+#
+# The cost is the same both times and it is not cosmetic. A heading that does
+# not match here falls through to `heading_key` keying the entry on its whole
+# heading, so a charter citing the id finds nothing and a second filing of the
+# same id does not collide with the first, which is the one guarantee the
+# `INC-YYYY-MM-DD-slug` scheme makes.
+#
+# Enumerating delimiters is incident 26's shape, "a gate written as a list
+# catches only what already shipped", and this list caught precisely what had
+# already shipped, twice running. A slug is `[a-z0-9-]` by construction, so the
+# id is simply its longest prefix in that alphabet, and whatever follows is
+# prose no matter which mark introduces it. Requiring the slug to *end*
+# alphanumeric is what keeps a trailing hyphen out of the id without naming any
+# separator at all. Measured over all 331 INC headings on `main`: every one
+# parses, and exactly one id moves, which is the one that was failing.
+INC_ID = re.compile(r"^(INC-(\d{4})-(\d{2})-(\d{2})-[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)")
 
 # A legacy heading keyed by its sequential number, which is what collided.
 LEGACY_NUMBER = re.compile(r"^Incident\s+(\d+)\b")
@@ -115,6 +128,12 @@ CONFLICT = re.compile(r"^(<{7}|={7}|>{7})(\s|$)")
 FENCE = re.compile(r"^\s*(```|~~~)")
 
 INBOX_FILENAME = re.compile(r"^(INC-\d{4}-\d{2}-\d{2}-[a-z0-9][a-z0-9-]*)\.md$")
+
+#: An inbox file's own id heading, at either level. `#` as well as `##` because
+#: three of the files on `main` on 2026-11-02 title themselves at level one and
+#: section themselves at level two, which is ordinary Markdown and was never
+#: wrong; only this gate's proxy for "one entry per file" said it was.
+INBOX_ID_HEADING = re.compile(r"^#{1,2}(?!#)\s+(INC-\S.*\S)\s*$")
 
 # Measured on the register at the commit that added this file. Nine legacy
 # numbers answer to more than one entry and twelve entries are the excess
@@ -410,22 +429,44 @@ def check(register_text: str, inbox: list[tuple[str, str]], require_folded: bool
         for number in conflict_lines(text):
             problems.append(f"{name}:{number}: a conflict marker in an inbox entry")
 
-        found = split_entries(text, name)
-        if not found:
+        # One ENTRY per file is the invariant. Counting level-two headings was
+        # the proxy for it, and the proxy was wrong about three files on `main`
+        # on 2026-11-02: two were a seat appending a new instance under an
+        # `## Instance appended ...` heading, which is precisely what this
+        # register's standing rule asks a seat to do when a thing repeats, and
+        # the third titles itself at level one and sections itself at level two.
+        # So this gate reported a collision for the correct act and for ordinary
+        # Markdown, and `tests/test_incidents.py::test_the_live_register_passes
+        # _its_own_gate` was red on `main` for all three, which is the class this
+        # register itself files as testing a proxy instead of the mechanism.
+        #
+        # The mechanism is the id. Two entries collide when two headings in one
+        # file carry two different INC ids; a section heading and an appended
+        # instance carry none, so they cannot collide with anything.
+        id_headings = [m.group(1) for m in
+                       (INBOX_ID_HEADING.match(line) for line in text.splitlines())
+                       if m]
+        ids = []
+        for heading in id_headings:
+            match = INC_ID.match(heading)
+            if match and match.group(1) not in ids:
+                ids.append(match.group(1))
+        if not id_headings:
             problems.append(
-                f"{name}: no level-two heading, so the fold has no entry to move. "
-                "An inbox file starts with `## INC-...`"
+                f"{name}: no heading carries an INC id, so the fold has no entry "
+                "to move. An inbox file titles itself `# INC-...` or `## INC-...`"
             )
             continue
-        if len(found) > 1:
+        if len(ids) > 1:
             problems.append(
-                f"{name}: {len(found)} level-two headings. One entry per file is the "
-                "whole point: two entries in one file collide again on the next filing"
+                f"{name}: {len(ids)} INC ids in one file ({', '.join(ids)}). One "
+                "entry per file is the whole point: two entries in one file "
+                "collide again on the next filing"
             )
-        heading_id = found[0].inc_id
+        heading_id = ids[0] if ids else None
         if heading_id is None:
             problems.append(
-                f"{name}: the heading does not start with an INC id: {found[0].heading!r}"
+                f"{name}: the heading does not start with an INC id: {id_headings[0]!r}"
             )
         elif heading_id != from_name:
             problems.append(

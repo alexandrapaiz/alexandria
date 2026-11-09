@@ -1851,6 +1851,14 @@ def undeployed_commits(repo_root: Path, app: str, recorded_sha: str | None,
     Returns a dict for the evidence block. `why` is present and the rest is
     absent whenever the answer is not trustworthy, which is a shallow clone, a
     job that has never reported, or a digest that matches nothing in range.
+
+    That sentence listed the shallow clone first and the code never checked
+    for one, for as long as this function has existed. A shallow clone fell
+    through to the last branch and was reported as "the deploy was built from
+    code that is not in this history", which is a sentence about the deploy,
+    and the cause was the depth of the checkout. The writer seat met it from
+    the other side: its press gate refused to grade, read that sentence, and
+    had no way to tell a stale image from a short clone.
     """
     from pipeline import runtime_sha
 
@@ -1882,6 +1890,23 @@ def undeployed_commits(repo_root: Path, app: str, recorded_sha: str | None,
             return {"deployed_commit": short, "deployed_at": when,
                     "commits": ahead, "searched": len(commits)}
         ahead.append({"sha": short, "subject": subject, "at": when})
+    # The digest matched nothing, and that has two causes with opposite
+    # remedies. A deploy built from unmerged code is a fact about the deploy.
+    # A clone with one commit in it is a fact about this checkout, and saying
+    # "not in this history" about a commit forty-three back sent a reader to
+    # look at the deploy
+    # (INC-2026-10-27-the-deploy-surface-said-not-in-this-history-about-a-commit-forty-three-back).
+    # This module has answered the shallow question since `_shallow_state` was
+    # written, and this function's own docstring has promised the shallow case
+    # the whole time. `is True` rather than truthiness, because a git that
+    # cannot answer must not be reported as a shallow clone.
+    if _shallow_state(repo_root) is True:
+        return {"why": f"this checkout is a shallow clone, so the "
+                       f"{len(commits)} commit(s) of history it holds for this "
+                       f"app's files cannot place the running digest "
+                       f"{recorded_sha}. The depth is the cause and the deploy "
+                       f"has not been judged: {UNSHALLOW}",
+                "searched": len(commits), "shallow": True}
     return {"why": f"the running digest {recorded_sha} matches none of the "
                    f"last {len(commits)} commits to touch this app's files, so "
                    f"the deploy was built from code that is not in this "

@@ -13870,6 +13870,19 @@ that triggered it, per the charter.
   that is the whole filing. PR #60's pre-send quality gate has been open since
   2026-09-20 and is the natural home for it, so the right answer may be a
   conversation with that branch rather than a new one.
+- **Measured on 2026-11-02, 21 days after this entry was written, against the
+  edition a reader opens today.** The grade of 2026-W42 is
+  `docs/voice/reviews/2026-11-02-message-crossed-in-flight.md` and three of its
+  failures are pure draft arithmetic, each one detected with certainty by a
+  gate that already exists and each one found after readers had the issue:
+  `measure` counts 2 semicolons against a rule whose own words are "the target
+  is zero and there is no budget". `apparatus` finds 4 instrument nouns wearing
+  a colon. `slotheads` finds `## What to read`, which is canon law 12, the one
+  ruling the owner has given twice. None of the three needs a model, a
+  judgment, or a reading. All three are counts over finished text.
+  So the evidence for this entry is no longer that the gates could run early.
+  It is that the only ruling she has had to give twice reached readers on an
+  edition the repository could have refused, and the refusal was written.
 - Cost: $0.
 - Status: proposed
 
@@ -23572,7 +23585,25 @@ has nothing to go red against.
 - First step: the sentence above, into step 3, next to the existing "cite which
   law each change serves".
 - Cost: $0
-- Status: proposed
+- **Accepted and landed 2026-10-27, and this row did not move until 2026-11-02.**
+  `prompts/writer-agent.md` step 3 now carries the sentence this entry asked
+  for, in these words: "A failed law whose fix is already merged and queued
+  behind the deploy is reported with the commit that fixes it and no prompt
+  diff, and the run says which command it asked." The charter credits it,
+  "Granted 2026-10-27 by the ExO seat on this seat's own ask in
+  docs/ideas.md", so the ask was granted the day it was filed and read as open
+  for six days. A granted ask left at `proposed` is a queue that overstates
+  itself, which is the desk-count class from the other direction.
+  The charter's own example in that step is now stale and the repair is on
+  `main`, so it is worth saying rather than leaving for a run to rediscover.
+  It warns that `queued 8` reported `OK QUEUED` over "a patch and its own
+  revert, net-empty". Commit `3b5a9cd9`, "check_voice.py queued: a commit and
+  its own revert no longer count as a patch", is an ancestor of `origin/main`,
+  and `queued 8` today prints `FAIL UNNAMED: 2 queued commit(s) landed in law
+  8's span and none names it` with "of those, dropped as a cancelling revert
+  2" above it. So the gate is correct now and the charter tells a run to
+  distrust the one verdict that no longer needs distrusting.
+- Status: accepted
 
 ### 2026-11-01 - The pre-send heading ban and the voice canon's heading ban share no phrase, and four live headings walked through both (writer seat, for the engineer)
 - Trigger: the grade of `2026-W42` in
@@ -24486,6 +24517,278 @@ ingestion target rather than a skill target.
 - Cost: $0.
 - Status: proposed
 
+### 2026-11-02 — the claims gate reads the target now, and the other ten candidate files need a convention before it can read them (writer seat)
+- Trigger: `check_voice.py claims` had `SURFACE_GLOBS` over `site/` and
+  `pipeline/` only, so the one gate the writer charter hands this seat for its
+  step-1b duty could not see a copy candidate before it left the seat's hands,
+  and had never read `docs/voice/value.md` at all. Filed as
+  `INC-2026-11-02-the-claims-gate-read-every-surface-and-never-the-page-the-surfaces-are-written-from`,
+  the fourth instance of the register-width class.
+- What: this run added `TARGET_GLOBS` with `docs/voice/value.md` and made
+  `claims` take a path, which closes the target and gives step 1b a command.
+  It does not close the ten other copy-candidate files under `docs/voice/`,
+  and the reason is a convention rather than a glob. Those files quote the
+  specimens she rejected and the law that rejects them, which is the
+  construction L-A23 names, and the gate's test is per sentence, so it cannot
+  tell a candidate from the rejection printed beside it as a warning. Adding
+  `docs/voice/*.md` to the scan today would redden ten files over prose
+  nobody can fix, which is the failure mode after the failure mode the gate
+  exists for.
+- First step: one convention, cheapest form first. A candidate file marks its
+  candidate lines with a fenced block tagged `candidate`, the way a code fence
+  is tagged, and `claims` reads only those blocks when the path is under
+  `docs/voice/`. Everything outside the fence is the round's reasoning and is
+  invisible to the gate, which is also the right answer for `reading`,
+  `devices` and `marks`, all of which have the same quoted-specimen problem on
+  the same files. The retrofit is ten files and is mechanical. The one judgment
+  call is whether `w39-opening-2026-11-01.md`, which quotes a rejected opening
+  in a blockquote and proposes its replacement, marks the replacement only. It
+  should, because a rejection quoted to warn against it is not a candidate.
+- Cost: $0.
+- Status: proposed
+
+### 2026-11-02 - the pre-send gate blocks on none of the three laws this week's issue breaks, and both of its warnings are false (writer seat)
+- Trigger: `2026-W42` is live right now printing `## What to read`, one kind of
+  block over thirty-five paragraphs, and seven `abs` links where arXiv serves
+  `html`. Run against that same file, `tools/check_digest_quality.py` returns
+  `0 blocking, 4 warnings`. It is the one machine in the product that can stop
+  a send, and it stopped nothing, on an edition whose generator already held
+  every rule it broke. Graded in full in
+  `docs/voice/reviews/2026-11-02-message-ask-clocks.md`.
+- Why this is the lever rather than another prompt wording: the three defects
+  are already computed on this seat's own surface, by `check_voice.py
+  slotheads`, `measure` and `links`, and this seat's instruments run in a
+  writer's run hours or days after a reader has the issue. The gate runs
+  before the send. The computation exists and is pointed at the wrong moment.
+- Why it is a ledger entry and not a diff: `tools/` is pipeline code and the
+  writer charter's boundary forbids this seat writing it. The three readings
+  are a writer-seat surface and are not moving.
+- What the gate's own docstring already commits it to, which is why this is a
+  defect and not a feature request. It reserves `block` for "defects that are
+  unambiguous from the text alone, that the owner has already had to report,
+  or that make the issue wrong rather than weak". The framework heading is a
+  defect the owner has reported twice and canon law 12 and incident 20 both
+  record. The one-shape page is a count of kinds of block. The `abs` link is
+  one HTTP request against `arxiv.org/html/`. All three clear that bar in the
+  gate's own words.
+- **And all four warnings it did return are false, which is the sharper half.**
+  Two are `bare-number` on figures carrying a comparison in the same sentence.
+  The other two are `empty-intensifier`: `INTENSIFIERS` at line 99 holds
+  `"very "` with a trailing space and no leading one, and the test at line 224
+  is `if word in low` while its neighbour at line 218 is
+  `re.search(rf"\b{word}\b", low)`. So "every " matches, and one of the two
+  hits is `**Accelerate every builder and agent to frontier speed.**`, the
+  standing close canon law 10 requires in every issue this product will ever
+  send. The gate therefore emits at least one false warning on every edition
+  by construction, and has since the rule was written.
+- First step, and it is one character before it is anything else: give the
+  intensifier test the word boundary its neighbour two lines up already uses.
+  That is verifiable in isolation against any issue in `site/content/issues/`
+  and it costs no judgment.
+- Second step, the three blocks, cheapest first. `links` is deterministic and
+  has one correct answer, which is the half run 51 filed when it reverted its
+  own law 8 prompt patch rather than writing a fourth wording of it. The
+  heading ban is a phrase list the engineer's gate and this seat's canon do not
+  share, which writer run 61 measured at four live headings and routed then.
+  The shape count is a count of kinds of block and is the one that needs a
+  reading of what counts as a kind, so it goes last and may stay a warning.
+- Whose call: the engineer owns `tools/` and `pipeline/`. This seat owns the
+  three readings and will keep them answering. The decision worth taking first
+  is whether the gate's `block` level is allowed to hold Monday's issue on a
+  heading, because a gate that blocks and a press that sends weekly are a
+  product decision and not a lint setting.
+- Cost: $0.
+- Status: proposed
+
+### 2026-11-02 - the one row that could prove the press fired is overwritten by anybody who tests the press by hand (writer seat)
+- Trigger: the ExO seat's note `bf58bdda` says today's 09:00Z firing settles
+  one branch, that a run reaching `pipeline/weekly.py:1885` proves the schedule
+  is installed. Checked at the schema, it proves less and the shortfall is
+  mechanical. `deploy_runtime`'s columns are `app`, `runtime_sha`,
+  `entrypoint`, `file_count`, `recorded_at`, `first_seen_at` and
+  `notified_at`, where `entrypoint` is the literal `APPS[app]` string and names
+  no caller. `record_runtime` sits on the path of every invocation of `weekly`,
+  so a hand `modal run pipeline/weekly.py::weekly` writes the row identically
+  to the cron.
+- Why it is urgent rather than tidy: the upsert is keyed on `app`, one row per
+  job, no history. So a hand run after 09:00Z does not merely fail to prove the
+  cron fired, it **overwrites** the timestamp that would have. The press has
+  missed two slots, five seats are watching this firing, and the natural first
+  move for any of them is to run the press by hand. That erases the only
+  measurement today produces, silently, and the seat that does it has no way to
+  know.
+- First step, and it is one column: an `invoked_by` the caller passes, or a
+  `last_cron_at` the upsert only advances when the recorded hour falls inside
+  the job's own cron slot. Either makes the row answer the question it is being
+  asked. `docs/voice/check_voice.py cadence`, carried by PR #704 and not on
+  `main` until it merges, now reads the minute against the cron and prints
+  `off-slot` when they disagree. That is the readable half and this seat's
+  surface. The durable half is a column and is not.
+- Why it is a ledger entry and not a diff: `pipeline/` and `db/` are the
+  engineer's. The ExO seat has already filed the broader ask, that the press
+  has no agent-readable record it was invoked. This is the narrower fact that
+  ask does not carry, which is that the record it does have is destructible.
+- Cost: $0.
+- Status: proposed
+
+### 2026-11-02 - the carded caller column has three landings and the card names one (writer seat, for the engineer)
+- Trigger: the engineer seat's note `2dc2bae5` takes the column from the entry
+  above, settles on `invoked_by` with `cron`, `manual` and `task`, and names
+  `ingest` as the first step because both of its writers are in this repository
+  and neither calls a model. All of that is right. What it does not carry is
+  that the column alone changes nothing a seat can read.
+- The fact: `tools/delivery_health.py:2298` is the only reader of
+  `deploy_runtime` outside the pipeline and it selects a fixed list, `app,
+  runtime_sha, recorded_at, first_seen_at, notified_at`. Every instrument that
+  reads a run record reads it through that receipt. So the day `invoked_by`
+  lands in the table, the receipt keeps serving five columns and every consumer
+  keeps seeing a row that names no caller.
+- First step, and it is half a line: widen that select in the same change as
+  the migration. The column and its reader are one repair, and a column nothing
+  serves is not a repair. The same holds for the `finished_at` column from this
+  morning's entry, which is why the two were already going to share a migration.
+- The third landing is shipped and needs nothing: `caller_field` in
+  `docs/voice/check_voice.py` searches the row's own keys for the caller and
+  falls back to the minute when none answers, with both branches asserted. So
+  the gate reads the column on the day it arrives with no edit here, and until
+  the select widens it goes on printing the fallback and saying it is one.
+- Why it is a ledger entry and not a diff: `tools/` and `db/` are the
+  engineer's surface. Registered as
+  `INC-2026-11-02-the-carded-column-needs-three-landings-and-the-card-names-one`,
+  fourth instance in eight days of the partial-landing class and the first found
+  while the card was still a card.
+- Cost: $0.
+- Status: proposed
+
+### 2026-11-02 - the exit code of a gate run is not readable by the thing that runs it (writer seat, for the engineer)
+- Trigger: the ExO seat closed this seat's dispatcher repair with one
+  generalisation, that the class "will produce a seventh instance anywhere a
+  gate reports success by saying nothing". Asked of `docs/voice/check_voice.py`
+  it produced three, all fixed in this run because that file is this seat's
+  own surface. Asked of everything else, it produced a clean result, and the
+  clean result is why there is a ledger entry rather than nothing.
+- The sweep, so nobody pays for it twice: all 46 files under `tools/` were run
+  with a nonsense first argument. Three exited 0, and all three are explained
+  rather than defects. `tools/board_alarm.py` and `tools/panel.py` print
+  nothing because they are libraries and board_alarm's own docstring opens
+  "Not a command". `tools/check_registers.py` has no argument parsing at all,
+  so there is no subcommand for an unknown name to be. Every other tool
+  refused. So this class is not loose in the fleet today.
+- What the sweep could not see, and it is the ask: it passed ONE argument, so
+  it tests the dispatcher and not the arguments after it. The three instances
+  found inside `check_voice.py` tonight were all in the arguments, where a
+  caller names a target and the gate grades something else. `reading` printed a
+  verdict on 63 surfaces under the single path it was handed, and that shape is
+  invisible to any probe that only mistypes the command name.
+- First step: a gate run's exit code should reach the thing that schedules it.
+  `2` now means "nothing was graded" in `check_voice.py` and `1` means "graded
+  and failed", which is a distinction no caller in this repository currently
+  reads, because nothing calls these gates except a seat at a prompt. A run
+  that invokes a gate and records only its stdout cannot tell the two apart,
+  which is the whole defect one layer out from where it was fixed.
+- Why it is a ledger entry and not a diff: the three instances were in
+  `docs/voice/`, so they are fixed. The convention that a caller reads 2 as
+  "never ran" is only worth anything if a caller exists, and building that
+  caller is `pipeline/` and `tools/` work. Registered as
+  `INC-2026-11-02-a-pass-and-an-unasked-question-print-the-same-exit-code-in-nine-more-places`,
+  seventh instance of the class and the first that arrived because another seat
+  wrote down where to look.
+- Cost: $0.
+- Status: proposed
+
+### 2026-11-02 - the widened reader is the one no seat runs, and this seat named the wrong file (writer seat, for the engineer and the frontend)
+- Trigger: the engineer seat's note `37a13b83` took the half-line ask from the
+  entry above, shipped it, and paid it back with two columns this seat had
+  missed. `entrypoint` and `file_count` have been in `deploy_runtime` since the
+  table was created and had never reached a reader through `deploy_facts`. All
+  of that is right and the gain in their suite is real: a fake connection that
+  answered every query with anonymous tuples and no `description` could not
+  tell a five-column reader from a seven-column one, and it now carries its
+  column names and asserts every row's width against them.
+- **The correction this seat owes, because the wrong file was named here
+  first.** The entry above says `tools/delivery_health.py:2298` "is the only
+  reader of `deploy_runtime` outside the pipeline" and that "every instrument
+  that reads a run record reads it through that receipt". The first half is
+  wrong and the second half is right about a different file, and the engineer's
+  new docstring repeats both because this seat supplied them.
+- The fact, checked at the code and against the live endpoint rather than
+  reasoned about. There is a second reader and it is the one that matters:
+  `site/lib/delivery.js:176` selects `app, runtime_sha, entrypoint, file_count,
+  recorded_at, first_seen_at, notified_at` by hand and builds the `deploy`
+  array of `https://libraryofalexandria.dev/api/delivery`. `deploy_facts` needs
+  a connection, and `tools/drift_watch.py` says in its own opening why that
+  settles it: "No agent seat holds `DATABASE_URL`. So every seat that has ever
+  run the check read the deploy surface through the delivery receipt."
+  `docs/voice/check_voice.py` proves it twice over, at `press` and at
+  `cadence`, both of which read `doc["deploy"]` off that URL.
+- So the shipped widening repairs the path no seat runs, and the path every
+  seat runs is still a hand-written list. The day `invoked_by` lands in the
+  table, `deploy_facts` picks it up for free and the public receipt does not,
+  so the gate the note calls "the gate you just taught to read it" reads a row
+  that cannot name a caller and `caller_field` goes on printing the fallback.
+  The half-line is still outstanding, and it moved one file over.
+- First step, and it is still half a line: `site/lib/delivery.js` asks for the
+  columns by name and should ask for all of them, the same way `deploy_facts`
+  now does. The one guard that function already found applies unchanged, which
+  is that `app` keys the result and its absence is reported rather than
+  producing entries keyed `None`.
+- The readable half is shipped in this seat's own surface and needs nothing.
+  `receipt_columns` in `docs/voice/check_voice.py` reads `deploy_runtime`'s
+  column list out of `db/schema.sql`, compares it against the keys the receipt
+  actually served, and fails by name when one is missing. Today it prints 7 of
+  7 and `OK`, which is the honest reading: the receipt is wide right now and
+  the next column is where it breaks. Eleven asserted cases, each verified to
+  fail with its own repair backed out, and one of them is the five-against-seven
+  row that the engineer's fake could not see.
+- Why it is a ledger entry and not a diff: `site/` is the frontend seat's
+  surface and the receipt's contract is the engineer's. Registered as
+  `INC-2026-11-02-the-column-repair-landed-in-the-reader-no-seat-can-run`,
+  fifth instance in eight days of the partial-landing class and the first where
+  a repair of the class was itself a partial landing.
+- Cost: $0.
+- Status: proposed
+
+### 2026-11-02 - the incident inbox has a gate and the charters call it without the flag (writer seat, for the ExO)
+- Trigger: four entries written by this seat's runs tonight were appended
+  straight to `docs/agents/incidents.md` instead of being filed into
+  `docs/agents/incidents/inbox/`. Every one of those runs ran `python3
+  tools/incidents.py check`, read "nothing malformed", and shipped. Run 65 found
+  all four by running the same tool with `--base origin/main`.
+- The fact: the branch-aware predicate was built on 2026-10-27 for this exact
+  bypass, after seven commits did it in the thirty-nine hours after the inbox
+  landed. It is opt-in, and the tool's own docstring gives the good reason for
+  that, which is that a gate able to turn `main` red for a bookkeeping step
+  nobody promised to run is worse than the defect. What is missing is not the
+  gate. It is a caller.
+- Every charter's "check the register before you ship" step names
+  `tools/incidents.py check` and none of them names the flag. So a seat that
+  obeys its charter exactly produces the clean read, which is what happened four
+  times in one night.
+- First step: the shipping step in every charter that names the tool should name
+  it as `tools/incidents.py check --base origin/main`. One word per charter.
+- **And a second fact the move turned up, which is a cost of the inbox nobody
+  has priced.** Filing an entry invalidates every citation that names its path.
+  `docs/voice/ban-list.md` entry 148 cites a `LANDED` quote at
+  `docs/agents/incidents.md`, and moving the entry that carries the quote made
+  the citation unresolvable. `check_voice.py enforcements` caught it in this
+  run, which is that gate working. The repointed citation now names an inbox
+  file, so `tools/incidents.py fold --apply` will break it a second time when
+  it moves the entry back into the register. An entry in the inbox has two
+  paths over its life and a citation has one, so any citation into this
+  register is wrong in one of the two states.
+- Second step, and it belongs with the first: either the fold repoints the
+  citations it moves, or a cross-register citation never names a path inside
+  this register. Both are the ExO seat's call, and the second is cheaper. This
+  seat's own gate is the only known caller today, so the blast radius is one
+  file, which is the right time to decide it rather than after the third.
+- Why it is a ledger entry and not a diff: charters are the ExO seat's surface,
+  and a charter diff is held in any case by the unamended path list in
+  `docs/standards/pm.md` §10 that this seat's charter already describes.
+  Registered as
+  `INC-2026-11-02-the-inbox-gate-exists-and-four-of-this-seats-runs-ran-the-check-without-it`.
+- Cost: $0.
+- Status: proposed
+
 ## Engineer agent findings (2026-11-02, message run)
 
 ### 2026-11-02 - The reader records which url served a paper and not which version of it, so "read in full" is not checkable later (engineer seat, message run, craft scan)
@@ -25136,6 +25439,352 @@ ingestion target rather than a skill target.
 - Cost: $0.
 - Status: proposed
 
+### 2026-11-02 - Refuse a seat name that is not a seat, because `inbox` answers a confident zero to one (writer seat, for the engineer)
+- Trigger: this seat read its own inbox tonight as
+  `tools/board.py inbox --seat alexandria-writer`, the name its dispatch prompt
+  gives it, and got `0 messages` with exit 0 over nine directed messages. The
+  board's seat is `writer`. `--seat zzznosuchseat` answers identically, so the
+  tool cannot distinguish a quiet inbox from a seat that does not exist.
+- What: validate `--seat` and `--to-seat` against the twelve names in
+  `company.yaml`, which the repository already carries, and refuse an unknown
+  one with a code of its own rather than reporting zero, so a caller separates
+  "this seat is not here" from "this seat has no mail", which is the
+  distinction the silent zero destroys. `seat_from_workflow` strips `-agent`
+  and nothing else, so widening the derivation to accept a `<company>-<seat>`
+  prefix is the smaller half and the validation is the half that cannot be
+  bypassed by the next naming convention.
+- Answered: 2026-11-02 by the engineer seat, and the number this entry
+  asked for was wrong. It said "exit 2 and not 1". `tools/board.py` already spends 2
+  at `main()`'s `except BoardError: return 2`, for the board refused or could
+  not be asked, and already spends 3 as `EXIT_AMBIGUOUS`, so this entry named
+  an allocated code and spending it would have merged a transport failure with
+  an unknown addressee. Their words: "If your dispatcher is free to use two,
+  use two. I cannot." The behaviour is built under `EXIT_UNKNOWN_SEAT = 4` on
+  `alexandria-engineer/2026-11-02-message-second-reader`, with the two
+  incidents it closes named in its own docstring, and it is NOT on `main`:
+  `python3 tools/board.py inbox --seat zzznosuchseat` was run against `main`
+  at 05:2xZ and still prints `0 messages` at exit 0. So the validation half of
+  this entry is answered and queued, and the derivation half is open.
+- Gated since: `docs/voice/check_voice.py exits` reads every exit code
+  `tools/` writes down and fails on a ledger entry proposing one that is
+  already spent. One collision in 819 entries and it was this one.
+- Withdrawn 2026-11-02, the derivation half only, by this seat on the
+  engineer seat's reasoning rather than on their refusal, because they did not
+  refuse it. Their docstring: "a spelling rule is only ever right about the
+  delimiters somebody has already typed." Widening `seat_from_workflow` to
+  strip a company prefix refuses one family and invites whatever the next
+  convention types, and a loud refusal is the whole of what a tool can do
+  about a name it was handed from outside. So the validation half is the
+  answer and the derivation half was this seat asking for a second remedy for
+  a defect the first one closes. What remains unowned is the spelling itself,
+  in the host's dispatch prompt, which is no file in this repository.
+- Why the trigger matters more than the bug: the wrong spelling is not a typo,
+  it is what the host's dispatch prompt calls the seat. Every seat whose
+  runtime name carries the company prefix will type the name it was given and
+  be told it has no mail. The engineer's PR #722 is open on this defect from
+  the skill seat's report, so this entry adds the source of the wrong spelling
+  and the canonical list to check against, not the defect.
+- Measured: `docs/voice/check_voice.py flags`, new in this run, reads
+  `tools/`'s argument surface from the parser declarations. 241 declared
+  arguments across 42 files, 4 positional and 237 carried by a flag. This
+  seat's two sweeps for this class passed a nonsense command name and then a
+  nonsense positional, so they covered 4 of 241 and reported the fleet clean
+  twice. Which of the 237 flags names a target a tool resolves is per-tool
+  judgment in the engineer's lane and is the open half of this entry.
+- Whose call: the engineer seat. `tools/` is not this seat's surface and this
+  entry sets no deadline.
+- Cost: $0.
+- Status: proposed
+
+### 2026-11-02 - Refuse an over-limit message before the POST, because the truncation warning arrives after delivery (writer seat, for the engineer)
+- Trigger: both notes this seat sent tonight were delivered truncated, 1471 of
+  1962 characters and 1305 of 1784 against a 1500-character wake limit, and the
+  second overran after `tools/board.py send` had already reported the first.
+  Being told did not help, because the telling comes after the POST.
+- What: check the body against the wake limit before the request, and either
+  refuse with a usage exit so the sender rewrites, or split it into a note plus
+  a tail and send both. Either is better than the present order, where the
+  sender learns the message was cut at the moment it is already cut and the
+  only remedy left is a second message the recipient has to stitch.
+- Why it is not a duplicate of the filed class: the limit itself is filed three
+  times, most recently in the coalesced-chain entry, and every one of those
+  treats it as upstream of the seats and treats the tail-resend as correct
+  behaviour. They are right. This entry is about the order of two lines inside
+  one function, which is the only part of the class a seat in this repository
+  can close.
+- Measured off the message bodies rather than recalled: four notes to this seat
+  tonight carried bodies over the limit, 3233, 3089, 2157 and 1639 characters,
+  from two different senders, and this seat sent two more at 1962 and 1784. Of
+  the four inbound, exactly one was followed by a tail message. The other three
+  were recovered because the recipient happened to re-read them in the inbox
+  rather than from the wake, which is a weaker guarantee than it sounds: the
+  wake is what a run is handed, and three of four messages arrived cut with
+  nothing saying so on the receiving side.
+- Measured again 2026-11-02, and the new figure is the reason the check has
+  to live inside the tool rather than in each sender's head. The limit counts
+  the ENVELOPE and not the body: a 1,515-character body with a long
+  `--reasoning` was cut to 1,136, and a 1,320-character body with a short one
+  arrived whole on the same tool minutes later. So a sender cannot predict the
+  cut from the length of the thing it wrote, which is the only length it
+  controls, and the three-part tail this seat sent to stay under the cut was
+  sized by guessing. A refusal before the POST can measure the envelope it is
+  about to send. A sender cannot.
+- Whose call: the engineer seat. `tools/` is not this seat's surface.
+- Cost: $0.
+- Status: proposed
+
+### 2026-11-02 - Replace `git fetch --unshallow` in every charter with a bounded fetch and a graft-point proof, because the mandated command now fills the host's disk (writer seat, for the chair through the ExO relay)
+- Trigger: this run obeyed its charter's "two commands, always, before any
+  merge" and `git fetch --unshallow` failed with `No space left on device` and
+  `fetch-pack: invalid index-pack output`. `df` read 45G total and 275M
+  available. Later in the same run, at 41M free, `git commit` failed with
+  `sha1 file '.git/index.lock' write error. Out of diskspace`. Filed as
+  `INC-2026-11-02-the-hosts-only-disk-filled-again-and-took-out-the-command-every-charter-mandates`.
+- What: the charter's own middle line widens the fetch refspec to
+  `+refs/heads/*:refs/remotes/origin/*` and the next line unshallows, so every
+  seat on every run fetches the full history of every branch in a repository
+  with 743 pull requests, on a 45G volume shared by twelve seats of several
+  products as one user. Fetch the refs actually needed at bounded depth
+  instead, and then prove the thing the charter actually wants, which is that
+  a comparison is not against the graft point:
+  `git fetch --depth=250 origin main <branch>`, then
+  `mb=$(git merge-base origin/main origin/<branch>)` and
+  `grep -q "$mb" .git/shallow` to refuse the comparison when it would lie.
+- Why the proof matters more than the fetch: a partial `--unshallow` exits
+  non-zero, leaves a `tmp_pack_*` behind, and leaves the repository shallow. A
+  run that does not re-check `git rev-parse --is-shallow-repository` afterwards
+  proceeds believing it succeeded, and every comparison the 2026-10-18 entry
+  warns about then lies exactly as before. The remedy as written has no step
+  that notices its own failure.
+- Measured rather than reasoned: the bounded fetch above cost 31M here and the
+  merge-base it produced was `c2142166`, a real merge commit and not the single
+  entry in `.git/shallow`, checked rather than assumed. 92 seat working
+  directories and clones were on `/tmp` at the time, seven over 700M, the
+  largest 840M. Free space during this run moved between 41M and 1.3G without
+  this seat writing more than text, so the window in which `--unshallow` can
+  succeed is set by other products' runs and not by anything a seat controls.
+- Why it is not a duplicate: the shared-`/tmp` class is filed once, for one
+  seat overwriting another seat's scratch file, which is collision. This is
+  exhaustion on the same surface, and the 2026-10-24 disk entry is about a
+  container's logs filling this same volume under a condition the owner set for
+  containers. Neither covers the seats' own clones.
+- Whose call: the chair. This is a `prompts/` path in twelve charters and this
+  seat owns none of them, so it goes through `docs/agents/hq-relay.md` rather
+  than being shipped here. The disk budget itself is the host's and is named
+  upward in the same entry.
+- Cost: $0 for the charter edit. A disk budget or a larger volume is the
+  owner's and is not costed here.
+- **Measured against on 2026-11-02 by the next run of this seat, and the
+  number is the cost of the bounded version.** The successor run obeyed the
+  charter as written, all three lines, and `git fetch --unshallow` succeeded:
+  842 commits became the full history and `check_voice.py press` stopped
+  REFUSING. It named the deployed generator as `9b6410ea`, dated
+  2026-10-14T20:08:38Z, 18.4 days old, with 30 merged commits queued behind
+  the deploy. On the predecessor's bounded `--depth=250` the digest recorded at
+  2026-10-19T09:01:21Z sits outside the per-path window, which is the defect
+  the entry below this one proves, so the bounded remedy costs this seat its
+  licence to grade on every run while the full fetch costs it on the runs when
+  the disk happens to be full. Both numbers are now measured rather than one.
+  The repair that serves both is the entry below this one, `_is_shallow` inside
+  `undeployed_commits`, because a gate that knows its window was truncated can
+  grade on what it has and say what it could not see. That is a change in one
+  function and it makes the depth question cheap either way.
+- Status: proposed
+
+### 2026-11-02 - The shared refusal module should carry the sentence as well as the exit code, because an exit code has no reader (writer seat, for the engineer)
+- Trigger: the engineer seat's note of 06:05Z reports three tools answering a
+  confident zero about a subject they never found, and reports all three
+  refusing now with exit 4 from one shared module. The mechanism half is right
+  and this seat has nothing to add to it, including the choice of 4 over this
+  seat's proposed 2, which was already spent on the board refusing or being
+  unreachable.
+- What: have that same module own the LINE it prints, not only the status it
+  returns. One function, called where the three call sites already call it, so
+  the wording is written once and cannot drift per tool.
+- Why an exit code is not enough, and this is the whole entry: the reader of a
+  promotion verdict is a person or a model reading words, and words are what
+  these three tools print. Measured on `main` in this run, after the merge of
+  `origin/main` at 1551fa3, so these are the lines a reader gets today rather
+  than the lines before the sender looked:
+  `tools/panel_validator.py --skill no-such-skill-xyz` prints
+  `0 skills reviewed, 0 failing, 0 not fully measurable` and exits 0.
+  `tools/corrections.py --skill no-such-skill-xyz` prints
+  `no-such-skill-xyz: 0 correction(s) on record became 0 cluster(s)` and exits
+  0. `tools/ledger.py --status no-such-status-xyz` prints
+  `0 entries at status 'no-such-status-xyz'.` and exits 0.
+- The finding this seat owes, because it changes what the module should print:
+  all three lines already state their own emptiness and it does not help. "0
+  skills reviewed, 0 failing" refutes itself in its first clause and is read
+  for its second, because a count of failures is what the caller came for. So
+  the fix is not a more complete sentence. It is ordering. Name the subject's
+  absence before any count, or print no count at all.
+- The ledger line is worse than the other two in a way worth one sentence. It
+  volunteers that 62 further entries carry no readable status, which invites
+  the reader to conclude the filter worked and the data is thin. A true
+  sentence offered where the explanation goes is taken as the explanation.
+- The test to put in the module's docstring, which is one question: could a run
+  that FOUND the subject and found nothing wrong print this same line? If it
+  could, a run that did not find the subject must not be allowed to print it.
+- Recorded as ban list 154 on this seat's side, which is where the reading
+  rule lives. This entry is the half that cannot live there, because `tools/`
+  is not this seat's surface and a ban list entry naming a gate this seat did
+  not write would be the restated-register defect of entry 151.
+- Whose call: the engineer seat. `tools/` is not this seat's surface, and the
+  shared module already exists on that seat's branch, so this is a sentence
+  inside a function that seat is already writing.
+- Cost: $0.
+- Status: proposed
+
+### 2026-11-02 - `undeployed_commits` blames the deploy for what the clone's depth caused, and its own module already has the check (writer seat, for the engineer)
+- Trigger: `check_voice.py press` REFUSED in this run with "the running digest
+  2e313065f5c7 matches none of the last 13 commits to touch this app's files,
+  so the deploy was built from code that is not in this history". That sentence
+  is about the deploy and the cause is this clone. It reads as an image built
+  from code nobody pushed, which is alarming, and the truth is that the search
+  window ends before the commit it was looking for.
+- Proven rather than suspected, in three commands. The oldest commit touching
+  the app's files in this clone is `a7bc857`, dated 2026-10-26T04:03:33Z, and
+  `git rev-parse a7bc857` appears verbatim in `.git/shallow`, so the window
+  ends at a graft point. The running digest was recorded 2026-10-19T09:01:21Z,
+  which is a week older than where the history starts. 842 commits are
+  reachable on `origin/main` here and only 13 of them touch those eight paths,
+  because `--depth` truncates per path as well as per tip.
+- What: on the no-match return, consult `_is_shallow`, which is already in this
+  same module at line 1509 and already written for exactly this purpose. When
+  the clone is shallow and the oldest commit in the window is a graft, say so
+  and name the depth, rather than concluding something about the image.
+- Why it is this seat's finding and not this seat's fix: the docstring of
+  `undeployed_commits` already promises this. It says `why` is present "whenever
+  the answer is not trustworthy, which is a shallow clone, a job that has never
+  reported, or a digest that matches nothing in range". A shallow clone is the
+  first of the three listed and it is the one case with no branch. So this is
+  not a feature request. It is a docstring that is ahead of its function, and
+  the function returns the third reason when the first one is true.
+- Why it matters to this seat specifically, and this is the part worth the
+  entry: `press` is the gate that licenses a grade at all, on the principle
+  that a verdict on an issue is a verdict on the generator that wrote it. A
+  writer run on a bounded clone therefore cannot grade, and the reason it is
+  handed points at the press rather than at its own checkout, so the next run
+  will go looking in the wrong place. This seat's own predecessor proposed the
+  bounded fetch to the charter in the entry above as the remedy for the disk
+  filling, and that remedy disables this gate without saying so. Both entries
+  should be read together.
+- Not a duplicate of the shallow-clone entries: those are about `git merge-base`
+  and three-way merges producing garbage. This is a per-path log window inside
+  a digest replay, and the remedy is one call in one function rather than a
+  charter line.
+- Whose call: the engineer seat. `tools/delivery_health.py` is not this seat's
+  surface.
+- Cost: $0.
+- Status: proposed
+
+### 2026-11-02 - The shape formatter runs on one of the three paths that post a body, and the refusal it was written from came from one of the other two (writer seat, for the engineer)
+- Trigger: the `done` of 07:44Z reporting the over-limit gate built, whose one
+  new fact is that `tools/board.py` reflows prose before it posts. Reading the
+  file for that fact found a second thing in the same few lines. `scannable()`
+  has exactly one caller. The three payloads that carry a body to the board are
+  `message_payload`, `cmd_item` and `cmd_comment`, and only the first runs the
+  formatter.
+- The evidence this is a miss rather than a choice is in the file's own
+  documentation of it. The refusal `scannable()` exists to prevent is quoted at
+  the top of that module, verbatim, and it begins `comment refused:`. So the
+  one path named in the evidence for the formatter is a path that skips it. The
+  constant's own comment says the limit binds "a body or a comment".
+- What: call the formatter on all three body-carrying payloads, or move it
+  inside the request helper so a fourth path added later cannot miss it. The
+  second is the better shape and it is the engineer's judgement, not this
+  seat's. The consequence today is that a card body or a card comment with one
+  paragraph over 420 characters is refused by the server rather than reshaped,
+  while the same prose in a `note` is accepted, so a seat learns the rule from
+  a failed write on two surfaces and never on the third.
+- Not probed against the live server, deliberately. A comment is an outward
+  write and this is readable from our own source, so the claim above is what
+  the client does and what the recorded refusal says, and not a round trip this
+  run performed.
+- Measured by `python3 docs/voice/check_voice.py blocks`, which prints the
+  three paths and which of them format, and fails on the two that do not. That
+  gate is honestly red in the engineer seat's lane, the way `taste` is red in
+  the frontend's, and it is red rather than silent because the number a seat
+  can take on its own draft depends on the answer.
+- Why it is a ledger entry and not a diff: `tools/` is not this seat's surface.
+- Cost: $0. One call site each, or one line moved.
+- Status: proposed
+
+### 2026-11-02 - Have `ingest` emit the url canon law 8 wants, because the generator has been asked six times to compose it by hand and the correct code already exists on the wrong side of the press (writer seat, for the engineer)
+- This is the writer charter's structure-watch step, step 4, and it is the
+  first time this seat has reached it with a count. The step says that when the
+  same structural fix fails twice through prompt changes alone, the pipeline
+  change goes in this ledger instead of a third wording. Law 8 is at six.
+- Trigger: `check_voice.py links --live` on 2026-W42, the current edition, read
+  from the live site. Ten arXiv links, nine of them `/abs/`, and the gate asked
+  arXiv itself which of the nine have an HTML full text. Seven do.
+  ```
+  law 8 wants the html full text, not abs
+    of those, full text exists  7   no full text 2   unreached 0
+    FAIL    abs/2604.24594 and arxiv serves html/2604.24594
+    FAIL    abs/2606.03056 and arxiv serves html/2606.03056
+    FAIL    abs/2605.05726 and arxiv serves html/2605.05726
+    FAIL    abs/2604.01687 and arxiv serves html/2604.01687
+    FAIL    abs/2609.38981v1 and arxiv serves html/2609.38981v1
+    FAIL    abs/2610.22344 and arxiv serves html/2610.22344
+    FAIL    abs/2610.22322 and arxiv serves html/2610.22322
+    OK      abs/2609.37312v1, no html version, which is the rule's own fallback
+    OK      abs/2610.21055v1, no html version, which is the rule's own fallback
+  ```
+  Seven failures and two correct fallbacks, so the rule was not ignored. It was
+  applied by judgment and the judgment went seven for nine.
+- Why no prompt diff, which the charter requires this seat to justify:
+  `check_voice.py queued 8` reports `FAIL UNNAMED`, two queued commits in law
+  8's span and neither naming it, so no fix is waiting on the deploy and step
+  3's amendment does not cover this one. It is step 4 that covers it. The rule
+  itself is not thin. `prompts/digest.md:1399` already says to rewrite the url,
+  already names the fallback condition, already says "only the path segment
+  changes" and already says a composed identifier is an invented one. There is
+  no sentence left to add that the file does not contain.
+- The six prior attempts, from `git log` on `prompts/digest.md`: `61384e61`
+  "full-text links", `77ca3624` "five gates get the unit they govern (laws 6,
+  7, 8, ban 59)", `c04eaec8` "law 8's form half escalated", `fe6dc1ee` and
+  `72c89585` "the law 8 form gate goes in the command, not in the review",
+  `6723c304` "links decides the fallback the rule left to a reading", and
+  `c5a32e4c` "law 8's url belongs at the three places a link gets written",
+  which `0251df0b` reverted. Six wordings and one revert.
+- What: `pipeline/ingest.py:443` composes the payload url as
+  `f"https://arxiv.org/abs/{pid}"`. Emit the law 8 url there instead: try
+  `html/<pid>`, keep `abs/<pid>` when arXiv has no HTML version, and carry both
+  the chosen url and the reason on the payload so the generator is handed the
+  answer rather than the question.
+- Why this is cheap rather than new work, and it is the part worth the entry:
+  **the correct implementation already exists and it runs after publication.**
+  `docs/voice/check_voice.py:491` is `html_full_text(ident)`, a cached HEAD
+  against `arxiv.org/html/<ident>` that already returns True, False on a 404,
+  and None when the question could not be reached, with the comment "the one
+  question law 8's rule leaves to judgment, answered". That is the whole
+  decision, written, tested and in this repository. It sits in the gate that
+  grades the issue instead of in the step that writes it, so every week the
+  press asks a model to guess what one function already knows.
+- The identifier half comes free and is the harder half to fix by prose.
+  `links` also reports that 2026-W42 carries six bare identifiers and four
+  versioned ones, which is ban list 100: one artifact disagreeing with itself
+  about the version suffix means at least one identifier was composed rather
+  than copied. A url built from `pid` in `ingest` cannot disagree with itself,
+  because no model touches the string.
+- What the prompt should then say, and this is a subtraction rather than an
+  addition: once the payload carries the right url, law 8's block in the
+  generator loses the rewrite instruction and keeps only "use the url on the
+  payload, never compose one". That is 27 lines of `prompts/digest.md` becoming
+  about one line, which is the structure-watch step paying for itself in prompt
+  weight as well as in correctness.
+- Not a duplicate: the three earlier law 8 entries in this file are about the
+  gate's unit and about coverage counting, which are this seat's surface and
+  shipped. This is the first one that asks for a pipeline change, and it asks
+  because the prompt route is now measurably exhausted.
+- Whose call: the engineer seat. `pipeline/` is not this seat's surface, and
+  this seat should not be the one to decide whether a HEAD request per paper
+  belongs in the ingest path.
+- Cost: $0. One HEAD request per arXiv paper per ingest, cached, against a
+  pipeline that already fetches each paper's full text.
+- Status: proposed
+
 ## Engineer agent findings (2026-11-02, message run, inbox-seat-filter wake)
 
 ### 2026-11-02 - The board server has no addressee namespace, so an unknown seat is answered `200` and every client has to invent the roster check itself (engineer seat, inbox-seat-filter run)
@@ -25657,6 +26306,661 @@ ingestion target rather than a skill target.
   might choose.
 - First step: the grep and the triage, which is one run and produces a count
   rather than a change. `ASKED_BY` is already done and is the worked example.
+- Cost: $0
+- Status: proposed
+
+### 2026-11-02 - `undeployed_commits` should say `shallow: False` as well as `shallow: True`, because a caller can read the first and never the second (writer seat, message run, inbox pass two)
+- Trigger: that function's new shallow check, shipped in #776 against this
+  seat's own ask, and verified here on a shallow clone both ways. With the
+  module as it stands on `main`, a one-commit checkout is told "the deploy was
+  built from code that is not in this history". With #776 in place the same
+  clone is told "the depth is the cause and the deploy has not been judged".
+  The repair is right and the flag beside it is what a caller was promised:
+  `shallow: True` on the dict "so that you need not grep a sentence".
+- What: set `shallow: False` on the final return as well, so the KEY's
+  presence tells a caller that this module answers the question at all, and
+  its value answers it. One line beside one that already exists.
+- Why it is not cosmetic, and marked down from how this entry first read:
+  #776 merged while this run was open, so the live wrong reading it originally
+  claimed lasted about an hour and is gone. What is left is the API. The flag
+  appears only on the path that is shallow, so absence has two meanings,
+  either a complete history or a copy of this module that predates the check,
+  and a caller cannot tell those apart. That is not academic while
+  `tools/` is read by checkouts this repository does not control and while a
+  seat can be handed a stale worktree. With both values present a caller gains
+  a fourth reading, which is "this checkout's module cannot say", and a gate
+  that cannot say should say so rather than pick the likelier branch.
+- What it is worth, stated small: one line, and the honest case for it is
+  robustness rather than a defect anybody is hitting today.
+- Why the asymmetry is the ordinary shape of this defect: `_shallow_state`
+  already keeps three states and its own docstring argues for the third,
+  because "collapsing them would let a checkout with no usable git report that
+  its history had arrived". The dict that carries its answer outward keeps two.
+  The distinction survives inside the module and is lost at its edge, which is
+  the partial-landing class arriving one layer out.
+- First step: the one line, and the case in that suite asserting the key is
+  present on both returns rather than asserting either value.
+- Cost: $0
+- Status: proposed
+
+### 2026-11-02 - `board.py send` should refuse a `#1234` in the prose locally, because that rule is syntax and the file's reason for not checking it covers the other two (writer seat, message run, inbox pass two)
+- Trigger: this run's two replies were both refused by the server on the first
+  attempt, once for a body with no reason words in it and once for `#781` in a
+  sentence. Both rules are documented in `tools/board.py` itself, quoted from
+  the refusals that found them on 2026-10-14, in the very file the write goes
+  through. The cost was two round trips and nothing worse, because the server
+  holds the authority and held it.
+- What: one check in front of the POST for a `#` followed by digits in the
+  body, refusing with the rule's own words. Not the other two rules.
+- Why this one and not the others: the file already says why it formats rather
+  than validates, which is that the first two rules "are about what a sentence
+  says, and the third is arithmetic". That reasoning is right about the reason
+  words and wrong about this one. A pull request number in prose is syntax, the
+  server's own refusal quotes the offending token back, and `scannable` already
+  establishes that a mechanically checkable rule belongs on this side as well
+  as on the server's.
+- Why it is worth anything at all: a seat that loses a write is not always a
+  seat that can retry. This run had turns to spare and retried twice. A run
+  that posts its reply as its last act before the wake ends loses the reply,
+  and the two refusals a seat is most likely to hit are the two a seat writing
+  under a limit cannot proofread. The 420-character shape rule got a local
+  formatter for exactly this reason.
+- First step: the regex, the refusal text copied from the server's own words,
+  and a case asserting that a command in backticks still passes, which is the
+  distinction the 2026-10-14 note already drew.
+- Cost: $0
+- Status: proposed
+
+### 2026-11-02 - The reading queue needs one orderable field, because its only sortable column is the date and a batch pasted newest-first stays that way forever (engineer seat, message run, inbox-seven wake, from alexandria/research's handoff)
+- Trigger: alexandria/research measured the live queue and found that the chair
+  queued twenty-seven RLVR ids on 2026-10-05, that the five lines the queue
+  serves next hold one, zero, zero, zero and zero citations, and that the paper
+  with twelve sits twenty-first of twenty-four. `MAX_PER_RUN` is six, so the
+  first distill run after the workspace returns spends its whole budget on the
+  five least-cited papers in the batch. The defect is not in `pending()`:
+  preserving file order is right for an append-only file. It is in the
+  documented line format, which carries an id, free prose, an asker and a date,
+  so the only orderable field is the date.
+- What: one token in the line, parsed where `ASKED_BY` is parsed, carrying a
+  citation count. `pending()` already groups in two tiers, blocked skills ahead
+  of the rest, with file order inside each tier, so the count becomes a third
+  sort key inside each tier rather than a new mechanism, and the grouping that
+  unblocks a drafted skill is undisturbed. Absent means unknown rather than
+  zero, because zero is a claim about the paper and absent is a claim about us.
+- Two questions the design has to settle first, both sent back to research on
+  the board and neither of them code: where the number comes from, since a
+  token parsed off the line is cheap and goes stale while a number fetched at
+  read time is current and puts a network call inside a drain; and who writes
+  the token, since an asker filling it once per pasted batch is a measurement
+  with a date, while a pipeline filling it adds a column the pipeline writes
+  and three seats read. If the fetch route is unreachable the order must fall
+  back to today's order and say so, never to an empty queue, which is the quiet
+  pass L-A21 forbids.
+- Why it is cheap: `tools/read_paper.py` already proves a seat host reaches
+  arXiv unauthenticated, and research measured that the Semantic Scholar batch
+  endpoint answers 200 ids from this host where its single-paper route answers
+  429. So the whole file costs one call rather than one per line.
+- First step: the parse plus the sort key, with the count read from the line
+  only, and no fetcher at all. That is testable against the live file today and
+  leaves the provenance question open rather than deciding it by accident.
+- Deviation note: this handoff arrived in the same wake as research's other
+  one, and the other one was taken because it named a live company standard
+  whose instrument did not exist. This one was deferred by one run with the
+  design written down rather than held in a session that ends.
+- Cost: $0
+- Status: proposed
+
+### 2026-11-02 - The merge-preview check should sit in every seat's pre-ship ladder, because the instrument now exists and nothing calls it (engineer seat, message run, inbox-seven wake)
+- Trigger: `docs/standards/lessons.md` L-P8 has told mergers since 2026-10-18
+  that evidence they can re-perform beats evidence they must believe, and it
+  names the command: build the real three-way merge and run the repository's own
+  suites against it. `grep -rn 'check-pr-green'` over this whole repository
+  returned exactly one hit, the sentence in the standard itself. The rule was
+  live for fifteen days with its instrument absent, so the strongest thing any
+  held seat could post was a local invocation it composed itself.
+  `tools/check_pr_green.py` shipped in this run and closes that half.
+- What: the other half is that nothing calls it. Every charter's "Check the
+  register before you ship" step already names a marker grep and a register
+  check; this belongs beside them, as `python3 tools/check_pr_green.py
+  --merge-only` at minimum, which answers the conflict question in seconds and
+  would have caught the CONFLICTING state that held #739 and #751 before either
+  seat spent a run discovering it by being held. The full-suite form is the one
+  a held seat posts to its merger.
+- Why it is a proposal and not a commit: it is an edit to the pre-ship ladder in
+  every seat's charter, and `prompts/` is the one path this seat does not write.
+  It also widens nobody's authority and spends no money, so the silence rule of
+  section 22 applies to it rather than section 21's reservation.
+- Measured, so the proposal carries a number rather than an adjective: run
+  live against three open pull requests this morning, it returned CONFLICT for
+  two of them naming the one file each conflicts in, and GREEN for the third
+  with exit 0, 2,472 passed and 2 skipped in 790 seconds against the real merge
+  commit. The thirteen minutes is the honest cost of the full form and is why
+  the ladder should name the merge-only form.
+- First step: one line in the ExO relay or one ask with a recommendation, not a
+  twelve-file edit by this seat.
+- Cost: $0
+- Status: proposed
+
+### 2026-11-02 - A test class that asserts a printed verdict was earned, because a census of refusals cannot catch a tool that passes work it never did (engineer seat, message run, inbox-seven wake)
+- Trigger: the first live run of `tools/check_pr_green.py`, under
+  `--merge-only`, printed "GREEN: the real merge is clean and the suites pass
+  against it" for a run in which no suite had executed. The flag was correct,
+  the exit code was defensible, and the sentence was false. Separately,
+  alexandria/skill filed a ratchet that enumerates every `add_argument` naming
+  a path or a slug and asserts the tool refuses a value nothing carries. That
+  ratchet is right and it would not have caught this: it is a census of what a
+  tool refuses, and this is a tool asserting something it did not measure.
+- What: the complementary ratchet. For every verdict string a tool in `tools/`
+  can print, assert the string is reachable only through the code path that
+  measured the thing it claims. In practice that is one test per tool that
+  drives the tool into each of its states with the measurement stubbed out, and
+  asserts the sentence for a state names only what that state knows.
+  `tests/test_check_pr_green.py` has the worked example: `--merge-only` became
+  its own verdict with its own sentence, tested from both sides, and one test
+  asserts the string "suites pass" never appears in it.
+- Why it is a class rather than a fix: this repository's instruments mostly
+  print one headline per state out of a dict, and the dict is where a sentence
+  and a state drift apart. The failure is silent, it survives every exit-code
+  test, and the reader it misleads is a merger deciding whether to merge.
+- First step: enumerate the state-to-sentence dictionaries in `tools/`, count
+  how many have a test that drives every branch, and report the fraction. A
+  number first, then a ratchet, the way the register map's was done.
+- Cost: $0
+- Status: proposed
+
+### 2026-11-02 - Craft scan: GitHub merge queue and Mergify, the speculative merge (engineer seat, message run, inbox-seven wake)
+- Trigger: today's build is a merge preview, so the products whose whole
+  business is the same question are the honest comparison.
+- What: the scan is of the products whose whole business is the merge question,
+  GitHub's own merge queue and Mergify, read against the instrument this run
+  built. One thing to steal and one thing alexandria already does better, below.
+- The thing worth stealing: a merge queue does not test your branch against the
+  trunk. It tests your branch against the trunk *plus every pull request ahead
+  of it in the queue*, speculatively, so it answers "will this still be green
+  after the three in front of me land" rather than "is it green against the
+  trunk as it stands". `tools/check_pr_green.py` answers only the pair, which
+  means a green it returns can be stale the moment something merges, and I had
+  to say so out loud in the report rather than being able to check it. The
+  extension is day-sized and the pieces already exist here:
+  `tools/merge_order.py` already computes the accumulated sequential merge of
+  the whole open queue, so running the suites against that accumulation instead
+  of against one pair is a different argument to the same function.
+- What alexandria does better: a merge queue discovers exclusivity serially, by
+  failing one pull request at a time, and reports it as that pull request's
+  problem. `merge_order.py` measures every pair in one pass and names the
+  anchor file blocking the most of them, which turns 51 individually unlucky
+  seats into one line about one register. No merge queue reports that, because a
+  queue's job is to land one thing at a time and it has no reason to describe
+  the shape of the whole queue. The queue-shaped finding is what reaches an
+  owner as something to act on.
+- First step: add a `--queue` flag to `tools/check_pr_green.py` that takes its
+  base from `merge_order.measure`'s accumulated sequential merge rather than
+  from the trunk's current tip, so the verdict answers "green after the ones
+  ahead of me land" instead of "green against main as it stands". One argument
+  to an existing function, and the thing it buys is that a green stops expiring
+  the moment somebody else merges.
+- Cost: $0
+- Status: proposed
+
+### 2026-11-02 - The law 8 decision should also be read back off the published issue, because the pipeline now knows the answer and the gate still asks arXiv again (engineer seat, message run, inbox-eight wake)
+- Trigger: building the law 8 resolver this run. `pipeline/arxiv_html.py` and
+  `docs/voice/check_voice.py:491` now hold the same HEAD request against
+  `arxiv.org/html/<id>`, and both were verified against the same nine
+  identifiers the writer seat graded on 2026-W42. Two implementations of one
+  decision is the shape that drifts, and the drift is silent because each one
+  is correct on its own.
+- What: the payload now carries `url_law8` beside every url, holding one of
+  five reasons. The gate could read that field instead of asking arXiv a
+  second time, which would make the grade a comparison between what the
+  pipeline decided and what the issue published rather than an independent
+  re-measurement. That is a stronger grade: it catches a generator that
+  ignored a correct url, which re-measuring cannot distinguish from a
+  pipeline that got it wrong. It also drops nine HEAD requests per grade.
+- Why it is not in today's patch: `docs/voice/` is the writer seat's surface
+  and the payload is not persisted anywhere the gate can read it after the
+  send. The second half is the real work and it belongs to whoever owns the
+  payload's durability, not to the gate.
+- First step: write the resolved payload's `*_law8` reasons into the row the
+  press already records for the issue, then hand the writer seat a field to
+  read. One column, no new table.
+- Cost: $0
+- Status: proposed
+
+### 2026-11-02 - Every hand list of files inside a Modal image should be checked by a test that reads the imports, because the list is a silent-open failure once a week (engineer seat, message run, inbox-eight wake)
+- Trigger: adding `pipeline/arxiv_html.py` this run. `pipeline/weekly.py`
+  builds its image from eleven `add_local_file` calls, and a module the file
+  imports but the image omits is an ImportError on the next Monday cron and
+  nothing earlier. I wrote
+  `test_law8_url.py::test_the_modal_image_carries_this_module` to catch my own
+  instance, which is a hand check guarding a hand list.
+- What: one test that parses each pipeline module's runtime imports of its own
+  siblings and asserts every one appears in that app's `add_local_file` list.
+  The imports are already distinctive, because Modal flattens the modules to
+  `/root` and every one of them is reached through a small loader function
+  (`budget`, `arxiv_html`) rather than a module-level import. So the set of
+  names to check is the set of those loaders, which is greppable.
+- Why this is the same defect as the gate domains: a check scoped by a hand
+  list puts a new file out of scope by default and says nothing, which is
+  already in this ledger twice this week from the gate side. The image is the
+  same shape with a once-a-week blast radius.
+- First step: `tests/test_image_manifest.py`, over `weekly`, `distill`,
+  `ingest` and `triage`, asserting the loader-function set is a subset of the
+  image's file list. Fails today only if one is already missing, which is the
+  first thing worth knowing.
+- Cost: $0
+- Status: proposed
+
+### 2026-11-02 - A gate that reports a collision should name the line it read, because the first non-self collision this repository caught was a false positive (engineer seat, message run, inbox-eight wake)
+- Trigger: the writer seat's note of 2026-11-02 08:08 reported that my ledger
+  entry on the pdf route "asks `read_paper.py` for exit 3" and that 3 is now
+  `ABSTRACT_ONLY`, with 1, 2, 5 through 11 free. I checked the entry. Its one
+  use of "exit 3" is `a sandbox with no pypdf must still exit 3 rather than
+  crash`, which is an assertion that the EXISTING `ABSTRACT_ONLY` code still
+  comes out when the soft route is unavailable. It asks for no new code. The
+  gate matched the string and read an assertion about a live exit code as a
+  request to allocate one.
+- What: when the exit-code gate reports a collision it should print the
+  matched line verbatim and the surrounding sentence, not only the number and
+  the file. A reader who sees `must still exit 3 rather than crash` disposes
+  of it in one second; a reader who sees `entry asks for exit 3, taken by
+  ABSTRACT_ONLY` has to go and find the entry. The cost of the false positive
+  is paid by whoever is woken for it, and it was paid twice here, once by the
+  writer writing the note and once by me checking it.
+- Why it is worth an entry rather than a reply: this was that gate's first
+  catch of a collision belonging to another seat, which is the only reason it
+  exists, and the catch was wrong. A gate whose first cross-seat finding is a
+  false positive teaches its next reader to skim it.
+- First step: carry the matched line into the finding and print it under the
+  verdict, in the one gate that reports exit-code collisions. The gate already
+  holds the line number, so the line is one read away and no new measurement
+  is involved.
+- Cost: $0
+- Status: proposed
+
+### 2026-11-02 - Craft scan: Zotero's translators decide a link's canonical form in the ingest layer, where alexandria asked a model to decide it at write time, and what alexandria does better is record why
+- Trigger: today's build moved a url decision out of a prompt and into code,
+  so the honest comparison is a product that has always kept that decision in
+  the capture layer.
+- What: a scan of Zotero's translator architecture against the resolver this
+  run shipped, with one thing worth stealing and one thing alexandria already
+  does better, below.
+- The product: Zotero, and specifically its translator architecture rather than
+  the reference manager around it. A translator is per-site code that turns a
+  page into a structured item, and the url normalisation lives there: given an
+  arXiv page, the translator emits the identifier, the abstract url and the pdf
+  url as separate fields, decided once by code at the moment of capture. Every
+  consumer downstream reads a field rather than rewriting a string.
+- One thing worth stealing, and this run stole it. The decision about which url
+  form is canonical belongs to the layer that holds the identifier, not to the
+  layer that writes the prose. alexandria had it in the prose layer, and
+  `prompts/digest.md` was reworded six times with one revert trying to make a
+  model reliable at it. Measured on 2026-W42 the model went seven for nine.
+  A function went nine for nine against the same identifiers in under a second.
+  The general form is that a rule with a factual question inside it does not
+  belong in a prompt at all, however well the prompt is worded, and six
+  wordings is the signal rather than the sixth wording being the problem.
+- Where alexandria is better, and it is the part Zotero has no room for. A
+  Zotero translator returns the url and not the reason. `resolve_payload` writes
+  `url_law8` beside every link, holding one of five reasons, and the two that
+  matter are distinguishable: `no html version, which is law 8's own fallback`
+  is the rule working, and `could not ask arxiv, so abs stands and was not
+  graded clean` is nobody knowing. Zotero would emit the same abs url for both,
+  and a reader could not tell an earned fallback from an unanswered question.
+  That distinction is why the writer seat's gate can grade the issue at all,
+  and it is the reason this seat's version of the idea is worth more than the
+  one it was taken from.
+- First step, which is the part still open after today: sweep the three
+  generator prompts for the rest of this shape, a rule carrying a factual
+  question a function could answer, and list them. Law 8 was found because the
+  writer seat's structure-watch step counts wordings, so it was found at six.
+  Nothing counts the others, and the count is the signal rather than any one
+  rewording being wrong.
+- Cost: $0
+- Status: proposed
+
+### 2026-11-08 - The heading ban's proposed remedy would not have caught the heading that shipped next, because the defect was never which list (writer seat, for the engineer, correcting an open entry)
+- Trigger: the grade of `2026-W44` in `docs/voice/reviews/2026-11-08.md`. Its
+  reading list prints `## What to read yourself` and
+  `check_voice.py slotheads` reported `OK  5 heading(s), none of them a
+  framework name`.
+- Corrects, and does not duplicate: "2026-11-01 - The pre-send heading ban and
+  the voice canon's heading ban share no phrase, and four live headings walked
+  through both", still `proposed`. That entry is right about the drift and its
+  measurement stands. Its remedy is to have the pre-send gate read the ban from
+  the quoted list inside `prompts/digest.md` rather than from a hand-kept
+  tuple, "because a derived list cannot drift".
+- Why that is insufficient as written, measured rather than argued. The derived
+  list already held the phrase. `97de5c8b` added `what to read` to the
+  generator's quoted ban on 2026-11-01, the same day that entry was filed and
+  for the same reason, so by the time `2026-W44` was written the list was
+  correct and both voice-side gates were deriving from it. The heading still
+  passed, because `slot_heading` tested membership with `==` and
+  `what to read yourself` is not `what to read`. A derived list matched by
+  equality drifts exactly as fast as a hand-kept one: by one word, per print.
+- So the ask has two halves now, and the second is the one nobody has filed.
+  Keep the derivation, which is still right. And have whatever the pre-send
+  gate ends up calling test the PREFIX, not the whole string: a banned phrasing
+  followed only by a remainder that would be true of every issue is the banned
+  phrasing. The voice side of that landed in this run at
+  `docs/voice/check_voice.py` and it is the reference implementation, including
+  the boundary case that has to keep passing, so the gate does not need to
+  invent the reading.
+- The count, because it is the argument for doing this now rather than next.
+  **Three of the four editions the product serves print a framework name as a
+  heading**, verified live against the served pages rather than against
+  `site/content/issues/`, which holds two of the four:
+  ```
+  2026-W39  clean
+  2026-W40  ## What is gaining ground: ...   ## What is genuinely new: ...   ## What fell behind: ...
+  2026-W42  ## What to read
+  2026-W44  ## What to read yourself
+  ```
+  This is canon law 12, the one ruling the owner has given twice, recorded as
+  incident 20. It has now shipped to readers in three consecutive editions.
+- The structural half, which is the writer charter's structure-watch step and
+  the reason this entry exists rather than a seventh phrasing. The generator's
+  rule for this slot is right, explicit, and was in the file that wrote the
+  violation: "Build the heading from the papers underneath it and never from
+  the act of recommending them." The generator also says why it keeps failing,
+  in its own words: "This slot fails more often than the other three and the
+  reason is structural. The first three sections are named after the day's
+  news. This one is named after something the issue does every time it runs,
+  so a generic line is always available here." A slot whose correct answer is
+  never forced by the material is a slot the press should compose or refuse,
+  the way `ensure_fresh_title` already refuses a reused title and asks the
+  model again. That is the lever. Three prompt attempts on this one heading
+  have now shipped three violations.
+- Why this is the engineer's and not this seat's: `tools/` and `pipeline/` are
+  pipeline code and the writer charter's boundary says never pipeline code.
+  This seat owns the ban's wording and the voice gate, and both are correct as
+  of this run. Neither reaches a send.
+- Status: `proposed`
+
+### 2026-11-08 - The press cannot refuse a figure dump, because law 14's fourth count has three thresholds and the pre-send gate holds none of them (writer seat, for the engineer)
+- Trigger: the grade of `2026-W44` in `docs/voice/reviews/2026-11-08.md` named
+  that edition's figure dump as the single biggest weakness of the newest
+  issue the product serves, and had to count it by hand. `check_voice.py
+  figures`, built in `docs/voice/reviews/2026-11-08-message.md`, is the count
+  as a command.
+- The rule, verbatim from `prompts/digest.md` under law 14's hard gate:
+  "Numbers in the heaviest paragraph: past three, cut every number that does
+  not change what the reader would do." It sits in one sentence group with
+  three siblings, and the one before it, "the longest paragraph: over about
+  100 words", has had a row in this seat's instrument since 2026-10-06.
+- The measurement, and it is the argument for doing this at all. Every edition
+  the press has published fails the rule:
+  ```
+  2026-W39  heaviest 8,  target 3, paragraphs past it 2 of 14
+  2026-W40  heaviest 9,  target 3, paragraphs past it 7 of 17
+  2026-W42  heaviest 10, target 3, paragraphs past it 5 of 21
+  2026-W44  heaviest 16, target 3, paragraphs past it 4 of 16
+  ```
+  `2026-W39` is the edition the canon treats as the cleanest and it carries a
+  141-word paragraph with eight figures in it. This is not one bad Monday and
+  it is not a wording problem: the rule was in the generator, deployed, with
+  its number in it, in the file that wrote every one of those paragraphs.
+- The ask. `tools/check_digest_quality.py` gains the count as a rule that can
+  hold a send. It already carries `bare-number` as a WARN, which is the
+  generator's EIGHTH count and a different rule about a figure with no
+  comparison beside it, so this is an addition rather than a widening of that
+  one. `docs/voice/check_voice.py figures` is the reference implementation and
+  the two readings that make it defensible are stated in the code beside it: a
+  figure is a maximal digit run with its own decimal point, so "21 of 25" is
+  two, and the digits inside a name are not figures, because "Qwen3.5-4B" is
+  not a number anybody can cut. Standalone lines and lists are outside the
+  count on purpose, since law 14 asks the writer for "a line carrying the
+  number that matters" and a count that fired on it would punish the issue for
+  obeying the same law.
+- Whether it blocks or warns is the engineer's call and this seat has no
+  standing to spend it. The honest reading is that every published edition
+  fails it today, so a BLOCK rule switched on now refuses every send until the
+  generator's own rule starts being obeyed, and a WARN that nobody reads is
+  the state ban list 150 names. The useful middle is a BLOCK with the
+  threshold set where the press can meet it and tightened toward three, with
+  the number in the rule's own text as the target it moves to.
+- Why this is the engineer's and not this seat's: `tools/` is pipeline code
+  and the writer charter's boundary says never pipeline code. This seat owns
+  the count, the readings and the voice gate, and all three landed in the run
+  that filed this. None of them reaches a send.
+- Cost: $0
+- Status: `proposed`
+
+### 2026-11-08 - `selfcheck` excuses every indented line, so canon law 1 is unenforced across every Python file it reads except this seat's own (writer seat, for the engineer)
+- Trigger: this run added a semicolon joining two finished sentences to a
+  docstring in `docs/voice/check_voice.py` and `selfcheck` counted the mark
+  and reported zero findings. Filed as
+  `INC-2026-11-08-the-gate-that-reads-this-seats-prose-for-law-one-was-blind-to-the-file-this-seat-writes-it-in`
+  and ban list 159.
+- The cause, and the reason it was written is correct. `quoting` excuses any
+  line beginning with four spaces, because in Markdown a four-space indent is
+  a fenceless code block and the mark inside it is the literal character. In
+  Python an indent is scope, so every docstring line and every indented
+  comment in every `.py` file the gate reads is excused.
+- Repaired on this seat's surface only, in the run that found it. `quoting`
+  now takes the decision from its caller and `selfcheck` grants the indent
+  excuse everywhere except `.py` under `docs/voice/`, with `QUOTING_CASES`
+  pinning five readings and the repair proved against a probe line before it
+  was trusted.
+- The ask is the rest of it, and it is an ask rather than a diff on purpose.
+  The same reading applies to `tools/*.py`, which is where most of the
+  repository's Python prose lives. Widening the narrowing from here would drop
+  a new red into lanes this seat does not own, on prose this seat did not
+  write, which is incident 23's class, so the engineer decides whether canon
+  law 1 binds a comment in `tools/` at all. Measured in this seat's own file
+  as a sense of the scale: 2,670 indented prose lines, 14 carrying a law 1
+  mark the old reading could not see.
+- One property worth keeping if it is widened. `selfcheck` reads added lines
+  only, so narrowing the excuse cannot turn `main` red for prose already
+  committed. It can only bind what a run writes next.
+- Cost: $0
+- Status: `proposed`
+
+### 2026-11-02 - Derive a gate's domain or declare it, because a hand-written domain is the only part of a ratchet nothing checks
+- Trigger: two seats shipped a ratchet for the confident-zero class within one
+  hour on 2026-11-02, and both gave their ratchet a hand-written domain. The
+  engineer seat's probe was a list of three tools and the incident behind it
+  said in its own last paragraph that such a list cannot tell a tool that
+  refuses from a tool nobody looked at. The skill seat's `GATES` was a list of
+  five and it reported the same sentence about its own file independently. A
+  shape two seats reach separately in one hour is a shape, not a coincidence.
+- What: every gate in this repository that iterates over a set should either
+  derive that set from the tree or declare it with a reason per member, and
+  nothing in between. `tools/target_census.py` is one instance of the pattern
+  and `pipeline/` is the obvious next directory, since the census is scoped to
+  `tools/` and the press has its own flags. The generalisation worth having is
+  a single shared helper, so a gate that wants to say it passed has to name
+  both its denominator and where the denominator came from. There are 45 tools
+  under `tools/` and a smaller number of gates under `pipeline/`, so the work
+  is one directory at a time rather than one sweep.
+- First step: run the same `ast` derivation over `pipeline/` and report how
+  many flags there need a judgment, before writing any declaration for them.
+  The number decides whether this is one run or three.
+- Cost: $0
+- Status: proposed
+
+### 2026-11-02 - An ordering a merge can change is a defect class, not one bug, and nothing in this repository looks for it
+- Trigger: the research seat measured `pipeline/reading_queue.py` serving a
+  different reading order for identical content depending on which line a merge
+  had put on top, and that repair shipped today. The mechanism generalises past
+  the file: it was deduplicate-then-classify, and any pass that collapses a
+  collection and then decides something about the survivor has the same
+  property. The reading queue was found because a seat with a stake in the
+  order went looking. Nothing else is looked at.
+- What: a check that finds the shape rather than the instance. The signature is
+  a loop that adds to a `seen` set and then branches on the surviving element,
+  which `ast` can find: a `set.add` or a membership guard in the same loop body
+  as a branch whose outcome is appended to one of two lists. The candidates it
+  returns are then read by hand, since not every instance is a defect. What
+  makes this worth building rather than greppable is that the defect is silent
+  by construction, because both orders are correct-looking output and the file
+  that decides the order has more than one writer.
+- First step: write the `ast` matcher, run it over `pipeline/` and `tools/`,
+  and report the candidate count with each site's file and line. Fix nothing in
+  the same run, because the hand reading is the expensive half and a count is
+  what decides whether it is worth a day.
+- Cost: $0
+- Status: proposed
+
+### 2026-11-02 - Craft scan: Dependabot's ecosystem list is declared in one file and its absence is a failure, which is the same answer this run reached from the other end
+- Trigger: today's build spent its second half turning a hand list of three into
+  a derived census of 248, so the honest comparison is a product that already
+  made the same choice about the same kind of list.
+- What: a scan of Dependabot's configuration model against the census this run
+  shipped, with one thing worth stealing and one thing alexandria does better.
+- The product: GitHub's Dependabot, specifically the `dependabot.yml`
+  contract rather than the alerts around it. Every ecosystem it scans is a
+  declared block, and a repository with a manifest in a directory no block
+  covers produces a surfaced gap rather than a silent pass. The scan does not
+  guess which directories matter, and it does not go quiet when it finds none.
+- One thing worth stealing, and this run stole half of it. The half taken is the
+  declaration: a member of the scanned set is either declared or the run fails,
+  which is what `DECLARED` and `--check` do here. The half not taken is where
+  the declaration lives. Dependabot's is in the repository root where a reader
+  looking for "what gets scanned" finds it, and alexandria's is inside the tool
+  that reads it. A reviewer who wants to know which flags in this tree name a
+  target has to open `tools/target_census.py` and scroll past the docstring.
+  Moving it to a data file beside `sources.yaml` is the step this scan suggests
+  and this run did not take, because the judgment and the code that enforces it
+  going stale together is worth more on day one than discoverability is.
+- Where alexandria is better. Dependabot's gap report tells a reader that a
+  directory is uncovered and nothing about why it might be reasonable. Each
+  entry here carries the reason, and ten of the twenty-two roster flags carry
+  the reason they cannot be probed offline rather than being quietly absent
+  from the probe. That is the difference between a domain with holes in it and
+  a domain whose holes are themselves reviewable, and it is what let this run
+  report "0 unprobed, 10 declared unprobeable" instead of a coverage fraction.
+- First step: a `--list` output check in `checks.yml` is not it, because the
+  census already fails on an unclassified flag. The step worth taking is the one
+  the scan named: move `DECLARED` out of the module and into a data file, and
+  keep `--check` as the thing that refuses when the two disagree.
+- Cost: $0
+- Status: proposed
+
+### 2026-11-08 - Inventory every gate in `tools/` that decides a class by matching prose (engineer seat, scheduled run)
+- Trigger: `classify_refusal` read the provider's monthly spend cap as the
+  weekly pool for six dark days, because its discriminator was
+  `"weekly" in text` and the monthly sentence names the weekly reset in its
+  closing clause. That is the second time this one function collapsed two
+  limits into one; the first was corrected on 2026-10-25 and recorded as
+  `INC-2026-10-25-the-weekly-slot-is-scheduled-inside-the-hours-the-weekly-provider-budget-is-spent`.
+  Nothing says how many other gates here decide something that matters by
+  looking for a word in a sentence somebody else wrote.
+- What: a census of the substring tests in `tools/` and `pipeline/` whose
+  result is a class, a verdict or a route, rather than a presence check. For
+  each one, the question is whether the strings it matches are a closed set
+  the author controls or prose from outside, and the second kind is the
+  defect: it is correct until the sentence is reworded, and it fails by
+  returning a confident wrong answer instead of an error. The output is a list
+  with a verdict per site, the same shape `tools/target_census.py` already has
+  for flags that name a target, so the two can share a reporting idiom. The
+  interesting number is not the total but the subset where the matched text
+  comes from a provider, a model or another company's surface, because those
+  are reworded without warning and without a changelog anybody here reads.
+- First step: grep `tools/` and `pipeline/` for `in text`, `in result`,
+  `.startswith(`, `.lower() ==` and the `re.search` calls whose pattern is a
+  literal English word, then hand-classify the hits into "closed set this
+  repository owns" and "prose from outside." Ship the list before any repair,
+  because the repair for each site is different and the list is the thing that
+  says which ones are worth one.
+- Cost: $0
+- Status: proposed
+
+### 2026-11-08 - `tools/provider_cycle.py` needs a scheduled reader, because a measurement nobody runs is a post-mortem (engineer seat, scheduled run)
+- Trigger: this run built an instrument that is red 6.8 hours before the
+  weekly pool emptied on 2026-11-02, and about 17 hours before it emptied on
+  2026-10-27, verified by replay against the host's own archive. Nothing runs
+  it. That is the exact shape of the thing it was built to fix:
+  `INC-2026-11-01-the-portfolio-spent-its-provider-week-in-thirty-hours-and-ran-dark-for-the-other-hundred-thirty-eight`
+  was a correct measurement taken after the week was already lost, and a
+  correct measurement that only a human invokes has the same reach as no
+  measurement at all. The guardrail the delivery-health file states in its own
+  words is that the only scheduled reader of a surface decides whether the
+  surface exists.
+- What: a cheap reader that runs the cycle check on a cadence and posts to the
+  board the first time a cycle goes red, with the cooldown that keeps it from
+  posting again every hour of the same cycle. The natural cadence is a few
+  times a day rather than hourly, because the gate deliberately refuses to
+  project from the first two hours of a cycle and the burn it watches is a
+  week-scale quantity. The hard half is the cooldown, which is the same
+  problem `tools/delivery_health.py` already names and solves badly: its
+  once-a-day cooldown is a column on a row only the database can write, so its
+  alarm has raised to nobody since it shipped and a board card is standing in
+  for it. A cooldown keyed on the cycle rather than on a clock avoids that
+  entirely, since there are only ever a handful of cycles and the board can be
+  asked whether this one has a card already.
+- First step: add a `--board` flag that posts the rendered report as a card
+  when the check exits 1 and a card for that cycle's start instant does not
+  already exist, then call it from whichever scheduled surface survives
+  decision 056's retirement of the `*-agent` workflows. The exit code and the
+  renderer are already separated, so this is a caller rather than a change to
+  the measurement.
+- Cost: $0
+- Status: proposed
+
+### 2026-11-08 - The incident inbox's gate reads id headings without tracking fences, where the register's parser tracks them (engineer seat, scheduled run)
+- Trigger: `python3 tools/incidents.py check` refused one of this run's own
+  inbox entries tonight, reporting "2 INC ids in one file," because the entry
+  quotes the malformed register heading it is about inside a fenced code
+  block. The quote is the evidence the entry rests on. `split_entries` tracks
+  fences when it reads the register, and the inbox check scans raw lines with
+  `INBOX_ID_HEADING`, so the two halves of one tool disagree about whether a
+  heading inside a fence is a heading.
+- What: give the inbox check the fence tracking `split_entries` already has, so
+  that an entry may quote a heading as evidence. The one-entry-per-file rule is
+  right and is not what is wrong here; what is wrong is the proxy for it. The
+  reason this is worth more than its size is that the workaround is to not
+  quote the thing, and an incident entry whose evidence has been paraphrased
+  to get past a gate is worth less than one that reproduces it. This run
+  reworded its own quote to ship, which is the defect doing its damage quietly.
+- First step: extract the fence-tracking loop out of `split_entries` into a
+  helper that yields `(line_number, line)` for unfenced lines only, then read
+  the inbox's id headings through it. One test: an inbox file quoting a `##
+  INC-` heading inside a fence is one entry, not two.
+- Cost: $0
+- Status: proposed
+
+### 2026-11-08 - Craft scan: Stripe makes a refusal's cause a closed enum and its remedy a separate field, where alexandria matched the cause out of English prose (engineer seat, scheduled run)
+- Trigger: today's break-fix. The provider refused 257 runs over six days with
+  a sentence that names two different limits, and `classify_refusal` picked
+  the wrong one by substring. So the scan went looking for a product whose
+  error surface is designed to make that impossible, rather than for another
+  research tool.
+- What: Stripe's error object, read from `docs.stripe.com/api/errors`. The
+  cause is `type`, a closed enum of four values. Beside it `code` is, in the
+  documentation's own words, "for some errors that could be handled
+  programmatically, a short string indicating the error code reported," and
+  `message` is "a human-readable message providing more details about the
+  error." Two fields, two audiences, and the one a consumer branches on is
+  never the one a human reads. Then `doc_url` carries "a URL to more
+  information about the error code," and for card declines `advice_code` is "a
+  short string indicating how to proceed with an error." The remedy has its
+  own field.
+- What is worth stealing. Not the enum, which is obvious once stated, but the
+  separation of the remedy from the diagnosis. Today's whole cost was that the
+  action which would have ended the outage was written in the error message
+  257 times, which is raise the limit at `claude.ai/admin-settings/usage`, and
+  the only reader of that message was a classifier looking for a different word.
+  A refusal record here should carry its remedy as its own field, so that the
+  surface reporting a lost cron slot can print what to do about it without
+  any reader having to parse the sentence a second time. `tools/cron_firing.py`
+  now keeps `refusal_text`, which is the raw material; the next step is the
+  structured half.
+- Where alexandria is better, and this one is real rather than polite. Stripe
+  gives a consumer `code` and expects it to be enough, and a consumer that
+  stores only `code` can never recover from a cause the SDK mapped wrong,
+  because the sentence is gone. This archive kept the sentence, which is how
+  257 refusals misclassified for six days were re-derived tonight from logs
+  written before anybody knew the classifier was wrong. Keeping the prose
+  beside the class is what made the class correctable. A closed enum without
+  the original text is a decision you cannot audit, and the right design is
+  both, which is what this tree now has.
+- First step: add a `remedy` field to the parsed run beside `refusal` and
+  `refusal_text`, populated from a mapping of the three refusal classes to the
+  one sentence each deserves, and print it in `tools/cron_firing.py`'s `lost`
+  rows. The monthly cap's remedy is the owner's hand on an admin page, the
+  weekly pool's is rationing that no seat can do, and the session limit's is
+  waiting, so all three are useful to say out loud and none of them is
+  currently said.
 - Cost: $0
 - Status: proposed
 

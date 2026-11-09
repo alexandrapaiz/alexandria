@@ -780,6 +780,156 @@ def test_the_live_queue_serves_a_blocked_skills_papers_on_the_next_run():
         "longer measuring the defect it was written for")
 
 
+# --- the group is a function of the content, not of the line order ---------
+#
+# Measured by the research seat on 2026-11-02 and handed to this seat. `pending`
+# deduplicated by id first, keeping whichever line came first in the file, and
+# classified the survivor. So the signature deciding the group was the line a
+# merge happened to put on top, and this file has two writers with a third
+# proposed. Three priority members at positions one, two and three one way;
+# zero members at eighty-eight, eighty-nine and ninety the other; identical
+# content both times.
+
+DUPLICATE_ASKERS = [
+    "- [ ] arxiv:2602.12670 — the blocked draft's request — asked by skills/agent-containment — 2026-09-30",
+    "- [ ] arxiv:2602.12670 — the same paper, a seat's request — asked by alexandria/research — 2026-11-02",
+]
+
+FILLER = [f"- [ ] arxiv:2401.{n:05d} — filler — asked by alexandria/research — 2026-11-02"
+          for n in range(1, 88)]
+
+
+def _both_orders(sourced):
+    """The same eighty-nine lines, with the duplicate pair swapped, as two files.
+
+    The pair sits after the filler rather than around it, which is the research
+    seat's own fixture shape and the only one where position diverges as well as
+    membership. With the pair straddling the file the paper is line one in both
+    orders, so a position assertion passes on the defect by coincidence. That
+    first draft of this fixture did exactly that.
+    """
+    first, second = DUPLICATE_ASKERS
+    skill_first = "\n".join([*FILLER, first, second])
+    research_first = "\n".join([*FILLER, second, first])
+    return (rq.pending(skill_first, limit=None, sourced=sourced),
+            rq.pending(research_first, limit=None, sourced=sourced))
+
+
+def test_which_line_a_merge_put_on_top_no_longer_decides_the_group():
+    """The defect, stated as the thing that must not happen again."""
+    skill_first, research_first = _both_orders(set())
+    members = lambda out: [i.paper_id for i in out if i.asking_skill]
+    assert members(skill_first) == members(research_first) == ["arxiv:2602.12670"]
+
+
+def test_the_served_order_is_identical_under_both_line_orders():
+    """Not just membership. The position the paper is served at, too.
+
+    Position is what the per-run limit spends itself on, so a paper that is in
+    the right group at position eighty-eight is still eight runs away.
+    """
+    skill_first, research_first = _both_orders(set())
+    at = lambda out: [n for n, i in enumerate(out, 1)
+                      if i.paper_id == "arxiv:2602.12670"]
+    assert [i.paper_id for i in skill_first] == [i.paper_id for i in research_first]
+    # Ahead of the filler in both, rather than ahead in one and eighty-seven
+    # lines behind in the other, which at six papers a run is fifteen runs.
+    assert at(skill_first) == at(research_first) == [1]
+
+
+def test_one_blocked_line_is_enough_because_one_fetch_serves_every_line():
+    """Why ANY and not the first line.
+
+    The two lines are one fetch, and the fetch unblocks the blocked asker
+    whether its line is first or last. So a paper with one blocked asker among
+    its lines belongs in the blocked group, and the line kept is the earliest
+    of the ones that decided the group rather than the earliest overall.
+    """
+    skill_first, research_first = _both_orders(set())
+    for out in (skill_first, research_first):
+        kept = [i for i in out if i.paper_id == "arxiv:2602.12670"]
+        assert len(kept) == 1, "still one fetch per paper"
+        assert kept[0].asking_skill == "skills/agent-containment", \
+            "the asker reported is the one the priority is owed to"
+
+
+def test_the_ungrouped_default_is_still_file_order_under_both_orders():
+    """`sourced=None` means no grouping, and that promise is order-blind too."""
+    first, second = DUPLICATE_ASKERS
+    a = rq.pending("\n".join([*FILLER, first, second]), limit=None)
+    b = rq.pending("\n".join([*FILLER, second, first]), limit=None)
+    assert [i.paper_id for i in a] == [i.paper_id for i in b]
+    assert a[-1].paper_id == "arxiv:2602.12670"
+
+
+def test_a_struck_duplicate_does_not_strike_the_line_still_asking():
+    """Unchanged behaviour, asserted because the rewrite could have lost it.
+
+    Striking one line is the research seat's business and it strikes that line.
+    A second line still asking for the same paper is still pending, and the
+    answer does not depend on which of the two came first.
+    """
+    done = "- [x] arxiv:2602.12670 — read — asked by alexandria/research — 2026-11-02"
+    asking = DUPLICATE_ASKERS[0]
+    for text in ("\n".join([done, asking]), "\n".join([asking, done])):
+        out = rq.pending(text, limit=None, sourced=set())
+        assert [i.paper_id for i in out] == ["arxiv:2602.12670"]
+        assert out[0].asking_skill == "skills/agent-containment"
+
+
+def test_the_live_queue_order_does_not_move_when_its_duplicates_are_reordered():
+    """The claim on the real file, since the fixtures above are synthetic.
+
+    Four ids sit on more than one unchecked line today. Swapping each pair in
+    place must leave the served order identical.
+
+    What this is computed over, because a gate that does not say so can pass on
+    nothing: the count of repeated ids is asserted non-zero, and the count of
+    pairs whose two lines fall in DIFFERENT groups is printed rather than
+    asserted. That second count is zero today, since no live duplicate is signed
+    by a skill at all, so this is a watch on the live file rather than a
+    reproduction of the defect. The reproduction is the synthetic pair above,
+    which was red before the repair.
+    """
+    import collections
+
+    text = rq.read_file(ROOT / rq.QUEUE_PATH)
+    lines = text.splitlines()
+    groups = collections.defaultdict(list)
+    for item in rq.parse(text):
+        if not item.checked:
+            groups[item.paper_id].append(item)
+    dups = {k: v for k, v in groups.items() if len(v) > 1}
+    assert dups, "no id repeats on the live file, so this test measures nothing"
+
+    swapped = list(lines)
+    for group in dups.values():
+        a, b = group[0].line_no - 1, group[-1].line_no - 1
+        swapped[a], swapped[b] = swapped[b], swapped[a]
+    sourced = rq.skills_with_claims(_NoDatabase())
+
+    before = rq.pending(text, limit=None, sourced=sourced)
+    after = rq.pending("\n".join(swapped), limit=None, sourced=sourced)
+    assert [i.paper_id for i in before] == [i.paper_id for i in after]
+
+    straddling = sum(1 for g in dups.values()
+                     if len({bool(i.asking_skill and i.asking_skill not in sourced)
+                             for i in g}) > 1)
+    print(f"{len(dups)} repeated ids swapped, {straddling} straddling the groups")
+
+
+class _NoDatabase:
+    """A connection that cannot answer, so `sourced` is the empty set.
+
+    `skills_with_claims` is specified to return nothing rather than raise when
+    the database is unreachable, and the empty set is the strictest input for
+    the grouping: every skill looks blocked.
+    """
+
+    def execute(self, *_a, **_k):
+        raise RuntimeError("no database in this test")
+
+
 # --- the append path, added 2026-11-02 --------------------------------------
 #
 # Why there is a writer at all. The research seat asked this seat on 2026-11-02

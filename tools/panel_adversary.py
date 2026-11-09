@@ -119,6 +119,7 @@ ROOT = pathlib.Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 
 import panel                        # noqa: E402
+import resolve_target               # noqa: E402
 import skill_registrar as registrar  # noqa: E402
 
 Finding = panel.Finding
@@ -483,6 +484,19 @@ def main(argv=None) -> int:
     ap.add_argument("--json", action="store_true")
     args = ap.parse_args(argv)
 
+    # A skill slug nothing carries used to read as a filter that matched
+    # nothing, so this reviewer printed an empty verdict list and exited 0: a
+    # clean sheet about a skill it never found, under ADR-13, from a reviewer
+    # whose verdicts gate knowledge promotion. `tools/panel_validator.py` was
+    # repaired for exactly this on 2026-11-02 and its two siblings were not,
+    # because the probe behind that repair was a hand list of three. Found here
+    # by `tools/target_census.py --probe`, which derives the list instead.
+    refusal = resolve_target.check(
+        "skill", args.skill, resolve_target.skill_slugs(),
+        hint="Drop --skill to review every skill.")
+    if refusal is not None:
+        return refusal
+
     conn = connect(writable=args.record)
     if conn is None and args.record:
         print("nothing was recorded.")
@@ -504,6 +518,15 @@ def main(argv=None) -> int:
         print(render(verdicts))
         if written:
             print(f"filed {len(written)} verdict rows: {written}")
+
+    # And an empty verdict set is not a pass. The skill seat's finding of
+    # 2026-11-02: every `--check` in its directory ended in `return 1 if
+    # problems else 0`, so a gate handed nothing printed its pass sentence over
+    # a denominator of zero. A reviewer that judged no skills has not cleared
+    # any, so it says what it was computed over and refuses.
+    if not verdicts:
+        print("refused: 0 skills were reviewed, so there is nothing to pass.")
+        return 2
 
     if any(v["verdict"] == "fail" for v in verdicts):
         return 1

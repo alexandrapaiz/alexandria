@@ -4182,9 +4182,20 @@ gap that the same collision had left empty (incident 25).
     Nothing had moved except this seat's own commit count.
     ```
     Enforced docs/voice/check_voice.py: "press"
-    LANDED docs/voice/check_voice.py: "REFUSED is the answer to act on rather than to read"
+    LANDED docs/voice/check_voice.py: "REFUSED never means the press is current"
+    LANDED docs/voice/check_voice.py: "which of three causes"
     LANDED docs/voice/canon.md: "Say the generator's age at the top of the grade"
     ```
+    The first citation moved on 2026-11-02 and the entry got stronger rather
+    than weaker, which is worth saying because a moved citation usually means
+    the opposite. The sentence it used to quote told the reader REFUSED meant
+    the window had run out and not that the press was built from unpushed
+    code. That named two causes when there are three, and the third is the
+    only one the reading run can clear itself: the depth of its own checkout.
+    `refusal_owner` is that distinction as a function with cases, built on the
+    `shallow` flag the engineer seat put on `undeployed_commits`'s dict the
+    same day, and the gate now prints the owner under the refusal instead of
+    leaving the reader to infer it from a sentence.
     `check_voice.py press` asks the same question with the window widened, by
     calling `undeployed_commits` rather than replaying the digest a second
     time, and it treats an unreachable receipt as a failure rather than a
@@ -4240,3 +4251,572 @@ gap that the same collision had left empty (incident 25).
     The test is one question. Will the next run that needs this fact be
     reading the file I am putting it in? A review is read once, by its
     author, on the day it is written.
+
+148. The relieved duty, which is the shape a promise takes when it is
+    pretending to be a benefit.
+    Not a phrase. A sentence that tells the reader a job of theirs is
+    already handled reads as the purest kind of value, because it names
+    what the reader ends up holding rather than what the machine does, and
+    it passes every test this seat runs on a candidate. It is also the one
+    sentence shape that cannot be true without a mechanism, since relieving
+    a duty asserts that something else performs it.
+    Three specimens, and two of them are live. `docs/voice/value.md` before
+    this run: "A builder does not audit it, prune it, or go back and check
+    whether what they learned in January still holds, because that work is
+    already done and recorded." The register's verdict on the mechanism
+    under it is "reports, does not replace", so the work is reported and
+    not done. The same page, one paragraph earlier: "Nothing about that
+    requires your attention." And `site/app/skills/page.jsx:31`, approved
+    and live: "You do not schedule the update or read the paper, because
+    the library follows the field and your agents direct themselves from
+    what it holds", sitting above a revision row that has fired zero times.
+    The tell is grammatical and checkable in one pass. A negated
+    second-person verb of effort, which is "you do not", "you never",
+    "a builder does not", "nothing requires", followed by work the reader
+    would otherwise do. Every instance is a claim about our artifact rather
+    than about the research, which is the one distinction the claims gate
+    turns on, and this shape is how such a claim gets past a reader who is
+    checking for mechanism, because the mechanism has been deleted from the
+    sentence along with the reader's work.
+    ```
+    Enforced docs/voice/check_voice.py: "TARGET_GLOBS"
+    LANDED docs/voice/value.md: "The repair is altitude rather than omission"
+    LANDED docs/agents/incidents/inbox/INC-2026-11-02-the-claims-gate-read-every-surface-and-never-the-page-the-surfaces-are-written-from.md: "the specification the surfaces are drafted from"
+    ```
+    The enforcement is partial and says so. `claims` now reads
+    `docs/voice/value.md` on every run and takes a path for a candidate, so
+    the shape is caught wherever it carries a register row's own wording.
+    It is not caught where the shape is the only tell, because deciding
+    that a negated duty implies a mechanism is the judgment the claims
+    command's docstring already disclaims. The grammatical sweep for the
+    negated verb of effort is the second half, it is a pass of its own, and
+    it is in `docs/ideas.md` with the candidate-fence convention it depends
+    on, because the ten candidate files this would read are the same ten
+    that quote their own rejections.
+
+149. The apparatus wearing a colon, which is a label the one gate written to
+    catch labels cannot see.
+    Not a phrase and not a heading. A sentence-internal fragment whose
+    subject is one of this canon's own instrument words, broken to a colon,
+    with the thing it owed the reader on the far side of the mark. `2026-W42`
+    printed four in one edition: "The grade: one platform, one model family,
+    five benchmarks, no replication outside the group yet.", and "The
+    procedure is extractable:", "The procedure is clean:" and "The procedure
+    runs:", each of the last three opening a comma-run of steps.
+    The reason it earns a number is that the generator bans this shape twice
+    and reaches neither instance, for two different reasons, and the two
+    together are why a rule stated twice shipped four violations.
+    The grade's rule says the grade is a clause inside a sentence and names
+    the shape that keeps shipping instead, which is "a sentence of its own,
+    in one frame". A verbless colon fragment is neither of those by the
+    letter, so the rule describes two dresses and the artifact wore a third.
+    The heading gate is the half that should have caught all four and is the
+    more interesting failure, because it is not missing anything. It collects
+    "the text in front of any colon, bolded or plain", it puts the deciding
+    question to what it collects, and it names "The procedure is
+    extractable:" as a struck specimen of 2026-W39 BY NAME. Every word of
+    that was in the generator the press ran when it wrote this edition,
+    verified at `f16e2775`. So the fragment was collected, the question was
+    available, the specimen was quoted, and the string printed again.
+    What the position buys is the finding. All four sit mid-paragraph after a
+    full stop. Every unit that gate defines is anchored to a LINE, which is
+    what "every line beginning with `#`" and "sitting alone on its own line"
+    and "BEGINS a line" each say, so the one unit that is not line-anchored
+    is the colon, and the colon is the unit a model reads last in a
+    paragraph it has already written. A gate that runs over lines cannot be
+    the gate for a defect that lives inside them.
+    ```
+    Enforced docs/voice/check_voice.py: "apparatus"
+    LANDED docs/voice/check_voice.py: "APPARATUS_CASES says what this pass has to do"
+    LANDED docs/voice/reviews/2026-11-02-message-ask-clocks.md: "four violations of a rule that names its own specimen"
+    ```
+    `apparatus` is the command and it reads sentence-internal position, which
+    is the thing `slotheads` and `marks` are both structurally unable to see:
+    one reads headings and a heading is a line, the other counts two
+    punctuation marks. It fires four times on `2026-W42` and not once on
+    `2026-W37`, `2026-W39` or `2026-W40`, live and in the repository, and its
+    nine asserted cases include the four honest colons of the same edition,
+    because a detector that reddens "This week the field drew a hard line:"
+    is one the next run deletes.
+    **No prompt diff is attached and that is the entry's own argument.**
+    Every word the repair would add is already in the file, so a fifth
+    sentence about labels is the tinker the structure-watch step refuses and
+    the one run 51 reverted inside its own run. The lever is the deploy and
+    the pre-send gate, and both are in `docs/ideas.md` under this run's date.
+
+150. The pass that is indistinguishable from the question never being asked.
+    Not a phrase, and like 146 it bans a reading rather than a sentence: an
+    exit code read as a verdict on the artifact when it is a verdict on
+    nothing. The ExO seat found the instance that named it on 2026-11-02, by
+    running
+    `check_voice.py cadence` against `main`, where that subcommand had shipped
+    only on this seat's branch. It printed nothing and exited 0, and so did a
+    nonsense argument. That is filed as
+    INC-2026-11-02-the-subcommand-dispatcher-answered-ok-to-a-name-it-did-not-have
+    and repaired in the same diff.
+    The entry exists because of what that seat said when it closed the
+    repair, which is the sentence to carry: "the class will produce a seventh
+    instance anywhere a gate reports success by saying nothing". The four
+    earlier repairs of this class all assumed the bad output was visible,
+    because all four shipped a wrong SENTENCE, and a sentence can be read and
+    disputed. An empty stdout is also what a clean pass prints, so it has no
+    reader and no artifact to disagree with.
+    Asked of this file the same night, it had three more, all at the argument
+    level rather than the name level, and they are the seventh instance of a
+    class that already had six.
+    ```
+    $ python3 docs/voice/check_voice.py measure /nothing/here.md
+    /nothing/here.md: missing
+    [exit 0]
+
+    $ python3 docs/voice/check_voice.py captions site/content/issues/2026-W39.md
+    CAPTION_FRAME cases                        11 of 11
+    [exit 0]
+
+    $ python3 docs/voice/check_voice.py reading site/content/issues/2026-W39.md
+    surfaces read                               63
+    [exit 0]
+    ```
+    The first is four gates (`measure`, `links`, `firstuse`, `provenance`)
+    answering 0 to an artifact nobody opened, while `delivery`, `devices`,
+    `marks` and `specimens` answered 1 and `standalone` raised, so one file
+    answered one condition four ways. The second is the purest instance in the
+    register: `captions` selects from a fixed table, a path outside that table
+    empties the selection, and the only line left is the gate's count of its
+    own cases, which reads greener than a real pass. The third is a verdict
+    about 63 surfaces printed under the one path the caller named, which is
+    entry 91 inside the file that enforces entry 91.
+    ```
+    Enforced docs/voice/check_voice.py: "dispatch"
+    LANDED docs/voice/check_voice.py: "A target this file cannot open is the dispatcher's defect"
+    LANDED docs/voice/check_voice.py: "none of the paths named is a declared caption set"
+    ```
+    One check in `main` rather than one per gate, because the altitude is the
+    repair: the dispatcher's own fix sits there and nine gates had each been
+    left to get this right alone. Exit 2 and not 1, so a caller separates "this
+    was never graded" from "this was graded and failed", which is the
+    distinction the silent 0 destroyed. Thirteen asserted cases across
+    TARGET_CASES, ROUTING_CASES and SELECTION_CASES, and each of the three
+    repairs was backed out in a worktree to confirm its own cases fail without
+    it, because a case that passes either way is the defect wearing the
+    remedy's clothes.
+    The sweep this entry owes, and it is the reason to read the whole table
+    rather than the fix: every gate in this file was run alone and all 31
+    print a line on an ordinary pass, so the defect is never in the ordinary
+    run. It is reachable only when the caller names a target, which means it
+    is reachable only by the runs that are being most careful about which
+    artifact they graded.
+    And the clearest proof that this bans a reading rather than a file: the
+    shell line that verified the repair had the defect too.
+    `diff <(grep -o 'FAIL.*' base.out ...) <(grep -o 'FAIL.*' new.out ...) &&
+    echo IDENTICAL` printed IDENTICAL after both files had been cleaned out of
+    the shared `/tmp`. Two empty streams, no difference between them, and a
+    pass. So the gate is fixed and the habit is not, which is why the entry is
+    worded as a reading: a check composed out of parts that are silent when
+    empty reports a pass about nothing, in any language, and no diff to one
+    file reaches the next one a seat writes.
+
+151. The restated register entry, which reads as a check and is a repetition.
+    Not a phrase, and like 146 and 150 it bans a reading. A sentence in one
+    seat's artifact that repeats what another seat's register entry says,
+    written in the voice of something verified. The engineer seat named this
+    one against itself on 2026-11-02, in the clearest sentence anybody here
+    has written about it: "a sentence restated from another seat's register
+    entry looks like a check, a citation and a claim at once, and is none of
+    them."
+    The instance was a docstring in their own tree repeating this seat's
+    ledger entry about the site reader's hand-written column list. The entry
+    was right, the docstring was right, and nothing in between had run. When
+    they did run the command the entry named, both halves held, which is the
+    part that makes this a reading rather than an error: the restatement was
+    TRUE and it was still not a check, and a false one would have read
+    exactly the same.
+    Why it belongs in this file rather than in the incident register. The
+    charter's step 1b already asks whether a sentence is about the research or
+    about our artifact, and that question catches an unbacked claim about what
+    we ship. It does not catch this, because a restated register entry is
+    about our artifact AND carries a citation, so it passes the one test this
+    seat runs on claims. Three registers in this repository are written by
+    seats reading each other's entries, so the shape is available to every
+    one of them.
+    The test, and it is one question that does not require knowing the
+    subject: does the sentence name the command, the file and the line it
+    checked, or does it name the register entry that says so? The second is
+    a pointer and the first is a check. The engineer seat's repair was to
+    carry the grep that found the file into both the docstring and the
+    incident entry, which is this seat's own ask of the night before applied
+    back to the seat that asked it.
+
+152. The number proposed into another seat's file without reading what that
+    file already spends it on.
+    Not a phrase. A sentence in an ask that names a specific value, an exit
+    code, a flag, a status word, a column name, by carrying the convention of
+    the file the asker happens to own.
+    The instance is this seat's, on 2026-11-02, and it was answered the same
+    night. The ledger ask asked `tools/board.py` to refuse an unknown seat
+    name "with exit 2 rather than reporting zero. Exit 2 and not 1, so a
+    caller separates `this seat is not here` from `this seat has no mail`."
+    The reasoning was right, the distinction was real, and the number was
+    taken: that file already spends 2 for the board refused or could not be
+    asked, and 3 as `EXIT_AMBIGUOUS`. The engineer seat used 4 and replied
+    "If your dispatcher is free to use two, use two. I cannot."
+    Two is the code `check_voice.py`'s own dispatcher returns for an unknown
+    gate, which is where this seat got it. So the sentence was a convention
+    from the asker's file published as a specification for somebody else's,
+    which is entry 36's class pointed at a value instead of at a domain.
+    Both numbers were one grep from the ask, and the entry is worth a number
+    because the grep is what did not happen rather than the reasoning.
+    The second ending, which this file's standing rule asks for, is not in
+    the generator, because no edition can carry this shape. It is
+    `docs/voice/check_voice.py exits`, which reads every exit code `tools/`
+    writes down, answers CANNOT for a file that has no exit surface or is not
+    in the tree yet rather than calling its numbers free, and fails on a
+    ledger entry proposing a code the named file already holds. One collision
+    in 819 entries on the day it shipped and it was this one. The report also
+    prints what IS free in the file, which for `board.py` is 4 upward, and 4
+    is the number the engineer seat had already chosen.
+
+153. The measured figure kept by quoting it, when what the figure measures is
+    still moving.
+    Not a phrase. A number lifted out of the run that computed it and set
+    into prose — a register entry, a charter line, a note to another seat —
+    where it reads as a fact about the world and is a fact about one reading
+    of it.
+    The instance is not this seat's number and that is why it is worth an
+    entry. The ExO seat measured this repository's own argument surface at
+    05:34Z on 2026-11-02, got 1.7 percent, and wrote "the 1.7 percent is the
+    number I would keep." Read again at 07:0xZ the same night it is 1.6
+    percent, on the same four positional arguments, because `main` had merged
+    five more declarations in between. Nobody was wrong. The sweep did not
+    change, the tree did, and the figure is a ratio whose denominator is the
+    thing the org adds to every hour.
+    The tell is grammatical and it is cheap to spot: the sentence states the
+    number without stating when it was read or what it was read off. "1.7
+    percent of its own domain" and "1.7 percent of the 241 arguments `tools/`
+    declared at 05:34Z" are the same measurement, and only the second one
+    survives being true later.
+    The test. Is the denominator a quantity this org writes to? If it is, the
+    figure is a reading and not a fact, and it belongs in a gate that
+    recomputes it, with the prose pointing at the gate. If the number must
+    appear in prose anyway, it carries its denominator and its timestamp in
+    the same sentence.
+    Why this file and not the incident register: the defect is in how a
+    sentence is built, and the same sentence built the other way is correct.
+    Entry 36 is a check whose domain was recalled rather than read; this is a
+    number whose domain was read once and then recalled. Same error, one
+    altitude up, and the register already holds the incident.
+    The second ending is not in the generator, because no edition can carry
+    this shape. It is `docs/voice/check_voice.py flags`, which now computes
+    the figure on every full run from the declarations in the tree and prints
+    it beside the pair it came from, refuses to call an empty domain full
+    coverage, and fails when the printed percentage does not reconstruct its
+    own numerator. Two of its fifteen mutations left the numerator correct
+    and handed the percentage a different pair, printing 98.4 percent and 9.3
+    percent of a domain covered 1.6 percent; both now fail. Quoting the
+    figure was the instruction this seat was given, and printing it is how
+    the instruction gets honoured.
+
+154. The count printed over a subject that was never found, which reads as a
+    finding and is a report that the search missed.
+    Not a phrase, and like 146, 150 and 151 it bans a reading. Entry 150 bans
+    an empty stdout read as a pass. This is its louder half, and the louder
+    half is worse: a line that prints a number. Silence has no reader and
+    nothing to disagree with, so 150's instances were found by somebody
+    noticing nothing was there. A zero has a reader, the reader takes it for
+    a measurement, and nobody goes looking.
+    The instances are the engineer seat's, measured on 2026-11-02 and
+    re-measured on `main` by this seat before being written here, because the
+    repair is on that seat's branch and these are the lines a reader gets
+    today.
+    ```
+    $ python3 tools/panel_validator.py --skill no-such-skill-xyz
+    0 skills reviewed, 0 failing, 0 not fully measurable
+    [exit 0]
+
+    $ python3 tools/corrections.py --skill no-such-skill-xyz
+    no-such-skill-xyz: 0 correction(s) on record became 0 cluster(s)
+    [exit 0]
+
+    $ python3 tools/ledger.py --status no-such-status-xyz
+    0 entries at status 'no-such-status-xyz'.
+    [exit 0]
+    ```
+    The first is the one that matters, and the sender's reason for saying so
+    is the reason it is in this file: the validator's verdicts gate
+    promotion, so a clean sheet about a skill it never located is the one
+    answer it must not be able to give.
+    Now the part that is this seat's and not the engineer seat's. **All three
+    lines already state their own emptiness, and it does not help.** "0 skills
+    reviewed, 0 failing" says in its first clause that nothing was reviewed
+    and in its second that nothing failed, and the second clause is the one
+    that reads as the verdict, because a count of failures is what the caller
+    came for. So this is not repaired by making the line more complete. A
+    sentence that carries both its refutation and its verdict is read for its
+    verdict every time.
+    The third line is worse than it looks for a reason the other two do not
+    share. It volunteers that 62 further entries carry no readable status,
+    which invites the reader to conclude that the filter worked and the data
+    is thin. A true sentence offered in the place where the explanation goes
+    will be taken as the explanation.
+    The test, and it is one question. Could a run that FOUND the subject and
+    found nothing wrong print this same line? If it could, a run that did not
+    find the subject must not be allowed to print it. The repair is ordering
+    and not detail: name the subject's absence first, or print no count at
+    all. "no skill named `no-such-skill-xyz` in the library, so nothing was
+    reviewed" cannot be mistaken for a verdict, and it is shorter than the
+    line it replaces.
+    Why this file rather than the incident register. The exit code is the
+    mechanism and the engineer seat has it right, including the choice of 4
+    over this seat's proposed 2, because 2 was already spent on the board
+    refusing or being unreachable. An exit code repairs the caller. It does
+    not touch the sentence, and the reader of a promotion verdict is a person
+    or a model reading the words. Both halves are needed and only one of them
+    is built.
+    The second ending is not in the generator and not in this seat's gate,
+    which is the honest version rather than the tidy one. No edition can
+    carry this shape, and `tools/` is not this seat's surface, so the rule is
+    stated here and the ask for the shared module to carry the sentence as
+    well as the code is in docs/ideas.md under the engineer seat's name. A
+    ban list entry whose enforcement sits in another seat's lane says so
+    rather than naming a gate this seat did not write.
+
+155. The flag whose name promises a widening and whose operation is a swap.
+    Not a phrase. A measurement whose domain was chosen by an option the
+    caller reads as "more of the real thing", where the option in fact
+    replaced one domain with another, so the smaller count that comes back
+    reads as better evidence rather than as less of it.
+    The specimen is this seat's own gate and this seat's own flag. `--live`
+    exists so a pass grades the edition a reader opens rather than the one
+    somebody committed, and for every gate whose domain is the issue archive
+    that is exactly right. `reading` is the only gate in `TAKES_PATHS` whose
+    default domain is site code, because canon law 15 binds "the masthead,
+    the email, the site and any line of copy". Measured on 2026-11-02 on this
+    branch, before the repair:
+    ```
+    $ python3 docs/voice/check_voice.py reading
+    surfaces read   63
+    lines giving the arriving count a verb of reading   4
+    [exit 1]
+
+    $ python3 docs/voice/check_voice.py reading --live
+    surfaces read   3
+    lines giving the arriving count a verb of reading   0
+      every surface uses the verb the law allows
+    [exit 0]
+    ```
+    The four it stopped seeing are `site/app/page.jsx`, `site/app/terms` and
+    two in `site/app/llms.txt`, and they are live on pages anybody can open.
+    `taste` inherits this gate's verdict for her 2026-09-29 verdict 6, so the
+    green reported one of her rulings as held while the line breaking it was
+    on the home page.
+    Three things make this worse than an ordinary narrowing, and each is the
+    reason it is in this file rather than only in a commit.
+    The count went DOWN and the word went UP. 63 to 3 is visible in the
+    output, and "live" tells the reader the three are the real ones. Entry 154
+    is a count over a subject never found; this is a count over a subject
+    found and then exchanged, which no reading of the line can detect.
+    The file recommended it. `editions` prints "`--live` on the passes that
+    take paths is the way to answer it inside one run", so the run that got
+    the false green got it by following this file's own printed advice.
+    And the repair is not symmetrical, which is why the test below is about
+    halves and not about flags. Replacement is correct for the archive and
+    wrong for the code, so "make `--live` additive" would be the wrong fix
+    everywhere else.
+    The test, and it is one question asked of the option rather than of the
+    output. Does this flag ADD members to the domain, or EXCHANGE them? If it
+    exchanges, the gate prints both halves and names which one the caller
+    moved, so the number is never read without its domain. A domain a caller
+    can replace silently is a domain the caller is not told about.
+    LANDED docs/voice/check_voice.py: "the only gate in `TAKES_PATHS` whose default domain is site CODE"
+    LANDED docs/voice/check_voice.py: "of those, code the law binds unconditionally"
+
+156. The count taken on the draft and spent on the posted thing. Not a
+    phrase. A number measured on an artifact before a transformation the
+    measurer itself performs, then reported as a fact about the artifact a
+    reader receives. Entry 91 is a measurement taken from the wrong artifact.
+    This one takes it from the right artifact at the wrong moment, which is
+    harder to see, because the thing measured and the thing claimed have the
+    same name and differ only in when they were counted.
+    The specimen is this org's own advice about its own bus, and it is not a
+    sentence in an issue. The truncation entry in the incident register states
+    the rule as "compose under 1,500, and read the send report", addressed to
+    a sender counting its own draft. The engineer seat reported on 2026-11-02
+    that the count cannot be taken there: `tools/board.py` reflows prose into
+    blocks before it posts, so the body the board measures against the wake
+    limit is a body the sender never typed, and that seat measured 1,500
+    characters leaving as 1,506.
+    Measured here the same day, against the formatter rather than against the
+    sends, because the direction of an error is not its size:
+    ```
+    one block,  1500 typed ->  1503 posted  delta  +3
+    one block,  2573 typed ->  2578 posted  delta  +6
+    one block,  4484 typed ->  4494 posted  delta +10
+    short paragraphs, 4502 typed ->  4502 posted  delta  +0
+    ```
+    So the transformation is one character per block the formatter has to
+    split, it is bounded, and it is **zero** on prose already written in
+    blocks at or under the limit. Verified as a property and not on three
+    examples: across 2,000 random bodies whose every block is at or under 420
+    characters, none changed length.
+    Two things follow, and the second is why this is a prose entry rather than
+    a bug report.
+    The claim that no client-side formula reproduces the window survives this
+    and the reflow does not explain it. The three cut sends on record spread 58
+    characters on delivered-plus-subject, and a body of that length cannot gain
+    more than about six here. A term the model was missing is not the reason
+    the model failed, and accepting it as one would close a question that is
+    still open.
+    And the fix for the sender is a rule about how prose is shaped, not a
+    budget. Write every paragraph at or under the block limit and the typed
+    length is the posted length, so the pre-send count is exact and the
+    ceiling becomes checkable by the seat composing. That rule is one this
+    canon already imposes for a different reason: law 14's "paragraphs run
+    short. One result per paragraph". The craft rule and the arithmetic rule
+    are the same rule, which is the argument for stating it as craft.
+    The test, asked of a measurement rather than of a line. Between where this
+    number was counted and where the claim about it is read, does anything
+    this code owns change the thing? If it does, the count belongs on the far
+    side of it, and a count on the near side is reported as the draft's length
+    and never as the reader's.
+    LANDED docs/voice/check_voice.py: "the typed length is the posted length"
+    LANDED docs/voice/check_voice.py: "the typed length plus one per split"
+
+157. The ban list matched with `==`, which the next print defeats by adding
+    one word.
+    Not a phrase. A reading, like 146 and 150, and it bans a shape of
+    enforcement rather than a shape of sentence. A register that holds a
+    closed list of banned strings and tests membership by equality is a
+    register that covers the print it was written from and nothing after it,
+    because the thing it is written from is the only specimen it has and the
+    next one is written by a model that has never seen the list.
+    The instance, and the dates are the whole finding. `2026-W42` served
+    `## What to read` as the reading list's whole heading. `97de5c8b` added
+    `what to read` to the generator's quoted ban on 2026-11-01, which is where
+    `check_voice.py slotwords` and `slotheads` both derive their dress, so the
+    list and the gate were correct and in step. On 2026-11-02 the press printed
+    `2026-W44`, whose reading list reads `## What to read yourself`, and
+    `slotheads` reported `OK  5 heading(s), none of them a framework name`.
+    One trailing reflexive, eight days after the list was widened for the bare
+    form, and the gate written to catch exactly this said the issue was clean.
+    What makes it a class rather than a miss is that the patch and the evasion
+    point the same way. The repair for a print is to add that print's string,
+    so the list grows by one specimen per edition while the space of dresses
+    is a language. `what to read yourself` is not a clever evasion either. It
+    is the framework's own internal name for the slot, which canon law 9
+    writes as "Read these yourself", so it is the one dress the ban could
+    least afford to miss and the one a model is likeliest to reach for.
+    The test, and it is asked of a gate rather than of a line. Does this check
+    fire on anything other than the specimen that caused it to be written? If
+    the only way to answer yes is to add another string, the check is a record
+    of past violations wearing a detector's name.
+    The repair is the prefix and not a seventh string: the banned phrasing
+    followed only by a remainder that would be true of every issue is the
+    banned phrasing. `SLOT_INVARIANT` is that remainder and it is kept small
+    on purpose, because a remainder carrying the day's material is the heading
+    law 12 asks for and firing on it gets the gate deleted inside a week.
+    Note what that still is, so no run reads it as the cure. It is a closed
+    list one level up, and the structural answer is the press composing or
+    refusing this heading the way `ensure_fresh_title` already refuses a
+    reused title. That ask is in docs/ideas.md under 2026-11-08, as a
+    correction to the proposed remedy of 2026-11-01, which would not have
+    caught this heading either: it proposes that the pre-send gate derive its
+    list from the generator rather than keep a tuple by hand, and the defect
+    was never which list. It was the `==`.
+    No prompt diff, and for once the reason is not that the words are already
+    there. The generator's rule for this slot is right, explicit, and was in
+    the file that wrote the violation: "Build the heading from the papers
+    underneath it and never from the act of recommending them." A ban list
+    naming a seventh dress would also hand the model that dress at the
+    position where the heading gets drafted, which is entry 100.
+    ```
+    Enforced docs/voice/check_voice.py: "slotheads"
+    LANDED docs/voice/check_voice.py: "SLOT_INVARIANT"
+    LANDED docs/voice/reviews/2026-11-08.md: "the gate said OK"
+    ```
+
+158. The register of ungated rules whose admission test is narrower than the
+    rules it sweeps.
+    Not a phrase. The entry is here rather than in the ledger because the
+    repair is a criterion and the damage is a reading: a sweep's silence read
+    as "no rule is ungated" when it means "no rule of the shape I admit is
+    ungated".
+    The specimen is this file's own `ABSOLUTE_RULES`, which `ungated` reads to
+    answer which of the generator's absolute rules the press can refuse. Its
+    admission test read "a row belongs here when the generator gives it a
+    target of zero, or says never, or the canon numbers it a law and the owner
+    has ruled on it twice." Law 14's fourth count reads "Numbers in the
+    heaviest paragraph: past three, cut every number that does not change what
+    the reader would do." Its target is three, so for as long as the table has
+    existed the one sweep written to find a rule with nothing between it and a
+    reader could not admit it.
+    What makes it a class rather than a miss is which rule got through. On
+    2026-11-08 the grade of `2026-W44` named that edition's figure dump as the
+    single biggest weakness of the newest issue the product serves, and it
+    counted the figures by hand, because no command in this file counted a
+    number. The sweep for ungated rules was green. The rule it could not see
+    was the one the day's verdict turned on, and all four served editions fail
+    it: heaviest paragraphs of 8, 9, 10 and 16 against a target of 3.
+    The test, and it is asked of a register rather than of a rule. State the
+    admission criterion, then name a rule the generator states absolutely that
+    the criterion would exclude. If you can, the sweep's denominator is a
+    description of the criterion and not of the file.
+    The repair is the criterion and not a row. "A target of zero" becomes "a
+    target of zero, or a number with no budget attached to it", which admits
+    the three thresholds law 14's fourth count states and anything else the
+    generator pins to a figure. The denominator moves 11 to 12 and the ungated
+    count 5 to 6, so figures printed before 2026-11-08 are not comparable to
+    figures printed after it, which is entry 120's class and is said out loud
+    rather than left for a later run.
+    ```
+    Enforced docs/voice/check_voice.py: "a number with no budget attached to it"
+    LANDED docs/voice/check_voice.py: "figures"
+    LANDED docs/voice/check_voice.py: "FIGURE_TARGET"
+    LANDED docs/voice/reviews/2026-11-08-message.md: "had no instrument"
+    ```
+    No prompt diff, and the reason is step 3's. The rule is in the generator,
+    deployed, with its number in it, under a heading that calls the count a
+    hard gate. A second wording of a rule the writing machine already holds
+    makes the generator longer and the press no better. What was missing was
+    the instrument, and the instrument is on this seat's surface.
+
+159. The exemption carried into a format it was never written for.
+    Not a phrase. The entry is here because the failure is silent on the one
+    surface its author writes most of their prose on, which is the shape
+    entry 146 names and the opposite direction of travel.
+    The specimen is `quoting` in this file. It excused any line beginning with
+    four spaces, and the reason was right: in Markdown a four-space indent is
+    a fenceless code block, so a semicolon inside it is the literal character
+    and striking it would falsify a command. `selfcheck` then called that
+    reading over every added line of every file, including `.py` files, where
+    an indent is not a code block. It is scope. So every line of every
+    docstring and every indented comment in `check_voice.py` was excused for
+    as long as the check has existed.
+    Measured on 2026-11-08: 2,670 indented prose lines in that file, 14 of
+    them carrying a canon law 1 mark the reading could not see, 10 of those
+    plainly this seat's own prose joining two finished sentences with a
+    semicolon. The run that found it found it by committing one, in a
+    docstring, in a run whose subject was a rule with no gate.
+    The test. For every wholesale exemption a gate grants, name the property
+    of the input that makes the exemption true, then name a file the gate
+    reads where that property does not hold. An indent means a code block in
+    Markdown and scope in Python, and one reading was doing both.
+    The repair is to move the decision to the caller rather than to delete the
+    exemption, because the Markdown half was never wrong. `selfcheck` grants
+    the indent excuse everywhere except `.py` under `docs/voice/`, which is
+    this seat's own surface, and `QUOTING_CASES` pins the five readings that
+    have to hold. Scoped there on purpose: the same reading applies to
+    `tools/*.py` and widening it from here would drop a new red into lanes
+    this seat does not own, on prose this seat did not write, which is
+    incident 23's class. That half is in docs/ideas.md.
+    ```
+    Enforced docs/voice/check_voice.py: "indent_is_code"
+    LANDED docs/voice/check_voice.py: "QUOTING_CASES"
+    LANDED docs/voice/reviews/2026-11-08-message.md: "excused it"
+    ```
+    Swept, and the sweep found a second surface rather than a second file. A
+    body typed into `tools/board.py send` or `tools/board.py report` is read by
+    nothing, because `selfcheck` reads added lines in files and a board post is
+    neither. This run committed the same mark there within the hour of
+    narrowing the reading above, and the message was on the bus before it could
+    be struck. That one is the engineer's and is in docs/ideas.md under the
+    shared refusal module.

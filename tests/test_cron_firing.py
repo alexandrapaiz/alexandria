@@ -138,16 +138,69 @@ def test_the_seat_filter_reads_one_directory(tmp_path):
     assert seats == {"ursa-engineer"}
 
 
-# --- the two limits are two things ---------------------------------------
+# --- the three limits are three things -----------------------------------
+
+#: The monthly sentence exactly as the host's archive carries it, 257 times
+#: across 2026-11-03 to 2026-11-08. Copied rather than paraphrased, because
+#: the defect it pins lives in its closing clause.
+MONTHLY_SPEND = (
+    "You've hit your org's monthly spend limit · ask your admin to raise it "
+    "at claude.ai/admin-settings/usage · your weekly limit resets "
+    "Nov 8, 11pm (UTC)")
+
 
 @pytest.mark.parametrize("sentence,expected", [
     ("You've hit your weekly limit · resets 11pm (UTC)", "weekly-limit"),
     ("You've hit your 5-hour limit · resets 4am", "session-limit"),
     ("Your session limit was reached", "session-limit"),
     ("Overloaded", "unclassified-429"),
+    (MONTHLY_SPEND, "monthly-spend"),
 ])
 def test_the_refusal_sentence_is_the_only_discriminator(sentence, expected):
     assert cf.classify_refusal(sentence, 429) == expected
+
+
+def test_the_monthly_cap_is_not_the_weekly_pool_though_it_names_it():
+    """The sentence that refused the portfolio for six days names two limits.
+
+    `monthly-spend` has to be tested before `weekly-limit`, because the
+    monthly sentence closes by announcing when the weekly limit resets, and a
+    substring test for `weekly` matches that clause. Every one of the 257
+    refusals from 2026-11-03 to 2026-11-08 was filed as the weekly pool
+    running out.
+
+    The two have different remedies and that is why the misfiling cost
+    something. A weekly pool is rationed by moving slots and lowering burn. A
+    monthly spend cap is raised by the owner in the org's admin settings, and
+    no amount of rescheduling touches it.
+    """
+    assert cf.classify_refusal(MONTHLY_SPEND, 429) == "monthly-spend"
+    assert "weekly" in MONTHLY_SPEND.lower(), (
+        "if the provider drops the weekly clause this test stops pinning "
+        "anything, and the ordering above would no longer be load-bearing")
+
+
+def test_the_monthly_sentence_survives_a_round_trip_through_a_log(tmp_path):
+    """The classifier and the reader agree, and the sentence itself is kept.
+
+    `refusal_text` exists because a weekly refusal announces its own reset
+    instant, which is the only authoritative statement of where the provider
+    cycle's boundary falls. `tools/provider_cycle.py` reads it rather than
+    assuming the Sunday rule.
+    """
+    write_log(tmp_path, "alexandria-engineer", "2026-11-04T11-06-25-000Z",
+              "cron", refused(MONTHLY_SPEND), exit_code=1, turns=1)
+    run, = cf.read_runs(tmp_path)
+    assert run["refusal"] == "monthly-spend"
+    assert run["refusal_text"] == MONTHLY_SPEND
+
+
+def test_a_run_that_was_not_refused_keeps_no_refusal_text(tmp_path):
+    write_log(tmp_path, "alexandria-engineer", "2026-11-04T11-06-25-000Z",
+              "cron", completed(), exit_code=0, pr="x/pull/1", turns=9)
+    run, = cf.read_runs(tmp_path)
+    assert run["refusal"] is None
+    assert run["refusal_text"] is None
 
 
 def test_the_result_line_is_found_whatever_its_whitespace(tmp_path):

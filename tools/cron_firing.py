@@ -107,9 +107,11 @@ one answers three.
 
 `lost`
     The slot fired and the run reached no pull request. The reason is carried
-    with it: `weekly-limit` and `session-limit` are the provider's two refusals,
-    which arrive as the same `429` and are told apart only by the sentence in
-    the result, `api-error` is any other error status, `nonzero-exit` is a run
+    with it: `monthly-spend`, `weekly-limit` and `session-limit` are the
+    provider's three refusals, which arrive as the same `429` and are told
+    apart only by the sentence in the result, and the monthly one has to be
+    tested first because its sentence names the weekly reset inside itself
+    (see `classify_refusal`). `api-error` is any other error status, `nonzero-exit` is a run
     that failed without one, and `silent` is the worst of the five, a run that
     exited 0 and shipped nothing anyway. That last one is incident 3's failure
     mode and the reason the ship-first rule is in every charter.
@@ -277,18 +279,42 @@ UTC = timezone.utc
 
 
 def classify_refusal(result_text, api_error_status):
-    """Which of the provider's two limits refused this run, if one did.
+    """Which of the provider's limits refused this run, if one did.
 
-    Both arrive as `api_error_status: 429` and the only discriminator is the
-    sentence, which is the finding
+    They all arrive as `api_error_status: 429` and the only discriminator is
+    the sentence, which is the finding
     `INC-2026-10-25-the-weekly-slot-is-scheduled-inside-the-hours-the-weekly-provider-budget-is-spent`
     turns on. A weekly limit resets at a week boundary and a session limit
     resets in hours, so reading them as one refusal makes a lost week look
     like a lost hour.
+
+    **There are three limits and not two, and the third one spent six days
+    wearing the second one's name** (2026-11-08, engineer seat,
+    `INC-2026-11-08-the-monthly-spend-cap-was-counted-as-the-weekly-pool-for-six-dark-days-because-its-sentence-ends-by-naming-the-weekly-reset`).
+    The org's monthly spend cap refuses with
+
+        You've hit your org's monthly spend limit · ask your admin to raise it
+        at claude.ai/admin-settings/usage · your weekly limit resets Nov 8,
+        11pm (UTC)
+
+    and that sentence contains the word `weekly` in its closing clause, so the
+    substring test below returned `weekly-limit` for every one of them. 257
+    refusals across the portfolio's six dark days of 2026-11-03 to 2026-11-08
+    were filed as the weekly pool running out when the weekly pool was not
+    what refused them. The costly part is the remedy: a weekly pool is
+    rationed by moving slots and lowering burn, which is what every surface
+    here proposed, and a monthly spend cap is raised in the org's admin
+    settings by the owner and is untouched by any amount of rescheduling.
+
+    So `monthly-spend` is tested first, because it is the only one of the
+    three whose sentence names another limit inside itself. The order is the
+    fix, and a test pins it.
     """
     if api_error_status != 429:
         return None
     text = (result_text or "").lower()
+    if "monthly" in text or "spend limit" in text:
+        return "monthly-spend"
     if "weekly" in text:
         return "weekly-limit"
     if "session" in text or "5-hour" in text or "5 hour" in text:
@@ -325,6 +351,7 @@ def parse_run(path):
         "turns": None,
         "api_error_status": None,
         "refusal": None,
+        "refusal_text": None,
         "truncated": True,
         "retry_claimed": False,
         "retried_by": None,
@@ -385,6 +412,13 @@ def parse_run(path):
                 run["turns"] = result.get("num_turns")
             run["refusal"] = classify_refusal(
                 result.get("result"), result.get("api_error_status"))
+            # The sentence as well as the class, because a weekly refusal
+            # announces its own reset instant — `resets Nov 8, 11pm (UTC)` —
+            # and that is the only authoritative statement of where the
+            # provider cycle's boundary falls. `tools/provider_cycle.py` reads
+            # it rather than assuming the Sunday rule.
+            if run["refusal"]:
+                run["refusal_text"] = result.get("result")
 
     return run
 
