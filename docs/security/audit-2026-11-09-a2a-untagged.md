@@ -292,13 +292,20 @@ still requires in writing.
   `gh-a2a-spec-prose` keeps the blast radius where it already was: same
   publisher, same transport, same tier, one additional path on a repository we
   already poll twice a day.
-- **One row owed to `docs/security/upstreams.md` and deliberately not written
-  here.** The standing rule in that file says every new source gets a row in
-  the same pull request that adds it. #860 edits that file and this branch
-  comes from `main`, so writing the row here creates the same-file collision
-  the charter's ledger rule exists to prevent. The row is owed after #860
-  merges, it is named in the pull request description, and this paragraph is
-  the honest form of a gap rather than a silent one.
+- **The row owed to `docs/security/upstreams.md` is paid, and it was deferred
+  for about forty minutes rather than left.** The standing rule in that file
+  says every new source gets a row in the same pull request that adds it. #860
+  edited that file and this branch came from `main`, so writing the row early
+  would have created the same-file collision the charter's ledger rule exists
+  to prevent. #860 merged at 11:59:42Z, this branch merged `main` afterwards,
+  and the row is in this pull request as the rule requires.
+- **A second thing fell out of writing it.** That register's row has said "45
+  feeds" since 2026-10-15. Counted with a real YAML loader, `main` holds 44, so
+  the number had been one high for 25 days, and this run's addition brings the
+  file back to 45 and makes the stale number accidentally correct. Recorded in
+  the register itself rather than quietly benefited from, because a count that
+  is right by coincidence cannot be told apart from one that is right by
+  maintenance.
 
 ## Debug sweep
 
