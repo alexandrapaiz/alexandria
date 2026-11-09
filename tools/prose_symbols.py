@@ -91,9 +91,18 @@ CALL_FORM = re.compile(r"(?:(?<![\w.])|`)(?:([A-Za-z_][\w]*)\.)?([a-z_][\w]*)\(\
 # `gather()` is one of this pipeline's stages, `serve()` is an MCP subcommand,
 # `gen_random_uuid()` is Postgres's, `hasSpine()` is not even Python. Fifty
 # such mentions are in this repo and not one of them is a defect. What makes
-# `runpr.py:95` a defect is one word: "`annotate()` **below**". The prose tells
-# the reader where to look, the reader looks, and there is nothing there --
-# which is exactly the trip `alexandria/security` took on 2026-11-08.
+# `runpr.py:95` a defect is one word: it writes the missing name in call form
+# and then says **below**. The prose tells the reader where to look, the reader
+# looks, and there is nothing there -- which is exactly the trip
+# `alexandria/security` took on 2026-11-08.
+#
+# That sentence is deliberately not a verbatim quotation of the defect, and the
+# reason is a limitation worth stating rather than hiding: a module documenting
+# this class trips its own checker. Quoting the bad comment exactly made this
+# file the only finding in its own repository, which is correct behaviour and a
+# useless report. There is no clever exemption for quoted prose here -- a
+# checker that learns to ignore examples learns to ignore the real thing -- so
+# the convention is to name such a symbol without its parentheses.
 #
 # So locality is the discriminator, and it is reported as a tier rather than
 # used as a filter, because the broader set is worth printing and is not worth

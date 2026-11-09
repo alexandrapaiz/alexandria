@@ -187,7 +187,7 @@ URL = "https://example.invalid"
 def test_this_repository_has_no_stale_local_claims(tmp_path):
     """The measurement, asserted so that a new one has to be noticed.
 
-    162 Python files, zero prose claims that a function is in a module where it
+    164 Python files, zero prose claims that a function is in a module where it
     is not. This is the baseline, not a guarantee: the fifty untiered mentions
     are deliberately not covered, because a comment is allowed to name a
     pipeline stage or a SQL function, and failing a build over that is how a
