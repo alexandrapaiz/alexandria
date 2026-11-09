@@ -11,9 +11,11 @@ A **seat** is: a charter (a versioned prompt file in prompts/), a
 scheduled cloud workflow (.github/workflows/agent-<seat>.yml), and one
 pull request per run. Nothing more. Seats never message each other;
 they read and write the repository, which is the shared blackboard
-(sprint files, the backlog, the ledger, the board). The owner's merge
-is the only gate: agents decide everything decidable, and authority
-stays with whoever clicks merge.
+(sprint files, the backlog, the ledger, the board). A merge is the only
+gate: agents decide everything decidable, and authority stays with
+whoever clicks merge. The PM merges in the ordinary course now (§21,
+below); only money, secrets, accounts, and a seat's own authority stay
+the owner's to click.
 
 Roles: the **owner** is Product Owner, merge gate, and sole holder of
 secrets and money. The **chair** is the interactive Claude session the
@@ -26,9 +28,21 @@ remembering must live in a file.
 
 - **GitHub repository** (public = unlimited free Actions minutes;
   private = 2,000/month).
-- **GitHub Actions** as the agent runtime: each seat a workflow with
-  `schedule:` cron plus `workflow_dispatch` carrying an
-  `owner_instructions` input for ad-hoc runs with live orders.
+- **GitHub Actions** as the original agent runtime: each seat a workflow
+  with `schedule:` cron plus `workflow_dispatch` carrying an
+  `owner_instructions` input for ad-hoc runs with live orders. **Decision
+  056 (2026-10-17) moved every seat's clock off this.** `gh run list` has
+  seen no agent run in this repository since; the seat's cron now lives in
+  a manifest on the host (`runtime/agents/<company>/<seat>/agent.toml`:
+  `cron`, `model`, `max_turns`), and the dominant trigger is no longer the
+  cron at all — a `message` event (a note on the company's board, or
+  another seat's wake) fires a run far more often than the schedule does.
+  A seat's actual presence is best read off the board's own run log
+  (`GET /api/board/<company>`), not off the workflow's cron line, which is
+  now a floor rather than a description. `.github/workflows/checks.yml`
+  and `deploy-main.yml` still run on GitHub Actions, because pushes and
+  pull requests still trigger Actions regardless of where the agent
+  itself runs.
 - **anthropics/claude-code-action@v1** runs Claude Code headlessly on
   the owner's existing subscription: `claude setup-token` once, stored
   as the `CLAUDE_CODE_OAUTH_TOKEN` repo secret (set it via
@@ -89,6 +103,18 @@ remembering must live in a file.
   is `true`. It is still her off switch, and every fired dispatch is
   logged for the exo seat to audit. See "Presence" below for why this
   exists.
+- **The PM merges, in the ordinary course** (company standard pm.md §21,
+  recorded here 2026-10-24): every charter in this repo used to say "the
+  owner merges," and that stopped being true. A pull request is merged by
+  the PM seat of the company it belongs to, or any chair, once it is
+  green, scoped to what the seat was asked, and uncontested on its
+  surface. What stays hers alone: a change to a seat's own authority
+  (§21, §10, §19, or a charter's dispatch grant), and anything that spends
+  money, opens an account, or writes a secret. A reservation a charter
+  makes for her is posted as an `ask` with the PM's own recommendation and
+  a 48-hour silence-default clock (§22), except for those same four
+  things, which always wait for her word. The PM still never merges its
+  own pull request and never pushes to `main` directly.
 - **The ledger** (docs/ideas.md): every idea with its trigger, first
   step, cost, and a status only the owner moves (proposed / accepted /
   rejected / built / urgent).

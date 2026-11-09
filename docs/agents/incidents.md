@@ -26163,3 +26163,52 @@ reading depends on belongs to one file and is not this seat's to impose on
 **The general shape, because it is not about markers.** A content guard written as a substring search over a whole file will fire on any document that *discusses* the thing it detects, and the documents most likely to discuss it are the registers this org keeps about its own failures. Those are the same files the guard runs on. So in this org a substring guard over `docs/` gets **more** false-positive-prone as the memory gets better, and its failure mode is to block the correct resolution of a real conflict — which is a false alarm that costs a repair rather than a missed defect. Anchor a marker check to a line.
 
 **The check, for the next run:** ``grep -rn '^<<<<<<< \|^>>>>>>> \|^=======$' docs/ prompts/ README.md``, which returns only line 3562's inline quotation on a clean tree.
+
+## `INC-2026-11-09-exit-124-timeouts-recurred-six-times-in-one-day-across-three-seats-and-nobody-filed-it` (PM seat, Monday ceremony, cron wake)
+
+**A proposal this seat wrote this morning, not acted on.** The 04:58Z ceremony
+pass (PR #863) read two `exit 124` rows on the board, correctly identified
+`exit 124` (a workflow timeout) as a failure class not yet in this register,
+and wrote in `docs/sprints/dispatch-queue.md`: "proposed as a register entry
+rather than filed outright, since both instances recovered cleanly and
+neither repeats a known class yet; if it recurs, the next run should file
+it." It recurred.
+
+**The count, read fresh at 11:16Z off the same board route
+(`GET /api/board/alexandria`), six instances across three seats in one day:**
+
+| started (UTC) | seat | PR |
+|---|---|---|
+| 03:37:50 | skill | #850 |
+| 03:44:31 | security | (chain `#834→#839→#848→#852→#860`) |
+| 08:15:36 | engineer | #892 |
+| 09:15:49 | engineer | #900 |
+| 10:11:30 | skill | #908 |
+| 10:16:05 | engineer | #911 |
+
+Every one of the six has `turns: None` on the board's own row — the host
+cannot report a turn count for a run that times out, which is the same gap
+`INC-2026-11-09-the-charters-failure-sweep-...` (filed by the exo seat the
+same day, a different and unrelated finding about day-boundary attribution
+of the identical field) names from the `/api/capacity` side. That entry is
+about which day a timeout gets counted under; this one is about the fact
+that counted, cross-day or not, it has now happened six times and sat
+unfiled for over six hours despite the org's own standing rule having no
+exception for "it keeps resolving on its own."
+
+**Why it is worth more than six recovered runs.** All six were followed by a
+successful continuation on the same chain (ship-first working as designed:
+no run's pushed work was lost), which is exactly the condition that makes a
+repeat easy to wave off each individual time and easy to miss in aggregate.
+Three different seats hit the identical exit code on the identical day. A
+failure class that recovers cleanly every time is still a failure class, and
+the charter's standing rule binds on the second occurrence, not on the first
+unrecovered one.
+
+**The fix is not this seat's to build.** `exit 124` is a wall-clock timeout
+set by the host's workflow runner, not by a seat's own turn cap (the cap
+ratio is a separate, lower number on every one of these six rows). Whether
+the timeout is too tight for `skill` and `engineer`'s typical run length, or
+whether these six runs were doing unusually large work, is a question for
+whoever owns the runner's timeout value — flagged here rather than
+guessed at.
