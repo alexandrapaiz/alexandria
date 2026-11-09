@@ -3,6 +3,7 @@
 
     python3 tools/ban_list.py skills/harness-engineering/SKILL.md
     python3 tools/ban_list.py --json docs/research/*.md
+    python3 tools/ban_list.py --fix skills/harness-engineering/SKILL.md
     python3 tools/ban_list.py --smoke
 
 Written for ADR-37's gate, which requires that "the ban list and the trigger
@@ -27,7 +28,13 @@ report says so in its own last line rather than leaving a reader to assume.
 
 Code is exempt. A fenced block and an inline span are skipped, because `robust`
 inside a variable name is not a prose tell, and a skill about harnesses quotes
-code constantly.
+code constantly. Entry 13 is the exception to that exception and runs over every
+line, because a character outside ASCII breaks a search box wherever it sits.
+
+`--fix` repairs exactly one of the six, the citation separator, and reports
+every finding it cannot reach. It exits 1 while any remains, so a seat that runs
+it and sees it do something cannot read that as a clean file. The reasoning and
+the three refusals are above `SEPARATOR` below.
 """
 
 from __future__ import annotations
@@ -142,12 +149,17 @@ def check(text: str, allow: str = "") -> list[dict]:
 # written skills in the library already use, so the repair converges the library
 # on its own newest convention rather than on a preference.
 #
-# Three conditions, all of them required, because each one is a way the naive
-# substitution would damage prose. The line must be a list item, so an em dash
-# in a paragraph is never touched. What follows the separator must be a bare
-# URL, so a dash between two clauses is never touched. And the file is rewritten
-# only when nothing else about it changed, so a partial repair cannot be
-# mistaken for a clean one.
+# Two conditions on the substitution, both required, because each one is a way
+# the naive version would damage prose. The line must be a list item, so an em
+# dash in a paragraph is never touched. And what follows the separator must be a
+# bare URL, so a dash between two clauses of a list item is never touched
+# either.
+#
+# What stops a partial repair reading as a clean one is not a condition on the
+# write. The file is rewritten whenever there is a separator to swap, including
+# when findings this repair cannot reach survive it. `fix_file` reports those
+# survivors by line in the same breath as the swaps and the CLI exits 1 while
+# any remain, which is the actual protection and is under test both ways.
 SEPARATOR = re.compile(
     r" \u2014 (?=(?:https?://|www\.|[A-Za-z0-9][A-Za-z0-9.-]*\.[a-z]{2,}/))")
 
