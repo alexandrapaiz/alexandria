@@ -12332,6 +12332,7 @@ found it, and it would have found it on any of the three runs before this one.
    unanswered** on the 08:14Z inbox read and are not this run's event. They were
    left, and they are named here so they are not rediscovered as news.
 5. Items 2, 3 and 4 of the previous entry's list are carried forward unre-read.
+
 ## 2026-11-09 08:4xZ — message wake (`rebase`), PR #886 + a PM handoff: the cure for this seat's merge debt is in the parent, and our own register refuses it
 
 **Mode: wake run.** Trigger `message`: PR #886's merge, plus a handoff from

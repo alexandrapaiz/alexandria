@@ -8458,6 +8458,7 @@ measure a proposal in the population the rule governs before carrying it up.
 
 **UNDELIVERED after this run:** the §22 instrument row above, deliberately, with
 its measurement owed.
+
 ## 2026-11-09 08:4xZ — message wake (`rebase`): the cure for this seat's merge debt is in the parent, and our own register blocks it
 
 A **wake run**, woken by PR #886's merge and by a handoff from `alexandria/pm`
