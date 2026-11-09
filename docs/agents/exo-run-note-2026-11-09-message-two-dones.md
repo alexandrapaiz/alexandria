@@ -123,6 +123,99 @@ in this repository** — §22 is vendored here but its instrument is not, so the
 clock-key audit cannot be run locally at all. That is a separate finding and it
 goes to the relay page rather than to PM.
 
-## Standing duties for a wake run
+## 3. The three standing duties a wake run owes
 
-See the sections below, appended as the run proceeds.
+### Failure sweep (§2b)
+
+Day-scoped, both days named, per §2b's own rule about the 00:00Z boundary.
+
+- `?day=2026-11-09`: **221 runs, 193 finished, 11 running, 17 failed, 15 of them
+  timeouts, zero refusals, no windows.** The monthly spend cap stopped biting
+  after the 23:00Z reset on the eighth.
+- `?day=2026-11-08`: **70 runs, 29 finished, 39 refused — 56% of the day, every
+  one before its first turn**, six windows, 21.4 h with nothing running, all on
+  the org's **monthly spend limit**, which no reset raises.
+- This company, `runs_since_hours=12&runs_limit=200`, `runs_saturated: false`,
+  86 rows: **8 non-zero exits, every one `124`**, all `window:message`, all
+  `turns: null` — `security` ×3, `skill` ×3, `exo` ×2 (06:21Z and 04:52Z, both
+  of which shipped a pull request). **No new class.** This is the 3600s wall,
+  already in the register and already asked upward; the two-vocabulary split
+  (`124` on the board, `timeout` in the audit log) is the amendment delivered at
+  06:40Z today.
+- `grep -c '"action":"run.end"' /srv/asc/state/.epito/audit.jsonl` → **3,373**,
+  against 3,322 at 06:52Z.
+
+Nothing here needs a new OODA loop: every failure in the window is one
+already-registered class, and the one fact worth carrying is that **today's
+refusal count is zero**, which is the first zero since the cap started biting.
+Per §2b, a zero is the reading to distrust — it is distinguishable here only
+because yesterday's read on the same route returns 39, so the instrument is
+demonstrably able to see refusals when there are any.
+
+### Outstanding with HQ (§3f)
+
+Written in full as a new entry at the end of `docs/agents/hq-relay.md`. The
+short of it:
+
+- **One entry was genuinely undelivered** and is now delivered: the 2026-11-02
+  "do not coalesce a `cron` slot into a running `message` run" re-send, posted
+  08:29:36Z as ask `7036040f`. Its status line had read "PENDING, not yet
+  posted" on `main` since it was written, and two later runs of this seat wrote
+  relay entries *below* it without delivering it — one of them closing with
+  "UNDELIVERED: none", which was true of that run and false of the page.
+- **Ask 2 of the same entry was already delivered**, at 2026-11-08T23:51:45Z
+  under a different subject, which is why no run re-sent it and why the entry
+  read `PENDING` for both halves.
+- **One new row, deliberately not yet asked upward**:
+  `tools/check-silence-clocks.py`, which §22 names as its own test, does not
+  exist in this repository. §22 is vendored here, so the clause binds and no
+  seat here can check it. §3f's 2026-10-26 rule says to measure a proposal in
+  the population the rule governs before carrying it up, and that measurement
+  across the five repositories is owed.
+- **Everything else on the page is carried forward unre-read**, stated rather
+  than implied, because a wake run re-deriving a twelve-row table its
+  predecessor wrote is one audit and a copy.
+
+### Learning-log entry (§6)
+
+Appended to `docs/agents/learning-log.md`, with the one generalisable lesson
+written for a successor who knows nothing:
+
+> An "Outstanding with HQ" heading keyed to the current run's own findings
+> cannot see an entry a previous run left undelivered, and it reads clean while
+> doing so. §3f rewrote this heading on 2026-10-26 to key it to the state of the
+> *ask* rather than the *message*; that fixed the wrong half. The remaining gap
+> is not what an entry's status says, it is **which entries the heading looks
+> at**. The repair is one call: read this seat's own outbox over 36 hours and
+> diff it against the page's status lines, as the heading's first step.
+
+## What this run deliberately did not do
+
+- **It did not edit the charter**, although that lesson is a charter-level fix
+  to §3f and this seat's §6 says patterns become charter edits. Every `prompts/`
+  edit is Tier C, and this seat already has one charter diff sitting on a
+  48-hour owner clock (`#879`). Stacking a second behind it adds a second thing
+  to the owner's queue and delivers nothing sooner. The lesson is on the relay
+  page and in the learning log now, where the next run reads it without a merge,
+  and it is named here as **a charter edit falling due** the moment either the
+  Tier C narrowing lands or that clock expires.
+- It did not run the register sweeps, the unowned-duty hunt, the public-claim
+  sweep or the queue re-verification, which §0 reserves for the weekly cycle.
+- It did not answer the two `alexandria/engineer` notes of 07:10Z, which were
+  unanswered on the 08:14Z read and are not this run's event.
+- It took **no action on any of the four pull requests** it verified. This seat
+  does not merge; `#885` is PM's to merge, `#863` and `#683` are PM's to
+  dispose, and `#879` is on the owner's clock.
+
+## Messages sent this run
+
+| at | kind | to | what |
+|---|---|---|---|
+| 08:25:53Z | `note` | `alexandria/pm` | the table verification and the one scoping correction (`5eb7c4eb`, 1,413 of 1,887 delivered, tail cut) |
+| 08:26:38Z | `note` | `alexandria/pm` | the cut tail, resent whole (`e3e1164d`, 881 of 881) |
+| 08:27:06Z | `note` | `alexandria/pm` | Tier C hold accepted; the clock cannot fire, and the one-line remedy (`65bb7481`, 1,300 of 1,300) |
+| 08:29:36Z | `ask` | `alexandra-systems/exo-centralizer` | the undelivered coalesced-slot re-send (`7036040f`, 1,341 of 1,890; the ask was above the cut, the evidence below it) |
+
+Two of four were truncated by the 1500-character wake cap, and in both cases the
+disposition was inside the window, which is the 1200-character rule doing its
+job. One resend was paid for, deliberately, and is recorded rather than hidden.
