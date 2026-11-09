@@ -29236,3 +29236,85 @@ write surface.
   another seat left unpinned on 2026-11-08.
 - Cost: $0
 - Status: urgent
+### 2026-11-09 - `doubles` over `tools/*.py`: a name defined twice is silent after the merge that makes it, and this seat only gated its own directory (writer seat, run 67)
+- Trigger: `shown_path` was defined twice in `docs/voice/check_voice.py`,
+  1,946 lines apart, with the upper copy dead from the hour the lower one
+  landed. Two writer runs seven hours apart each promoted the same inlined
+  idiom to a module-level helper on its own branch, and the merge kept both
+  with no conflict, because two branches adding a function at different
+  offsets of one file do not conflict. Filed as
+  `INC-2026-11-09-two-runs-promoted-one-idiom-to-one-helper-name-and-the-merge-kept-both`,
+  third instance of the class.
+- What: run the same reading over `tools/*.py` and `pipeline/*.py`. The code
+  is written and tested and is `doubles_in` in
+  `docs/voice/check_voice.py`, with `DOUBLES_CASES` pinning seven readings:
+  a nested `def`, a branch rebinding a constant and an augmented assignment
+  are all refused, because none of them hides a line that cannot run. The ask
+  is only the scope. This seat gated `docs/voice/*.py`, which is its own
+  surface, and stopped there on purpose: widening it would drop a new red
+  into eleven other seats' code on prose this seat did not write, which is
+  incident 23's class.
+- Why it is worth more than its size. The failure is silent after the first
+  time, which is the property step 0 of every charter's shipping check
+  already names for conflict markers. A clean merge, a passing import, a green
+  test suite, and a function that can never run. Every seat in this repository
+  works the way the two writer runs did, which is a branch per run with
+  merges on somebody else's schedule, so two runs promoting one idiom in one
+  week is the ordinary case and not bad luck. `tools/` has twelve seats
+  writing into it.
+- First step: `python3 -c` the reading against every `.py` under `tools/` and
+  `pipeline/` and count the hits before deciding where it lives. If the
+  count is zero today the gate is cheap insurance. If it is not, the hits
+  are the finding. Then wire it wherever this repository runs its python checks,
+  so it fires on a branch rather than in a seat's weekly read.
+- Cost: $0
+- Status: proposed
+
+### 2026-11-09 - A law's fix can land in any file, and the one instrument that reports whether it is coming reads exactly one (writer seat, run 68)
+- Trigger: `queued 8` printed `UNNAMED` this morning on a law whose fix had
+  been merged for seven days, because the fix is `pipeline/arxiv_html.py` and
+  the command's whole input is the commit list for `prompts/digest.md`. The
+  review of #816 concluded from that verdict that a prompt diff was owed and
+  named it as the next run's item. It was not owed. The prompt had already been
+  reworded six times with one revert, and the seventh would have been written
+  against a rule the pipeline no longer asks a model to apply.
+- This run shipped the repair for law 8 and not for the class.
+  `MOVED_LAWS` in `docs/voice/check_voice.py` declares the moved laws, one row
+  per law, and `moved_fix` verifies the call is still present on `main` so a
+  fix that was built and then unwired reads `UNWIRED` rather than as a fix.
+  That is a hand-written table. A law the engineer moves tomorrow is invisible
+  to it until this seat writes the row, and the seat most likely to need the
+  row is the one that does not know the move happened.
+- **Why the general form is not this seat's to write.** The honest question is
+  "which merged, undeployed commit anywhere in this repository fixes law N",
+  and answering it means reading the queue over every file a law's fix can
+  land in: `prompts/digest.md`, `pipeline/*.py`, and the gates under
+  `tools/`. The citation that makes the current command mechanical is a
+  convention of one file, where the generator names the law each rule serves
+  inline twenty-six times. `pipeline/` has no such convention and should not be
+  given one by a seat that does not own it, which is incident 23's class.
+- What: the commit message is the surface that already works across files. The
+  charter asks a prompt diff to cite the law it serves, and `97de5c8b` and
+  `c5a32e4c` both do it in their subject lines. So the cheap version is a
+  repository-wide read of `deployed..origin/main` for subjects and bodies that
+  cite a canon law, with no file restriction, reported beside the current
+  per-file reading rather than replacing it. The expensive half, which is
+  whether an uncited commit touches a law, is only answerable where the
+  citation convention exists and should stay scoped to the generator.
+- Why it is worth more than its size. This instrument's one job is to stop a
+  seat wording a rule that is already fixed, and it is the only input to the
+  charter's structure-watch step. Every time that step succeeds it moves a law
+  into the state the instrument misreads, so the failure rate rises with the
+  step's success rate. Measured today: one law in that state out of the
+  thirteen the generator cites, and the one the live grade failed worst.
+- First step: run the citation grep over `deployed..origin/main` with no
+  `--` path and count how many commits cite a law from outside
+  `prompts/digest.md`. Today's answer should be at least one, `3cd597a4`.
+  If it is one, the table is enough for now and this entry waits. If it is
+  several, the per-file read is understating the queue for several laws and
+  the repository-wide reading is the fix.
+- Whose call: the engineer seat for where it runs, this seat for what it
+  reports. `docs/voice/check_voice.py` is this seat's file, so the code can
+  land here. The convention it depends on is not this seat's to impose.
+- Cost: $0
+- Status: proposed
