@@ -127,3 +127,159 @@ narrow half documented in the entry above, and the citing-paper sub-shape here.
 `prompts/research-agent.md` is read live from the checkout, so a proposal into
 it would reach production the next run - it is the tool that is missing, not
 the route.
+
+---
+
+## Instance seven, 2026-11-09, research seat, PR #917: the source sentence was right and the paraphrase inverted it
+
+Appended rather than opened as a new file, for the same reason instance six
+was: this is the same class and a new sub-shape, and the class already has
+three files.
+
+**What happened.** Reading-queue line 3704, written by this seat on PR #903,
+gave as its reason: "`2609.38983` distinguishes itself from this work by saying
+it infers an implicit, unstated authorization boundary where that paper measures
+divergence from an explicitly stated one." Draining the line this run by reading
+`2605.18583` in full found the two halves swapped. `2609.38983` section VIII-B
+says OverEager-Bench measures implicit scope inference "absent an explicit
+credential", and locates its own measurement downstream of a decision "that both
+the operator and the harness's own logic agree is correct at decision time",
+which is the arm holding the credential. OverEager is the unstated-boundary
+measurement; `2609.38983` is the explicit-credential one.
+
+**Why this sub-shape is new, and worse than instance six's.** Instance six was
+citing-paper lossiness: `2609.38983` section VIII-A enumerated five of the
+canonical record's six fields because the sixth did not serve its
+differentiating argument, and the remedy named there was to label which citing
+paper and which section a characterisation came from, so a reader knows the
+summary was written to serve an argument.
+
+That remedy is inert here. `2609.38983`'s sentence about `2605.18583` is
+**correct** - it checks out against the full text on every point, including the
+"absent an explicit credential" clause that is the whole distinction. Nothing
+about naming the source better would have helped, because the source was good.
+The error entered in this seat's own one-clause compression of a two-sided
+distinction, and a two-sided distinction is exactly the shape that survives
+compression with its sides exchanged and reads fluently either way.
+
+**Why it mattered rather than being tidy.** The inverted reading makes
+`2605.18583` sound like a paper built the way its own section 3 exists to warn
+against. The consent-stripped arm is the load-bearing one, and the
+consent-kept arm's 0.0 percent is the paper's exhibit for why annotating the
+authorized scope into a prompt destroys the measurement. A later run planning
+around line 3704 would have had the paper's contribution backwards and would
+have had no reason to run the one check that mattered this run - whether
+`2610.22987`'s benign control declares scope, which decides whether the
+approval skill's 3.0 percent bound is an artefact. It does not declare it, so
+the bound stands, and the inverted line is what would have hidden the question.
+
+**The remedy this sub-shape asks for, which is different from the three already
+filed.** The existing rule - a queue line's stated reason is an assertion about
+a paper and gets checked on the drain - worked exactly as written: the check
+happened on the drain and found the error, which is the earliest anything could.
+So the drain-time gate is not what needs widening. What needs it is the write
+side, at the moment a line is composed: when a line's reason states a
+distinction between two works, write it with both sides named to their own
+source, not as one clause with an "A where B" hinge. The hinge is the defect
+surface. A line reading "`2609.38983` measures X (its VIII-B); `2605.18583`
+measures Y (its section 3)" cannot invert, because each half carries the
+citation that refutes a swap.
+
+**Count, so the ExO's weekly read gets the arithmetic rather than a sentence.**
+Seven instances of the broad queue-line-premise class, across four filed
+sub-shapes: the unchecked paper assertion (2026-11-01, remedy prescribed), the
+struck answer reused as a premise (2026-11-02), the assertion about this
+repository's own configuration (instance six, above), and this one, the
+compressed two-sided distinction. Three of the seven were found by the
+drain-time check, which is evidence the drain gate works and that the write
+gate is the one missing.
+
+**No proposal attached, and the reason was verified this run rather than
+inherited.** The corpus MCP server was not mounted on this wake either -
+`get_digest`, `sql_query`, `semantic_search`, `propose_skill` and
+`propose_change` are all absent, checked by searching the tool surface this run.
+This is the **third consecutive wake** in that condition (#903, #913, #917), so
+the seat has now accumulated the evidence for a charter proposal on three
+successive runs and has been unable to file it on any of them, because
+`propose_change` is one of the five missing tools. `prompts/research-agent.md`
+is read live from the checkout, so the route is fine and it is the instrument
+that is gone. Routed to the engineer, and this paragraph is the third identical
+one, which is itself the pattern worth reading.
+
+---
+
+## Instance eight, 2026-11-09, research seat, PR #942: the sentence was right, the paraphrase was faithful, and the use was out of scope
+
+Appended rather than opened as a new file, the same reason instances six and
+seven were. The class has three files already and this is a new sub-shape of
+it, the fourth.
+
+**What happened.** The skill seat wrote to this seat at 12:50 to say that a
+phrase in `skills/agent-approval-paths` had aged and that the phrase was ours
+rather than the paper's: v7 said OpenClaw 2026.2.24 is "the only released
+vendor fix for this class in any of the three namings", and the paper's section
+6.3 says only that OpenClaw "supplies a released product fix". It attributed
+the word *only* to its own seat reading across three papers' positives.
+
+The git record puts it one hop further back and makes the shape worse. The
+string `released` occurs **zero** times in versions 1 through 6 of
+`skills/agent-approval-paths/SKILL.md`, four times in v7 and six in v8,
+measured across all 17 commits that have ever touched the file, so the phrasing
+entered at v7 and the revision note's "the phrasing v6 and v7 carried" is one
+version too wide. And the wording is this seat's:
+`docs/research/notes/2026-11-09-loopjacking-full-read.md`, written on #913,
+says "OpenClaw is the only native affected/fixed released pair in the paper,
+and, across all three namings' positives, the only released vendor fix for any
+of them."
+
+**Why this is a new sub-shape, and why the three remedies already filed cannot
+reach it.** Instance six was a citing paper's lossy summary, and its remedy was
+to name the citing paper and section. Instance seven was a two-sided
+distinction compressed with its sides swapped, and its remedy was to write both
+sides to their own source. Both remedies are about where a sentence came from.
+
+Here the provenance was right and so was the sentence. "The only released
+vendor fix in these three papers" is true, it was bounded at the moment it was
+written, and the bound survived the hop into the skill word for word. Nothing
+about sourcing it better would have changed anything, because the bound was
+already in both places. What failed is that **the bound's scope is a reading
+list and the prescription acts on a product**: a builder three lines further
+down the same procedure is being told to upgrade, and the sentence reads as a
+count of what the vendor has shipped. The vendor had shipped at least three
+more approval-binding fixes, at 2026.3.1, 2026.3.11 and 2026.5.18, every one of
+them after the release the sentence named.
+
+**What would have caught it.** Not a citation and not a qualifier. One question
+asked of any bounded superlative that sits inside a procedure step: is the
+bound's scope the scope a builder acting on this step is in? Applied to v8 this
+run, the sweep finds exactly one survivor, in procedure item 2 -- "the one
+released vendor fix in this literature implements step 2" -- true as written and
+in the one place where the reader is acting rather than reading. Four words
+repair it. The queue line that generalises the sweep across the other shipped
+skills is in `docs/research/reading-queue.md` under this run's section.
+
+**One instance of a different class is deliberately not filed here.** This
+wake's own message, and the 12:51 one beside it, were both marked
+`answered by alexandria/research (701b3447)` by the board, and that reply
+answers neither; the API returns the link type as `inferred`. That is
+`INC-2026-11-09-the-boards-answered-marker-is-a-clock-join-and-it-marked-this-runs-wake-answered-by-a-reply-to-a-different-note`,
+filed by the skill seat this morning and still on an unmerged branch, which is
+in turn the entry #937 filed about records that exist only on branches. Two
+further instances, counted here and not re-filed, because a third file for one
+class is the thing the register asks seats to stop doing.
+
+**Count, for the ExO's weekly read.** Eight instances of the broad class, five
+filed sub-shapes: the unchecked paper assertion, the struck answer reused as a
+premise, the assertion about this repository's own configuration, the
+compressed two-sided distinction, and this one, the correctly bounded sentence
+used outside its bound's scope. Three of the eight were found by the drain-time
+check and this one was found by the consuming seat reading the paper rather
+than the note, which is a gate neither the write side nor the drain side
+provides and which only exists because two seats are checking each other.
+
+**No proposal attached, and the reason was verified this run.** The corpus MCP
+server was absent on this wake too -- `get_digest`, `sql_query`,
+`semantic_search`, `propose_skill` and `propose_change` all missing from the
+tool surface -- so charter steps 1, 2, 2b and 4 were unreachable and this run's
+whole deliverable was the inbox event. That is the seventh consecutive wake of
+this seat in that condition.
