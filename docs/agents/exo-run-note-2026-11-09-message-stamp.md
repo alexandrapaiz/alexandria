@@ -115,6 +115,26 @@ merger, and did not decide the precedence — the first because the file is in
 flight, the last two because the decision is the engineer's to make on this
 side.
 
+## The merge back, which reproduced both of today's defects on me
+
+Readying put the branch `CONFLICTING` against three registers.
+
+- **Row collision**, not an append: `main` had taken owed row 21 for the
+  reply-link row from this seat's own earlier merge while I had allocated 21 and
+  22. Mine became **22 and 23**, each recording the number it came from (L-A18).
+  The hole this file left at 16 this morning was avoiding exactly this; it
+  arrived on the next pair.
+- **Ordering**: resolved trunk-block-first by content stamp. `main`'s own copy
+  of the resolver has no stamp rule yet, so it would have put my newer block
+  first — the defect the engineer fixed, still live on the trunk until #920
+  lands.
+- **The gate caught me editing inside the merge.** My first resolution added an
+  editorial paragraph to the relay delta in the merge commit, and `--check`
+  exited 1 on it — eleven lines "duplicated: 1 of an expected 0", plus one blank
+  line short in the learning log from my own join. Redone as a pure
+  concatenation, audited clean, with the paragraph in the commit after it.
+
 Gates run on this branch before readying: `tools/check_registers.py` 0 blocking,
 `tools/incidents.py check` nothing malformed, `tools/prose_symbols.py` 0
-findings.
+findings. After the merge: `resolve_register_conflict.py --check` on the merge
+commit reads **balanced** on both appended registers, exit 0.

@@ -13056,10 +13056,39 @@ a defect of HQ's tool, because theirs'-order-verbatim is right for a register
 maintained by inserting in date order. Owed row 16 — the 14:36Z spend-cap
 prediction — is **not yet answerable at 11:3xZ** and has an answer at 15:00Z.
 
+### 6. My own merge reproduced both halves of today's register class, twenty minutes after I reported them
+
+The pull request went `CONFLICTING` the minute it was readied, against three
+registers, and both of the morning's defects turned up in my own resolution.
+
+**The number, not the append.** `main` had taken row 21 of the owed list for the
+reply-link row from this seat's own earlier merge, and I had allocated 21 and 22
+on this branch. Same page, same hour, same seat, two branches. My rows became
+**22 and 23**, each carrying the number it came from, per L-A18. The owed file
+already explains a *hole* at 16 left for exactly this reason this morning; this
+is the collision the hole was avoiding, arriving on the next pair of numbers.
+
+**The ordering, and main's own copy of the tool would have got it backwards.**
+`origin/main` has no stamp rule yet — the engineer's fix is unmerged — so
+`resolve_register_conflict.py` there still concatenates ours-first, and ours is
+the branch. I resolved by content stamp instead, trunk block first, which is
+what the unmerged version would have done.
+
+**And the gate caught me editing inside the merge.** My first attempt added an
+editorial paragraph to the relay delta in the merge commit itself, and
+`--check` exited **1** on it: eleven lines "duplicated: 1 of an expected 0" in
+`hq-relay.md`, which is the arithmetic correctly reporting prose that is in
+neither side, plus one blank line short in `learning-log.md` from my own
+join. I redid the merge as a pure concatenation and put the paragraph in the
+commit after it. **The line-count audit earns its keep here on exactly the case
+it was not built for**, and the lesson is narrow enough to state: a merge commit
+that also edits is unauditable by any arithmetic over the three stages, so the
+editorial commit goes after the merge and never inside it.
+
 ### What I did not do, and this was a wake run
 
 Skipped, per §0's wake-run list: the register sweeps, the unowned-duty hunt, the
 public-claim sweep and the dispatch-queue re-verification. One improvement, not
-three, and it was taking row 17. I added rows 21 and 22 to the owed list rather
-than fixing the two findings myself, because the file is another seat's and it is
-in flight.
+three, and it was taking row 17. I added two rows to the owed list — 22 and 23
+after the merge renumbered them — rather than fixing the two findings myself,
+because the file is another seat's and it is in flight.
