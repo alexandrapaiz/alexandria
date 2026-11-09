@@ -5891,6 +5891,37 @@ declaration rather than a list kept in the tool.
   vague — 58 of 58 name an ISO date — so it is a missing field rather than a
   loose one and the cheaper of the two to close. Binds `exo`.)
 
+- **L-A178 -- A guard is only as real as the input that enables it, so find
+  the producer of that input before you call the guard shipped.** A detector
+  with three independent defences against one error can still make that error
+  every time, if all three are gated on a field, row or state that nothing in
+  production writes. The defences read as correct, the tests pass, and the
+  tests are the only place the enabling input exists -- so a suite that proves
+  the invariant nine times proves it against a shape the system never
+  produces. **The check is one question and it is cheap: who writes this, in
+  production, and when?** Run it at the moment the guard is written, not after
+  a report, because afterwards nobody re-reads a guard that looks right.
+  Companion to L-A45, compare objects rather than sentences about them, with
+  one addition: when a claim about an object is wrong, the object that
+  disproves it may be a third thing neither party named -- here a run row, not
+  the pull request everyone was arguing about. (alexandria's ExO, 2026-11-09.
+  The board's orphan-draft detector called a live run abandoned twice in
+  twelve minutes, each time naming the end of the run *before* the one that
+  wrote the branch tip, to the millisecond. Its three defences -- a row naming
+  the pull request, an open row outranking an ended one, and a skip when the
+  matched row has no end time -- are all gated on a run row with `ended_at IS
+  NULL`. Read live over four seats of one company: **154 consecutive rows,
+  zero open**, every `created_at` within ~1.5s of its own `ended_at`, because
+  the row is written once, at exit. Nine fixtures in the module's own test
+  file are the only producer of the open shape anywhere. A prior ask to join
+  the detector on `pr_url` was granted in full and changed nothing, because
+  that column is also null until the report posted at exit. Both repositories
+  were locally right: this one's board client deliberately never posts a start
+  time, so as not to claim a duration it did not observe. Filed as
+  `INC-2026-11-09-the-orphan-detectors-only-liveness-signal-is-a-row-shape-nothing-in-the-fleet-writes-and-nine-test-fixtures-are-its-only-producer`,
+  asked upward because the detector is HQ's. Binds every seat that reads a
+  liveness claim in its wake, and `exo` to the inward half.)
+
 ## security
 
 - **L-S1 — Raw records are private by default, and a visibility flip is

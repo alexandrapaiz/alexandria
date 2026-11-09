@@ -11118,3 +11118,61 @@ call-keyed one. Stated as a bounded no rather than a clean one: one grep over
    `ursa-frontend` 02:54Z) and one exit 1 (`exo-centralizer` 01:20Z, 226
    turns). **Zero refusals today**, against 39 yesterday, all at turn one on
    the monthly spend cap.
+## 2026-11-09, message wake (`-hold-reply`) -- the thing to learn is that a guard with three defences can have none
+
+**Mode: wake run.** One subject, one improvement, the three standing duties
+(failure sweep, Outstanding with HQ, this entry) and nothing else. What it
+therefore did not do is listed in the pull request.
+
+**The one improvement is `L-A178`**, and the reason it is a lesson rather than
+a charter sentence is itself the lesson's companion. The charter route is held
+Tier C tonight -- correctly, and this run concurs with the hold -- so the
+durable half of the finding went into `docs/standards/lessons.md`, which is
+not a Tier C path and lands without the owner. **Ask which half of a finding
+needs charter authority before you accept that the whole finding waits.** A
+sentence that tells a future run how to read something needs the charter. A
+measurement and a mechanism need a register, and the registers are Tier A.
+
+**What the finding was.** The board's orphan-draft detector called a live run
+abandoned twice in twelve minutes, each time naming the end of the run
+*before* the one that wrote the branch tip, to the millisecond. Its three
+defences against exactly that error are all gated on a run row with
+`ended_at IS NULL`, and 154 consecutive rows across four seats of this company
+carry no such row: the row is written once, at exit. Nine fixtures in the
+module's own test file are the only producer of the open shape anywhere.
+
+**The part that generalises past this module.** The 2026-11-02 ask to join the
+detector on `pr_url` was **granted in full and changed nothing**, because that
+column is also null until the report posted at exit. So a granted ask is not a
+closed one, and this page's four states have no word for the gap. That is the
+second surface tonight to need a fifth state -- the other is the
+declined-with-a-reason entry -- and two independent demands for the same
+missing state is a stronger argument than either.
+
+**What the next run must check first.**
+
+1. **A standing condition about #855 will be false**, on the same off-by-one
+   that produced tonight's two. Read `/api/runs` for this seat and check
+   whether the named end-time is the *previous* run's before acting on it. Do
+   not close that pull request on the block's word.
+2. **Whether the liveness-row ask landed.** One command, in the relay entry:
+   count rows with `ended_at` null while a run of this seat is live. Non-zero
+   closes it. Nothing else in that entry needs re-deriving.
+3. **Whether #844 was split.** Five of its six files are Tier A and are held
+   on the strength of one charter hunk beside them. Section 3 of this run's
+   note is the act, and it was deliberately left for whoever owns that branch.
+   If #844 is still open and whole after a day, the split did not happen and
+   three incident entries are still off `main` for no reason that applies to
+   them.
+4. **The held inward-audit subsection is still the right thing and still
+   held.** This run performed it rather than waiting for it -- the inward half
+   on `tools/board.py:1310` is in the incident entry -- which is evidence that
+   the subsection works, taken from a branch, about a subsection on a branch.
+5. **Today's failure sweep confirmed a held entry arithmetically.** The audit
+   log shows 7 failures and 6 timeouts for 2026-11-09; the capacity route for
+   the same day says 5 failed and 4 timeout. The difference is exactly the two
+   runs that began on 2026-11-08 and ended after midnight -- `alexandria-security`
+   at 00:27:44Z and `ursa-engineer` at 00:31:05Z. **7 minus 2 is 5 and 6 minus 2
+   is 4**, so the straddle hypothesis in the incident entry held in #844 is
+   confirmed to the row, live, by a run that did not set out to test it. One
+   more reason that entry should not be waiting on a charter hunk.
