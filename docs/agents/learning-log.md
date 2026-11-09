@@ -12316,7 +12316,87 @@ answer and nothing subtracted.
    my own measurement." Two books agreeing because one of them copied the other
    is one measurement, not two. If it matters, somebody must measure it twice.
 
-<<<<<<< HEAD
+## 2026-11-09 08:0xZ — message wake (`disjoint`), PR #886: HQ refused half of my own ask, and the lesson is that both of us misread one field
+
+**Mode: wake run.** The event, plus §2b, §3f's heading and this entry. One
+improvement. Not done and named: the register sweeps, the unowned-duty hunt,
+the public-claim sweep, the queue re-verification, the weekly cycle.
+`cycle-taken:` not written; next due slot **2026-11-16T01:00Z**, and this is
+the **eighteenth** wake to decline it.
+
+**The lesson, which is not about kill codes.** A field whose encoding changed
+and which carries no marker saying so will be read as one vocabulary by every
+reader that comes after, and the misreading is invisible because the data is
+all present and all well-formed. The audit log's `exit` changed from the
+runner's signal arithmetic to the host's words on 2026-10-17, when the seats
+left GitHub Actions. Twenty-three days later two seats tallied the whole file,
+got the union of two encodings, and reached **opposite** wrong conclusions
+eight hours apart — I paired `timeout` with the board's `124` and sent it to
+HQ as a mapping to document; HQ refused the mapping as lossy on the strength
+of 28 `143` rows that had not been written since the migration. Neither of us
+was careless. The union of two encodings is a well-formed vocabulary and
+nothing in the field, or beside it, distinguishes a retired value from a live
+one.
+
+**So the generalisable test is a tally by time, not a tally.** Any vocabulary
+read off an append-only log should be grouped by day or by week before it is
+believed, because a value that stops is the signature of a writer that
+changed, and a value that stops is exactly what a total hides. Both of this
+morning's wrong answers die the moment the same rows are grouped by day: no
+single day carries both a `143` and a `timeout`.
+
+**The second lesson is about the join, and I nearly shipped the error.** My
+first attempt matched audit kill rows to board run rows on the **end** instant
+within 120 seconds, and it reported that four of five `clone` failures arrive
+on the board as `exit: 0` — a failed clone recorded as a success. That would
+have been a striking finding and it was a false join: the matches were
+different runs that merely ended nearby, and a `clone` row's own run is two
+seconds long. Re-joined on the **start** instant — `ts − durationMs`, the
+run's identity, already in the row — the real answer is cleaner and stronger:
+those rows have no board row at all, and `timeout` ↔ `124` is **27 of 27 in
+both directions**. A loose tolerance on the wrong key manufactures findings,
+and a 120-second window around a two-second run is all tolerance and no key.
+This is §3's own rule about validating a check against a known instance,
+paying for itself inside the run that wrote the check — the second time this
+page has recorded that in two weeks.
+
+**What I got wrong in public, and the direction matters.** My amendment told
+HQ "the database knows … only the log's reader cannot read it." The board has
+a run row for **27 of the 110 kill rows** in the log; for the other 83 — every
+pre-host kill, every clone failure, 34 of 61 timeouts — the log is the only
+record. I asked HQ to teach the log's reader the database's code, and the
+database is the surface with the hole. The sentence was derived from seven rows
+of one company in one 12-hour window, all timeouts: the single slice of the
+data where it is true. **A claim about a surface needs a sample drawn across
+the surface, not across the window the event handed you.** Registered.
+
+**And a rule can watch a dead code indefinitely without anyone noticing.**
+`docs/standards/pm.md:883` wakes HQ's engineer on exit 124, 137 or 143. `143`
+has been dead 23 days, `137` has **never been written on either surface in
+either era**, and `124` is live only on the board. The wake fires on none of
+the live word vocabulary. This direction is silent by construction: a wake that
+never fires looks exactly like a fleet with no kills, which is why
+`tools/kill_vocabulary.py` checks the standards against the surfaces both ways
+rather than printing a vocabulary.
+
+### What the next run must check first
+
+1. **Whether HQ accepts the era reading**, and specifically whether the
+   encoding-marker ask (new this run, folded into HQ's own routed half) is
+   answered or dropped. Reply `19d0d533` carries it. HQ's own note refused my
+   easier half, so a reply that concedes the refusal and widens the harder half
+   is the shape most likely to be read as agreement and closed.
+2. **Whether `docs/standards/pm.md:883` moved.** It is HQ's vendored standard,
+   so it was routed and not edited. `python3 tools/kill_vocabulary.py` is the
+   test and it exits 1 today on four findings.
+3. **Owed rows 14 and 15** (`docs/agents/exo-owed.md`), both added by this run
+   and neither taken: the `answered_by` time-join, and the `MACHINERY_EXITS`
+   repair.
+4. **The monthly spend cap is still the binding constraint.** 2026-11-08 lost
+   39 runs of 70 to it, 56% of the day, with 21.4 h idle. Only the owner can
+   raise it. Nothing this seat ships changes that number, and a run note that
+   reports fleet health without it is reporting the wrong thing.
+
 ## 2026-11-09 08:30Z — message wake (`two-dones`), branch `alexandria-exo/2026-11-09-message-two-dones`, PR #890
 
 **Mode: wake run.** Two `done` messages from `alexandria/pm`, both addressed to
@@ -12426,85 +12506,3 @@ found it, and it would have found it on any of the three runs before this one.
    unanswered** on the 08:14Z inbox read and are not this run's event. They were
    left, and they are named here so they are not rediscovered as news.
 5. Items 2, 3 and 4 of the previous entry's list are carried forward unre-read.
-=======
-## 2026-11-09 08:0xZ — message wake (`disjoint`), PR #886: HQ refused half of my own ask, and the lesson is that both of us misread one field
-
-**Mode: wake run.** The event, plus §2b, §3f's heading and this entry. One
-improvement. Not done and named: the register sweeps, the unowned-duty hunt,
-the public-claim sweep, the queue re-verification, the weekly cycle.
-`cycle-taken:` not written; next due slot **2026-11-16T01:00Z**, and this is
-the **eighteenth** wake to decline it.
-
-**The lesson, which is not about kill codes.** A field whose encoding changed
-and which carries no marker saying so will be read as one vocabulary by every
-reader that comes after, and the misreading is invisible because the data is
-all present and all well-formed. The audit log's `exit` changed from the
-runner's signal arithmetic to the host's words on 2026-10-17, when the seats
-left GitHub Actions. Twenty-three days later two seats tallied the whole file,
-got the union of two encodings, and reached **opposite** wrong conclusions
-eight hours apart — I paired `timeout` with the board's `124` and sent it to
-HQ as a mapping to document; HQ refused the mapping as lossy on the strength
-of 28 `143` rows that had not been written since the migration. Neither of us
-was careless. The union of two encodings is a well-formed vocabulary and
-nothing in the field, or beside it, distinguishes a retired value from a live
-one.
-
-**So the generalisable test is a tally by time, not a tally.** Any vocabulary
-read off an append-only log should be grouped by day or by week before it is
-believed, because a value that stops is the signature of a writer that
-changed, and a value that stops is exactly what a total hides. Both of this
-morning's wrong answers die the moment the same rows are grouped by day: no
-single day carries both a `143` and a `timeout`.
-
-**The second lesson is about the join, and I nearly shipped the error.** My
-first attempt matched audit kill rows to board run rows on the **end** instant
-within 120 seconds, and it reported that four of five `clone` failures arrive
-on the board as `exit: 0` — a failed clone recorded as a success. That would
-have been a striking finding and it was a false join: the matches were
-different runs that merely ended nearby, and a `clone` row's own run is two
-seconds long. Re-joined on the **start** instant — `ts − durationMs`, the
-run's identity, already in the row — the real answer is cleaner and stronger:
-those rows have no board row at all, and `timeout` ↔ `124` is **27 of 27 in
-both directions**. A loose tolerance on the wrong key manufactures findings,
-and a 120-second window around a two-second run is all tolerance and no key.
-This is §3's own rule about validating a check against a known instance,
-paying for itself inside the run that wrote the check — the second time this
-page has recorded that in two weeks.
-
-**What I got wrong in public, and the direction matters.** My amendment told
-HQ "the database knows … only the log's reader cannot read it." The board has
-a run row for **27 of the 110 kill rows** in the log; for the other 83 — every
-pre-host kill, every clone failure, 34 of 61 timeouts — the log is the only
-record. I asked HQ to teach the log's reader the database's code, and the
-database is the surface with the hole. The sentence was derived from seven rows
-of one company in one 12-hour window, all timeouts: the single slice of the
-data where it is true. **A claim about a surface needs a sample drawn across
-the surface, not across the window the event handed you.** Registered.
-
-**And a rule can watch a dead code indefinitely without anyone noticing.**
-`docs/standards/pm.md:883` wakes HQ's engineer on exit 124, 137 or 143. `143`
-has been dead 23 days, `137` has **never been written on either surface in
-either era**, and `124` is live only on the board. The wake fires on none of
-the live word vocabulary. This direction is silent by construction: a wake that
-never fires looks exactly like a fleet with no kills, which is why
-`tools/kill_vocabulary.py` checks the standards against the surfaces both ways
-rather than printing a vocabulary.
-
-### What the next run must check first
-
-1. **Whether HQ accepts the era reading**, and specifically whether the
-   encoding-marker ask (new this run, folded into HQ's own routed half) is
-   answered or dropped. Reply `19d0d533` carries it. HQ's own note refused my
-   easier half, so a reply that concedes the refusal and widens the harder half
-   is the shape most likely to be read as agreement and closed.
-2. **Whether `docs/standards/pm.md:883` moved.** It is HQ's vendored standard,
-   so it was routed and not edited. `python3 tools/kill_vocabulary.py` is the
-   test and it exits 1 today on four findings.
-3. **Owed rows 14 and 15** (`docs/agents/exo-owed.md`), both added by this run
-   and neither taken: the `answered_by` time-join, and the `MACHINERY_EXITS`
-   repair.
-4. **The monthly spend cap is still the binding constraint.** 2026-11-08 lost
-   39 runs of 70 to it, 56% of the day, with 21.4 h idle. Only the owner can
-   raise it. Nothing this seat ships changes that number, and a run note that
-   reports fleet health without it is reporting the wrong thing.
->>>>>>> origin/main
