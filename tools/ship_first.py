@@ -226,8 +226,19 @@ def owner(agent, roster=None):
         return HQ
     if roster is None:
         roster = known_companies()
-    if head in roster or not roster:
+    if not roster:
         return head
+    # Longest match rather than the first segment, because one name on the
+    # roster has a hyphen in it. `head in roster` can never be true for
+    # `alexandra-systems`, since partitioning on the first hyphen yields
+    # `alexandra`. No key is written that way today, so this costs nothing now
+    # and it is the same defect as `exo-centralizer`: a split on the hyphen
+    # meeting a name that contains one. Fixing it here rather than filing it,
+    # because this function is the one place that was just rewritten to stop
+    # reading the hyphen as a namespace.
+    for name in sorted(roster, key=len, reverse=True):
+        if key.startswith(name + '-'):
+            return name
     return HQ
 
 

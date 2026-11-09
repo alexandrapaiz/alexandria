@@ -506,6 +506,25 @@ def test_the_owner_of_a_key_is_decided_by_the_roster_and_not_by_the_hyphen():
     assert sf.owner(None, roster) is None
 
 
+def test_a_company_whose_own_name_has_a_hyphen_is_matched_whole():
+    """The defect this change just removed, waiting one level down inside the
+    fix for it. `alexandra-systems` is on the roster and contains a hyphen, so
+    partitioning a key on its first hyphen yields `alexandra`, which is on no
+    roster, and a membership test on that can never be true. The host writes no
+    key in this shape today, which is the only reason it was free to fix: the
+    cost of finding it later is the cost of `exo-centralizer`, which is the
+    same split meeting the same kind of name."""
+    roster = {'alexandria', 'alexandra-systems'}
+    assert sf.owner('alexandra-systems-pm', roster) == 'alexandra-systems'
+    assert sf.owner('alexandria-pm', roster) == 'alexandria', 'and the short name still wins its own key'
+    # `alexandra-pm` matches no roster name, so it lands on HQ by the ordinary
+    # rule. Asserted through `sf.HQ` rather than by its value, because HQ's name
+    # is `alexandra-systems` and writing that string here would read as a match
+    # on the roster when it is the opposite.
+    assert sf.owner('alexandra-pm', roster) == sf.HQ
+    assert 'alexandra' not in roster, 'which is what makes the line above a fallthrough'
+
+
 def test_an_unreadable_roster_attributes_nothing_to_hq():
     """The attribution rests on the roster being readable, so an empty roster
     falls back to the shape rule rather than sweeping every hyphenated key it
