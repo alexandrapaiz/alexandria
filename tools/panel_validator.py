@@ -139,6 +139,7 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 import panel                        # noqa: E402
 import skill_eval                   # noqa: E402
 import skill_registrar as registrar  # noqa: E402
+import receipt_ranking           # noqa: E402
 
 REVIEWER = "validator"
 
@@ -195,29 +196,54 @@ def suite_of(skills_dir: pathlib.Path, slug: str) -> tuple[dict | None, str]:
 def trigger_receipt(skills_dir: pathlib.Path, slug: str) -> dict | None:
     """The newest trigger-test suite row for one skill, or None.
 
-    Newest by filename, which is how these files are named and sorted
-    everywhere else in the repository: the date leads. An `-experiment` or
-    `-retired` engine's receipt is skipped, because a receipt from an engine the
-    library does not run is not evidence about the library.
+    Newest by `tools/receipt_ranking.py`, which is the one rule every Python
+    reader of these bundles now calls, mirrored in JavaScript by `rankBundles()`
+    in site/lib/skill-provenance.js and executed against it by
+    tests/test_skill_receipts.py.
+
+    This used to be its own rule, and it was the second of three that disagreed.
+    It sorted filenames descending and never read `generated` at all, so where
+    the gate kept the alphabetically first bundle of a tied date this kept the
+    last, and no filename could satisfy both. Six consecutive days of that are
+    in `INC-2026-10-27-three-same-day-receipt-bundles-lost-one-tie-and-the-two-readers-break-it-opposite-ways`,
+    including one run that passed the gate and failed this check on the same
+    tree, which is the instance that proved the two were opposite rather than
+    merely different.
+
+    The policy this file is entitled to keeps its own name: a receipt from an
+    engine the library does not run is not evidence about the library, so an
+    experimental run is refused outright here rather than merely ranked below.
+    What changed is that the refusal reads `policy.pre_registered` **as well
+    as** the filename, rather than the filename alone. The old test let two
+    bundles through that their own policy declares experimental,
+    `2026-09-30-decoys-v1-lexical-3.json` and `2026-09-30-decoys-v2-lexical-3.json`,
+    because a heuristic over names cannot see a field. Swapping one test for
+    the other rather than taking both would only have moved the blind spot:
+    nothing in this file's own fixtures declares a policy at all, so the field
+    alone let a lexical/3 run count as the library's newest receipt. The
+    reasoning is in `receipt_ranking.not_evidence_about_the_library`.
+
+    `tied` names the bundles that rank equal to the one chosen, so a caller can
+    tell a receipt that was the newest from a receipt that was the
+    alphabetically first of several equally new.
     """
     results = skills_dir / TRIGGER_RESULTS
     if not results.is_dir():
         return None
-    for path in sorted(results.glob("*.json"), reverse=True):
-        if "experiment" in path.name or "retired" in path.name:
-            continue
-        doc, _ = read_json(path)
-        if not doc:
-            continue
-        for suite in doc.get("suites") or []:
-            if suite.get("skill") == slug:
-                cases = suite.get("cases") or []
-                passed = sum(1 for c in cases if c.get("passed"))
-                return {"file": path.name, "generated": doc.get("generated"),
-                        "engine": doc.get("engine"), "cases": len(cases),
-                        "passed": passed,
-                        "skill_sha256": suite.get("skill_sha256") or ""}
-    return None
+    found = receipt_ranking.newest_for(
+        receipt_ranking.load(results), slug, pre_registered_only=True
+    )
+    if found is None:
+        return None
+    doc, suite, equals = found
+    cases = suite.get("cases") or []
+    passed = sum(1 for c in cases if c.get("passed"))
+    return {"file": receipt_ranking.source_name(doc),
+            "generated": doc.get("generated"),
+            "engine": doc.get("engine"), "cases": len(cases),
+            "passed": passed,
+            "skill_sha256": suite.get("skill_sha256") or "",
+            "tied": [receipt_ranking.source_name(b) for b in equals]}
 
 
 # --------------------------------------------------------------- the checks
