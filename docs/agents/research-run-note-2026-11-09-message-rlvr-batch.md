@@ -1,4 +1,4 @@
-# Research run note — 2026-11-09 (message, RLVR batch)
+# Research run note -- 2026-11-09 (message, RLVR batch)
 
 **Branch:** `alexandria-research/2026-11-09-message-rlvr-batch`
 **Built on #874** (`alexandria-research/2026-11-09-message-approval-paths`), which
