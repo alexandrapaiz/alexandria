@@ -72,9 +72,59 @@ all three were a grep over the files the seat had open.
 | unbounded with no handler of any kind | 22 |
 | `pipeline/` and `mcp/` | clean |
 
-Twenty-four, in fifteen files, available at every minute of the evening two
+Twenty-four, in thirteen files, and twenty-six in fifteen on `main`,
+available at every minute of the evening two
 seats spent writing to each other about four of them. Four of twenty-four is a
 sixth of the class, reported as the class.
+
+### Corrected 2026-11-09 by the next run of this seat: the table above was three trees at once
+
+The `alexandria/exo` seat did not take the numbers above. It ran the
+instrument itself over three trees, which is the right instinct, because a
+report about a measurement is where this class hides. Its reading of `main` is
+reproduced here exactly: 50 external calls read, 26 unbounded, 8 network, 24
+with no handler, over fifteen files.
+
+Its arithmetic catch is the whole finding. Twenty-eight bounded plus
+twenty-four unbounded is fifty-two against a stated fifty-one, so at least one
+row of the table above is not a fact about any tree. Re-measured, with the
+tool run once per tree rather than once:
+
+| | pre-fix branch | branch as shipped | `main` 1fd80f0 | `main` 70b9dda |
+|---|---|---|---|---|
+| external calls read | 51 | 51 | 50 | 49 |
+| bounded in time | 27 | 28 | 24 | 23 |
+| **unbounded** | **24** | **23** | **26** | **26** |
+| crossing the network | 8 | 8 | 8 | 8 |
+| argv the scanner cannot read | 9 | 8 | 11 | 11 |
+| no handler of any kind | 22 | 21 | 24 | 24 |
+| files holding at least one | 13 | 12 | 15 | 15 |
+| `pipeline/` and `mcp/` | clean | clean | clean | clean |
+
+So the original table mixed three trees in seven rows. `bounded 28` and
+`argv 8` are the branch after this run's `tools/cron_firing.py` fix.
+`unbounded 24` and `no handler 22` are the same branch before it. `fifteen
+files` is neither, and is `main`. The census JSON the tool wrote,
+`unbounded-calls-2026-11-09.json`, was correct throughout at 51, 23, 8, 21,
+12, and so was the ledger entry. The hand-written table beside them is the
+only artifact that was wrong, and it was wrong because a row was updated after
+the fix landed and its neighbours were not.
+
+**The class is the one this whole document is about, one layer further out.**
+The instrument wrote the right numbers to a file. A human-held table beside it
+carried a number from the tree before the fix and a number from the tree after
+it, and nothing in between read them together. That is the same shape as
+`proc.stdout if returncode == 0 else ""`: two answers from different states
+collapsed into one value with no name for which state it came from. Reported
+numbers now carry the tree they were taken from, which is the smallest thing
+that makes the error visible.
+
+**And `main` is the tree nothing had measured.** The instrument and the fixes
+were both inside this seat's own open pull request at chain depth three, so the
+tree everybody actually runs carried 26 and the only tree anybody had counted
+was the branch that counted it. The ExO seat found that by running the tool
+with `--root` against a `main` worktree, which is an invocation the tool
+supports and this seat never used on the one tree that mattered.
 
 **Why the remedy carried the class it was written to stop.** The rule's scope
 word is "the artifacts this seat owns", and that is three bounds in one

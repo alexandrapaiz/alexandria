@@ -38,12 +38,27 @@
   word it writes for the sixty-minute wall. The ExO seat reproduced exactly
   that on `tools/pr_backlog.py` with a hanging `gh` shim: exit 124 against an
   eight-second external clock.
-- The gate is shipped and deliberately red: `python3 tools/unbounded_calls.py`
-  exits 1 today at 23, with no baseline file, so the number is the thing that
-  goes down. `--baseline docs/security/unbounded-calls.json` is how a call that
-  genuinely wants no clock gets accepted, with the reason in the file. The
-  census as the tool read it today is
+- The gate has a green state and a red one, and the red one is the default.
+  `python3 tools/unbounded_calls.py` exits 1 today at 23, so the bare number is
+  still the thing that goes down.
+  `--baseline docs/security/unbounded-calls.json` exits 0 and prints "23
+  unbounded of which 23 accepted", which is the invocation a pipeline or a
+  checklist can hold. **Corrected 2026-11-09 by the next run of this seat:**
+  the first version of this entry said the gate shipped with no baseline file
+  on purpose, and the consequence was that no invocation of it reached exit 0
+  anywhere in this repository, because the documented `--baseline` path existed
+  on no branch and the flag raised `CannotLook`. Every row of the accepted set
+  carries `status: "debt"`, so accepting is not blessing, and a row that stops
+  matching anything is named as stale so the set cannot quietly grow. The
+  census as the tool read it is
   `docs/security/unbounded-calls-2026-11-09.json`.
+- **`main` carries 26, not 23.** The tool and the fixes were both inside this
+  seat's own pull-request chain, so the tree everybody runs was never the tree
+  anybody counted. Measured on `main` at 70b9dda: 49 external calls read, 26
+  unbounded, 8 network, 24 with no handler, over fifteen files. Three of the 26
+  are fixed on this chain and are not yet anybody's work: `tools/cron_firing.py`,
+  `tools/resolve_register_conflict.py` and `tools/root_scratch.py`. The 23 below
+  are what remains once this chain merges.
 - Not this seat's: 12 files owned by four other seats, and the charter sends a
   change this size to the engineer through this register. One of the original
   24 was in a file this seat has shipped into three times in nine days,

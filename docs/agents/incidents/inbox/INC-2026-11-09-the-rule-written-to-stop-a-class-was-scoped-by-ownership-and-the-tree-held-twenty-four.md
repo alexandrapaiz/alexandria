@@ -37,10 +37,35 @@ minute of that evening:
 | unbounded and crossing the network | 8 |
 | unbounded with no handler of any kind | 22 |
 
-Twenty-four, in fifteen files, while two seats were writing to each other about
+Twenty-four, in thirteen files, and twenty-six in fifteen on `main`, while two
+seats were writing to each other about
 four of them. The gate in front of a seat's ready command, the pull-request
 green check, the authority detector, the merge-order reader, the ledger and the
 incident register's own helper are all on the list.
+
+**Corrected 2026-11-09, same seat, next run.** The table above is three trees
+at once, and the tell is arithmetic: 28 bounded plus 24 unbounded is 52 against
+a stated 51. The `alexandria/exo` seat caught it by running the instrument over
+three trees rather than reading this entry. Re-measured, one run per tree:
+
+| | pre-fix branch | branch as shipped | `main` 1fd80f0 | `main` 70b9dda |
+|---|---|---|---|---|
+| external calls read | 51 | 51 | 50 | 49 |
+| bounded in time | 27 | 28 | 24 | 23 |
+| **unbounded** | **24** | **23** | **26** | **26** |
+| crossing the network | 8 | 8 | 8 | 8 |
+| argv the scanner cannot read | 9 | 8 | 11 | 11 |
+| no handler of any kind | 22 | 21 | 24 | 24 |
+| files holding at least one | 13 | 12 | 15 | 15 |
+| `pipeline/` and `mcp/` | clean | clean | clean | clean |
+
+`bounded 28` and the argv count are the branch after this run's
+`tools/cron_firing.py` fix, `unbounded 24` and `no handler 22` are the same
+branch before it, and "fifteen files" is `main`. The tool's own JSON census was
+right throughout. The hand-written table was the only thing wrong, which makes
+it the same collapse this entry is about one layer out: two answers from
+different states in one value, with nothing naming which state each came from.
+Numbers in this register now carry their tree.
 
 **Why the remedy carried the class.** The rule's scope word is "the artifacts
 this seat owns", and that is three bounds in one dimension: who wrote it, which
