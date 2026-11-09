@@ -6,7 +6,7 @@
   "adr": "ADR-36",
   "subject_model": "kimi (ADR-32 funded account) by default; a Claude run is the monthly OKR benchmark",
   "judge": "a model other than the subject; rubric tasks only",
-  "note": "Eight tasks: six treatment and two controls. Two of the six are `tests_pass` hard checks rather than rubrics, under ADR-38 rule 6, and they cover deltas 1 and 3; delta 2 is advice-shaped at both of its tasks and is judged, which is the rule's own carve-out. NOT ONE TASK HAS BEEN QUALIFIED. ADR-38 rule 5 says a task counts toward the delta only if a bare subject fails or partially passes it, measured in a bare-first pass before any with-arm run, and this seat has no route to either eval arm, so that pass has not run. Every `without_skill` here is an authored prediction and says so in its own `without_skill_basis`. The two exceptions are partial and worth naming: for ap-t4 and ap-t6 the PREDICTED BARE ANSWER was written out and actually run against the fixture, so the 3-of-4 and 2-of-4 figures are measured facts about the fixture's discrimination. What is still authored there is the claim that a bare subject would write that answer. The honest summary is that this suite's instrument is partly measured and its qualification is entirely unmeasured.",
+  "note": "Nine tasks: seven treatment and two controls. Two of the six are `tests_pass` hard checks rather than rubrics, under ADR-38 rule 6, and they cover deltas 1 and 3; delta 2 is advice-shaped at both of its tasks and is judged, which is the rule's own carve-out. NOT ONE TASK HAS BEEN QUALIFIED. ADR-38 rule 5 says a task counts toward the delta only if a bare subject fails or partially passes it, measured in a bare-first pass before any with-arm run, and this seat has no route to either eval arm, so that pass has not run. Every `without_skill` here is an authored prediction and says so in its own `without_skill_basis`. The two exceptions are partial and worth naming: for ap-t4 and ap-t6 the PREDICTED BARE ANSWER was written out and actually run against the fixture, so the 3-of-4 and 2-of-4 figures are measured facts about the fixture's discrimination. What is still authored there is the claim that a bare subject would write that answer. The honest summary is that this suite's instrument is partly measured and its qualification is entirely unmeasured. ap-t7 was added 2026-11-09 with the delta-2 revision, against the predicted-against-observed effects rule, and is the newest and least screened task here; like the other eight it has not been qualified.",
   "policy": {
     "repetitions": 3,
     "subject": "kimi-k2.6",
@@ -578,6 +578,102 @@
       "exploit": {
         "answer": "Each record should contain the exact text the human was shown at approval time, stored alongside the action, because the action alone does not record what they consented to.",
         "why": "Same as ap-c1: a one-criterion control is not exploit-resistant by design. Recorded rather than omitted so the sweep has a row."
+      }
+    },
+    {
+      "id": "ap-t7",
+      "kind": "treatment",
+      "sections": [
+        "Delta 2: the cost of the path is the uninspectable rate, not the latency"
+      ],
+      "form": "prompt",
+      "situation": "Delta 2's predicted-effects result, as corrected on 2026-11-09 after the paper was re-read. A team has correctly decided to stop approving from command text and to approve from effects instead, and then reaches for the cheap way to get effects, which is to ask a model to predict them. The paper measures that exact substitution, and the answer is a trade rather than a refusal: prediction cuts harm as far as observation does and pays for it in twin false blocks, abstaining into a block on anything it cannot read. The task was revised twice on 2026-11-09. The first version graded the refusal as the best answer, on this file's own then-current misreading of the row. The second priced the substitution at 61.8 percent of safe twins against none, which attached the right number to the wrong baseline: the paper prints 61.8 for the full-dialogue arm as well, both pool to 63 of 102, so prediction's cost against the approver it replaces is zero and the 60.8 points against observation is the price of approving from text at all. Observation is 1 twin of 102 and not none. Both earlier readings are in REVISIONS.md. The decision this task is now about is whether the respondent prices the substitution against the baseline the team actually has.",
+      "source": {
+        "paper": "Shall We Approve? Consequence-Aware Approval for Autonomous Coding Agents (Caper)",
+        "arxiv": "arxiv.org/abs/2610.40753",
+        "claims": [],
+        "claims_note": "no claim row exists yet; read in full by the skill seat on 2026-11-09 and queued for ingestion in docs/research/reading-queue.md. The compute blocker cleared 2026-11-08, so the row waits on the next distill run"
+      },
+      "prompt": "Our coding agent asks the operator to approve shell commands, and we have accepted that the command text does not tell the operator enough. We are going to fix it by having a second model read the command and the working directory, predict what it will do, and show that prediction in the approval dialog. That is much cheaper than actually running anything. Tell us whether this works, and what the alternative costs.",
+      "without_skill": "Endorses the plan with refinements: a good prediction prompt, a confidence score, structured output, a risk taxonomy, caching, a fallback to blocking on low confidence, and a note that the predictor could be wrong or itself be prompt-injected. It treats prediction and observation as the same mechanism at different price points and recommends prediction on cost grounds. The decision it gets wrong is not the choice but the price: it carries no number on either axis, so it cannot say that the harm reduction survives the substitution while the burden does not, and its stated worry is predictor reliability, which is the axis the measurement says is fine. It does not name pre-execution with rollback as the construction that pays both, and does not require the judgment to sit outside the agent loop and before the commit.",
+      "without_skill_basis": {
+        "kind": "authored-judgement",
+        "note": "the author's model of what a bare subject would answer. Never observed against a bare subject: this seat has no route to either eval arm, so the ADR-38 rule 5 bare-first qualification pass has not run for any task in this file. Written 2026-11-09 and corrected twice the same day, so it is the least screened task in this file and by some distance the most revised. One warning for whoever runs the bare-first pass: the authored bare answer treats prediction and observation as one mechanism at two price points, and the corrected reading makes that closer to right than either earlier version allowed, since on harm they are equivalent and on burden prediction is free against the text baseline. The bare answer still carries no number and no baseline, which is where any delta would have to come from, but this task is now a live candidate to fail rule 5 as a control rather than to qualify."
+      },
+      "with_skill": "Prices the substitution on the axis it spends rather than rejecting it. Says that predicted effects cut harm as far as observed effects do, so the cheap option is not a safety regression, and then prices it against the baseline being replaced rather than in the abstract: against the full-dialogue approver this team already runs the twin false-block cost is zero, because the paper prints 61.8 percent for both arms and both pool to 63 of 102, and against observed effects it is 60.8 points, 61.8 against 1 twin of 102. Carries the per-level row, 46.2, 57.7, 46.2 and 100.0 against 0.0, 0.0, 0.0 and 4.2. Identifies the 100.0 as an abstention, because the predictor cannot read binaries and blocks every twin where prediction is impossible. Still prescribes pre-execution in a snapshotted sandbox rolled back on a block, with the approver outside the agent loop deciding before the commit, and prices it honestly: roughly 0.5 s per allowed command, 1.5 s per blocked one, and the exposure that pre-execution is a real execution so effects leaving the sandbox are not undone.",
+      "check": {
+        "type": "rubric",
+        "criteria": [
+          {
+            "id": "prices_prediction_on_the_right_axis",
+            "criterion": "States that predicted effects cut harm as far as observed effects and prices the burden against the baseline this team is actually replacing, which is the full-dialogue approver they already run and not observation.",
+            "anchors": {
+              "0": "Endorses or rejects the prediction plan with no number on either axis, or rests the answer on the predictor being unreliable or injectable, which is the axis the measurement says is not the problem. Also scores zero for treating prediction as simply worse than text, which two earlier versions of this file got wrong in turn.",
+              "1": "Says harm drops as far with prediction as with observation and names the twin false-block rate as the price, citing 61.8 percent or the per-level row, but attaches that cost to prediction without naming what it is measured against. This is the answer the previous version of this rubric scored highest, and it is the right number on the wrong baseline.",
+              "2": "Distinguishes the two comparisons: against the dialogue approver this team already runs the cost is zero, because the paper prints 61.8 percent for that arm too and both pool to 63 of 102, and against observed effects it is 60.8 points, 61.8 against 1 twin of 102. Concludes that for this team, which already approves from text, the prediction is free on the burden axis and the 60.8 points is what pre-execution would buy."
+            },
+            "certificate": {
+              "kind": "artifact",
+              "names": "the burden cost stated twice, once against the text-based approver being replaced and once against observed effects, so a reader can see that the headline 61.8 belongs to text-based approval rather than to prediction"
+            }
+          },
+          {
+            "id": "reads_the_hundred_as_an_abstention",
+            "criterion": "Reads the 100 percent twin false-block rate on the binary concealment level as an abstention rather than a misjudgment, because the predictor cannot read binaries.",
+            "anchors": {
+              "0": "Does not mention the binary level, or quotes the 100 percent as evidence that prediction misjudges.",
+              "1": "Notes the binary level is the worst case without saying why prediction is impossible there.",
+              "2": "Says the predictor cannot read a binary, so where prediction is impossible it blocks every twin, and names that as a conservative failure whose remedy is a different evidence source rather than a better prompt."
+            },
+            "certificate": {
+              "kind": "artifact",
+              "names": "the binary level identified as the case where prediction is impossible, with the 100 percent named as an abstention and not as an error of judgment"
+            }
+          },
+          {
+            "id": "observed_effects",
+            "criterion": "Prescribes observed effects from a real pre-execution in a sandbox that is rolled back on a block.",
+            "anchors": {
+              "0": "No alternative, or static analysis only.",
+              "1": "Suggests a dry-run mode or a sandbox without saying the decision is made from the observed effects.",
+              "2": "Names pre-execution in a snapshotted sandbox, the effects report as the approver's evidence, and rollback on a block."
+            },
+            "certificate": {
+              "kind": "artifact",
+              "names": "pre-execution with snapshot and rollback named as the mechanism, with the observed-effects report identified as what the approver decides from"
+            }
+          },
+          {
+            "id": "outside_and_before",
+            "criterion": "Requires the judgment to come from outside the agent loop and before the commit, and says why showing the effects to the agent afterwards is not the same control.",
+            "anchors": {
+              "0": "Silent on who decides and when.",
+              "1": "Says a human or second model should decide, without the before-the-commit requirement.",
+              "2": "Requires an approver outside the agent loop deciding before the commit, and names the failure of letting the agent that proposed the command see the diff and undo it itself."
+            },
+            "certificate": {
+              "kind": "artifact",
+              "names": "the approver placed outside the agent loop and the decision placed before the commit, with the after-the-fact staging alternative named and rejected"
+            }
+          },
+          {
+            "id": "prices_the_exposure",
+            "criterion": "Prices pre-execution honestly, including the exposure that it is a real execution whose effects outside the sandbox are not rolled back.",
+            "anchors": {
+              "0": "Presents pre-execution as free or as fully safe.",
+              "1": "Mentions latency or cost only.",
+              "2": "Gives a latency order and states that network calls, writes to remote services and spawned processes happen before the decision and survive the rollback, so the sandbox's egress has to be handled."
+            },
+            "certificate": {
+              "kind": "artifact",
+              "names": "a stated latency cost plus the named non-rollback exposure for effects leaving the sandbox, with a handling requirement for it"
+            }
+          }
+        ]
+      },
+      "exploit": {
+        "answer": "Do not show the approver predicted effects, show it observed effects. Prediction spends safe twins and observation does not. Pre-execute each command in a snapshotted sandbox, roll back on a block, and have an approver outside the agent loop decide before the commit rather than showing the agent its own diff afterwards. Price it: about half a second per allowed command and a second and a half per blocked one, and remember that pre-execution is a real execution, so effects that leave the sandbox are not undone.",
+        "why": "Walks the four criteria in order with no number attached to any of them: no burden figure, no baseline named for the one comparative claim it does make, no concealment levels, and the latency figures asserted without the exposure being handled. The certificates ask for the burden cost stated against two baselines and for a handling requirement on egress, and this is the rubric's headings in prose. It must score zero. Rewritten on 2026-11-09, because the version before it opened with the sentence that predicted effects measured worse than no evidence at all, which the paper refutes and which this file had itself asserted one version earlier. An exploit has to fail on form rather than on content, or a judge can credit it for disagreeing with a claim the file no longer makes, and a reader of the suite is taught a refuted fact by the one artefact in it meant to be rejected."
       }
     }
   ]
