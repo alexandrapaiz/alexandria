@@ -263,9 +263,27 @@ stamp that starts with it.
 
 So the condition this directory exists for cannot recur in the same shape. A
 second run on an occupied day writes a stamp, wins by recency, and moves
-nothing. The first bundle written that way is
-`../2026-11-09-lexical-2.2-approval-paths-v3.json`, stamped `08:38:37Z`, and it
-superseded the day's bare-dated bundle with no file moved and no name chosen.
+nothing.
+
+**Demonstrated end to end in the run that shipped it, three bundles deep.** The
+same day already held `../2026-11-09-approval-paths-v2.json` with a bare
+`generated: 2026-11-09`. That run then wrote
+`../2026-11-09-lexical-2.2-approval-paths-v3.json` at `08:38:37Z` and, after a
+second revision to the same skill,
+`../2026-11-09-lexical-2.2-approval-paths-v4.json` at `08:55:17Z`. All three sit
+in the ranked directory. The rule orders them `08:55:17Z`, then `08:38:37Z`,
+then the bare day, **no tie reported, no file moved and no filename chosen to
+win anything.** Under the old rule those same three names would have ordered
+`approval-paths-v2` first on the letter `a`, which is the oldest of the three,
+and the gate would have been green about it.
+
+The v3 and v4 pair is also a clean control of the kind the entries below keep,
+and it is free because the run had to write both. No `description` changed
+between them, so the composition the engine scores did not move: **75 of 85 in
+both, zero verdicts moved across all 85 cases, and `agent-approval-paths`'
+`skill_sha256` the only value that differs.** That is the fourth instance of the
+no-description-change regime and the first one measured without moving a file to
+get it.
 
 **The files already here are staying, deliberately.** The ranking no longer
 needs them out of the glob, so restoring them would be defensible, and the

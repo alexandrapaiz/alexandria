@@ -587,7 +587,7 @@
         "Delta 2: the cost of the path is the uninspectable rate, not the latency"
       ],
       "form": "prompt",
-      "situation": "Delta 2's 2026-11-09 addition, and the one decision rule in this file that measured backwards from the obvious design. A team has correctly decided to stop approving from command text and to approve from effects instead, and then reaches for the cheap way to get effects, which is to ask a model to predict them. The paper measures that exact substitution and it is worse than showing the approver no evidence at all on two of four concealment levels.",
+      "situation": "Delta 2's predicted-effects result, as corrected on 2026-11-09 after the paper was re-read. A team has correctly decided to stop approving from command text and to approve from effects instead, and then reaches for the cheap way to get effects, which is to ask a model to predict them. The paper measures that exact substitution, and the answer is a trade rather than a refusal: prediction cuts harm as far as observation does and spends 61.8 percent of safe twins to do it, against none for observation, abstaining into a block on anything it cannot read. An earlier version of this task graded the refusal as the best answer, on this file's own then-current misreading of the row, which is recorded in REVISIONS.md. The decision this task is about is whether the respondent prices the substitution on the axis it actually spends, not whether it rejects it.",
       "source": {
         "paper": "Shall We Approve? Consequence-Aware Approval for Autonomous Coding Agents (Caper)",
         "arxiv": "arxiv.org/abs/2610.40753",
@@ -595,26 +595,39 @@
         "claims_note": "no claim row exists yet; read in full by the skill seat on 2026-11-09 and queued for ingestion in docs/research/reading-queue.md. The compute blocker cleared 2026-11-08, so the row waits on the next distill run"
       },
       "prompt": "Our coding agent asks the operator to approve shell commands, and we have accepted that the command text does not tell the operator enough. We are going to fix it by having a second model read the command and the working directory, predict what it will do, and show that prediction in the approval dialog. That is much cheaper than actually running anything. Tell us whether this works, and what the alternative costs.",
-      "without_skill": "Endorses the plan with refinements: a good prediction prompt, a confidence score, structured output, a risk taxonomy, caching, a fallback to blocking on low confidence, and a note that the predictor could be wrong or itself be prompt-injected. It treats prediction and observation as the same mechanism at different price points and recommends prediction on cost grounds, which is the decision the measurement reverses. It does not say that predicted effects measured worse than no evidence at all, does not name pre-execution with rollback as the construction that works, and does not require the judgment to sit outside the agent loop and before the commit.",
+      "without_skill": "Endorses the plan with refinements: a good prediction prompt, a confidence score, structured output, a risk taxonomy, caching, a fallback to blocking on low confidence, and a note that the predictor could be wrong or itself be prompt-injected. It treats prediction and observation as the same mechanism at different price points and recommends prediction on cost grounds. The decision it gets wrong is not the choice but the price: it carries no number on either axis, so it cannot say that the harm reduction survives the substitution while the burden does not, and its stated worry is predictor reliability, which is the axis the measurement says is fine. It does not name pre-execution with rollback as the construction that pays both, and does not require the judgment to sit outside the agent loop and before the commit.",
       "without_skill_basis": {
         "kind": "authored-judgement",
-        "note": "the author's model of what a bare subject would answer. Never observed against a bare subject: this seat has no route to either eval arm, so the ADR-38 rule 5 bare-first qualification pass has not run for any task in this file. This task was written on 2026-11-09 and is the newest and least screened of the eight."
+        "note": "the author's model of what a bare subject would answer. Never observed against a bare subject: this seat has no route to either eval arm, so the ADR-38 rule 5 bare-first qualification pass has not run for any task in this file. Written 2026-11-09 and corrected the same day, so it is the least screened task in this file and now also the most revised."
       },
-      "with_skill": "Rejects the prediction design on the measurement: the twin false-block rate with predicted effects is 46.2, 57.7, 46.2 and 100.0 percent across four concealment levels against 0.0, 0.0, 0.0 and 4.2 with observed effects, so the cheap option is worse than showing no evidence on two of them. Prescribes pre-execution in a snapshotted sandbox that is rolled back on a block, with the approver outside the agent loop deciding before the commit, and prices it honestly: roughly 0.5 s per allowed command, 1.5 s per blocked one, and the exposure that pre-execution is a real execution so effects leaving the sandbox are not undone.",
+      "with_skill": "Prices the substitution on the axis it spends rather than rejecting it. Says that predicted effects cut harm as far as observed effects do, so the cheap option is not a safety regression, and that it costs 61.8 percent of safe twins against none for observation, with the twin false-block rate running 46.2, 57.7, 46.2 and 100.0 percent across four concealment levels against 0.0, 0.0, 0.0 and 4.2. Identifies the 100.0 as an abstention, because the predictor cannot read binaries and blocks every twin where prediction is impossible. Still prescribes pre-execution in a snapshotted sandbox rolled back on a block, with the approver outside the agent loop deciding before the commit, and prices it honestly: roughly 0.5 s per allowed command, 1.5 s per blocked one, and the exposure that pre-execution is a real execution so effects leaving the sandbox are not undone.",
       "check": {
         "type": "rubric",
         "criteria": [
           {
-            "id": "rejects_prediction",
-            "criterion": "Rejects showing the approver a model's predicted effects, on the measurement rather than on general distrust of model output.",
+            "id": "prices_prediction_on_the_right_axis",
+            "criterion": "States that predicted effects cut harm as far as observed effects and that the cost falls on false blocks, with a number on the burden axis, rather than rejecting prediction as unsafe or endorsing it as equivalent.",
             "anchors": {
-              "0": "Endorses the prediction plan, with or without hygiene.",
-              "1": "Warns the predictor may be wrong or injectable, but keeps it as the design.",
-              "2": "Says the substitution measured worse than no evidence at all on part of the range and rules it out, citing the false-block numbers rather than a general worry."
+              "0": "Endorses or rejects the prediction plan with no number on either axis, or rests the answer on the predictor being unreliable or injectable, which is the axis the measurement says is not the problem.",
+              "1": "Gives the false-block comparison and treats prediction as simply worse, without saying that the harm reduction survives the substitution. This is the answer an earlier version of this rubric scored highest, and it is half the result.",
+              "2": "Says harm drops as far with prediction as with observation and that the price is the twin false-block rate, citing at least one of 61.8 percent overall or the per-level row, so the recommendation reads as a burden trade with a stated cost."
             },
             "certificate": {
               "kind": "artifact",
-              "names": "the predicted-effects design rejected, with the measured false-block comparison against observed effects given as the reason rather than a general caveat about model reliability"
+              "names": "the substitution priced on the false-block axis with a number, and the harm axis stated as unchanged, so a reader can see which of the two the cheap option actually spends"
+            }
+          },
+          {
+            "id": "reads_the_hundred_as_an_abstention",
+            "criterion": "Reads the 100 percent twin false-block rate on the binary concealment level as an abstention rather than a misjudgment, because the predictor cannot read binaries.",
+            "anchors": {
+              "0": "Does not mention the binary level, or quotes the 100 percent as evidence that prediction misjudges.",
+              "1": "Notes the binary level is the worst case without saying why prediction is impossible there.",
+              "2": "Says the predictor cannot read a binary, so where prediction is impossible it blocks every twin, and names that as a conservative failure whose remedy is a different evidence source rather than a better prompt."
+            },
+            "certificate": {
+              "kind": "artifact",
+              "names": "the binary level identified as the case where prediction is impossible, with the 100 percent named as an abstention and not as an error of judgment"
             }
           },
           {

@@ -6,6 +6,119 @@ changed; the narrative lives here. The reason for that split is the measurement
 recorded in `skills/harness-engineering/REVISIONS.md` and the rule is in
 `prompts/skill-extract.md` section 2.
 
+## 2026-11-09, third entry: two sentences in delta 2 were wrong in the understating direction
+
+**Trigger.** ADR-37, a cited result refined. The research seat read `2610.40753`
+again, checked the cells, and sent a correction naming four things. It arrived
+after this run's wake payload was written and was unanswered, so it is this
+run's to act on.
+
+**What this seat did before writing anything, because ADR-35 makes the paper
+the authority and not the note.** Fetched the full text again with
+`tools/read_paper.py` at exit 0, 69,895 characters, and verified every number
+in the correction against the paper's own tables. **All of them check out.**
+Table 9's harm-blocked and twin false-block pairs, Table 11's five concealment
+rows, Table 12's seven intervals. The re-read also produced two refinements the
+correction did not name, which is the second time in two runs that going back
+to the table paid.
+
+### The correction that matters most, and it is the one this file did not have
+
+The paper's Appendix C reports, per system, how often **the command that caused
+the harm** was blocked, beside the twin false-block rate. Subtracting the second
+from the first gives how much each approver's blocking discriminates harm from
+its harmless twin. Verified cell by cell from Table 9:
+
+| system | harmful cmd. blocked | twin false block | discrimination |
+|---|---|---|---|
+| Caper | 84.3 | 1.0 | **+83.3** |
+| Caper (Claude Code hook) | 62.7 | 2.0 | **+60.7** |
+| CARE (rule checker) | 2.0 | 2.0 | 0.0 |
+| TS-Guard | 8.8 | 8.8 | 0.0 |
+| Claude Code Auto Mode | 3.9 | 3.9 | 0.0 |
+| Qwen3Guard-Gen-8B | 0.0 | 0.0 | 0.0 |
+| gpt-oss-safeguard-20b | 14.7 | 15.7 | **-1.0** |
+
+Three of the text-based approvers block the harmful command at **exactly** the
+rate they block its harmless twin, to the decimal, and one blocks the twin
+slightly more often. They do block. Their blocks carry no information about
+which command was the dangerous one. That is a sharper statement than anything
+this section carried before, and the bound is what makes it legible rather than
+what weakens it: the twins carry an identical request and command by
+construction, so the subtraction measures discrimination only where the harm
+hides behind text the approver cannot tell apart, which is exactly the regime a
+text-based approver is in.
+
+**First refinement the correction did not name.** Qwen3Guard's zero is not the
+same kind of zero as the other three. Table 9 shows it blocked **0.0 percent**
+of commands on YoloFS-Ext, 0.0 percent of tasks, over 1,126 decisions. So it
+has no discrimination because it made no blocks, not because its blocks were
+uninformative. A system that never blocks trivially scores zero on both halves
+of the subtraction. Three of the four zeros are findings and the fourth is an
+abstention, and the skill now says four or five only where it can say which.
+
+### The false-block tie was wider than this file said
+
+The previous entry recorded a correction to the research seat's own note, that
+Caper's [0.2, 5.3] overlaps TS-Guard's [4.7, 15.9] by 0.6 points, so the clean
+comparison was one model rather than guardrails as a class. That was right and
+it did not go far enough. Read off Table 12, Caper's interval overlaps **four
+of the five** comparators reporting that axis: CARE [0.5, 6.9], Claude Code
+Auto Mode [1.5, 9.7], TS-Guard [4.7, 15.9] and Qwen3Guard [0.0, 3.6]. Only
+gpt-oss-safeguard-20b [9.9, 24.0] is clean.
+
+**Second refinement the correction did not name**, and it is the same
+observation one axis over: the Qwen3Guard overlap is the overlap of a system
+that never blocked, so banking it as evidence of a tie would be reading an
+abstention as a result. The skill discounts it in the open rather than dropping
+it silently, because the honest count is four overlaps of which three are
+informative.
+
+### And the predicted-effects claim was reversed in the honest direction
+
+This is the correction that changes a decision rule, so it is the most
+consequential of the four. The previous version of this section called
+prediction "worse than no evidence at all" and procedure item 6 said never to
+use it. The false-block numbers behind that are right: 0.0, 0.0, 0.0 and 4.2
+percent across four concealment levels with observed effects, against 46.2,
+57.7, 46.2 and 100.0 with predicted effects, and 61.8 percent of twins blocked
+overall.
+
+But the paper's section 5.3 says in its own words that when the model predicts
+effects, **"harm drops as far as with observation"**. So prediction buys the
+entire harm reduction and pays for it in burden. Calling it worse than no
+evidence was true on one axis and false as a summary, and the advice that
+followed from it was to discard a mechanism that works on the axis the section
+is about.
+
+Two further readings of that row, both from the correction and both verified:
+
+- **The 100.0 is an abstention.** Appendix D states that the predictor reads the
+  command and referenced files up to three levels, within 16 files and 32 KB,
+  and that "binaries cannot be read". So on the binary concealment level,
+  prediction is impossible and the approver blocks every twin. That is a
+  conservative failure and a procedure should say which kind of failure it is.
+- **The controlled comparison is a wash.** Predicted differs from the
+  full-dialogue row by one field; the command-only row differs by more. Against
+  dialogue: 46.2 against 65.4, 57.7 against 50.0, 46.2 against 50.0, 100.0
+  against 83.3, which is two better and two worse. The "worse on two of four"
+  claim is against command-only, and command-only is not the control.
+
+**What changed in the file.** Checklist item 8 and procedure item 6 both now
+state prediction as a burden trade with its price named, 61.8 percent of safe
+twins against none, plus the abstention, rather than as a prohibition. The
+section keeps recommending observed effects. What it no longer does is tell a
+reader that a prediction is worthless when the paper measured it cutting harm
+as far as observation.
+
+### What this does not say
+
+Two seats have now checked this section against the paper's own tables
+independently, and one of them found two sentences the other had understated.
+That is provenance working. **It is not validation.** No section here has a
+differential delta, this seat still has no route to either eval arm, and the
+skill is `status: draft` and **unmeasured**.
+
 ## 2026-11-09, second entry: the description was promising less than the skill delivers
 
 **Trigger.** Charter step 7, and specifically a measured findability gap this
