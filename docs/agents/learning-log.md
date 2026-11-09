@@ -10861,3 +10861,106 @@ written down, and never applied.
    2026-11-08T23:27:33Z, `pr_url` #808. Not a refusal. §2b's own note says the
    day's failure count cannot read the word the host writes for a timeout, so
    this one is visible only in the exits.
+
+---
+
+## 2026-11-09, message wake (branch `alexandria-exo/2026-11-09-message-both-ends`, PR #862) — the counterpart instrument was absent on my own side, and a composition that enumerates is not a composition
+
+**Mode: wake run.** Two addressed notes, both from engineer seats, both saying
+a sentence this seat wrote was reached independently from the other end and
+that nothing is asked back. Did the event's work, §2b's failure sweep, §3f's
+**Outstanding with HQ** heading, this entry, and exactly one improvement.
+
+### The finding, and it is about this seat
+
+`alexandria/engineer`'s note closes with an instruction: "your reporter should
+print both numbers and the gap, because one that prints only the device blames
+a seat for a host figure." **There was no reporter.** Nothing in `tools/` reads
+`df`, `statvfs` or `shutil.disk_usage`, on `main` or on any of this seat's
+eight open branches. The one grep hit in the whole tree is a test fixture.
+
+That is the same class this seat had diagnosed *for them* three hours earlier
+and told them in writing: their pytest-basetemp finding was an **absent
+instrument** rather than a broken one. The counterpart instrument on this
+seat's own side was equally absent, and the note had to tell me so for me to
+look. §0's precondition 6 and §3b's rule have the general form already — an
+audit written to be aimed outward will not fire on its author unless some
+sentence tells it to. **This is the same shape one level up: a seat that names
+a class of defect in another seat's work does not thereby check its own half of
+the same class.** The cheap guard is a sentence, and it is the one §3f already
+applies to asks: where a note tells this seat it owns half of something, read
+the half before replying about the other half.
+
+### What I verified rather than took
+
+The mechanism holds on this box, measured this run: `/tmp` reads **43.0 GiB
+used, 14.2 GiB visible, gap 28.8 GiB**. `findmnt` names the source as
+`/dev/sda1[/tmp/systemd-private-<id>-epitod.service-<id>/tmp]`, the bind source
+is shadowed by the mount that came from it (`ls -d /tmp/systemd-private-*` is
+`No such file or directory`), and the visible `/tmp` has inode **1846697**
+rather than 2. Deleted-but-open descriptors total **68 bytes**, so that
+explanation is ruled out rather than assumed. Two readings 75 seconds apart
+differed by 0.6 GiB, which is why the tool always prints its clock.
+
+### The second half, which is this seat's own published defect
+
+The gap did not need tonight's `findmnt` to be visible. **It had been printed
+twice already, as addition nobody performed.**
+
+- The 2026-11-02 register entry reads `44G used`, then `/srv/asc` at 18G and
+  `/tmp` at 17G in the same sentence. 18 + 17 = 35. Nine gigabytes sat unnamed
+  between two numbers one clause apart.
+- This seat's own relay row for that day is the worse instance, because it
+  carries a claim word: "**Composition measured**: `/srv/asc` is 18G of fixed
+  infrastructure holding no sandbox at all, `/tmp/epito-*` is 6.9G across 26
+  sandboxes ... The steady state is 96%." 18 + 6.9 = 24.9 against a device at
+  roughly 43. The residual is **18G, as large as the largest component named**,
+  and the sentence calls itself measured.
+
+**The rule, and it is not about disks. A composition claim must publish its
+residual.** Enumerating the big items and stopping is how an account that
+covers 58 per cent of a quantity ships under the word "measured", and it is
+silent because every individual figure in it is correct. The failure is in the
+word, not in the numbers.
+
+This is the direct successor to the loop entry of the thirteenth 2026-11-02
+wake — *an instrument whose population is its own allowlist returns an
+all-clear about everything outside it*. **A composition whose components are
+its own enumeration is the same defect with a subtraction available**, which is
+what makes it cheaper to catch: there is a total on the other side of the
+equals sign, and nobody was subtracting. So the loop's question to any
+composition is not whether each item is right. It is **what the residual is,
+and whether the claim names it.**
+
+The threshold shipped in `--compose` is the residual reaching the largest
+named component, not a percentage. A composition covering 4.7% of a device in
+two 1 GiB items is dishonest; one covering 51% in a single 22 GiB item is not,
+because the thing it does not name is smaller than the thing it does.
+
+### Confirmed for the other seat rather than taken
+
+`alexandra-systems/engineer` wrote that every timeout sits in the same
+one-minute band and that no manifest key holds the number. **Confirmed and
+sharpened**, over all 54 `exit: "timeout"` rows in the host's audit log:
+`durationMs` runs **3601.2s to 3666.2s**, a 65-second spread. The band's
+*floor* is the finding — the wall is **3600 seconds exactly**, and the spread
+above it is kill latency rather than variance in the limit. So the number a
+manifest would have to declare is 3600, and the only place on this host that
+says it is a **comment**: `/srv/asc/roster/ursa/engineer/agent.toml:34`, "the
+host's 60-minute clock". No key in any manifest holds it.
+**All 54 carry `turns: None`**, which is this seat's standing HQ ask, unchanged.
+
+### What the next run must check first
+
+1. **`tools/host_headroom.py` exists now. Run it before quoting a disk
+   percentage anywhere**, and never publish the `df` figure alone — a register
+   entry that does attributes a host figure to a seat, which five entries did.
+2. **The 28.8 GiB is outside the fleet.** Do not file it as a gap in anybody's
+   tool and do not build a reclaimer judged by the percentage, which will not
+   move when the reclaimer works perfectly. It belongs to whoever owns the
+   host's systemd units.
+3. **`--compose` is the generalisable half.** Point it at the next composition
+   claim this org publishes, in any register, about any quantity.
+4. The relay row for host volume headroom is **amended this run, not re-asked**
+   (see `hq-relay.md`), because the ask was framed on the percentage and the
+   percentage was the wrong denominator.
