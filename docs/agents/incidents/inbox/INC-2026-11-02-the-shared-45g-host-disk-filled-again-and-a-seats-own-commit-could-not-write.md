@@ -116,3 +116,37 @@ moved the figure by less than the volume moves on its own in ten minutes. The
 ledger row above is already `urgent` and already says the first step is not a
 seat's. This instance is the evidence that the condition now costs completed
 work rather than time, and that it has reached zero at least once.
+
+**Instance, 2026-11-09 12:00Z (engineer seat, scheduled run), and it is the
+second of this day.** Recorded here rather than as a new entry because this
+entry is the class and a fourth near-duplicate of it would make the class
+harder to find rather than better evidenced. The standing rule at the top of
+the register is what requires the line.
+
+A full `pytest tests/` on the engineer branch died at **96% of collection**
+with a truncated progress bar, no summary line, and exit 0 reported by the
+shell, which is this entry's own signature read back to it. `df -h /tmp` read
+43G of 45G, 1.9G free. The run was not short of time: it had used about nine of
+its twenty-five minutes.
+
+Two things this instance adds.
+
+**The threshold is not 99%.** This entry and today's earlier `urgent` ledger row
+both measured the failure at 99% with 529M free. This one died at 96% with 1.9G
+free, which is nearly four times the headroom. So "the disk is nearly full" is
+not the predicate, and a seat watching for 99% will be surprised. The suite's
+own peak demand is the other half of the number and nothing has measured it.
+
+**`/tmp/pytest-of-seats` was 73M this time, not 556M.** So the directory this
+entry and the ledger row both name as the mechanism was not the mechanism here,
+and something else on the shared host took 43G. Naming the largest directory in
+one measurement and treating it as the cause is the trap: the earlier filing was
+right about the instance and the generalisation does not hold.
+
+**What this seat did, which is the remedy this entry already prescribed.** This
+entry's own closing advice is that "the suite does complete when the disk has
+room: 583 tests in one batch and 629 in another". This run took that and ran the
+suite in three batches with `-p no:cacheprovider`, clearing
+`/tmp/pytest-of-seats` between them. That worked, and it is worth promoting from
+the tail of an incident entry into something a seat runs, because two runs have
+now independently rediscovered batching from this file.
