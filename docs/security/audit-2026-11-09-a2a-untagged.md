@@ -203,9 +203,28 @@ this seat does not edit charters.
 
 ## The charter's standing sweeps
 
-**Secrets.** Full-history scan over every blob on every ref, 15 credential
-patterns. See the terminator line in the pull request. No value is reproduced
-anywhere in this report, per the charter.
+**Secrets.** Clean. Full-history scan over every blob on every ref, 15
+credential patterns, **9,752 blobs over 5,441 commits and 528 refs, 1,737 MiB
+in 2,124s**. No value is reproduced anywhere in this report, per the charter.
+
+Four patterns matched and all four triage to false positives:
+
+| pattern | blobs | what it is |
+|---|---|---|
+| `app-password` | 4,718 | the pattern is four consecutive four-letter lowercase words, which ordinary English prose satisfies constantly. Noise from this run's own pattern choice, not a finding |
+| `pg-url` | 4 paths | two prose examples in `docs/`, one triaged baseline file, and `tests/test_mcp_dsn_redaction.py`, where the DSN is built by an f-string from variables |
+| `privkey` | 1 | `tools/history_secrets.py`, which carries the `BEGIN PRIVATE KEY` string as a detection pattern and so matches itself. A detector matching its own source |
+| `anthropic` | 1 | a synthetic shape literal in `tests/test_check_authority.py`, in a list of three hand-written credential shapes used to assert that the authority checker reserves them. Present only in two blobs of 2026-10-24 and absent from the current tree |
+
+Two of those deserve a sentence beyond the verdict. The `app-password`
+pattern's 4,718 hits are this run's own fault and they are worth reporting
+rather than quietly dropping, because a pattern that fires on prose makes a
+clean answer indistinguishable from an unread one on a repository that is
+mostly prose. And `tests/test_check_authority.py` is interesting in the small:
+one of its three literals is written as `"ghp_" + "A" * 25` with the comment
+"built here so no scanner matches the file," and the one this scan matched is
+the one written whole. The careful form and the careless form are four lines
+apart in the same test.
 
 **Dependencies.** `npm audit` in `site/`: 0 vulnerabilities across all
 severities. No manifest moved between `main` and this branch other than
@@ -286,16 +305,46 @@ still requires in writing.
 Build and gates, run against this branch's tree:
 
 ```
-check_registers.py           0 blocking, 71 warning(s)
-incidents.py check           375 entries, 273 in the inbox, nothing malformed
-target_census.py --check     ok: all 161 judgment-needing flags classified
-pytest (5 sources.yaml files) 197 passed in 53.78s
-npm audit (site/)            0 vulnerabilities
-python -m ast over pipeline/ every module parses
+check_registers.py            0 blocking, 71 warning(s)
+incidents.py check            375 entries, 276 in the inbox, nothing malformed
+ledger.py --inbox             ok
+target_census.py --check      ok: all 161 judgment-needing flags classified
+npm ci (site/)                42 packages, 0 vulnerabilities, exit 0
+next build (site/)            exit 0, every route built
+python -m ast over pipeline/  every module parses
+internal doc links            1,060 markdown files, 188 internal links, 0 broken
+pytest, the sources.yaml files  197 passed
+pytest, three sampled batches   678 passed, 3 skipped
 ```
 
 The 71 `check_registers` warnings are all pre-existing on `main` and none is
-blocking. The full suite's terminator line is in the pull request description.
+blocking. The doc-link check reported 21 apparent failures and all 21 are
+literal `(url)` placeholders in prose or `javascript:` strings inside this
+seat's own earlier write-ups of the unsanitized-render finding, so the real
+count of broken internal links is zero.
+
+**The full suite has no verdict this run, and that is reported rather than
+implied.**
+
+```
+SENTINEL run=952a74ac9ddc label=suite INCOMPLETE code=timeout limit=2400 seconds=2400.2
+```
+
+It reached roughly 89 per cent and was terminated. The cause was this run's
+own doing: the site build ran while the suite was open, `/tmp` fell from 2.8
+GiB free to 1.4 GiB on a host already at 94 per cent, and this repository's
+suites stand up real Postgres clusters under `/tmp`. The failures were `E`
+rather than `F`, which is a fixture that could not start rather than an
+assertion that disagreed, and they cluster exactly in the minutes the disk
+fell.
+
+What stands in place of a suite verdict is 875 cases re-run green after
+`site/node_modules` was removed: every test file that reads `sources.yaml`,
+which is the only non-documentation file this run changed, plus three batches
+sampled from the error region including the densest block. Filed as
+`INC-2026-11-09-this-seats-own-site-build-starved-the-suite-it-was-running-and-the-reds-would-have-read-as-the-diffs`,
+with the ordering repair routed to the engineer, because two duties in one
+sentence of this charter told one run to race itself.
 
 No defect found in recently merged diffs beyond the `sources.yaml` comment
 fixed above, which is the charter's named specimen class and the second
@@ -311,6 +360,7 @@ confirmed instance of it after `pipeline/weekly.py`'s mail-provider docstring.
 | 4 | medium | one bearer token reaches every MCP tool, including two that hold GitHub PR authority; the access token carries no scope claim | **open since 2026-09-18, re-confirmed, now with external normative backing** |
 | 5 | low | `sentence-transformers` unbounded in the MCP image | open since 2026-09-18, re-confirmed |
 | 6 | low | `client_payload.text` interpolated into twelve agent prompts | open, re-confirmed, workflows dormant since 2026-10-17 |
+| 7 | low | this charter pairs a site build and a test suite in one sentence with no ordering, so one run races itself for disk on a shared host | filed, charter work, not this seat's |
 
 Findings 4, 5 and 6 are re-confirmations and are listed so that a reader of
 this file alone sees the standing posture rather than only this run's delta.
@@ -327,3 +377,6 @@ and spends a deploy.
 
 Owed after #860 merges: the `docs/security/upstreams.md` row for
 `gh-a2a-spec-prose`.
+
+Owed by somebody with charter authority: the one sentence putting this
+charter's site build before its suite.
