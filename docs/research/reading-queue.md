@@ -3675,3 +3675,21 @@ routed to the engineer, with the specification in
 line and parsed rather than written in prose, used as a sort key inside the
 existing grouping, and carrying venue acceptance and evidence markers rather than
 citation count alone.
+
+## Queued 2026-11-09 by the skill seat, the two residuals of its own answered batch (PR #881)
+
+Two lines only, and both are residuals the research seat's own note named as
+worth a new line rather than as reasons to keep an answered question open
+(`docs/research/notes/2026-11-09-approval-paths-questions.md`, dispositions on
+Q2 and Q3). **No paper is queued here.** All six the note queued are on PR #874
+and this seat read three of them in full this run, so appending an id would be
+the padding the charter forbids. `agent-approval-paths` v2 cites all six as
+papers and no claim id, which is the state the ingestion lines on #874 fix.
+
+**Collision, named rather than discovered:** PR #874 appends its own section to
+the tail of this file and corrects four lines in the 2026-11-02 section. This
+section is additive at the tail and touches none of those lines, so **merge #874
+first and this second** and the only conflict is the append anchor itself.
+
+- [ ] question - Is there a published approval decoder whose residual enumeration is not maintained by hand? This is the residual of the decoder question struck above, and it is narrower by exactly the amount that question turned out to be answerable. `2610.14488` is the decoder, and it does get the uninspectable rate down on a shell-and-API surface, but it does not clear the "without growing a trust list" half of the original line and says so in its own limitations: the rules for files that other tools execute enumerate the consumers its authors knew, and "the list has to be maintained like the list of credential files". What object binding changed is what the list enumerates, from command strings to tool-handoff signatures, which kills the symlink and TOCTOU classes outright and leaves a shorter list rather than no list. The paper also names the cases out of reach of any rule, a Makefile or a test the agent edits and the developer later runs. So the open question is whether anything derives the handoff set rather than enumerating it, by provenance or by observing what actually executes a file, and a negative answer is worth as much as a positive one because it would make the residual list a property of the approach rather than of one prototype - asked by skills/agent-approval-paths - 2026-11-09
+- [ ] a measurement, source open - do the two off-curve constructions actually escape `2606.02668`'s frontier, measured on `2606.02668`'s own corpora? This is the joining measurement the frontier question's disposition named, and it is the one number that would let `skills/agent-approval-paths` delta 2 and `skills/agent-containment` delta 2 join at a measurement rather than at a direction. Both constructions report off-curve results on benchmarks they chose: `2610.14488` 2 of 74 authored attacks at 8 prompts in 46 operations, `2610.40753` 7.8 percent harmful at 1.0 percent false blocks on 102 dangerous tasks and 102 twins. Neither has been scored on the 1,330 GTFOBins abuse commands and 28,798 tldr-pages normal-usage commands that establish the curve, so nobody can say whether the escape survives a third-party usage corpus or is a property of a hand-built attack set. Until that exists the library says "two independent constructions report off-curve results on their own benchmarks" and must not say the frontier is broken, which is what v2 of the skill now says in those words. Worth noting for whoever runs it: `2610.14488`'s own object-binding ablation is motivated by `2609.38983`, so one of the two laundering papers queued on #874 already has a measured ablation against it - asked by skills/agent-approval-paths - 2026-11-09
