@@ -323,3 +323,114 @@ def test_a_fully_accepted_tree_is_clean_and_still_names_what_it_read(
     out = capsys.readouterr().out
     assert "2 external calls read, 0 bounded in time, 2 unbounded" in out
     assert "2 accepted by the baseline" in out
+
+
+# --- the green state, which was owed ---------------------------------------
+#
+# The first version of this gate reached exit 0 on no invocation anywhere in
+# this repository, and 38 tests passed over it, because every exit-0
+# assertion above is against a tree the test built and the one test that runs
+# the real command line accepts either answer. These four are the tests that
+# would have caught it: they assert against this repository's own tree and
+# this repository's own shipped accepted set.
+
+ACCEPTED_SET = Path(__file__).resolve().parent.parent / (
+    "docs/security/unbounded-calls.json")
+
+
+def test_the_documented_invocation_over_this_repository_exits_zero():
+    """The defect the ExO seat found by running this file rather than reading it.
+
+    The docstring's own last invocation is the green one. A gate with no green
+    state cannot go in a pipeline or a checklist, so it gets run once by its
+    author and never again.
+    """
+    root = Path(__file__).resolve().parent.parent
+    done = subprocess.run(
+        [sys.executable, "tools/unbounded_calls.py",
+         "--baseline", "docs/security/unbounded-calls.json"],
+        cwd=str(root), capture_output=True, text=True, timeout=120,
+    )
+    assert done.returncode == 0, (done.returncode, done.stdout, done.stderr)
+    # The control: green must not read as "nothing unbounded here".
+    assert "unbounded of which" in done.stdout, done.stdout
+    assert "accepted by the baseline" in done.stdout, done.stdout
+    # And the same tree with no baseline is still red, so exit 0 above is the
+    # accepted set doing the work rather than the scanner having stopped.
+    bare = subprocess.run(
+        [sys.executable, "tools/unbounded_calls.py"],
+        cwd=str(root), capture_output=True, text=True, timeout=120,
+    )
+    assert bare.returncode == 1, (bare.returncode, bare.stdout, bare.stderr)
+
+
+def test_the_shipped_accepted_set_is_readable_and_every_row_says_why():
+    """A row with no status cannot be told from a blessing by any reader."""
+    data = json.loads(ACCEPTED_SET.read_text(encoding="utf-8"))
+    rows = uc.load_baseline(ACCEPTED_SET)          # the strict reader accepts it
+    assert len(rows) == len(data["accepted"]) == 23
+    assert {r["status"] for r in data["accepted"]} == {"debt"}
+    assert all(r["why"] for r in data["accepted"])
+    assert data["assigned"].endswith(".md")
+
+
+def test_a_stale_accepted_row_is_named_and_changes_no_exit_status(
+        tmp_path, capsys):
+    """A set nobody prunes stops being a ratchet.
+
+    Keyed on path and line, so a fixed call and a moved call both leave a row
+    matching nothing. `tools/board.py`'s two calls moved 137 lines in one
+    evening, which is where the measurement behind this test comes from.
+    """
+    tree = _tree(tmp_path, **{
+        "t/one.py": ("import subprocess\n"
+                     "subprocess.run(['gh', 'a'])\n")})
+    live = tmp_path / "live.json"
+    live.write_text(json.dumps({"accepted": [{"path": "t/one.py", "line": 2}]}))
+    assert uc.main(["t", "--root", str(tree), "--baseline", str(live)]) == 0
+    assert "should be pruned" not in capsys.readouterr().out   # the control
+
+    drifted = tmp_path / "drifted.json"
+    drifted.write_text(json.dumps({"accepted": [
+        {"path": "t/one.py", "line": 2},
+        {"path": "t/one.py", "line": 99}]}))
+    assert uc.main(["t", "--root", str(tree), "--baseline", str(drifted)]) == 0
+    out = capsys.readouterr().out
+    assert "1 accepted row matched no unbounded call" in out, out
+    assert "t/one.py:99" in out
+
+
+def test_network_only_does_not_turn_an_out_of_scope_row_stale(
+        tmp_path, capsys):
+    """Staleness is read against the tree, never against the filter's scope.
+
+    A local accepted row matching nothing under `--network-only` is the filter
+    working. Reporting it would make the strictest invocation the noisiest.
+    """
+    tree = _tree(tmp_path, **{
+        "t/two.py": ("import subprocess\n"
+                     "subprocess.run(['gh', 'a'])\n"
+                     "subprocess.run(['ls', '-l'])\n")})
+    baseline = tmp_path / "both.json"
+    baseline.write_text(json.dumps({"accepted": [
+        {"path": "t/two.py", "line": 2}, {"path": "t/two.py", "line": 3}]}))
+
+    assert uc.main(["t", "--root", str(tree), "--baseline", str(baseline),
+                    "--network-only"]) == 0
+    assert "should be pruned" not in capsys.readouterr().out
+
+    assert uc.main(["t", "--root", str(tree), "--baseline", str(baseline),
+                    "--network-only", "--json"]) == 0
+    assert json.loads(capsys.readouterr().out)["stale_accepted"] == []
+
+    # The control, and the reason staleness is scope-independent: a row that
+    # matches nothing in the tree is still reported under the same filter, so
+    # the silence above is the scope rule and not the report being switched
+    # off by `--network-only`.
+    with_stale = tmp_path / "with-stale.json"
+    with_stale.write_text(json.dumps({"accepted": [
+        {"path": "t/two.py", "line": 2}, {"path": "t/two.py", "line": 3},
+        {"path": "t/gone.py", "line": 1}]}))
+    assert uc.main(["t", "--root", str(tree), "--baseline", str(with_stale),
+                    "--network-only"]) == 0
+    assert "t/gone.py:1" in capsys.readouterr().out

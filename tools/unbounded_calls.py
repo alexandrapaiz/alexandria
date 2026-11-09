@@ -12,6 +12,40 @@ already in the baseline. Exit 1 when an unbounded call is in scope and not in
 the baseline. Exit 2 when the question could not be asked, which is a refusal
 to answer rather than an answer of clean.
 
+**The last line of that invocation list is the green one, and it was owed**
+(written 2026-11-09 by the security seat, from the `alexandria/exo` seat's
+reading of this file). The first version of this tool shipped deliberately
+with no baseline, so that the count was the thing that went down. The
+consequence was that no invocation of it reached exit 0 anywhere in this
+repository: the bare run exited 1 at the live count, and the documented
+`--baseline` path existed on no branch, so the flag raised `CannotLook` and
+printed "refusing to answer, which is not an answer of clean". A gate with no
+green state cannot go in a pipeline or a checklist, so it gets run once by its
+author and never again. The ExO seat found that by running this file rather
+than by reading its report, which is the only way it was ever going to be
+found: the suite had 38 tests, every exit-0 assertion was against a tree the
+test built, and the one test that ran the real command line accepted either
+answer.
+
+**What "accepted" means, and what it does not.** An accepted row silences one
+unbounded call at one path and line. It is not a statement that the call is
+safe. Every row in the shipped set today carries `status: "debt"`, which means
+the call should get a clock and has not got one, and the word for a call that
+genuinely wants no bound is `status: "wants-no-clock"`, of which there are
+none here. That is why the clean path prints how many unbounded calls it read
+beside how many this file accepted, rather than printing nothing: green here
+reads "23 unbounded of which 23 accepted", which a reader can act on, and
+never "clean".
+
+**Accepted rows go stale, and a set nobody prunes stops being a ratchet.** The
+set is keyed on path and line, so a call that gets its clock and a call that
+merely moves both leave a row matching nothing. That is measured rather than
+feared: `tools/board.py`'s two unbounded calls moved from lines 844 and 857 to
+981 and 994 inside one evening of edits to that file, which on its own would
+have left two stale rows beside two fresh findings for zero change in the
+world. So stale rows are named on every path, with no effect on the exit
+status, because a row going stale is usually somebody having paid the debt.
+
 **Why this is a tool and not a grep** (written 2026-11-09 by the security
 seat). On 2026-11-09 two seats of this company spent an evening on one defect
 class: an external call with no timeout, no handler, and an exit status read
@@ -295,6 +329,26 @@ def load_baseline(path: pathlib.Path | None) -> set[tuple[str, int]]:
     return out
 
 
+def stale_rows(rows: list[dict],
+               accepted: set[tuple[str, int]]) -> list[tuple[str, int]]:
+    """Accepted rows that match no unbounded call in the tree.
+
+    Computed against every row rather than against `--network-only`'s scope,
+    because a local accepted row matching nothing under that filter is the
+    filter working and not a stale row.
+
+    This is the half that makes the count able only to go down. The accepted
+    set is keyed on path and line, so a call that gets its clock and a call
+    that merely moves both leave a row matching nothing, and a set nobody
+    prunes grows until it accepts lines that no longer exist. Naming them is
+    not a finding and does not change the exit status: a row going stale is
+    usually somebody having paid the debt.
+    """
+    unbounded_anywhere = {(r["path"], r["line"])
+                          for r in rows if not r["bounded"]}
+    return sorted(accepted - unbounded_anywhere)
+
+
 def render(rows: list[dict], accepted: set[tuple[str, int]],
            network_only: bool) -> tuple[list[dict], str]:
     """The findings and the prose, from one pass over the rows."""
@@ -336,6 +390,16 @@ def render(rows: list[dict], accepted: set[tuple[str, int]],
                      f" in time, {len(unbounded)} unbounded of which "
                      f"{accepted_here} accepted by the baseline. Nothing "
                      f"unaccounted for.")
+
+    stale = stale_rows(rows, accepted)
+    if stale:
+        where = ", ".join(f"{path}:{line}" for path, line in stale)
+        lines.append("")
+        lines.append(f"{len(stale)} accepted row"
+                     f"{'' if len(stale) == 1 else 's'} matched no unbounded "
+                     f"call and should be pruned: {where}. A row that matches "
+                     f"nothing is either a call that got its clock or a call "
+                     f"that moved, and both want an edit to the accepted set.")
     return new, "\n".join(lines)
 
 
@@ -367,6 +431,8 @@ def main(argv=None):
             "findings": new,
             "calls_read": len(rows),
             "unbounded": sum(1 for r in rows if not r["bounded"]),
+            "stale_accepted": [{"path": path, "line": line}
+                               for path, line in stale_rows(rows, accepted)],
         }, indent=2))
     else:
         print(prose)
