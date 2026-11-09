@@ -718,6 +718,115 @@ def test_two_quarantine_entries_expire_on_their_own_dates():
     assert registrar.quarantine_entry(
         "plain", quarantine={"plain": "a reason"})[1] == (
         registrar.FRONTMATTER_QUARANTINE_EXPIRES)
+
+
+def test_the_quarantine_says_so_before_it_runs_out():
+    """The fifth property, added 2026-11-09, and a red `main` bought it.
+
+    The four properties above are all about an excuse that is live and an
+    excuse that is over. Between them is an excuse with two days left on a
+    write that has not merged, and until this run no reader in the repository
+    had a word for it. At 2026-11-09T00:00Z the `harness-engineering` entry
+    reached the date a run had given it on 2026-11-02, the refusal it was
+    holding open went back to `fail`, and four tests went red on a tree
+    nobody had touched. The engineer run that found it was looking at its own
+    diff, because that is where a seat looks first when a check it has never
+    seen fail goes red.
+
+    Subjects are this test's own, for the reason the two tests above give.
+    """
+    registrar = _registrar()
+    refusal = ("skills/a-skill-that-needs-a-newline/SKILL.md: the list item "
+               '`"one"` carries `- "two"` after its closing quote, so it is '
+               "more than one entry on one line")
+    fake = {"a-skill-that-needs-a-newline": ("the fix is a write into skills/",
+                                             "2026-11-16")}
+
+    def window(today, **kw):
+        return registrar.expiring_quarantine(
+            [refusal], today=today, quarantine=fake, **kw)
+
+    assert window("2026-11-10") == [], (
+        "six days out is not a warning, and a gate that fires every day is a "
+        "gate nobody reads"
+    )
+    assert window("2026-11-13") == [
+        ("a-skill-that-needs-a-newline", "2026-11-16", 3)], (
+        "three days out is the window, and the whole point is that it fires "
+        "while the two remedies are still cheap"
+    )
+    assert window("2026-11-16") == [
+        ("a-skill-that-needs-a-newline", "2026-11-16", 0)], (
+        "the excuse is already gone on its own date, because the expiry test "
+        "is `today >= expiry`, so the reader has to cover day zero too"
+    )
+    assert window("2026-11-18") == [
+        ("a-skill-that-needs-a-newline", "2026-11-16", -2)], (
+        "an entry that ran out two days ago still needs naming: the red is "
+        "live and the sentence is the only thing that explains it"
+    )
+
+    # Day zero is the one the sentence can get wrong in the friendly
+    # direction, so it is asserted rather than left to the reader.
+    assert "ran out today" in registrar.expiring_sentence(
+        "a-skill-that-needs-a-newline", "2026-11-16", 0)
+    assert "runs out in 3 day(s)" in registrar.expiring_sentence(
+        "a-skill-that-needs-a-newline", "2026-11-16", 3)
+
+    # A spent entry is offered the wrong remedy by this reader, so it is not
+    # this reader's to report. `spent_quarantine` already asks for its
+    # deletion, and a later date would keep a dead excuse alive.
+    assert registrar.expiring_quarantine(
+        [], today="2026-11-16", quarantine=fake) == [], (
+        "an entry excusing nothing is spent, not expiring"
+    )
+
+    # Each entry is measured against its own date here too, the same way
+    # `quarantined_problems` does it. An entry with a year left must not be
+    # dragged into the window by a sibling that has three days.
+    patient = ("skills/a-skill-with-time/SKILL.md: `description:` holds an "
+               "unquoted colon, which YAML reads as a nested key")
+    two = dict(fake, **{"a-skill-with-time": ("no hurry", "2027-06-01")})
+    assert [hit[0] for hit in registrar.expiring_quarantine(
+        [refusal, patient], today="2026-11-13", quarantine=two)] == [
+        "a-skill-that-needs-a-newline"]
+
+
+def test_no_live_quarantine_entry_is_inside_its_warning_window():
+    """The live ratchet, and the only one of these that reads the clock.
+
+    This is the gate the mechanism above exists to serve, and it is separate
+    from `test_the_live_quarantine_holds_nothing_spent_and_nothing_fictional`
+    so that its failure says what to do rather than only that something is
+    wrong. Going red here is the design: it is red three days early, in a pull
+    request check, addressed to the seat that can still act, instead of red at
+    midnight in every open pull request at once.
+
+    An empty quarantine passes, which is the healthy resting state.
+    """
+    import datetime
+
+    registrar = _registrar()
+
+    # Checked first, because `expiring_quarantine` parses these dates and a
+    # bad one would raise a `ValueError` that names the string and not the
+    # entry it came from. The whole file's gate would then be a stack trace
+    # about `fromisoformat` on a constant nobody had been pointed at.
+    for slug in registrar.FRONTMATTER_QUARANTINE:
+        _reason, expiry = registrar.quarantine_entry(slug)
+        try:
+            datetime.date.fromisoformat(expiry)
+        except ValueError:
+            raise AssertionError(
+                f"{slug}'s quarantine expiry is {expiry!r}, which is not a "
+                "yyyy-mm-dd date. Every reader of this constant compares it "
+                "as one"
+            ) from None
+
+    _rows, problems = registrar.read_skills()
+    expiring = registrar.expiring_quarantine(problems)
+    assert expiring == [], "\n".join(
+        registrar.expiring_sentence(*hit) for hit in expiring)
     assert registrar.quarantine_entry(
         "plain", quarantine={"plain": "a reason"}, expires="2026-12-01") == (
         "a reason", "2026-12-01")

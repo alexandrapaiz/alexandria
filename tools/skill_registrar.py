@@ -125,38 +125,13 @@ STATUS = "approved"
 # `test_a_spent_quarantine_entry_asks_to_be_deleted` turned red on the merge that
 # brought the fix in, and this is what it asked for. An empty dict is the healthy
 # resting state, not a missing value.
-#
-# SPENT AND EMPTIED AGAIN 2026-11-02, by the skill seat, on the branch that
-# carries the fix. The re-open above named this seat and asked for one newline
-# inside `skills/`. That newline is in this branch, `harness-engineering`
-# version 9 loads under PyYAML, all nine skills load, and `spent_quarantine`
-# therefore returned `['harness-engineering']`, so the entry was excusing
-# nothing. Deleted the same day the fix landed, which is the second time the
-# paragraph above has been exercised and the second time it worked.
-#
-# One correction to that paragraph while deleting it, because it is wrong about
-# its own gate and the sentence below it says so. It claims "a quarantined
-# skill that has been fixed raises nothing at all, so the fix landing never
-# turns anything red." It does turn something red:
-# `test_the_live_quarantine_holds_nothing_spent_and_nothing_fictional` fails on
-# the merge that brings the fix in, which is exactly what the 2026-10-27
-# paragraph records happening. That is the gate working rather than a defect,
-# but a reader who trusts the first sentence will be surprised by a red check
-# on a branch whose only crime was carrying the repair, and this seat was.
-#
-# The per-entry expiry below arrived on main while this branch was open, in the
-# same hours this seat was deleting the entry it was written for. The two edits
-# do not conflict in substance: the capability stays, the entry goes, and the
-# annotation keeps the `tuple` form that `quarantine_entry` reads. An empty
-# dict with a wider type is the healthy resting state.
-#
 #: slug -> reason, or slug -> (reason, its own expiry date). A bare string
 #: takes `FRONTMATTER_QUARANTINE_EXPIRES` below, which is the default and not
 #: the deadline: the date belongs to the excuse, because the entries in here
 #: are added on different days by different runs. That was a ledger proposal of
 #: 2026-10-27 ("the quarantine has one expiry date for every entry it will ever
-#: hold") and it stopped being a proposal on 2026-11-02, when a run moved the
-#: shared date out by six days to give one new entry a week. The dict was
+#: hold") and it stopped being a proposal on 2026-11-02, when this run moved
+#: the shared date out by six days to give one new entry a week. The dict was
 #: empty, so nothing older was resurrected by it, which is luck rather than
 #: design: the proposal names exactly that as the failure, in both directions.
 FRONTMATTER_QUARANTINE: dict[str, str | tuple[str, str]] = {}
@@ -164,7 +139,19 @@ FRONTMATTER_QUARANTINE: dict[str, str | tuple[str, str]] = {}
 #: The date an entry gets when it names none of its own. An entry added today
 #: against a default two days out is an entry with two days, silently, which is
 #: the other half of the same defect.
-FRONTMATTER_QUARANTINE_EXPIRES = "2026-11-09"
+#:
+#: Moved 2026-11-09, and the reason is the half of that defect nobody had
+#: written down: this constant had gone into the past. A default in the past
+#: hands the next bare-string entry an excuse that is dead the moment it is
+#: written, and dead quietly, because an entry excusing nothing is not spent
+#: while its refusal is still live and so no existing gate asks about it. It is
+#: deliberately still an absolute date and not a window of days: a relative
+#: default would always be a week from whenever it is read, which is an excuse
+#: with no end, and ending is the only thing this mechanism is for. No separate
+#: gate pins it, because `expiring_quarantine` below reports a bare-string
+#: entry against a stale default on the first run that reads it, with the days
+#: it has already lost in the sentence.
+FRONTMATTER_QUARANTINE_EXPIRES = "2026-11-16"
 
 #: The defect classes the quarantine is allowed to excuse, matched against the
 #: problem text. Each is a frontmatter defect whose only fix is a write into
@@ -782,6 +769,87 @@ def spent_quarantine(problems, quarantine=None) -> list[str]:
     return sorted(set(quarantine) - still_broken)
 
 
+#: How many days before an entry's own expiry the gate starts saying so.
+#:
+#: The quarantine had a gate for an excuse that covers a refusal, and a gate for
+#: an excuse nothing needs any more. It had nothing at all for the state between
+#: them, which is an excuse about to run out while the write it waits on is
+#: still unmerged. That state is not quiet. At 2026-11-09T00:00Z this
+#: constant's absence turned `main` red with no commit behind it: the
+#: `harness-engineering` entry reached its own date, the refusal it had been
+#: holding open went back to `fail`, and the next pull request to open inherited
+#: four red tests about a YAML defect seven days older than itself and no way to
+#: tell them from its own. Nothing in the repository had named the date out loud
+#: since the run that set it.
+#:
+#: Three days is chosen from both ends. It is longer than a merge takes once
+#: somebody is told, and it is short enough that an extension has to buy real
+#: time to clear the window, which is what stops this gate from being satisfied
+#: by the one-day extension `FRONTMATTER_QUARANTINE_EXPIRES` was already warned
+#: about above.
+QUARANTINE_WARNING_DAYS = 3
+
+
+def expiring_quarantine(problems, today: str = "", quarantine=None,
+                        expires: str = "", within_days: int | None = None
+                        ) -> list[tuple[str, str, int]]:
+    """The live entries whose excuse is about to run out, soonest first.
+
+    `[(slug, expiry, days_left)]`, with `days_left` negative for an entry that
+    has already run out, so one reader covers the day before and the day after.
+
+    Only entries still excusing a refusal are reported. An entry that excuses
+    nothing is `spent_quarantine`'s business and its remedy there is deletion,
+    not a later date, and reporting it here would offer the wrong one.
+
+    The two legal answers to a hit are both cheap: merge the write into
+    `skills/` the entry is waiting on, or give that entry its own later date
+    with the reason it needs one. What this rules out is the third answer,
+    which is finding out at midnight.
+    """
+    import datetime
+
+    quarantine = FRONTMATTER_QUARANTINE if quarantine is None else quarantine
+    today = today or datetime.date.today().isoformat()
+    window = QUARANTINE_WARNING_DAYS if within_days is None else within_days
+    now = datetime.date.fromisoformat(today)
+
+    still_broken = set(quarantine) - set(spent_quarantine(problems, quarantine))
+    soon: list[tuple[str, str, int]] = []
+    for slug in still_broken:
+        _reason, expiry = quarantine_entry(slug, quarantine, expires)
+        days_left = (datetime.date.fromisoformat(expiry) - now).days
+        if days_left <= window:
+            soon.append((slug, expiry, days_left))
+    return sorted(soon, key=lambda hit: (hit[2], hit[0]))
+
+
+def expiring_sentence(slug: str, expiry: str, days_left: int) -> str:
+    """One hit from `expiring_quarantine`, in the words a reader can act on.
+
+    Shared by the command's own output and by the test that holds the live
+    window, so the deadline reads the same wherever a seat meets it.
+    """
+    # `quarantined_problems` drops an excuse on `today >= expiry`, so a
+    # `days_left` of zero is a window that has already closed rather than one
+    # closing tonight. Saying "runs out today" there would be the friendlier
+    # sentence and the wrong one: `main` is red while it is being read.
+    if days_left == 0:
+        when = f"ran out today, {expiry}, and `main` is red for it now"
+    elif days_left < 0:
+        when = (f"ran out on {expiry}, {abs(days_left)} day(s) ago, and "
+                "`main` is red for it now")
+    else:
+        when = f"runs out in {days_left} day(s), on {expiry}"
+    return (f"skills/{slug}/ is excused by "
+            f"skill_registrar.FRONTMATTER_QUARANTINE and that excuse {when}. "
+            "Two answers: merge the write into skills/ the entry is waiting "
+            "on, or give this entry its own later date with the reason it "
+            "needs one. Doing neither turns `main` red on a calendar date "
+            "with no commit behind it, which is the one failure every other "
+            "seat's open pull request inherits and cannot tell from its own.")
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--files-only", action="store_true",
@@ -809,6 +877,13 @@ def main(argv=None) -> int:
         "waiting": sorted(waiting),
         "quarantined": sorted(quarantined),
         "quarantine_spent": spent_quarantine(problems),
+        # Reported, never counted. The exit code is the panel's contract and
+        # this is a deadline rather than a defect, so a window hit prints and
+        # leaves `state` alone. The gate that makes somebody read it is
+        # `test_no_live_quarantine_entry_is_inside_its_warning_window`.
+        "quarantine_expiring": [
+            {"skill": slug, "expires": expiry, "days_left": days_left}
+            for slug, expiry, days_left in expiring_quarantine(problems)],
         "state": "failing" if blocking else "ok",
     }
 
@@ -867,6 +942,9 @@ def main(argv=None) -> int:
             print(f"spent: skills/{slug}/ is readable now, so its entry in "
                   "skill_registrar.FRONTMATTER_QUARANTINE is excusing nothing "
                   "and should be deleted")
+        for hit in report["quarantine_expiring"]:
+            print("expiring: " + expiring_sentence(
+                hit["skill"], hit["expires"], hit["days_left"]))
         if "unregistered" in report:
             for path in report["unregistered"]:
                 print(f"failing: {path} is on main with no promotions row, so "
