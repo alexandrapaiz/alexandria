@@ -522,3 +522,19 @@ def test_this_repository_has_no_unclassified_count_surface():
     report = checker.check(str(REPO))
     assert report["surfaces"]["unclassified"] == [], report["problems"]
     assert ".cursor-plugin/plugin.json" in report["manifests"]
+
+
+def test_one_wrong_count_in_a_guarded_live_file_is_one_problem(repo):
+    """`docs/product/install.md` is both guarded and `live`, and its block is
+    inside its text, so the two readers would otherwise report it twice."""
+    write(repo / "skills" / "gamma-skill" / "SKILL.md",
+          "---\nname: gamma-skill\ndescription: Use when counting.\n---\n\nBody.\n")
+    found = [p for p in checker.check(str(repo))["problems"] if "install.md" in p]
+    assert len(found) == 1, found
+
+
+def test_every_guarded_prose_file_carries_a_disposition(repo):
+    """An invariant rather than an artifact: a file the install line is
+    published in, with no classification, is the gap this census closes."""
+    for relative in checker.GUARDED_PROSE:
+        assert relative in checker.COUNT_SURFACES, relative

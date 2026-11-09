@@ -502,13 +502,19 @@ def check_prose(root: str, lines: dict, count: int, problems: list) -> dict:
                     "the manifest have drifted, and the reader pastes the "
                     "sentence."
                 )
-        for match in COUNT_PHRASE.finditer(block):
-            claimed = _as_number(match.group(1))
-            if claimed != count:
-                problems.append(
-                    f"{relative}'s install block says {match.group(0)!r} and "
-                    f"{count} ship from skills/. A reader counts what arrives."
-                )
+        # The counts inside the block, but only for a file whose disposition
+        # is "block". A "live" file's whole text is read by the census, and
+        # its block is part of that text, so checking here too would report
+        # one wrong number as two problems.
+        if COUNT_SURFACES.get(relative) != "live":
+            for match in COUNT_PHRASE.finditer(block):
+                claimed = _as_number(match.group(1))
+                if claimed != count:
+                    problems.append(
+                        f"{relative}'s install block says {match.group(0)!r} "
+                        f"and {count} ship from skills/. A reader counts what "
+                        "arrives."
+                    )
     return blocks
 
 
