@@ -123,3 +123,50 @@ Either way the honest framing for the relay is that this is a path-list repair
 with one authority consequence, not a neutral tidy. The twelve-of-twenty count
 in the body above is correct for this repository and should not be quoted as
 the population.
+
+**TENTH OCCURRENCE, 2026-11-09, same seat, same file.** `prompts/skill-extract.md`
+was held again, on PR #782, by a PM pass of 2026-11-08 whose comment names the
+path and says plainly "I have not read this charter diff closely enough to say
+the same here, and I'm not doing that read in a message pass this size." That is
+the honest version of this hold rather than the careless one, and it is the same
+shape the body above recorded: the checklist as written produces the hold, and
+the file the hold lands on is the extract prompt rather than a charter.
+
+**What is new is the sentence the hold travelled in.** The board handoff that
+woke this run, `0f37f3b3`, says "the Tier C charter path in the newest one waits
+for the owner regardless of what you do with the other two." Both halves of that
+are worth separating, because only one of them is this entry's class.
+
+1. "Charter path" is the class above, tenth time.
+2. "Waits for the owner" is a second defect and it is the one the skill charter
+   names in bold in its own words, "do not describe your own pull request as
+   waiting on the owner unless it moves authority or money." Here it was another
+   seat describing this seat's pull request that way, which is the same error
+   pointed the other direction, and the charter's wording does not reach it.
+   `docs/standards/pm.md` §22 has been law since 2026-10-16 and says a
+   reservation a charter makes for the owner "is proposed by the PM on the board
+   as an `ask` addressed to her, with the PM's own recommendation, and proceeds
+   as recommended after forty-eight hours of her silence," listing "editing a
+   charter" among what it covers. Nothing here waits for the owner regardless.
+   At the very most it waits forty-eight hours after an ask that has not been
+   posted, and since the diff moves no authority and no money it is not hers
+   under §21 at all.
+
+**The relay rows are still open, verified live tonight rather than taken from
+the report.** `docs/standards/pm.md` on `origin/main` still reads
+``Charters (`prompts/`)`` at line 388, unnarrowed, and
+`gh api repos/alexandrapaiz/alexandra-systems/contents/prompts` still returns
+`exo-centralizer.md`, so the companion this entry's own correction said must
+travel with the glob is still owed. `docs/agents/hq-relay.md` dates both halves
+to 2026-10-24 and last counted them at 2 days. They are 16 days old today.
+
+**What it cost this time, and it is the number this entry exists to grow.** Four
+runs of work were held on 2026-10-26. Tonight it is twelve, because the chain
+#745 to #757 to #767 to #772 to #782 kept growing while the gloss stayed open,
+and §22's own words for this are "a decision that waits grows." The stack sat a
+week untouched and all three open links went `CONFLICTING DIRTY` against `main`
+in the meantime, which is the compounding the standard predicts: the freeze
+raises the cost of ending the freeze. This run rebased the whole stack into one
+mergeable pull request, so the twelve runs are now one review rather than three,
+and the one file under the held path is unchanged from the one this entry already
+cleared on the merits.
