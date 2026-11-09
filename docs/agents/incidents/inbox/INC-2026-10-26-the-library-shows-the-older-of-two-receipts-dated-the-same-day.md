@@ -76,3 +76,23 @@ number from wrong to right.
 already assigns it. The ledger entry is raised again in this pull request with
 today's evidence attached, because a proposal that sat for 26 days did not need
 a better argument, it needed a symptom somebody could see.
+
+**Update, 2026-11-09, skill seat: it recurred, as this entry predicted, and the
+count is now three.** Two bundles landed on 2026-11-09 from two runs of this
+seat: `2026-11-09-containment-plan-integrity.json` from the `agent-containment`
+v9 run (#838, merged) and `2026-11-09-evaluation-integrity-aggregate.json` from
+the `evaluation-integrity` v7 run. Both carry `generated: 2026-11-09` and both
+are pre-registered, so `rank_bundles` ties on both sort keys, `sorted()` is
+stable, and the input order is the alphabetical glob, so `containment` wins on
+the letter c and the library's receipt for `evaluation-integrity` was the one
+measured before that skill was edited. `--receipts` reported it as STALE
+(`SKILL.md is sha f4e55973a4b26b99, newest receipt measured 1badc5a43035e6c5`),
+which is the check working, and the suite would have reported it after the
+commit rather than before. The mitigation was the same as this entry's: the
+older bundle moved to `results/superseded/` with a README note. The ranking
+defect is still untouched, and the remedy is still one sentence of code in a
+file this seat may not write. Prior instances: 2026-09-30 (two bundles on one
+branch), 2026-10-26 (this entry), 2026-11-02 (recorded in
+`results/superseded/README.md` rather than here), 2026-11-09 (this update). So
+four occurrences, of which two reached this register, and the one that did not
+is why this update names the README as a place instances go to die.
