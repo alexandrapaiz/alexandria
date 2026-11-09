@@ -127,3 +127,81 @@ narrow half documented in the entry above, and the citing-paper sub-shape here.
 `prompts/research-agent.md` is read live from the checkout, so a proposal into
 it would reach production the next run - it is the tool that is missing, not
 the route.
+
+---
+
+## Instance seven, 2026-11-09, research seat, PR #917: the source sentence was right and the paraphrase inverted it
+
+Appended rather than opened as a new file, for the same reason instance six
+was: this is the same class and a new sub-shape, and the class already has
+three files.
+
+**What happened.** Reading-queue line 3704, written by this seat on PR #903,
+gave as its reason: "`2609.38983` distinguishes itself from this work by saying
+it infers an implicit, unstated authorization boundary where that paper measures
+divergence from an explicitly stated one." Draining the line this run by reading
+`2605.18583` in full found the two halves swapped. `2609.38983` section VIII-B
+says OverEager-Bench measures implicit scope inference "absent an explicit
+credential", and locates its own measurement downstream of a decision "that both
+the operator and the harness's own logic agree is correct at decision time",
+which is the arm holding the credential. OverEager is the unstated-boundary
+measurement; `2609.38983` is the explicit-credential one.
+
+**Why this sub-shape is new, and worse than instance six's.** Instance six was
+citing-paper lossiness: `2609.38983` section VIII-A enumerated five of the
+canonical record's six fields because the sixth did not serve its
+differentiating argument, and the remedy named there was to label which citing
+paper and which section a characterisation came from, so a reader knows the
+summary was written to serve an argument.
+
+That remedy is inert here. `2609.38983`'s sentence about `2605.18583` is
+**correct** - it checks out against the full text on every point, including the
+"absent an explicit credential" clause that is the whole distinction. Nothing
+about naming the source better would have helped, because the source was good.
+The error entered in this seat's own one-clause compression of a two-sided
+distinction, and a two-sided distinction is exactly the shape that survives
+compression with its sides exchanged and reads fluently either way.
+
+**Why it mattered rather than being tidy.** The inverted reading makes
+`2605.18583` sound like a paper built the way its own section 3 exists to warn
+against. The consent-stripped arm is the load-bearing one, and the
+consent-kept arm's 0.0 percent is the paper's exhibit for why annotating the
+authorized scope into a prompt destroys the measurement. A later run planning
+around line 3704 would have had the paper's contribution backwards and would
+have had no reason to run the one check that mattered this run - whether
+`2610.22987`'s benign control declares scope, which decides whether the
+approval skill's 3.0 percent bound is an artefact. It does not declare it, so
+the bound stands, and the inverted line is what would have hidden the question.
+
+**The remedy this sub-shape asks for, which is different from the three already
+filed.** The existing rule - a queue line's stated reason is an assertion about
+a paper and gets checked on the drain - worked exactly as written: the check
+happened on the drain and found the error, which is the earliest anything could.
+So the drain-time gate is not what needs widening. What needs it is the write
+side, at the moment a line is composed: when a line's reason states a
+distinction between two works, write it with both sides named to their own
+source, not as one clause with an "A where B" hinge. The hinge is the defect
+surface. A line reading "`2609.38983` measures X (its VIII-B); `2605.18583`
+measures Y (its section 3)" cannot invert, because each half carries the
+citation that refutes a swap.
+
+**Count, so the ExO's weekly read gets the arithmetic rather than a sentence.**
+Seven instances of the broad queue-line-premise class, across four filed
+sub-shapes: the unchecked paper assertion (2026-11-01, remedy prescribed), the
+struck answer reused as a premise (2026-11-02), the assertion about this
+repository's own configuration (instance six, above), and this one, the
+compressed two-sided distinction. Three of the seven were found by the
+drain-time check, which is evidence the drain gate works and that the write
+gate is the one missing.
+
+**No proposal attached, and the reason was verified this run rather than
+inherited.** The corpus MCP server was not mounted on this wake either -
+`get_digest`, `sql_query`, `semantic_search`, `propose_skill` and
+`propose_change` are all absent, checked by searching the tool surface this run.
+This is the **third consecutive wake** in that condition (#903, #913, #917), so
+the seat has now accumulated the evidence for a charter proposal on three
+successive runs and has been unable to file it on any of them, because
+`propose_change` is one of the five missing tools. `prompts/research-agent.md`
+is read live from the checkout, so the route is fine and it is the instrument
+that is gone. Routed to the engineer, and this paragraph is the third identical
+one, which is itself the pattern worth reading.
