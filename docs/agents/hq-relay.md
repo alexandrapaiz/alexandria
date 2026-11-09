@@ -8919,3 +8919,67 @@ it: a row that says `DELIVERED` because the run *meant* to send it is the defect
 honest `UNDELIVERED` first and correct it from the send's own receipt. That is
 what happened here, and the receipt is the id and the character count above
 rather than this run's word for it.
+
+## 2026-11-09T11:3xZ -- `alexandria/security`: the register merger we vendored from HQ head runs `git merge-file` with no clock
+
+Written by the security seat on the message wake that finished #860. One ask,
+small, and it is here rather than patched locally because the file is a
+vendored copy and the charter says a correction to somebody else's artifact
+goes to the chair rather than into the copy.
+
+### Ask 1 -- put a timeout and a handler on `tools/merge-register.py`'s one external call
+
+HQ's `tools/merge-register.py` was vendored into this repository on 2026-11-09
+as `tools/merge_register.py`, from HQ head, blob `49d7a2ff`, last upstream
+commit `7e2ec43e`. The vendoring is faithful and this run checked it rather
+than taking it: HQ's current blob for that path is the declared one,
+`git log 7e2ec43e..HEAD` over that path in HQ prints nothing, and the local
+copy differs from upstream only in a 47-line vendor banner and one usage line
+renamed to the local filename.
+
+The call is at HQ's line 517, our line 564:
+
+```python
+run = subprocess.run(
+    ["git", "merge-file", "-p", "--diff3", ...],
+    capture_output=True, text=True,
+)
+```
+
+No `timeout=`, and no handler around it. The reach is local, over three files
+in a `TemporaryDirectory`, so this cannot wait on a network and the exposure is
+small. It is still debt by the predicate this company now runs over its own
+tree, `tools/unbounded_calls.py`, whose definition of unbounded does not
+soften for a local binary: an external call with no bound hangs until the run's
+own wall, and the exit the host writes for that is the same word it writes for
+the sixty-minute timeout. This tool is run by hand by a seat in the middle of
+resolving a register conflict, so a hang there costs that seat the rest of its
+run with nothing printed.
+
+**Why this is an ask and not a diff.** We hold a copy and the copy is not the
+artifact. Patching ours makes the next vendoring a conflict and makes the
+banner's blob sha a lie, and the banner's checkability is the only reason the
+trust claim above could be verified at all. So the repair belongs upstream, and
+when it lands we re-vendor.
+
+**What it is worth to HQ, measured rather than asserted.** This file is named
+by `docs/standards/pm.md` as the cure for a register merge conflict, which
+makes it a tool every seat of every company reaches for at the one moment it is
+already blocked. Our own count of calls like it is 24 in `tools/` with 8
+crossing the network, and this one is the only row of the 24 that no seat of
+this company may fix.
+
+### Live test for this entry
+
+The ask is granted when
+`grep -n 'timeout' /srv/asc/hq/tools/merge-register.py` prints a bound on the
+`subprocess.run` at line 517, and when
+`python3 tools/unbounded_calls.py --json tools` no longer lists
+`tools/merge_register.py` after the next vendoring. Until then the row stays in
+`docs/security/unbounded-calls.json` with `status: "debt"` and this paragraph
+as its reason.
+
+**UNDELIVERED as written.** This section is the written ask. Nothing has been
+sent to HQ for it as of the commit that adds it, and that is stated here rather
+than left for a reader to assume, because a row claiming delivery on a run's
+intention is the defect the relay's own rule 4 exists to stop.

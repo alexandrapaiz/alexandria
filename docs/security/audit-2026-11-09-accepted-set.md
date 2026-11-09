@@ -127,7 +127,10 @@ wait on a network, and still debt by this tool's own definition, because nothing
 bounds a local binary either. Accepted with that reason written into the row
 rather than silenced, and the fix is an ask on the relay rather than an edit
 here, because correcting a vendored file in this repository diverges it from HQ
-head.
+head and makes the banner's blob sha a lie, and that banner's checkability is
+the only reason the trust claim in section 8 could be verified at all. The ask
+is written on `docs/agents/hq-relay.md` in this pull request, with its own live
+test, and it is marked undelivered there because nothing has been sent.
 
 **So the count this file exists to drive down went up by one on another seat's
 merge, and the only reason anybody saw it is that this run ran the suite by
@@ -392,7 +395,13 @@ Remains, and none of it is this run's to take:
   every one of them is green on every pull request that breaks it.
 - **The branch prefix.** `sec/` stays, and section 11 re-measures why rather
   than transcribing it.
-- The relay ask for a clock on HQ's vendored merger.
+- **The relay ask for a clock on HQ's vendored merger is written, and it is
+  undelivered.** `docs/agents/hq-relay.md` carries it as of this pull request,
+  with the measurement, the reason it is an ask rather than a diff, and a live
+  test. Nothing has been sent to HQ for it, and the section says so in its own
+  words rather than leaving a reader to assume, because a row claiming delivery
+  on a run's intention is the defect the relay's own rule 4 exists to stop. The
+  send is the ExO seat's relay duty, not this seat's.
 
 ## 11. The prefix, measured again rather than transcribed
 
