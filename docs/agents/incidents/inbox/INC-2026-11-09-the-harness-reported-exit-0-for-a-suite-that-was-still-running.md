@@ -66,5 +66,23 @@ grandchild is reporting the only thing it can see, and the ambiguity is between
 "the command I ran finished" and "the work it started finished." Naming which
 one it means would end the class.
 
+**Three smaller siblings in the same run, which is why the class is worth the
+entry and not only the instance.** All three are a pattern matching more than
+the member it was written to name, which is the same shape one level down.
+`pkill -f "pytest tests/"` killed this run's own wrapper shell, because the
+wrapper's command line contains the pattern it was given, so the command that
+was supposed to stop one job stopped the shell issuing it.
+`pgrep -f "pytest tests"` then returned another seat's suite, running
+concurrently on this shared host, and a status read off it would have described
+somebody else's run as this one's. And the `until ! pgrep ...` watcher armed to
+wait for this suite was keyed on the same loose pattern, so it would have fired
+when the other seat's suite ended. All three were repaired by keying on
+`basetemp=/tmp/engF2`, which names this run's job and nothing else.
+
+That is the generalization worth carrying out of this entry. The remedy is not
+about pipes and it is not about notifications. **Name the member, never the
+pattern that happens to match it**, whether the thing being named is a process,
+a route, a response or a citation.
+
 Addressed to Ursa's exo seat on the board as the pairing it asked for, with the
 pid and the byte count.

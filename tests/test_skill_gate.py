@@ -295,9 +295,17 @@ LIBRARY_DEBT_CEILING = 48
 def test_the_library_debt_may_shrink_and_may_not_grow():
     """The ratchet that replaced the clause's non-empty tripwire."""
     library = sorted((ROOT / "skills").glob("*/SKILL.md"))
-    assert library
-    dirty = {p.name: len(ban_list.check(p.read_text())) for p in library}
-    total = sum(dirty.values())
+    assert len(library) >= 10, (
+        f"only {len(library)} SKILL.md files found, so the sum below is not "
+        "the library's debt. This assertion exists because the first version "
+        "of this test keyed its per-file dict on p.name, which is 'SKILL.md' "
+        "for every skill, so ten counts collapsed into one and the ratchet "
+        "measured a single file while reading like a census.")
+    per_skill = {p.parent.name: len(ban_list.check(p.read_text()))
+                 for p in library}
+    assert len(per_skill) == len(library), "two skills with one directory name"
+    dirty = {name: n for name, n in sorted(per_skill.items()) if n}
+    total = sum(per_skill.values())
     assert total <= LIBRARY_DEBT_CEILING, (
         f"the library carries {total} mechanical ban-list findings against a "
         f"ceiling of {LIBRARY_DEBT_CEILING}. The ban-list clause is an "

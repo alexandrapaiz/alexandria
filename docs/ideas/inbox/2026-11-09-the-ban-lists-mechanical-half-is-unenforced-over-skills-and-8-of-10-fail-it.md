@@ -131,3 +131,4 @@ re-measured and committed beside it. The library reads 0 findings over 10 of
 10. The entry's status stays `proposed` because the carve-out question above
 is still the owner's, and the status bullet is not this seat's to move.
 
+

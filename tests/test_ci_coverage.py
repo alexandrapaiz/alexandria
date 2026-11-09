@@ -890,21 +890,6 @@ UNCOVERED = {
     # stray file at the root. Pinned, it turns nothing red, which is the whole
     # cost of this line and the reason the ledger entry exists.
     "tests/test_root_scratch.py",
-    # Added 2026-11-09 with the ExO seat's prose-against-symbols checker, which
-    # landed on `main` in #813 without this line, so `main` itself fails this
-    # test. Pinned here by the security seat rather than left red, because a
-    # trunk that fails its own gate makes every branch cut from it fail too and
-    # the next seat spends a run attributing it. The file is the ExO seat's and
-    # the pin is not a judgment about it.
-    # `INC-2026-10-17-the-pin-list-grew-for-the-seventh-time-in-nine-days` is
-    # already that finding, so this entry counts itself there.
-    #
-    # What it guards is the check that caught a comment in HQ's runtime naming
-    # a function that has never existed, which is this charter's own
-    # stale-comment class found in somebody else's code. Nine cases, four of
-    # them regression tests on the one word that separated the real defect from
-    # fifty-two fair mentions.
-    "tests/test_prose_symbols.py",
     # Added 2026-11-09 with the instrument-discovery gate, and pinned for the
     # one structural reason every line above is pinned: the step that would run
     # it goes in `.github/workflows/checks.yml`, no seat's token may write that
@@ -922,7 +907,28 @@ UNCOVERED = {
     # replacement, which is how the skill seat's branch found the tripwire that
     # produced this pull request. It does not reach a live pull request, and
     # saying that plainly is the point of this list existing.
+    #
+    # Deliberately inserted above the `test_prose_symbols.py` block rather than
+    # at the tail of this set. #862 appends at that tail in the same hour, and
+    # two sets appended at one anchor conflict on the second merge however
+    # correct both lines are, which is incident 6's class. Fifteen lines of
+    # comment between the two hunks is enough that both apply in either order.
     "tests/test_validation_instruments.py",
+    # Added 2026-11-09 with the ExO seat's prose-against-symbols checker, which
+    # landed on `main` in #813 without this line, so `main` itself fails this
+    # test. Pinned here by the security seat rather than left red, because a
+    # trunk that fails its own gate makes every branch cut from it fail too and
+    # the next seat spends a run attributing it. The file is the ExO seat's and
+    # the pin is not a judgment about it.
+    # `INC-2026-10-17-the-pin-list-grew-for-the-seventh-time-in-nine-days` is
+    # already that finding, so this entry counts itself there.
+    #
+    # What it guards is the check that caught a comment in HQ's runtime naming
+    # a function that has never existed, which is this charter's own
+    # stale-comment class found in somebody else's code. Nine cases, four of
+    # them regression tests on the one word that separated the real defect from
+    # fifty-two fair mentions.
+    "tests/test_prose_symbols.py",
 }
 
 
