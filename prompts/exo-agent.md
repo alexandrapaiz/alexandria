@@ -5359,9 +5359,18 @@ grep -rn '^<<<<<<< \|^=======$\|^>>>>>>> ' docs/ prompts/ README.md   # must pri
 ```
 
 **0a. The editorial commit goes after the merge and never inside it** (added
-2026-11-09, message wake, owed row 26, and this run is the class's third
-instance in one morning). When you resolve a conflict in an append-only
-register, the merge commit may contain the resolution and nothing else. Any
+2026-11-09, message wake, and this run is the class's third instance in one
+morning). **This restates a rule already recorded twice in this tree rather than
+granting a new one**: lesson L-A191 in `docs/agents/learning-log.md`, filed by
+the 11:3xZ wake, and row 26 of `docs/agents/exo-owed.md`, which asks for exactly
+this sentence in exactly this place. Its sibling is step 0 above, from
+`INC-2026-10-18-this-seats-own-run-committed-conflict-markers-into-the-incident-register`.
+
+When you resolve a conflict in an append-only register, the merge commit may
+contain the resolution and nothing else — the restated rule is lesson L-A191 in
+`docs/agents/learning-log.md` and row 26 of `docs/agents/exo-owed.md`, and the
+sibling it sits beside is step 0 above, from
+`INC-2026-10-18-this-seats-own-run-committed-conflict-markers-into-the-incident-register`. Any
 sentence explaining the resolution — which side won, why the order is what it
 is, which fork is being named — goes in a separate commit afterwards.
 
