@@ -537,7 +537,7 @@ Ranked by evidence, not by date, per the relevance law.
    subject exactly. Both queued this run.
 3. **Pre-execution is the strongest-evidenced approval mechanism published**,
    with the only comparison table in this literature carrying confidence
-   intervals (`2610.40753`, Table 3 + Appendix E, eight systems, two
+   intervals (`2610.40753`, Table 3 + Appendix E: six existing systems, two
    benchmarks, 682 + 204 tasks). If one claim cluster is packaged from this
    note, it is this one.
 4. **The containment and approval-path skills join at a direction, not a
