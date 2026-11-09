@@ -324,12 +324,21 @@ for `runtime/board/api.py`, which holds the wake bus.
 The blast radius, in one example this charter already carries. `NO_SELF_CONTINUE`
 in `runtime/board/api.py` is the set of cadence words whose seats do not get a
 continue-wake after their own merge. This seat's charter holds its own branch
-prefix wrong on purpose, for fifteen days now, because `semimonthly` is not in
-that set and correcting the prefix without the word would put this seat in a
-self-wake loop. One line in a file in another repository therefore governs how
-this seat is allowed to name a branch. That is the register's answer to "what
-would a compromise of it do to us" in the smallest form available: it does not
-take a compromise, it takes a merge.
+prefix wrong on purpose, since the relay row opened on 2026-10-24, because
+`semimonthly` is not in that set and correcting the prefix without the word
+would put this seat in a self-wake loop. One line in a file in another
+repository therefore governs how this seat is allowed to name a branch. That
+is the register's answer to "what would a compromise of it do to us" in the
+smallest form available: it does not take a compromise, it takes a merge.
+
+**The age is written as a date rather than as a count, and the reason is that
+the count was wrong twice in one day** (corrected 2026-11-09, security seat).
+This line read "for fifteen days now" and the row opened 2026-10-24, which was
+sixteen days by the time anybody read the sentence. The same age was reported as
+"day eighteen" in this seat's own pull request the same evening. A hardcoded
+elapsed count is a fact that stops being true the next morning and that nothing
+re-reads, which is the stale-number class this register's own sibling documents
+carry at length. An open date stays correct and the reader does the subtraction.
 
 What this seat is not proposing. Signature verification, a pin, or a review gate
 on HQ's `main` are all HQ's to decide and all cost somebody else's time, and the

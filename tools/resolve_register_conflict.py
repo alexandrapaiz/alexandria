@@ -105,9 +105,24 @@ def _registers() -> list[str]:
     return list(module.REGISTERS)
 
 
+class GitUnavailable(Exception):
+    """git could not be asked, which is not an answer about the tree."""
+
+
 def git(*args, repo=ROOT, check=True) -> subprocess.CompletedProcess:
-    done = subprocess.run(["git", "-C", str(repo), *args],
-                          capture_output=True, text=True)
+    """One git command, with a hang kept apart from an answer.
+
+    A non-zero exit is git answering, and `check` decides whether the caller
+    reads it or this raises. A timeout or a missing git binary is git saying
+    nothing at all, and that raises whatever `check` says, because `check=False`
+    is a caller asking to read an exit code and not a caller asking to be lied
+    to. The timeout was missing entirely until 2026-11-09.
+    """
+    try:
+        done = subprocess.run(["git", "-C", str(repo), *args],
+                              capture_output=True, text=True, timeout=60)
+    except (subprocess.TimeoutExpired, FileNotFoundError) as exc:
+        raise GitUnavailable(f"git {' '.join(args)}: {exc}") from exc
     if check and done.returncode != 0:
         raise RuntimeError(
             f"git {' '.join(args)} failed ({done.returncode}): {done.stderr.strip()}")
@@ -126,7 +141,38 @@ def lines(text: str) -> list[str]:
     return out
 
 
+# The index stages, which are a ref this tool reads but `rev-parse` does not
+# resolve as a tree. The index exists whenever git does, so for these three the
+# only thing `show` can fail on is already the path.
+_INDEX_STAGES = {":1", ":2", ":3"}
+
+
 def blob(ref: str, path: str, repo=ROOT) -> str | None:
+    """The file at a ref, or None when git resolved the tree and the path is not in it.
+
+    None has to mean one thing, and until 2026-11-09 it meant two. `git show`
+    exits non-zero both for a path absent from a tree and for a ref it cannot
+    resolve at all, so a missing or mistyped ref came back as "the register is
+    not there" and `check_commit` skipped that register in silence. That is this
+    tool's own worst failure mode, because the reason it exists is that a hand
+    resolution dropped three lines with nothing to notice, so an auditor that
+    quietly audits fewer registers than it was asked about is the same defect
+    wearing the instrument's name.
+
+    The two are separated structurally rather than by reading git's prose. The
+    ref is resolved on its own first, so the only question left for `show` is
+    the path, and a ref that does not resolve raises instead of answering. A
+    stderr allowlist was the first attempt here and it was the same mistake one
+    layer down: matching English is a decision about a message, and git has more
+    messages than any list will hold. This repository's own suite caught it.
+    """
+    if ref not in _INDEX_STAGES:
+        probe = git("rev-parse", "--verify", "--quiet", f"{ref}^{{tree}}",
+                    repo=repo, check=False)
+        if probe.returncode != 0:
+            raise RuntimeError(
+                f"{ref} does not resolve to a tree in this checkout, so nothing "
+                f"can be read at it and no register was audited there")
     done = git("show", f"{ref}:{path}", repo=repo, check=False)
     return done.stdout if done.returncode == 0 else None
 
@@ -347,10 +393,16 @@ def check_commit(ref: str, repo=ROOT, registers=None) -> tuple[str, list[str]]:
     base_ref = git("merge-base", ours_ref, theirs_ref, repo=repo).stdout.strip()
 
     report, state = [], NOTHING
+    absent = []
     for path in registers:
         base, ours, theirs, resolved = (blob(r, path, repo=repo) for r in
                                         (base_ref, ours_ref, theirs_ref, ref))
         if None in (base, ours, theirs, resolved):
+            # Git has said this register is not in all four trees, which is a
+            # real answer and not a skip. It is named rather than passed over,
+            # because coverage that is narrower than the question reads exactly
+            # like a verdict on the whole question.
+            absent.append(path)
             continue
         if ours == theirs == resolved:
             continue
@@ -364,6 +416,10 @@ def check_commit(ref: str, repo=ROOT, registers=None) -> tuple[str, list[str]]:
         else:
             report.append(f"{path}: balanced, every line of both sides is present "
                           f"once and the blocks' stamps do not decrease")
+    if absent:
+        report.append(f"{len(absent)} of {len(registers)} registers are not in "
+                      f"all four trees of this merge and were not audited: "
+                      f"{', '.join(absent)}")
     if state == NOTHING:
         report.append(f"{ref[:9]} merged no register, so this run is not a "
                       f"verdict on the registers")
@@ -381,6 +437,19 @@ def main(argv: list[str] | None = None) -> int:
                     help="the checkout to work in (default this repository)")
     args = ap.parse_args(argv)
     repo = args.repo
+
+    try:
+        return _run(args, repo)
+    except GitUnavailable as exc:
+        print(f"resolve_register_conflict: git could not be asked, so no "
+              f"register was audited: {exc}", file=sys.stderr)
+        return EXIT[NOTHING]
+    except RuntimeError as exc:
+        print(f"resolve_register_conflict: {exc}", file=sys.stderr)
+        return EXIT[NOTHING]
+
+
+def _run(args, repo) -> int:
 
     if args.check:
         state, report = check_commit(args.check, repo=repo)

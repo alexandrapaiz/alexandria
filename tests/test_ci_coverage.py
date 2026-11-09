@@ -278,6 +278,29 @@ UNCOVERED = {
     # what rots: the flag looks like a clock override and the run-set bound is
     # invisible to a reader who does not run the test.
     "tests/test_burn_shares.py",
+    # Added 2026-11-09 by the ExO seat, in the commit that creates the file,
+    # which is the whole of this seat's lesson from the same gate earlier today.
+    # Two test files of this seat's reached `main` unpinned 53 minutes apart —
+    # `test_kill_vocabulary.py` at 08:13:19Z and `test_burn_shares.py` at
+    # 09:06:34Z — and the engineer seat paid both ratchets for this seat twice,
+    # the second time about a minute after measuring the trunk. A seat that
+    # ships a tool and lets somebody else discover its pin has not paid the
+    # ratchet, it has routed it.
+    #
+    # What it guards, because the gate requires a reason and not a name.
+    # `test_answered_by.py`, 7 cases: that the marker reader finds the clock
+    # join when it is there and **stops finding it** the moment a marking is
+    # not reconstructible or a sender-written reply link appears. That second
+    # direction is the one worth a check. The tool's verdict is an inverted
+    # gate: it refuses today and goes green on the day the board grows a real
+    # reply link, so its only valuable behaviour is a transition nothing has
+    # ever observed. Silent on a pull request, a reader hard-wired to answer
+    # "clock join" passes every live reading for as long as the defect lasts
+    # and is wrong on the one day somebody acts on it. The per-correspondent
+    # case is the other: joined globally the live board reads 32 of 113 and the
+    # field looks partly meaningful, which is the worst of the three available
+    # answers, so the test holds the reader to the join that is exact.
+    "tests/test_answered_by.py",
     "tests/accounts.test.mjs",
     # Added 2026-10-13 with the Polar integration, pinned for the same
     # structural reason as every line above and worth more than any of them.
@@ -1035,6 +1058,74 @@ UNCOVERED = {
     # them regression tests on the one word that separated the real defect from
     # fifty-two fair mentions.
     "tests/test_prose_symbols.py",
+    # Added 2026-11-09 with the two gates this run shipped, pinned for the same
+    # structural reason as every line above: the step that would run them goes
+    # in `.github/workflows/checks.yml`, which no seat's token may write. The
+    # tenth and eleventh lines of
+    # `INC-2026-10-17-the-pin-list-grew-for-the-seventh-time-in-nine-days`,
+    # which counts itself there.
+    #
+    # The pin is sharper than usual for these two, and the reason is in what
+    # they guard. Both are gates whose clean answer used to be silence, in a
+    # charter where silence means proceed. Pinned, each one's assertions are
+    # themselves silent on every pull request, which is the class they exist to
+    # close, reproduced one level up. That is not an argument for unpinning
+    # them, because no seat can. It is the strongest reason in this set to
+    # apply item 17 after the two payment files.
+    "tests/test_branch_name_free.py",
+    "tests/test_history_boundary.py",
+    # Added 2026-11-09, later the same evening, with the gate that finds an
+    # external call nobody put a clock on. Pinned for the same structural
+    # reason as every line above: the step that would run it goes in
+    # `.github/workflows/checks.yml`, which no seat's token may write. Twelfth
+    # line of
+    # `INC-2026-10-17-the-pin-list-grew-for-the-seventh-time-in-nine-days`,
+    # which counts itself there rather than opening another incident.
+    #
+    # This gate caught itself the way the two above did, and the catch is the
+    # reason the pin is worth reading. Its first version reported only the
+    # unbounded calls, so its clean path printed "0 external calls in scope",
+    # which reads identically whether it found fifty-one bounded calls or never
+    # looked at the right directory. Its own suite failed it on that before it
+    # shipped, which is the only evidence anyone should accept that a gate of
+    # this shape works.
+    #
+    # What it guards is twenty-four external calls in `tools/` with no clock,
+    # eight of them crossing the network and twenty-two with no handler at all,
+    # two of them in gates documented as sitting in front of an `&&` in a
+    # seat's ready command. An unbounded call there stalls a whole run and
+    # prints nothing while it does, and the exit the host writes for that is
+    # the same word it writes for the sixty-minute wall. Pinned, the gate
+    # exits 1 on nobody's pull request.
+    "tests/test_unbounded_calls.py",
+    # Added 2026-11-09, later the same evening again, with the full-history
+    # scan for credential-shaped content. Pinned for the same structural reason
+    # as every line above: the step that would run it goes in
+    # `.github/workflows/checks.yml`, which no seat's token may write, and this
+    # seat's charter forbids it touching a workflow at all. Thirteenth line of
+    # `INC-2026-10-17-the-pin-list-grew-for-the-seventh-time-in-nine-days`,
+    # which counts itself there rather than opening another incident.
+    #
+    # This one caught its subject twice before it shipped, which is the
+    # evidence that it works. The scanner's first revision quoted a PEM
+    # private-key header in full inside the paragraph explaining that a
+    # scanner's needles must be assembled from fragments, so the tool reported
+    # itself on its first full-history pass. And the first version of its
+    # generic pattern read "credential word, then a colon or equals, then a
+    # quoted value", which cannot see `"api_key": "<value>"`, because JSON puts
+    # a quote between the word and the colon. That is the commonest way a key
+    # reaches a repository and it was the one shape the pattern missed.
+    #
+    # What it guards is the charter's first audit duty, which ten audits
+    # answered with an ad-hoc script and whose clean answer was silence. The
+    # 2026-11-08 audit wrote in its own report that "the history scan is
+    # reproducible from this description and the script is not". Of the two
+    # errors that shape can make it makes a false clean, and on the host's
+    # `--depth 1` clone it makes one by default: `--all` reaches one grafted
+    # commit. Pinned, the duty's instrument is silent on every pull request
+    # that could break it, including one that widens a baseline row from an
+    # object to a path.
+    "tests/test_history_secrets.py",
     # Added 2026-11-09 by the ExO seat with `tools/host_headroom.py`, and
     # pinned for the same structural reason as every line above: the step that
     # would run it goes in `.github/workflows/checks.yml`, which no seat's

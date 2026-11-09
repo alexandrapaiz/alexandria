@@ -117,16 +117,65 @@ def _h(*parts: str) -> str:
     return " ".join(parts)
 
 
-#: The 118 flags that `ast` cannot classify, each with the judgment and the
+#: The 121 flags that `ast` cannot classify, each with the judgment and the
 #: reason. Keyed on `(file, flag)`, which is what `census` returns.
 #:
 #: The `roster` rows are the population the incident sized at 56 and probed 8
 #: of. Each one either refuses under `--probe` or says why it cannot be probed
 #: without a network, and "nobody has looked" is not one of the two.
 DECLARED: dict[tuple[str, str], Judgment] = {
+    ("answered_by.py", "--company"): Judgment(
+        "roster", "same roster as board.py --company, and reached through the "
+        "same client, so the set needs the API"),
+    ("answered_by.py", "--seat"): Judgment(
+        "roster", "same roster as board.py --seat, same API. Unlike board.py "
+        "this reader never writes, so a wrong seat costs a wrong reading "
+        "rather than a misaddressed letter, which is the worse of the two to "
+        "get silently: an empty inbox reads as a clean board"),
+    ("answered_by.py", "--fixture"): Judgment("path"),
     ("anchor_contention.py", "--prs"): Judgment("path"),
     ("anchor_contention.py", "--root"): Judgment("path"),
     ("ban_list.py", "paths"): Judgment("path"),
+    # The branch name is GitHub's to judge and nothing here carries a roster of
+    # them, which is the whole premise of the tool: it asks the forge and
+    # refuses when the forge does not answer. Same judgment as
+    # `board.py --branch` and `check_pr_green.py --branch`.
+    ("branch_name_free.py", "name"): Judgment("opaque"),
+    # `--repo` is owner/name on the forge, which only the forge can resolve.
+    # The reason is a comment rather than the `offline` field, because that
+    # field is reserved for `roster` rows.
+    ("branch_name_free.py", "--repo"): Judgment("opaque"),
+    # Both of these are paths and absent is already a refusal: git exits
+    # non-zero on a directory that is not a checkout and the tool turns that
+    # into EXIT 2 rather than into a clean boundary.
+    ("history_boundary.py", "--repo"): Judgment("path"),
+    ("history_boundary.py", "--path"): Judgment("path"),
+    # All three are paths in the checkout and absent is already a refusal:
+    # `scan_paths` raises `CannotLook` on a path that is neither a file nor a
+    # directory, and `main` turns that into exit 2 rather than into an answer
+    # of clean. `paths` defaults to `tools pipeline mcp` and the default is
+    # printed in the help, so a reader can see what a bare run measured.
+    ("unbounded_calls.py", "paths"): Judgment("path"),
+    ("unbounded_calls.py", "--root"): Judgment("path"),
+    # `--baseline` is a path too, and the strictest of the three: a baseline
+    # that cannot be read or does not parse is a `CannotLook` rather than an
+    # empty set, because an empty set reads as "nothing is accepted" and would
+    # turn an unreadable file into a wall of findings nobody asked for.
+    ("unbounded_calls.py", "--baseline"): Judgment("path"),
+    # Added 2026-11-09 on the run that finished this seat's #860. Both of these
+    # reached a branch tip with no help text at all, so `ast` had nothing to
+    # read and the census called them UNCLASSIFIED rather than miscalling them.
+    # That is the gate working, and it is the second time in one evening it has
+    # caught this seat on a tool this seat had just written: the three
+    # `unbounded_calls.py` rows above are the first. The missing help was the
+    # real defect and it is fixed in the tool rather than papered over here,
+    # because a flag with no help is invisible to every reader of `--help` and
+    # not only to this census.
+    ("history_secrets.py", "--repo"): Judgment("path"),
+    # The strictest of the two, for the same reason the `unbounded_calls.py`
+    # row above is: an unreadable baseline is a `CannotLook` and never an empty
+    # accepted set.
+    ("history_secrets.py", "--baseline"): Judgment("path"),
     ("ban_list.py", "--allow"): Judgment("text"),
     ("blind_prose_benchmark.py", "--issue"): Judgment("path"),
     ("blind_prose_benchmark.py", "--comparison"): Judgment("path"),
