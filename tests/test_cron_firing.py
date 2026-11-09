@@ -783,7 +783,7 @@ def test_the_json_surface_carries_the_cut_state_too(tmp_path, capsys):
 
 
 @pytest.fixture(autouse=True)
-def _no_host_claim_file(tmp_path_factory, monkeypatch):
+def _no_host_claim_file(tmp_path, monkeypatch):
     """Keep this file's promise that no test reads `/srv/asc/state`.
 
     `main` defaults `--claims` to the host's claim file, which exists on the
@@ -791,8 +791,15 @@ def _no_host_claim_file(tmp_path_factory, monkeypatch):
     pass because no claim matched would still be reading the host's disk, so
     the default is pointed at an absent path for every test here and the tests
     that care about claims pass their own.
+
+    `tmp_path` rather than `tmp_path_factory`, because this fixture is autouse
+    and function-scoped, so the factory made one directory per test and left
+    all of them behind: 120 empty directories a run, measured 2026-11-09, since
+    `tmp_path_retention_policy` governs `tmp_path` and not the factory. The
+    path it needs is one that does not exist, and `tmp_path` gives that and is
+    collected.
     """
-    absent = tmp_path_factory.mktemp("no-claims") / "capacity-retry.json"
+    absent = tmp_path / "capacity-retry.json"
     monkeypatch.setattr(cf, "CLAIM_FILE", absent)
 
 
