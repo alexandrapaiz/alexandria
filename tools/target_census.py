@@ -127,6 +127,20 @@ DECLARED: dict[tuple[str, str], Judgment] = {
     ("anchor_contention.py", "--prs"): Judgment("path"),
     ("anchor_contention.py", "--root"): Judgment("path"),
     ("ban_list.py", "paths"): Judgment("path"),
+    # The branch name is GitHub's to judge and nothing here carries a roster of
+    # them, which is the whole premise of the tool: it asks the forge and
+    # refuses when the forge does not answer. Same judgment as
+    # `board.py --branch` and `check_pr_green.py --branch`.
+    ("branch_name_free.py", "name"): Judgment("opaque"),
+    # `--repo` is owner/name on the forge, which only the forge can resolve.
+    # The reason is a comment rather than the `offline` field, because that
+    # field is reserved for `roster` rows.
+    ("branch_name_free.py", "--repo"): Judgment("opaque"),
+    # Both of these are paths and absent is already a refusal: git exits
+    # non-zero on a directory that is not a checkout and the tool turns that
+    # into EXIT 2 rather than into a clean boundary.
+    ("history_boundary.py", "--repo"): Judgment("path"),
+    ("history_boundary.py", "--path"): Judgment("path"),
     ("ban_list.py", "--allow"): Judgment("text"),
     ("blind_prose_benchmark.py", "--issue"): Judgment("path"),
     ("blind_prose_benchmark.py", "--comparison"): Judgment("path"),

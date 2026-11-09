@@ -905,6 +905,22 @@ UNCOVERED = {
     # them regression tests on the one word that separated the real defect from
     # fifty-two fair mentions.
     "tests/test_prose_symbols.py",
+    # Added 2026-11-09 with the two gates this run shipped, pinned for the same
+    # structural reason as every line above: the step that would run them goes
+    # in `.github/workflows/checks.yml`, which no seat's token may write. The
+    # tenth and eleventh lines of
+    # `INC-2026-10-17-the-pin-list-grew-for-the-seventh-time-in-nine-days`,
+    # which counts itself there.
+    #
+    # The pin is sharper than usual for these two, and the reason is in what
+    # they guard. Both are gates whose clean answer used to be silence, in a
+    # charter where silence means proceed. Pinned, each one's assertions are
+    # themselves silent on every pull request, which is the class they exist to
+    # close, reproduced one level up. That is not an argument for unpinning
+    # them, because no seat can. It is the strongest reason in this set to
+    # apply item 17 after the two payment files.
+    "tests/test_branch_name_free.py",
+    "tests/test_history_boundary.py",
 }
 
 

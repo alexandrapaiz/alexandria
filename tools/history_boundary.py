@@ -117,6 +117,18 @@ def denominator(repo: Path = ROOT) -> dict:
     }
 
 
+def ever_mentioned(path: str, repo: Path = ROOT) -> bool:
+    """Did any commit on any ref ever touch this path at all, under any filter.
+
+    The standing list is a constant, so its clean answer is the one being asked
+    for. A value handed to `--path` is not: a path spelled wrong and a path that
+    was never present produce the same empty, which is the class this file is
+    about, inside this file. This is what lets the clean line say which of the
+    two it is rather than leaving the caller to assume.
+    """
+    return bool(_git("log", "--all", "--format=%H", "-1", "--", path, repo=repo).strip())
+
+
 def additions(path: str, repo: Path = ROOT) -> list[dict]:
     """Every commit that ever added a file under this path, on any ref."""
     out = _git(
@@ -175,9 +187,13 @@ def check(paths=PRIVATE_PATHS, repo: Path = ROOT) -> dict:
             "question about history even though git does not call it shallow"
         )
     found = {p: additions(p, repo) for p in paths}
+    unknown = sorted(
+        p for p, rows in found.items() if not rows and not ever_mentioned(p, repo)
+    )
     return {
         "scope": scope,
         "paths": found,
+        "never_mentioned": unknown,
         "absent": all(not rows for rows in found.values()),
     }
 
@@ -190,7 +206,15 @@ def describe(result: dict) -> str:
     )
     if result["absent"]:
         names = ", ".join(result["paths"])
-        return f"absent: {names} appear in no commit on any ref. {head}."
+        line = f"absent: {names} appear in no commit on any ref. {head}."
+        unknown = [p for p in result.get("never_mentioned", []) if p not in PRIVATE_PATHS]
+        if unknown:
+            line += (
+                "\n  note: " + ", ".join(unknown) + " was never touched by any commit "
+                "under any filter, so a path spelled wrong and a path never present "
+                "are the same answer here. Check the spelling before recording this."
+            )
+        return line
     lines = [f"PRESENT in history. {head}."]
     for path, rows in result["paths"].items():
         if not rows:
@@ -217,7 +241,9 @@ history_boundary.py, the four properties it is written to hold
    which the duty reads as a pass.
 3. The clean answer carries its denominator, refs and commits, so a reader can
    tell a measurement from a silence. Nine audits answered this duty with an
-   empty shell output and one of them published the wrong answer.
+   empty shell output and one of them published the wrong answer. A --path value
+   no commit ever touched says so on the same line, because a path spelled wrong
+   and a path never present are otherwise the same empty.
 4. The preflight reuses tools/check_pr_green.py's shallow_state and
    refspec_is_wide, because the guard existed and only the branch-comparison
    duty was ever wired to it.

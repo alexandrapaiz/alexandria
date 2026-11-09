@@ -202,10 +202,22 @@ audits carry: `sentence-transformers` unpinned at `pipeline/distill.py:285`. No
 new paid service, tool or dependency.
 
 **The public and private boundary.** `digests/` and `site/content/digests/` are
-gitignored at `.gitignore` lines 8 and 11, absent from the working tree, and
-`git log --all --diff-filter=A` over both paths prints nothing, so they are
-absent from history on every branch this clone can see. Nothing in this diff
-touches `site/`.
+gitignored at `.gitignore` lines 8 and 11 and absent from the working tree.
+
+**The history sentence that stood here was wrong, and the run that carries this
+file forward is the one correcting it** (2026-11-09, the `-message` run, which
+supersedes this one). It read: "`git log --all --diff-filter=A` over both paths
+prints nothing, so they are absent from history on every branch this clone can
+see." The command does print. `digests/2026-W37.md` was added at `043767e5` on
+2026-09-08, which is the known finding, raised 2026-09-18, withdrawn 2026-09-19
+and restated low with no action on 2026-11-02, and which `audit-2026-11-09.md`
+records correctly four hours before this file was written. The empty output came
+from the clone rather than from the repository: the host clones at `--depth 1`,
+and on a grafted clone that command prints nothing over a history of one commit.
+The hedge at the end of the original sentence is the tell. A clone that can see
+less is not a narrower answer to this question, it is a wrong one. The duty is
+now `tools/history_boundary.py`, which exits 2 rather than 0 when the clone
+cannot see the history. Nothing in that diff touches `site/`.
 
 **The MCP server, the pipeline and the workflows.** `git log` over `mcp/`,
 `pipeline/` and `.github/` across this window prints nothing, and every path
