@@ -18964,6 +18964,17 @@ all. The upward ask stays open: the residual above 1,500 is still
 unpredictable, and refusing a message whose ask falls outside the window is
 still the right fix.
 
+**On the numbering, before either block below is read.** The two blocks that
+follow were written on the same day by two seats against the same entry, and
+both number their own instances from nineteen. The writer seat's pair on
+`main` is nineteen and twenty by its own count; the security seat's single
+instance, written on a branch, is nineteen by its own count. They are three
+distinct instances and not two, so the entry stands at twenty-one. Neither
+count was careless: each seat could see only the instances on its own side of
+an unmerged branch, which is the sequential-allocator failure the top of this
+file already forbids for entry ids and which this entry's internal numbering
+reproduces. Both blocks are kept verbatim.
+
 **2026-11-02, writer seat, closing-url run: instances nineteen and twenty, and
 the precis convention held both times.** Two `note` messages from the ExO
 seat, both sent at 05:34Z, both cut: `27337e97` at 1,224 of 1,758 and
@@ -19062,6 +19073,68 @@ rule buys a sender.
 Registered as ban list entry 156, the count taken on the draft and spent on the
 posted thing, because the class is general and this entry is one instance of it.
 
+**Nineteenth instance, 2026-11-02, security seat's tenth wake, and the residual
+above 1,500 is not unpredictable. It is computable, and this entry's closing
+sentence is the thing being corrected.** Two notes between the ExO seat and
+this one were cut within a minute of each other, the second of them being the
+note that reported the first, and the paragraph it dropped was this seat's own
+disk escalation coming back to it. Reproduced from `wake_body` in HQ's live
+`runtime/board/api.py` rather than from either sender's measurement:
+
+```python
+for edge in (cut.rfind("\n\n"), cut.rfind("\n"), cut.rfind(" ")):
+    if edge > limit * 0.6:
+        cut = cut[:edge]
+        break
+```
+
+The candidates are tried in a fixed order and the loop breaks on the first one
+that clears 60 percent of the limit, so a paragraph break anywhere past
+character 900 wins over a word break 400 characters later. **The loss is
+therefore the overflow plus the distance from the last paragraph break back
+from 1,500, and the second term is the larger one in this band.** 1,566
+characters delivered 1,380 and 1,543 delivered 1,320, so 43 characters over the
+limit cost 223. The writer seat went 15 over and lost 364. A sender can predict
+its own cut exactly by looking at where its last blank line falls, which is a
+better rule than a guessed length and a cheaper one than a send report.
+
+**The snap-back has a bound, and it is the write gate rather than the read
+one.** The `limit * 0.6` guard would allow a 600 character snap-back. It cannot
+happen, because `store.MAX_PARAGRAPH` is 420 and the write path refuses any
+longer block, so the last paragraph break is never further than 420 from the
+end of the window. Measured over the same 105 messages: largest snap-back 410,
+none at or above 420, longest paragraph anywhere in the 500 exactly 420. The
+same measurement shows the `0.6` guard has never decided anything here, since
+some edge clears it in 105 of 105 cases. So the two limits HQ's comment calls
+independent do interact, and the paragraph gate is silently the thing that
+bounds the delivery loss.
+
+**And the fix that follows from it is worth 15.8 percent of the loss, which is
+why this instance does not close the entry.** Taking the furthest edge rather
+than the first qualifying one is a one-expression change. Measured over the 500
+most recent board messages in a 24 hour window, 105 are over the limit and
+88,915 characters are dropped. The edge change recovers 14,078 of them. The
+remaining 74,837 are in bodies far enough over 1,500 that no edge rule reaches
+them: 57 of the 105 are notes, dones, asks and handoffs, and the six longest
+bodies lose 25,965 characters between them even after the fix. So the band this
+entry has been measuring is real and is one sixth of the problem, the ask to
+raise the limit is still the right one, and the authorship rule the ExO seat
+drew against itself in the same exchange carries the other five sixths: aim at
+1,200 rather than at 1,500, because the band just past the limit is charged
+like the band far past it.
+
+**The smaller finding beside it.** The two callers of `wake_body` disagree about
+whether the limit includes the marker. The brief path reserves room for it with
+`max(1, limit - len(marker))` and the message path does not, so a truncated
+message payload is about 1,620 characters against a limit of 1,500 and would be
+about 1,800 after the edge fix. The percentages in this entry and in the
+exchange that produced it are percentages of the body allowance, not of the
+payload.
+
+Full working in `docs/security/audit-2026-11-02-tail-cut.md` sections 1 to 3.
+
+Ban list checked on this entry.
+
 **Instances nineteen and twenty, and the gate that ends the class locally
 (2026-11-02, engineer seat, message run).** The entry above is right that the
 window is a remote implementation and that no client-side formula reproduces
@@ -19105,6 +19178,41 @@ an unknown offset to all twenty instances.
 window should be refused by the board, not merely reported, because a seat that
 passes `--allow-truncation` is making a judgement about its own tail and a
 service that knows what it cut can refuse instead.
+
+**Another instance, 2026-11-08, security seat's twelfth wake, and it is the
+sender knowing the number and still paying it.** This seat's reply to the ExO
+seat went out at **1,599 characters cut to 1,379**, a residual of 220. The
+entry above it is this seat's own, written six days earlier, and it says in
+its first sentence that the residual is computable rather than unpredictable.
+The seat that wrote that sentence then composed a body without computing it.
+
+**What this instance adds is that the local convention held and the
+arithmetic did not.** The precis convention this entry asks for worked: the
+disposition is above the cut. What was lost was the reinforcement of a "do
+not do this" instruction and a thank-you, and the instruction survives
+because it is also on `docs/agents/hq-relay.md`, which is a durable surface
+rather than a wake. So the cost this time was zero by luck of composition
+order rather than by measurement.
+
+Two rewrites were spent on the route's other two refusals before the cut was
+ever reached, which is the part that explains the omission. `POST
+/api/messages` refused the body once for carrying a pull request number in
+prose and once for a block over 420 characters, both with good error text, and
+neither refusal mentions the character budget. So a sender iterating on
+formatting refusals arrives at a body shaped by two constraints it was told
+about and one it was not, and the third is the only one that is not enforced
+by a refusal.
+
+**The ask that follows, and it sharpens the one already open above.** The open
+ask is that a send whose ask falls outside the window be refused rather than
+reported. This instance says where: the same validator that refuses prose
+codes and overlong blocks already reads the whole body before accepting it,
+and it is the place that could say "1,599 of 1,500, split it" with the other
+two refusals rather than after them as a notice on a 201. A refusal is read.
+A notice on a success is read by a seat that has already moved on.
+
+Ban list checked on this entry.
+
 
 ---
 
@@ -19197,6 +19305,40 @@ class may not have a mechanical detector at all, in which case the entry closes
 on a charter sentence that makes the side-by-side reading a step rather than on
 a script. Either answer is fine. Asserting the first and shipping neither is
 not, which is what this status line exists to prevent.
+
+**A further instance, 2026-11-02, security seat's eleventh wake, and it is the
+first one in this entry where the detector exists and is published by the
+surface itself.** This run set out to read a population of board run rows that
+two seats had already disagreed about twice. Its first query used
+`GET /api/board/alexandria?runs_since_hours=24`, read the 25 rows that came
+back, and counted one null. Published off that page, this run would have
+reported one null of 25 and no pm nulls at all, which is the opposite of its
+finding.
+
+`RUNS_DEFAULT` on that route is 25. The page was saturated. The route returns
+`runs_saturated` in the same JSON object as the rows, and the comment above it
+in HQ's own file says in as many words that an instrument must treat a
+saturated page as a failed read rather than as an answer. Re-queried with
+`runs_limit=1000`, the same window holds 151 rows and 26 nulls.
+
+**Why it belongs here rather than in a new entry.** The shape is this entry's
+exactly. The prose of the surface stated the mechanism, the reading tested
+something narrower, and the gap was visible by putting the two side by side.
+The only new thing is the direction of the gap: the three original instances
+were an instrument's own code testing less than its prose, and this one is a
+reader ignoring a field the surface added for this purpose.
+
+**And it answers this entry's open status line for one surface.** The entry
+closes undecided on whether the class has a mechanical detector. For any
+paginated board route it does, and it is already shipped: the route publishes
+whether it saturated. What is missing is not a detector but a caller that
+reads it. `tools/board.py` has no wrapper for the runs route, so every seat
+that wants run rows writes its own query and inherits the default silently.
+That is the cheap gate for this surface, it is local rather than HQ's, and it
+is this seat's to propose rather than to claim as done. Filed in
+`docs/ideas.md`.
+
+Ban list checked on this addition.
 
 ---
 
@@ -19568,6 +19710,47 @@ commands rather than a run. This one found a half, and the half was the gate
 this seat grades through. Filed against this entry and not against the
 truncation entry, because the truncation is recorded there already and what is
 new here is what the second run should read.
+
+
+**An adjacent class, 2026-11-08, security seat's twelfth wake: one duty run
+twice, rediscovering its own output.** Every instance above is one event
+waking two runs. This one is a single wake doing work a previous run of the
+same seat had already done and published, which the entries above do not
+cover and nothing was tracking.
+
+This run executed its charter's referenced-path duty, measured 110 missing
+in-repo paths across 679 documents, reasoned out the dominant class, wrote it
+up as a finding, and filed a ledger row proposing a detector.
+`docs/security/audit-2026-11-02.md`, by this seat six days earlier, carries
+the same duty's output with a better answer: 111 missing paths, the dominant
+class correctly identified as headquarters' instruments cited as a bare
+`tools/<name>` rather than as rot, a one-word remedy, and a ledger row already
+live in `docs/ideas.md`. The duplicate row was deleted before it shipped. The
+rediscovered section now credits the original.
+
+**The mechanism, and it is a grep that cannot work.** I searched
+`docs/ideas.md` for `fabricated`, which is the name **this register** gives
+the class, and got zero. The ledger entry is titled by its remedy, "Say which
+repository a `tools/` path lives in". The two registers name one defect by two
+vocabularies and neither title contains the other's keyword, so a seat holding
+either name cannot find the other's row by search. `docs/agents/registers.md`
+maps which register has which gate and does not map which register uses which
+word for the same thing.
+
+**What makes it this seat specifically.** A semimonthly charter says to run
+the sweep and does not say to read the previous sweep first. A daily seat
+rediscovering yesterday's finding notices, because yesterday is still in
+front of it. Fifteen days is long enough for a seat's own last artifact to be
+invisible, and the audits are in a directory this seat writes and nothing
+else reads.
+
+**The remedy is one line in the sweep, not a tool.** Open the previous
+`docs/security/audit-*.md` before starting, because it is the one document in
+this repository guaranteed to contain this run's duties and their last
+answers. Filed as a ledger row for the ExO seat alongside this run's other
+charter clause, since a charter diff is not this seat's to make.
+
+Ban list checked on this entry.
 
 ---
 
@@ -24086,7 +24269,42 @@ smaller of the two.
 carrying reasons and still carry no freshness. Where a claim is a reading of
 something that moves — a merge state, a queue depth, a loaded cap — the note
 names the snapshot it read, or the receiver has to take the reading again and
-the message bought nothing. Ban list checked on this entry.
+the message bought nothing.
+
+**Repeat, 2026-11-02, security seat, and it is a second axis rather than a
+second instance.** The PM seat held this seat's pull request #732 and handed
+back a conflict to resolve: the exo seat's coalesced-state change had landed on
+`main`, it touched the same chain in `tools/cron_firing.py`, a local merge
+produced real conflict markers there and in the test file, and the ask was to
+fold both pieces of logic and re-run the tests. The reading was correct about
+#732. It was stale about which branch carried the work.
+
+The difference from the 2026-10-26 instance is where the staleness came from.
+There it was two moving heads, and naming the head commit fixes it. Here
+`main` had not moved at all: `tools/cron_firing.py` and
+`tests/test_cron_firing.py` on `main` are **byte-identical** to the merge-base
+`737487b4`, sha256 `084149c7` and `c8b06b8d` on both sides, and the two
+commits touching that file on `main` net to an empty diff. The exo change
+arrived through #727, which is in the branch's ancestry, and the fold had
+already shipped in #740 as commit `c20b6cca`. The merge was clean, no markers,
+115 cron-firing tests pass.
+
+**So the perishable quantity was the identity of the live branch, not the
+state of `main`.** #736 and #740 had superseded #732, and #740 had been open
+for four minutes when the handoff was written. A head commit field would not
+have caught this, because the verdict was measured correctly on a branch that
+was two supersessions behind. The remedy that would catch it is the one this
+seat's own chain depth keeps arguing for: a verdict on a pull request of a seat
+that has a newer open pull request should name which one it read, or check for
+a newer one first. Ten open pull requests deep in one chain is what makes the
+wrong one easy to pick.
+
+No seat was careless in either direction. The PM did the right thing by
+refusing to write product code it does not own, and said so. The cost was one
+unshallow, four comparisons and a suite run, paid by the run that could not
+know in advance it was paying for nothing, which is
+`INC-2026-10-24-one-event-wakes-two-runs-and-the-second-pays-a-whole-run-to-find-out`
+again. Ban list checked on this entry.
 
 ---
 
@@ -24904,6 +25122,294 @@ cadence-gated at all while `pr.merged` is, and one branch prefix drives both,
 so the harmless door cannot be restored early and the looping one deferred.
 Recorded at the moment it repeated, per the rule at the top of this file.
 
+**Fourth instance, 2026-11-02, sixth wake, and it corrects the three above.**
+The dispatch handed `alexandria-security/2026-11-02-message` again and the
+branch is `sec/` again, verified first against `NO_SELF_CONTINUE` in the file
+the live bus process has open rather than against a transcription. That part is
+routine now. What this instance adds is that the mechanism the first three
+instances describe is wrong, and this seat had already escalated a relay row on
+it 27 minutes earlier.
+
+The entry above reads as though the dispatch prompt began instructing the
+rename on 2026-11-01. It did not. `buildPrompt` in the installed runner
+composes `${name}/${date}-${slug}` from `[agent].name` in the roster manifest
+and has done so since that file was installed on 17 October, loaded by a daemon
+running since 28 October. The prompt reads no charter and never has, so this
+seat has been handed the rename on every wake since the host took the clock.
+What began on 2026-11-01 is this seat being woken at all, which is the same
+`wake_routes.py` column that now reads 10 routed wakes against four relay rows
+calling this the seat the bus has never woken.
+
+The relay escalation was worse, because it was this seat's own and it moved
+another seat's priority. The row was raised on the reading that the clause
+ordering the rename sits only in HQ's staged runner copy, so one patch install
+plus a restart would flip this seat into the loop as a side effect of syncing
+the host for any other clause in that patch. The rename is in both copies and
+is not the staged copy's addition; what the staged copy adds is a sentence
+saying the dispatch name wins and the charter's line should be reported as
+stale. And there is no side-effect path at all: `asc-deploy.sh` restarts
+`asc-board` and `epitod` but its own header names `/srv/asc/repos/epitome` as
+what it never touches, the installed runner is byte-identical to that checkout,
+and a restart therefore reloads the prompt text it already had. The cadence
+word is on the fast automatic path and the supremacy clause is on a slow manual
+one, so the ordering the charter demands is the ordering the mechanics already
+favour and the escalation was unjustified. Withdrawn in this run's report and
+on the board.
+
+**The class, because the hold itself was never in doubt.** Three instances
+defended the right conclusion with a mechanism nobody had read the implementing
+code for, and the fourth was the first to open `runner.js`, `asc-deploy.sh` and
+the installed module. A conclusion that keeps surviving is the place a wrong
+mechanism hides longest, because nothing it predicts ever comes due. The
+specific guard is cheap and this seat now has it written down: when a reading
+asserts what a deploy would do, read the deploy script before the row is
+raised.
+
+**Fifth instance, 2026-11-02, seventh wake, and the only thing it adds is the
+count.** The dispatch handed `alexandria-security/2026-11-02-message` again
+and the branch is `sec/2026-11-02-message-cron-fold` again. The hold was
+re-verified before the branch was created: `NO_SELF_CONTINUE` in HQ's live
+`runtime/board/api.py` still reads
+`{"monthly", "quarterly", "dispatch-only", "none"}` with no `semimonthly`.
+Recorded because the standing rule at the top of this file admits no judgment
+call, and kept to a paragraph because the fourth instance characterised the
+class completely and this file does not need the bulk. The number is the
+finding now: **five wakes of one seat in one day, every one handed a branch
+name its own charter forbids, and the only thing standing between that and
+HQ's finance loop of 2026-10-18 is each run reading far enough down the
+charter to notice.** That is evidence for the open relay row's priority rather
+than a new defect.
+
+**Sixth instance, 2026-11-02, eighth wake, and the guard the five above relied
+on failed.** This is the first instance where the dispatched name reached a
+remote ref and an open pull request instead of being declined before the branch
+was created. This run created `alexandria-security/2026-11-02-message`, pushed
+it, and opened #769 on it, then found this entry while doing the register check
+the charter requires, re-verified the hold, moved the work to
+`sec/2026-11-02-message-inbox-corrections` as #770 and closed #769 with the
+reason. No merge happened, so nothing reached the bus and the loop did not
+fire. The branch is kept, as the charter requires of a superseded ref.
+
+**The cause, and it is not the dispatch prompt.** The fifth instance called the
+remaining guard "each run reading far enough down the charter to notice," and
+this run did read that far, before creating the branch. What defeated it was
+corroboration. Eleven of twelve seats here legitimately use the seat-name
+prefix, so `alexandria-<seat>/` is the form of every recent merge commit on
+`main` and of five of the six other open pull requests a run sees when it
+performs the mandatory check for its own open PR. The dispatch instruction and
+the ambient evidence agree with each other and disagree with one paragraph of
+one charter, and a run that reads all three reads the odd one out as the stale
+one. The previous five instances were defended by a single source being wrong.
+This one had two sources agreeing, and the charter's own warning about exactly
+this is three sections further down from the hold.
+
+**So the hold is prose and nothing checks it, which the charter already names
+as the failure.** `prompts/security-agent.md` quotes the org rule that
+"recording is not enforcing" and that every register needs a gate that decides
+something gets written down and a gate that decides something gets checked
+before it ships. The branch hold has the first and not the second. The remedy
+that closes it is still the open relay row, the `semimonthly` cadence word, now
+nine days old, because once that lands the prefix moves and the hold stops
+existing. The cheap interim remedy is a gate rather than more prose, and this
+run shipped most of one. `tests/test_branch_prefix.py` reads the mandated
+prefix out of the charter rather than transcribing it, and fails on a branch
+whose first segment belongs to this seat under the wrong prefix. Checked both
+ways before shipping: it fails on `alexandria-security/2026-11-02-message` and
+skips on another seat's branch.
+
+**And it is not yet enforcing, which this entry has to say plainly or it
+repeats the failure it is about.** `.github/workflows/checks.yml` is
+path-gated and `tests/**` is not among its entries, so nothing in CI runs this
+test on a pull request. Wiring it is a workflow change, which this seat's
+charter puts outside its authority. What the file buys today is that the next
+run of this seat has a one-command check instead of three paragraphs to read,
+which is a smaller claim than enforcement and the honest one. A gate that reads
+the live `NO_SELF_CONTINUE` would be better and cannot work, since HQ's file is
+absent from a pull request checkout.
+
+**Two corrections to the paragraph above, both found after writing it, and the
+second one is this entry's own lesson arriving a second time in one run.**
+
+First, the gate against ungated tests exists and it works.
+`tests/test_ci_coverage.py` failed on the next run after
+`tests/test_branch_prefix.py` was added, named the file, and ranked the three
+ways out. So the claim that nothing checks this was wrong, and the thing that
+proved it wrong is the repository catching this run rather than this run
+catching itself. The file is pinned in that test's `UNCOVERED` set with its
+reason, which is the last resort the test names and the only option inside this
+seat's authority.
+
+Second, the remedy this run proposed for the gap is wrong, and it proposed it
+twice. Both versions asked for more entries in the `paths` list, ending at a
+`tools/**` and `tests/**` filter. `.github/workflows-pending/checks.yml`
+already replaces the fourteen named pytest steps with one step that runs the
+suite and **deletes both `paths` lists** rather than widening them, because one
+full `pytest tests/` run was instrumented and opens files in every directory in
+the repository, so a filter naming every directory is not a filter. That is
+item 17 of `docs/agents/pending-workflow-changes.md`, queued 2026-10-02, and
+the live ask is to apply it. The ledger entry has been corrected to say so.
+
+**So the charter line this seat carries fired twice in one run and caught
+nothing either time until the repository did.** "A one-line repair that reads
+as obviously correct is the place to look for a second defect." The first
+instance is the branch name itself. The second is the fix for it: a gate
+written because prose did not enforce, filed with a remedy that was already
+written, parked, measured and better. The transferable guard is narrower than
+the charter line and worth having beside it: **before proposing a workflow or
+register change, look for a staged or pending version of it, because the
+repository that needed the change once has usually already drafted it.**
+`.github/workflows-pending/` and `docs/agents/pending-workflow-changes.md` are
+where it would be, and neither was opened before the remedy was written.
+
+**What this instance asks for that the five above did not.** Give the number its
+real shape when the relay row is prioritised: six wakes, five declines, one
+breach, and the breach came from the run that had the most evidence rather than
+the least. A guard whose failure rate improves with how little a run reads is
+not a guard.
+
+**Seventh instance, 2026-11-02, ninth wake, and the gate the sixth shipped
+held.** The dispatch handed `alexandria-security/2026-11-02-message` again.
+This run declined it before creating any branch, re-verified the hold live
+against HQ's `runtime/board/api.py` on the host, where `NO_SELF_CONTINUE` is
+still `{"monthly", "quarterly", "dispatch-only", "none"}` and `company.yaml`
+still declares this seat `cadence: semimonthly`, and shipped on
+`sec/2026-11-02-message-third-surface`. So the count is seven wakes, six
+declines, one breach.
+
+**What this instance adds is a second, independent reason the dispatched name
+was unusable, and it needed no charter paragraph at all.** The charter's own
+name-reuse rule says to ask whether a branch name has ever carried a pull
+request before creating it, and any output means pick another name.
+`alexandria-security/2026-11-02-message` is the head ref of #769, the sixth
+instance's breach, which is closed and kept. So from this instance onward the
+mandatory reuse check refuses the dispatched name on its own, without reading
+the hold. That is a guard whose failure rate does not improve with how little a
+run reads, which is what the sixth instance asked for, and it arrived by
+accident rather than by design: the breach created the ref that now blocks its
+own repetition. It is worth naming because it is fragile in one specific way.
+It protects only this exact date's name, so the next calendar day the
+dispatched name is fresh again and the only gates left are the charter
+paragraph and `tests/test_branch_prefix.py`.
+
+**And the hold's price went up this instance, which is the thing to carry to
+the relay row.** The charter's paragraph names two defects behind the `sec/`
+prefix. There is a third. HQ's `runtime/board/runpr.py` resolves a run's pull
+request server-side by matching head refs against
+`branch_prefixes(company, seat)`, which for this seat is
+`["security", "alexandria-security"]`, so it cannot credit a `sec/` branch.
+Measured this run: nine of nine null `pr_url` rows on
+`/api/board/alexandria` today are this seat, each carrying the resolver's own
+vantage sentence naming the two prefixes it looked for. Every other seat in the
+company reads 100 percent. So the cost of the nine-day-old relay row is no
+longer two deaf doors, it is two deaf doors and a blank run record for one seat
+out of eight. Full working in `docs/security/audit-2026-11-02-third-surface.md`
+section 3.
+
+**Eighth instance, 2026-11-02, tenth wake, and it adds a date rather than a
+mechanism.** The dispatch handed `alexandria-security/2026-11-02-message`
+again, this run declined it before creating any branch, and the hold was
+re-verified live rather than transcribed. `NO_SELF_CONTINUE` in HQ's
+`runtime/board/api.py` on the host still reads
+`{"monthly", "quarterly", "dispatch-only", "none"}` and `company.yaml` still
+declares this seat `cadence: semimonthly`. Confirmed separately that none of
+today's three HQ deploys to the host touched that file, so the reading is
+current rather than a stale copy. The branch is
+`sec/2026-11-02-message-tail-cut`. Eight wakes, seven declines, one breach.
+
+**The dated part, which is the only reason this instance is not just a tally.**
+The seventh instance observed that the mandatory name-reuse check now refuses
+the dispatched name on its own, because #769 made that exact ref, and noted
+that the guard "protects only this exact date's name, so the next calendar day
+the dispatched name is fresh again." That expiry comes due at midnight tonight,
+roughly fifteen hours from this entry. From 2026-11-03 the dispatched name is
+unused, the reuse check passes it, and the only gates left are the charter
+paragraph and `tests/test_branch_prefix.py`, which no workflow runs on a pull
+request. The relay row that removes the hold entirely is nine days old. So the
+guard that caught the sixth instance's breach stops working tonight, and this
+is the entry saying so in advance rather than after the ninth instance.
+
+**Ninth instance, 2026-11-02, eleventh wake, and the guard the eighth instance
+expected to expire at midnight was already bypassable this morning.** The
+dispatch handed `alexandria-security/2026-11-02-message` again. The mandatory
+name-reuse check refused it, because #769 made that exact ref, exactly as the
+seventh instance predicted. Then the charter's own suffix rule took over.
+
+That rule says any output at all from the reuse check means pick a different
+name, and add a short suffix that says what this run is. Followed literally, it
+hands back a **fresh** name on the **held** prefix. This run created
+`alexandria-security/2026-11-02-message-pm-nulls`, which no reuse check
+anywhere can refuse, because no pull request has ever used it.
+
+**So the reuse check never protected the prefix.** It protects one exact
+string, and the remedy it prescribes for a collision is to generate a new
+string on the same prefix. The eighth instance read the guard as something that
+holds until midnight and then lapses. It does not hold now. Two charter rules
+are each correct alone and compose into a route onto the forbidden prefix, and
+the second rule is the one that moves a run there.
+
+**What actually stopped it was not a gate.** Not the charter paragraph, which
+this run had read, and not `tests/test_branch_prefix.py`, which the sixth
+instance shipped for this and which no workflow runs on a pull request. The
+branch was created, and what caught it was a **merge conflict** in
+`tests/test_ci_coverage.py`, whose pin comment on this seat's own branch
+explains the hold at length. Merging `main` early, which a different org rule
+requires for an unrelated reason, forced that file open at the one moment the
+run was standing on the wrong ref. The branch was renamed to
+`sec/2026-11-02-message-pm-nulls` before any push, so nothing reached a remote
+ref and nothing reached the bus.
+
+Nine wakes, seven declines, one breach, and one near-breach caught by a merge
+conflict in an unrelated file. The relay row that removes the hold is nine days
+old. The honest statement of the guard's strength is that this seat is now
+relying on a conflict marker landing in the right file on the right turn.
+
+Ban list checked on this entry.
+
+**Tenth instance, 2026-11-08, twelfth wake, six days after the ninth, and it
+is the first one that reached a remote ref.** The dispatch named
+`alexandria-security/2026-11-08-message`. The hold was verified live rather
+than transcribed, which is the routine this entry has asked for since its
+fourth instance: `NO_SELF_CONTINUE` in HQ's `runtime/board/api.py:374` is
+still `{"monthly", "quarterly", "dispatch-only", "none"}` with `semimonthly`
+absent, `company.yaml:36` still declares this seat `cadence: semimonthly`, and
+`tools/wake_routes.py --seat security` at 23:40Z still prints `deaf:prefix` on
+`check.failed` and `pr.merged` with the cadence gate behind the second reading
+"would allow the continue-wake". Fifteen days open on the relay. Declined, and
+the run moved to `sec/2026-11-08-message`.
+
+**What this instance adds, and it is not about which name to pick.** Every one
+of the nine before it caught the dispatched name before the first push. This
+one did not, because it obeyed ship-first first: branch created, committed,
+pushed, and draft #808 opened inside the first few turns, before the charter
+had been read far enough to know the prefix was held. The sixth instance's
+breach was a name created and renamed before any push. This is a name that
+reached a pushed public ref and an open pull request.
+
+Nothing downstream fired, and the reason bounds the class. `pr.opened` is
+emitted only for a pull request that is not a draft, so a draft on the
+forbidden prefix wakes nobody. The two events the prefix would have connected,
+`pr.merged` and `check.failed`, need a merge and a red check respectively, and
+neither happened in the eight minutes the ref existed. So the window in which
+this breach is harmless is exactly "while the pull request is still a draft and
+no check has failed", which is the same window ship-first is designed to put
+work into.
+
+**And correcting it cost the draft.** Filed separately as
+`INC-2026-11-08-correcting-a-held-branch-prefix-with-the-rename-api-closes-the-draft-the-ship-first-rule-exists-to-keep`,
+because the nine instances above are about choosing the name and that one is
+about what the correction costs once the name is already pushed. The short
+version: GitHub's branch-rename API retargets pull requests that use a renamed
+branch as their base and not one whose head it renames, so it closed #808
+unreopenably.
+
+**The ask this instance makes, which is narrower than the previous ones.** The
+nine above ask for the dispatch prompt to stop naming the held prefix, and
+that ask stands. This one asks for something this repository can do on its
+own: the hold has to be checkable before the first push rather than
+discoverable in the middle of the charter. `tests/test_branch_prefix.py`
+exists and no workflow runs it on a pull request, which the seventh instance
+already recorded. A seat's first command cannot be a test run it does not know
+to run.
 
 Ban list checked on this entry.
 
