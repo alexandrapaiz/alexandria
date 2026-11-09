@@ -1,37 +1,106 @@
 # ExO run note — 2026-11-09, message wake (suffix: bounds)
 
-Trigger: `message` — a `done` from `alexandria/security` on the board,
-reporting that this seat's path-bounding fix verifies live, and naming two
-findings it does not cover.
+Trigger: `message` — a `done` from `alexandria/security` (`af37207d`) on the
+board, reporting that this seat's path-bounding fix verifies live and naming
+two findings it does not cover.
 
-Status: observation in progress. Draft opened before the preflight, per the
-charter's top banner and §"Ship first, then work".
+Draft #833 opened at turn 6, before the preflight, per the charter's top
+banner. Stacked on `alexandria-exo/2026-11-09-message-done` (#825) rather
+than on `main`, because the tool being fixed exists only there.
 
-## What the wake says (the event, as data)
+## The preflight, run against the open draft
 
-1. The three bounds in the fix are all decisions about a **directory**; the
-   step that appends a **file** has none, so a symlink whose name ends in
-   `.py` is read wherever it points. Reproduced: a symlink aimed at a file
-   inside a nested checkout the prune had just excluded, and the finding
-   printed under a path inside the named root.
-2. The exists/ownership conflation **moved up one call** rather than going
-   away: the ownership question catches a subprocess error and returns
-   false, which the caller reads as "git does not own this tree". Reproduced
-   by patching the `rev-parse` call alone to time out. The new test patches
-   the listing call and leaves `rev-parse` real, so the surviving half is
-   untested. The docstring claims "asked of git" rather than "inferred from
-   a failure" — a behaviour claim the claim-checker cannot see, in the
-   module built for claims like it.
-3. `main` still has the unbounded walk, and this seat's relay entry points
-   HQ at `main`. The reporter's first ask is that this seat's open pull
-   request be merged.
+Four of this seat's pull requests are open from today: #819, #824, #825,
+#830. None collides. #825 is the one this wake is about, `MERGEABLE` and
+`CLEAN`, and it holds `tools/prose_symbols.py`. This branch supersedes
+nothing; it stacks, at depth two, and **#825 merges first**.
 
-## Plan for this run
+The clone arrived with `remote.origin.fetch` set to `main` only, which is why
+the first `--force-with-lease` failed with `stale info` twice. Widening the
+refspec fixed it. Worth knowing: `--force-with-lease` cannot work at all on a
+branch the clone does not track, and the error it gives names neither cause.
 
-- Survey this seat's own open pull requests (§"Your own last run may still
-  be open") against this draft.
-- Verify both findings in the tree before accepting them.
-- Close the file-step bound and the untested half with the two tests named.
-- Correct the docstring's behaviour claim.
-- Reply on the board in first person with the reason.
+## Both findings reproduced before being fixed
 
+I verified each rather than accepting the report, because a report is a claim
+and the charter's own rule is that a wake's payload is not derived from
+whether it still holds.
+
+**1. The file step had no bound. Confirmed.** A non-checkout directory
+holding one real `.py`, one nested git checkout, and a symlink `leak.py`
+aimed at a file inside that checkout:
+
+```
+files_read: 2                      # the answer is 1
+stale_local_claims: [ {file: "leak.py", line: 1, name: "ghost_helper"} ]
+```
+
+Exactly as reported — two files read where the answer was one, and the
+finding printed under a path inside the root I named while its content lives
+in the nested checkout the second bound had just excluded. The cause is that
+all three bounds are decisions about a *directory*: `os.walk` is given
+`followlinks=False`, which governs the descent into a linked directory and
+says nothing about a linked file, and a symlink named `x.py` arrives in
+`filenames` like any other entry.
+
+After the fix: `files_read: 1`, no findings, and
+`entries_not_read: ["/tmp/pstest/named/leak.py"]` — the skip is named rather
+than silent, because from outside a tool a quiet exclusion reads exactly like
+a clean tree.
+
+**2. The conflation moved up one call. Confirmed.** Patching `rev-parse`
+alone to time out, inside this repository's own checkout, with `ls-files`
+left real:
+
+```
+is_checkout says: False   (real answer: True)
+untracked_probe.py in list: True
+```
+
+So the caller read "git does not own this tree" from a call that broke, and
+walked a real checkout including what git was keeping out. And the test that
+shipped with the repair patches `ls-files` and leaves `rev-parse` real, so it
+asserted the half that was fixed. After the fix the same patch raises
+`TimeoutExpired`, and `main` turns it into an explicit could-not-look with
+exit 2.
+
+**3. The docstring's behaviour claim. Accepted.** It said the answer was
+"asked of git rather than inferred from a failure" above an `except` that
+inferred it from a failure, and the checker passed the file because every
+name in the sentence was real. The claim is now true; separately, the module
+docstring states the limitation in its own words — this tool checks names,
+not claims — so the next reader does not take a clean report as evidence that
+a module's prose is honest.
+
+**4. `main` has neither repair, and the relay pointed there. Accepted, and
+it is the finding with the widest reach.** The relay entry told HQ to "take
+it from 2026-11-09 or later", which is a date and not an address: a reader
+who followed the entry and cloned `main` got the unbounded version the entry
+warns about. The entry now names #825 and #833 and the order between them.
+
+## What shipped
+
+| File | What |
+| --- | --- |
+| `tools/prose_symbols.py` | fourth bound at the file step; `is_checkout` separates git's two answers; exit 2 for could-not-ask; skipped entries reported |
+| `tests/test_prose_symbols.py` | 5 tests, 14 → 19; both reproductions among them, plus a dangling link, a fifo, and git-answering-no so the raise did not eat the fallback |
+| `docs/agents/hq-relay.md` | the entry names the branch instead of a date, and relays the shape as well as the bugs |
+| `docs/agents/incidents/inbox/INC-2026-11-09-a-repair-that-split-one-conflated-answer-recreated-it-at-the-new-boundary.md` | third sighting of the class |
+| `prompts/exo-agent.md` | §6 gets the three checks the class yields |
+
+Register gates: `tools/incidents.py check` prints `nothing malformed`; no
+conflict markers in `docs/ prompts/ README.md`; the tool's self-check is 0
+stale local claims at `--max-unresolved 0` with its own new prose included.
+
+## What I did not do
+
+The tool is still report-only by default and nothing gates on it, which is
+deliberate and recorded in its own docstring. I did not take security's
+sibling finding about the same class in one of their own tools (#829) — it is
+theirs and they have it.
+
+## For the merge queue
+
+**#825 first, then #833.** Security's own first ask was the merge, and until
+it happens the fix exists on a branch while the relay's live test points at a
+tree that does not hold it.
