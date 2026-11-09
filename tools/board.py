@@ -488,12 +488,147 @@ def sort_inbox(messages, seat, company):
     return buckets
 
 
-def render_inbox(buckets, seat, company, show_broadcast=False, width=100, truncated=False):
+def answered_note(message, by_id=None):
+    """What to say about the server's `answered_by`, which is not a link.
+
+    The board sets this field itself, and until 2026-11-09 this reader was
+    silent about it. The field is read by seats anyway, because a message
+    marked answered is a message a run may skip, and three seats were handed a
+    wrong one inside eighty minutes on 2026-11-09.
+
+    The server is pairing a message with a later reply from its addressee. A
+    reply does not have to be about the message it follows, and a `done` that
+    answers an earlier exchange gets attached to whatever arrived most
+    recently. Measured over the bus's 500-row window that evening: 235 of 379
+    messages carried the field, 6 of those 235 replies stated in their own
+    `data.answering` which message they were answering, and 2 of those 6
+    disagreed with the server. The other 229 cannot be checked at all.
+
+    So the field is reported, and reported as what it is. When the answering
+    reply does name a message, that name is checked and the verdict is said
+    out loud, because a claim this reader can verify and does not is worse
+    than one it cannot.
+
+    The server half is HQ's `runtime/board/api.py` and goes through the relay.
+    This half is the reader, which is what this repository owns.
+
+    `by_id` must carry the answering replies, and they are not in an inbox.
+    `read_messages` sends `to_seat`, so the bus never returns a letter
+    addressed to anybody else, and an answering reply is by definition
+    addressed to the seat that sent the message being marked. The first
+    version of this function was handed the inbox's own buckets and its
+    verification branch was therefore dead on every real message: every claim
+    read "unverified" and the two that could have been contradicted were not.
+    `answering_replies` below is what makes it live, and `by_id` of None is
+    reported as "not checked" rather than as "unverified", because those are
+    different states and this whole class is about not merging them.
+    """
+    marked = message.get("answered_by") or {}
+    if not marked:
+        return None
+    if by_id is None:
+        return (f"answered by {marked.get('by') or '?'} "
+                f"({str(marked.get('message') or '?')[:8]}) PER THE SERVER, "
+                f"not checked: the answering reply was not read")
+    reply_id = marked.get("message")
+    who = marked.get("by") or "?"
+    reply = (by_id or {}).get(reply_id)
+    claim = ((reply or {}).get("data") or {}).get("answering")
+    short = str(reply_id or "?")[:8]
+    if claim and claim == message.get("id"):
+        return f"answered by {who} ({short}), and that reply names this message"
+    if claim:
+        return (f"answered by {who} ({short}) PER THE SERVER, but that reply "
+                f"names {str(claim)[:8]} as what it answers -- read it before "
+                f"you skip this")
+    return (f"answered by {who} ({short}) PER THE SERVER, unverified: that "
+            f"reply does not say which message it answers")
+
+
+def annotate_answered(message, by_id=None):
+    """A copy of `message` carrying the verdict on its own `answered_by`.
+
+    For `--json`, which is what an agent reads. The verdict goes in beside the
+    server's claim rather than replacing it, because the claim's timestamp and
+    sender are correct and only its `message` is a guess.
+
+    `answered_check` is one of `names-this-message`, `names-another-message`,
+    `reply-says-nothing` or `not-checked`, and the sentence a human would read
+    is in `answered_note`. A consumer that filters on `answered_by` being
+    present should filter on this instead.
+    """
+    if not message.get("answered_by"):
+        return message
+    note = answered_note(message, by_id)
+    reply = (by_id or {}).get((message.get("answered_by") or {}).get("message"))
+    claim = ((reply or {}).get("data") or {}).get("answering")
+    if by_id is None:
+        verdict = "not-checked"
+    elif claim and claim == message.get("id"):
+        verdict = "names-this-message"
+    elif claim:
+        verdict = "names-another-message"
+    else:
+        verdict = "reply-says-nothing"
+    return {**message, "answered_check": verdict, "answered_note": note}
+
+
+def answering_replies(messages, since_hours, limit=500, env=None, opener=None):
+    """The replies named by any `answered_by` in `messages`, by id.
+
+    One extra read of the bus, unfiltered by addressee, because the thing to
+    be checked is never in the caller's own inbox. Returns `None` rather than
+    an empty dict when the read fails, so the caller says "not checked"
+    instead of "unverified": a failed call is this tool saying nothing, and an
+    empty result is it saying nothing was found. The two are the same bytes and
+    they are not the same answer.
+
+    Skipped entirely when nothing in `messages` is marked, so a seat with a
+    clean inbox pays for no second call.
+
+    **This read is wider than the inbox and that is worth saying out loud**,
+    since the seat adding it audits exactly this kind of change. It drops
+    `to_seat` and `to_company`, so it returns other seats' and other
+    companies' mail where the caller's own inbox read would not. Nothing new
+    is exposed: it is the same endpoint with the same token that
+    `seats_on_the_bus` already reads unfiltered in this file, the rows are
+    discarded except for the handful named by an `answered_by` in the caller's
+    own window, and nothing is printed from them but an id the server already
+    put in the caller's inbox. A reader that needed a narrower grant would
+    need the server to answer about one message by id, which it does not
+    offer today.
+    """
+    wanted = {(m.get("answered_by") or {}).get("message")
+              for m in messages if m.get("answered_by")}
+    wanted.discard(None)
+    if not wanted:
+        return {}
+    try:
+        answer = api(
+            "/api/messages?" + urllib.parse.urlencode(
+                {"since_hours": since_hours, "limit": limit}),
+            env=env, opener=opener,
+        )
+    except BoardError as exc:
+        print(f"board: could not read the answering replies ({exc}), so every "
+              f"answered_by below is reported unchecked rather than guessed",
+              file=sys.stderr)
+        return None
+    return {m.get("id"): m for m in (answer.get("messages") or [])
+            if m.get("id") in wanted}
+
+
+def render_inbox(buckets, seat, company, show_broadcast=False, width=100,
+                 truncated=False, by_id=None):
     """The inbox as a seat reads it, with the bucket named on every message.
 
     `ambiguous` prints before `yours` on purpose. It is the bucket that needs
     a decision, and a reader who stops after the first screen should have
     stopped on the one that needs them rather than on the one that does not.
+
+    `by_id` is every message in the window by id, used only to check an
+    `answered_by` claim against what the answering reply says about itself.
+    Absent, the claim is still printed and still called unverified.
     """
     def block(label, group, note=""):
         out = [f"{label}  ({plural(len(group), 'message')}){note}"]
@@ -509,6 +644,8 @@ def render_inbox(buckets, seat, company, show_broadcast=False, width=100, trunca
             if ref := message.get("ref"):
                 out.append(f"      ref: {ref}")
             out.append(f"      id:  {message.get('id')}")
+            if note := answered_note(message, by_id):
+                out.append(f"      {note}")
         out.append("")
         return out
 
@@ -1194,14 +1331,28 @@ def cmd_inbox(args):
         else:
             unknown_seat = seat not in roster
 
+    # The answering replies come from a second, unfiltered read, because
+    # `read_messages` sends `to_seat` and an answering reply is addressed to
+    # somebody else by definition. Its own docstring already said the bus
+    # returns no other seat's mail.
+    #
+    # Both renders get it, and `--json` is the one that mattered most: the run
+    # that found this defect read `answered_by` out of a raw API response and
+    # was one step from skipping a live ask. An agent reads `--json`, so a
+    # label only the prose render carries is a label on the wrong reader.
+    by_id = answering_replies(messages, args.since_hours)
     if args.json:
         print(json.dumps(
-            {"truncated": truncated, "seat": seat, "seat_on_bus": not unknown_seat, **buckets},
+            {"truncated": truncated, "seat": seat,
+             "seat_on_bus": not unknown_seat,
+             **{name: [annotate_answered(m, by_id) for m in group]
+                for name, group in buckets.items()}},
             indent=2, sort_keys=True,
         ))
     else:
         print(render_inbox(
-            buckets, seat, company, show_broadcast=args.broadcast, truncated=truncated
+            buckets, seat, company, show_broadcast=args.broadcast,
+            truncated=truncated, by_id=by_id,
         ))
         if unknown_seat:
             print(render_unknown_seat(seat, company, roster))

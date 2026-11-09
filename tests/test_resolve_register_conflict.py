@@ -15,6 +15,7 @@ company lesson L-A49 forbids the attribute.
 
 import importlib.util
 import subprocess
+from unittest import mock
 from pathlib import Path
 
 import pytest
@@ -282,3 +283,66 @@ def test_the_register_list_comes_from_the_checker_that_owns_it():
     assert "docs/agents/incidents.md" in registers
     source = (ROOT / "tools" / "resolve_register_conflict.py").read_text()
     assert source.count('"docs/ideas.md"') == 0
+
+
+# ---------------- a question that cannot be asked is not an answer ----------------
+
+
+def test_an_unresolvable_ref_refuses_instead_of_reporting_the_register_absent(repo):
+    """The conflation this tool's own `None` carried until 2026-11-09.
+
+    `git show` exits non-zero both for an absent path and for a ref it cannot
+    resolve, so a bad ref read as "the register is not in that tree" and the
+    audit skipped it without saying so.
+    """
+    with pytest.raises(RuntimeError) as caught:
+        rrc.blob("no-such-ref-at-all", "docs/agents/incidents.md", repo=repo)
+    assert "does not resolve" in str(caught.value)
+
+
+def test_a_genuinely_absent_path_still_answers_none(repo):
+    """The control. Without it the test above would pass on a `blob` that raised
+    for everything, which would be a different bug and not a fix."""
+    assert rrc.blob("HEAD", "docs/no-such-register-anywhere.md", repo=repo) is None
+
+
+def test_check_commit_names_the_registers_it_did_not_audit(repo):
+    """Coverage narrower than the question used to be silent, and silence from
+    an auditor reads as a verdict on everything it was asked about."""
+    two_appends(repo)
+    rrc.resolve_one("docs/ideas.md", repo=repo)
+    git(repo, "commit", "-qm", "merge, resolved by the tool")
+    state, report = rrc.check_commit(
+        "HEAD", repo=repo,
+        registers=["docs/ideas.md", "docs/not-a-real-register.md"])
+    joined = "\n".join(report)
+    assert "were not audited" in joined, joined
+    assert "docs/not-a-real-register.md" in joined
+    # The register that is there is still audited, so this is a named gap in
+    # coverage rather than a refusal to answer at all.
+    assert "docs/ideas.md" in joined
+
+
+def test_every_git_call_carries_a_timeout(repo):
+    """Until 2026-11-09 the single git helper here had no timeout at all."""
+    seen = []
+    real = subprocess.run
+
+    def recording(*args, **kwargs):
+        seen.append(kwargs.get("timeout"))
+        return real(*args, **kwargs)
+
+    with mock.patch.object(rrc.subprocess, "run", recording):
+        rrc.conflicted(repo=repo)
+        rrc.blob("HEAD", "docs/agents/incidents.md", repo=repo)
+    assert seen, "no git call was made, so this test proves nothing"
+    assert all(t is not None for t in seen), seen
+
+
+def test_no_git_binary_refuses_and_says_no_register_was_audited(repo, capsys):
+    def missing(*args, **kwargs):
+        raise FileNotFoundError(2, "No such file or directory", "git")
+
+    with mock.patch.object(rrc.subprocess, "run", missing):
+        assert rrc.main(["--check", "HEAD", "--repo", str(repo)]) == rrc.EXIT[rrc.NOTHING]
+    assert "could not be asked" in capsys.readouterr().err

@@ -136,6 +136,46 @@ DECLARED: dict[tuple[str, str], Judgment] = {
     ("anchor_contention.py", "--prs"): Judgment("path"),
     ("anchor_contention.py", "--root"): Judgment("path"),
     ("ban_list.py", "paths"): Judgment("path"),
+    # The branch name is GitHub's to judge and nothing here carries a roster of
+    # them, which is the whole premise of the tool: it asks the forge and
+    # refuses when the forge does not answer. Same judgment as
+    # `board.py --branch` and `check_pr_green.py --branch`.
+    ("branch_name_free.py", "name"): Judgment("opaque"),
+    # `--repo` is owner/name on the forge, which only the forge can resolve.
+    # The reason is a comment rather than the `offline` field, because that
+    # field is reserved for `roster` rows.
+    ("branch_name_free.py", "--repo"): Judgment("opaque"),
+    # Both of these are paths and absent is already a refusal: git exits
+    # non-zero on a directory that is not a checkout and the tool turns that
+    # into EXIT 2 rather than into a clean boundary.
+    ("history_boundary.py", "--repo"): Judgment("path"),
+    ("history_boundary.py", "--path"): Judgment("path"),
+    # All three are paths in the checkout and absent is already a refusal:
+    # `scan_paths` raises `CannotLook` on a path that is neither a file nor a
+    # directory, and `main` turns that into exit 2 rather than into an answer
+    # of clean. `paths` defaults to `tools pipeline mcp` and the default is
+    # printed in the help, so a reader can see what a bare run measured.
+    ("unbounded_calls.py", "paths"): Judgment("path"),
+    ("unbounded_calls.py", "--root"): Judgment("path"),
+    # `--baseline` is a path too, and the strictest of the three: a baseline
+    # that cannot be read or does not parse is a `CannotLook` rather than an
+    # empty set, because an empty set reads as "nothing is accepted" and would
+    # turn an unreadable file into a wall of findings nobody asked for.
+    ("unbounded_calls.py", "--baseline"): Judgment("path"),
+    # Added 2026-11-09 on the run that finished this seat's #860. Both of these
+    # reached a branch tip with no help text at all, so `ast` had nothing to
+    # read and the census called them UNCLASSIFIED rather than miscalling them.
+    # That is the gate working, and it is the second time in one evening it has
+    # caught this seat on a tool this seat had just written: the three
+    # `unbounded_calls.py` rows above are the first. The missing help was the
+    # real defect and it is fixed in the tool rather than papered over here,
+    # because a flag with no help is invisible to every reader of `--help` and
+    # not only to this census.
+    ("history_secrets.py", "--repo"): Judgment("path"),
+    # The strictest of the two, for the same reason the `unbounded_calls.py`
+    # row above is: an unreadable baseline is a `CannotLook` and never an empty
+    # accepted set.
+    ("history_secrets.py", "--baseline"): Judgment("path"),
     ("ban_list.py", "--allow"): Judgment("text"),
     ("blind_prose_benchmark.py", "--issue"): Judgment("path"),
     ("blind_prose_benchmark.py", "--comparison"): Judgment("path"),
