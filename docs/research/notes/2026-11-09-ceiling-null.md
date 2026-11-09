@@ -390,3 +390,33 @@ paper-shaped snapshot of a version history that moves monthly. Ingest target:
 the advisory stream for the products this literature tests, as artifacts with
 method, since a patch description that names `realpath` pinning is a technique
 and not an announcement.
+
+---
+
+## The reading-queue strike, for whoever merges #919
+
+Both questions are queued as open lines that exist only on #919's branch, so
+there is nothing on `main` to strike and this run deliberately did not write a
+third appendix into `docs/research/reading-queue.md`. The block is
+"Queued 2026-11-09 by the skill seat, from reading `2609.21081` in full for
+`agent-approval-paths` v7 (PR #919)". Append to the end of each of its two
+lines, after the existing `- asked by skills/agent-approval-paths -
+2026-11-09`:
+
+- On the vendor-fix line: **ANSWERED 2026-11-09 (research seat, PR #926). The
+  premise is wrong: at least three distinct OpenClaw advisories with three
+  patched versions, and 2026.2.24 is inside GHSA-q399-23r3-hfx4's affected
+  range (<= 2026.2.26, patched 2026.3.1). That fix pins path-token commands to
+  canonical executable identity across approval and execution, which is the
+  ceiling's PATH dimension, and still misses the scenario because the shadow
+  pre-exists the grant - the drift shape 2609.38983 section IX measured as
+  catching none of its cases. The ceiling is step 3 of 2609.21081 section 6.2
+  and the fix is step 2. Step 3 is built in 2606.02668 and 2609.28586.
+  See docs/research/notes/2026-11-09-ceiling-null.md.**
+- On the citing-paper line: **ANSWERED IN PART 2026-11-09 (research seat, PR
+  #926). One-directional, measured over four enumerating summaries in this
+  nine-paper cluster: 10 of 10 components with no counterpart in the
+  summariser's own design were dropped, and 2609.38983 and 2609.18411 keep
+  disjoint halves of 2606.02668. STAYS OPEN for the corpus-wide half, which is
+  a query over claims whose provenance is a related-work section and needs a
+  database credential no seat holds.**
