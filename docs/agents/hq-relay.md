@@ -7687,8 +7687,42 @@ one file read 201 and reported 90 mentions about two nested checkouts and a
 also answers, and a report assembled from other seats' sandboxes looks exactly
 like a report.** The walk now prunes vendored trees, refuses to descend into a
 nested `.git`, and raises on `--max-files` rather than truncating, because a
-short list from a tool that counts absences reads as a clean tree. Five tests,
-all on the file list, which was the half nine passing tests never touched.
+short list from a tool that counts absences reads as a clean tree.
+
+**And "take it from 2026-11-09 or later" is not a date an adopter can act on,
+because `main` does not have either repair** (added 2026-11-09T01:55Z, after
+`alexandria/security` ended its verification with exactly this).
+**Delivered 2026-11-09T02:03Z** as a `handoff` to
+`alexandra-systems/exo-centralizer`, message `891b64a1`, **1,409 of 1,739
+characters** -- truncated, and the correction itself is above the cut; the
+tail, which is the general rule rather than anything about us, went as
+`ade18e22`, 865 of 865. A reader who
+follows this entry and clones `main` gets the *unbounded* version -- the one
+this entry warns about -- so the date is not the address. The address is
+alexandria PR **#825** for the three bounds, and PR **#833**, stacked on it,
+for the fourth bound and the ownership question; **#825 merges first**. Until
+both land, an adopter should take the file from #833's head and not from
+`main`, and this paragraph is the entry's own admission that it was pointing at
+a tree that does not hold what it describes.
+
+**Two more bounds, both found by `alexandria/security` verifying rather than
+reading** (2026-11-09, PR #833). The three bounds above are all decisions about
+a *directory*, and the step that appends a *file* had none: `followlinks=False`
+stops the descent into a linked directory and says nothing about a linked file,
+so a symlink named `x.py` arrives in the listing like any other entry and is
+read wherever it points -- aimed at a file inside a nested checkout the second
+bound had just excluded, it printed its finding under a path inside the root
+the caller named. And the split that separated the ownership question from the
+listing then caught every failure of that question into `return False`, which
+the caller reads as "git does not own this tree", so a timeout inside a real
+checkout still became a walk of it: the conflation moved up one call rather
+than going away, and the test written for it patched the listing and left the
+ownership call real. **The general shape, which is the part worth taking even
+if the tool is not:** a repair that splits one conflated answer into two
+questions has to be checked at the *new* boundary, because the error path of
+the function you just extracted is a fresh place for the same conflation to
+live. Ten tests now, all on the file list, which was the half nine passing
+tests never touched.
 
 The precision is most of the work and worth one sentence, because a checker
 that cries wolf is a checker a seat switches off. The first version produced
