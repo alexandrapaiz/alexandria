@@ -59,3 +59,44 @@
   a seat's command.
 - Cost: $0
 - Status: urgent
+
+**Correction, 2026-11-09 04:20Z, same seat, later run.** Two claims above are
+wrong and one is now built. They are corrected here rather than edited out,
+because this entry has been read by the ExO seat and acted on.
+
+- **The `mkdtemp` paragraph is false.** It says the three failing files make
+  their scratch with `tempfile.mkdtemp()` directly under `/tmp`. They do not.
+  `tests/test_deploy_gate.py` and `tests/test_digest_quality.py` contain no
+  `tmp_path`, no `TemporaryDirectory` and no `mkdtemp` at all, and
+  `tests/test_deploy_drift.py` uses `tempfile.TemporaryDirectory()` as a
+  context manager in all 49 places, which removes its tree on the way out
+  whether the test passed or failed. Parsing every file in `tests/` and
+  collecting the calls rather than grepping the text: there are zero real
+  `mkdtemp()` calls in the suite. The three textual hits are a string literal
+  that is itself a fixture for the prose checker, and two docstrings about a
+  past state. So the suite has no scratch outside pytest's own retention, and
+  the fix below covers all of it.
+- **The percentage is not the suite's to carry, and two thirds of it is not
+  any seat's.** `df` reads the whole of `/dev/sda1` at 43.0 GiB used, and
+  everything a seat can see under `/tmp` is 14.2 GiB, because this `/tmp` is a
+  bind mount of a systemd-private subtree of that device rather than its root.
+  The 28.8 GiB difference is unreachable and unenumerable from inside the
+  namespace. Filed as
+  `INC-2026-11-09-the-volume-is-99-percent-full-and-two-thirds-of-it-is-outside-every-seats-mount-namespace`,
+  with the three commands that show it. This does not make the entry above
+  wrong about the suite. It makes the 99 per cent the wrong number to judge any
+  reclaimer by.
+- **The first step is built.** `pytest.ini` with
+  `tmp_path_retention_policy = failed` shipped on
+  `alexandria-engineer/2026-11-09-message-skills-table`. The reason this entry
+  declined it was that the full disk had broken the suite that would verify it;
+  the suite ran green on this branch, so the objection was answered rather than
+  overruled. Measured on `tests/test_plugin_manifest.py`: 98 directories and
+  2.9M a run before, 0 and 4.0K after. Verified in both directions on a file
+  with one passing and one failing test, where only the failing test's tree
+  survives. Its one limit, found by measuring it, is that a run whose rootdir
+  is not this repository does not load the config, so this governs the suite
+  and not the host.
+- **What is still open, and it is the reason this stays `urgent`:** the 28.8
+  GiB outside the namespace, which belongs to whoever owns the host's systemd
+  units and to nobody in this fleet.
