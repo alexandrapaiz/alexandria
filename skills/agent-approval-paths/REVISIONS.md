@@ -6,6 +6,143 @@ changed; the narrative lives here. The reason for that split is the measurement
 recorded in `skills/harness-engineering/REVISIONS.md` and the rule is in
 `prompts/skill-extract.md` section 2.
 
+## 2026-11-09, fourth entry: the right number was on the wrong baseline, and the paper prints it twice
+
+**Trigger.** ADR-37, a cited result refined again. The research seat read
+`2610.40753` a third time, verified v4 cell by cell, upheld both of the
+refinements v4 added, corrected one of its own sentences, and returned one
+finding against v4's own reversal. Board note `5da14666`, 09:16Z, ref #897. It
+arrived six minutes after the previous run's pull request opened, so it is new
+work rather than a duplicate wake, which was checked on the bus before any of
+this was written.
+
+**What this seat did before writing anything.** Fetched the full text again
+with `tools/read_paper.py`, exit 0, 69,442 characters, this seat's third full
+read. Re-derived the Table 11 pooling from the per-level counts rather than
+taking the note's arithmetic, and read the dagger footnote under Table 3 and
+Table 9's SABER decision counts directly. Everything below reproduces.
+
+### The finding: 61.8 is printed twice, so it is not prediction's price
+
+Table 11 gives the twin false-block rate for six approver conditions across
+four concealment levels. The levels are not equal in size, which is what makes
+the pooling non-obvious: script, Makefile chain and binary hold 26 twins each
+and command holds 24, for the 102 twins Table 12 names. Pooling each row:
+
+| approver sees | per level | pooled |
+|---|---|---|
+| command | 100.0, 11.5, 0.0, 100.0 | 26 + 3 + 0 + 24 = **53 of 102, 52.0** |
+| request + command | 88.5, 34.6, 46.2, 54.2 | 23 + 9 + 12 + 13 = 57 of 102, 55.9 |
+| dialogue | 65.4, 50.0, 50.0, 83.3 | 17 + 13 + 13 + 20 = **63 of 102, 61.8** |
+| dialogue + predicted | 46.2, 57.7, 46.2, 100.0 | 12 + 15 + 12 + 24 = **63 of 102, 61.8** |
+| dialogue + observed | 0.0, 0.0, 0.0, 4.2 | 0 + 0 + 0 + 1 = **1 of 102, 1.0** |
+
+**The pooling is the paper's own and not this file's.** Section 5.3 ablation
+(1) prints "twin false blocks rise from 52.0% to 61.8%" for command-only
+against full dialogue, which are the first and third rows above. Ablation (2)
+prints "61.8% of the twins are still blocked" for prediction, which is the
+fourth. The command row was pooled here as a method check, and it lands on the
+figure the paper prints for it, so the arithmetic is verified against the
+authors rather than only internally consistent.
+
+So the dialogue arm and the dialogue-plus-predicted arm block the same number
+of twins, 63, and not the same twins: per level the two rows differ in both
+directions, 46.2 against 65.4, 57.7 against 50.0, 46.2 against 50.0 and 100.0
+against 83.3. **Prediction changes which twins are blocked and not how many.**
+
+### What that does to the price v4 published
+
+v4 said prediction "costs 61.8 percent of safe twins against none". Two errors
+in one clause, and both of them point the same way.
+
+- **The baseline was wrong.** 61.8 is what the approver prediction *replaces*
+  already spends. Against that approver the cost of adding a prediction is
+  **0.0 points**. The only comparison in which 61.8 is a cost is against
+  observed effects, and that subtraction is **60.8 points**, 61.8 against 1.0.
+- **"Against none" was wrong, and the paper says so in its own abstract**,
+  which reports Caper "blocking 1.0% of the safe twins". Observation is **1
+  twin of 102**. The file said against none in four places: `SKILL.md`
+  procedure item 6, `REVISIONS.md` in the third entry's own summary, and
+  `evals.json` twice inside task ap-t7.
+
+The reversal v4 made was right and this sharpens it. v3 said prediction was
+simply worse; v4 said it was a burden trade; v5 says the burden is not
+prediction's to carry. The decision rule that follows is new, and it is the
+reason this is a revision rather than a typo fix: **a team already approving
+from text pays nothing on this axis to add a prediction and gets the harm
+reduction, and a team choosing between prediction and pre-execution is buying
+60.8 points of twins with the pre-execution.** Checklist item 8 and procedure
+item 6 both change again, in the same direction and further.
+
+One trap for the next reader, named in `SKILL.md` because it is easy to fall
+into: the paper does print 60.8, for Caper's safe-completion rate on
+YoloFS-Ext. The 60.8 points here is a subtraction of two printed rates and is
+not that number.
+
+### Both of v4's own refinements held, and one of them was never this seat's
+
+The research seat checked v4 cell by cell and upheld the discrimination
+subtraction and the four-of-five tie correction. But the second of those is
+**the paper's own, which v4 presented as its own judgment.** The dagger
+footnote under Table 3 reads, in full:
+
+> Blocks no command at all on YoloFS-Ext, dangerous or twin; not ranked.
+
+So Qwen3Guard is excluded from the ranking by the authors. v4's discount of its
+[0.0, 3.6] interval was a citation and not an opinion, and the honest
+denominator is **four ranked comparators, three of which overlap**. v5 says
+whose exclusion it is, because a file that claims the authors' reasoning as its
+own judgment is overstating its own contribution, which is the mirror image of
+the sin the provenance reviewer exists to catch.
+
+**And the exclusion is benchmark-specific, which is where the research seat's
+own sentence failed.** Their note had generalized the footnote to "blocks
+nothing at all". Table 9 gives Qwen3Guard-Gen-8B **5,483 SABER decisions at
+10.0 percent blocked** against **1,126 YoloFS-Ext decisions at 0.0 percent**.
+The footnote is scoped to one benchmark and the paper scopes it in its own
+words. v4's sentence was already correct here, because it said "on that
+benchmark"; v5 adds the SABER figure so the scope cannot be dropped by the
+next reader. They filed their sentence as a second instance of a sampling
+class, which is their register and not this one's.
+
+### The eval task was still teaching the refuted sentence
+
+Task ap-t7's `exploit.answer` opened with "Predicted effects measured worse
+than no evidence at all." That is v3's claim, which v4 refuted in the file and
+left standing in the suite.
+
+It matters past tidiness for two reasons. The exploit exists to score zero **on
+form**, for walking the rubric's headings with no numbers attached. An exploit
+that also asserts a refuted fact can be marked down by a judge for the content
+instead, which makes the task measure the judge's knowledge of the paper rather
+than the respondent's use of the skill. And the suite is a published artefact,
+so the one answer in it labelled as the wrong answer was the one teaching a
+reader something false.
+
+Rewritten to fail on form alone. The rubric's first criterion was also raised:
+anchor 1 is now v4's answer, the right number with no baseline named, and
+anchor 2 requires both comparisons. `situation`, `with_skill` and the
+`without_skill_basis` note carry the correction.
+
+**One thing the correction makes worse, and it is recorded rather than hidden.**
+The authored bare answer for ap-t7 has the subject treating prediction and
+observation as one mechanism at two price points. On harm that is now correct,
+and on burden against the text baseline it is also correct. The bare answer
+still carries no number and names no baseline, which is where a delta would
+have to come from, but this task is a live candidate to fail ADR-38 rule 5 as a
+control rather than to qualify. Whoever runs the bare-first pass should expect
+that and not read it as a surprise.
+
+### What this does not say
+
+Three full reads by this seat and three by the research seat, with the fourth
+correction in a row landing in the understating or mis-baselined direction.
+That is provenance converging. **It is not validation.** No section of this
+skill has a differential delta, no bare arm has run, `GROQ_API_KEY` and
+`NEON_RO_URL` were both absent again in this run, and the honest word for every
+number in this file remains **unmeasured**. `status: draft` is unchanged and
+`validated` is still the empty string.
+
 ## 2026-11-09, third entry: two sentences in delta 2 were wrong in the understating direction
 
 **Trigger.** ADR-37, a cited result refined. The research seat read `2610.40753`
@@ -67,12 +204,20 @@ of the five** comparators reporting that axis: CARE [0.5, 6.9], Claude Code
 Auto Mode [1.5, 9.7], TS-Guard [4.7, 15.9] and Qwen3Guard [0.0, 3.6]. Only
 gpt-oss-safeguard-20b [9.9, 24.0] is clean.
 
+> **Superseded by the fourth entry.** The ranked denominator is four, not five.
+> Qwen3Guard is de-ranked by the paper's own dagger footnote, so the count is
+> three overlaps of four ranked comparators.
+
 **Second refinement the correction did not name**, and it is the same
 observation one axis over: the Qwen3Guard overlap is the overlap of a system
 that never blocked, so banking it as evidence of a tie would be reading an
 abstention as a result. The skill discounts it in the open rather than dropping
 it silently, because the honest count is four overlaps of which three are
 informative.
+
+> **Superseded by the fourth entry.** This reasoning is right and it is the
+> paper's, not this file's. The footnote under Table 3 already de-ranks that
+> system. Calling it a refinement of ours overstated this file's contribution.
 
 ### And the predicted-effects claim was reversed in the honest direction
 
@@ -106,7 +251,11 @@ Two further readings of that row, both from the correction and both verified:
 
 **What changed in the file.** Checklist item 8 and procedure item 6 both now
 state prediction as a burden trade with its price named, 61.8 percent of safe
-twins against none, plus the abstention, rather than as a prohibition. The
+twins against none, plus the abstention, rather than as a prohibition.
+
+> **Superseded by the fourth entry.** 61.8 is the full-dialogue arm's figure
+> too, so it is not prediction's price: against the approver it replaces the
+> cost is 0.0 points. And observation is 1 twin of 102, not none. The
 section keeps recommending observed effects. What it no longer does is tell a
 reader that a prediction is worthless when the paper measured it cutting harm
 as far as observation.
