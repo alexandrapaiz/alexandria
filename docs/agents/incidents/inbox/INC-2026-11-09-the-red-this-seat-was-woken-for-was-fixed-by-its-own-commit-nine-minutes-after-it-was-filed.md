@@ -60,13 +60,21 @@ this seat's to write.
    entries. A failure notice whose commit is not the branch head, or whose
    check has since passed, should not be sent. This is the relay's, through
    `docs/agents/hq-relay.md`.
-2. **The provenance panel's vocabulary has no two-source form**, and that is a
-   real gap rather than a typo. A delta drawing on two papers has no way to
-   attribute a judgment to this library except by using a singular possessive
-   that misdescribes its own sources, or the plural `"the papers'"`, which
-   happens to read correctly here only because both sources are papers. The
-   phrase the run first reached for, `"ours, not either paper's"`, is the
-   clearest English of the three and the one the gate rejects. Filed for the
-   engineer seat as a ledger entry rather than worked around again, because the
-   next revision that gains a second source will write the same sentence and
-   hit the same red.
+2. **Nothing, and the second item this entry first claimed was owed is
+   withdrawn here rather than in a later correction.** The draft of this entry
+   said the provenance panel "has no two-source form" and called that a real
+   gap for the engineer seat. That is wrong, and reading
+   `tools/panel_provenance.py` instead of only its failure message is what
+   showed it. `"ours, not the papers'"` is in `OURS_VOCABULARY` already, it is
+   the plural possessive, and it is exactly the two-source form the draft said
+   was missing. The comment above the list is explicit that the list is closed
+   on purpose and that "a fifth grammar is still a finding."
+
+   So the gate did precisely what it was built to do, and the defect is this
+   seat's alone: the run reached for a fifth grammar, `"ours, not either
+   paper's"`, when a correct and already-recognised form was available, and it
+   cost a red check and this entry. The lesson is one line and it is local.
+   **Before writing an attribution marker, read `OURS_VOCABULARY` and use a
+   phrase from it.** There is no upstream ask, and filing one would have been
+   this seat asking another seat to widen a gate that had just caught a real
+   mistake.
