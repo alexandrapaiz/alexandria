@@ -100,6 +100,17 @@ import re
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+# The canonical receipt-ranking rule lives in tools/, outside this tree, and
+# that is deliberate: three readers each keeping their own copy of it is the
+# defect INC-2026-10-27 names, and a module one of the three owns would be a
+# fourth copy with a better address. The engineer seat built it on #878 after
+# the register had specified it for thirteen days, and this gate is the third
+# and last reader to start calling it.
+sys.path.insert(
+    0, os.path.join(
+        os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+        "tools"))
+import receipt_ranking                                    # noqa: E402
 from earned_pass import REFUSAL, verdict                  # noqa: E402
 from datetime import date
 
@@ -1117,71 +1128,69 @@ def report_sweep(sw: dict) -> None:
 # ---------------------------------------------------------------------------
 
 def rank_bundles(bundles: list[dict]) -> list[dict]:
-    """The ranking rule of rankBundles() in site/lib/skill-provenance.js, and
-    it has to stay the same rule or this check and the page disagree about
-    which bundle is the library's result. Newest first, and at one date the
-    pre-registered engine wins, because an experimental engine's run measures
-    the engine rather than judging the skill."""
-    usable = [b for b in bundles if isinstance(b.get("generated"), str)]
-    return sorted(
-        usable,
-        key=lambda b: (
-            _NEGATED(b["generated"]),
-            0 if (b.get("policy") or {}).get("pre_registered") else 1,
-        ),
-    )
+    """The ranking, which is `receipt_ranking.rank` and nothing of this file's
+    own. Kept as a name here because it is the entry point the gate's callers
+    and `tests/test_skill_receipts.py` address.
 
-
-class _NEGATED:
-    """Descending order on a string key without reversing the whole sort, so
-    the pre-registered tie-break still reads ascending."""
-
-    __slots__ = ("s",)
-
-    def __init__(self, s: str) -> None:
-        self.s = s
-
-    def __lt__(self, other: "_NEGATED") -> bool:
-        return self.s > other.s
-
-    def __eq__(self, other: object) -> bool:
-        return isinstance(other, _NEGATED) and self.s == other.s
+    What used to sit here was this gate's own copy of the rule: `generated`
+    descending, then the pre-registered policy, and no third key. With two keys
+    equal the sort was stable over `sorted(glob())`, so the winner was the
+    alphabetically first filename, by accident rather than by decision. The
+    panel sorted filenames descending and kept the last, and the page ranked
+    over `readdirSync`, which Node does not promise is sorted at all. One rule
+    claimed in three comments, three answers in fact, and no filename that
+    satisfies all three. Deleting this copy is the half of that repair this
+    seat owns.
+    """
+    return receipt_ranking.rank(bundles)
 
 
 def load_bundles(results_dir: str) -> list[dict]:
-    out = []
-    for path in sorted(glob.glob(os.path.join(results_dir, "*.json"))):
-        try:
-            data = json.load(open(path, encoding="utf-8"))
-        except (OSError, json.JSONDecodeError):
-            continue
-        if isinstance(data, dict):
-            data["_path"] = os.path.relpath(path)
-            out.append(data)
-    return out
+    """Every readable bundle in a results directory, each carrying its path."""
+    return receipt_ranking.load(results_dir)
 
 
 def latest_receipt(bundles: list[dict], skill: str) -> dict | None:
-    for bundle in rank_bundles(bundles):
-        for suite in bundle.get("suites") or []:
-            if not isinstance(suite, dict):
-                continue
-            if suite.get("skill") == skill and suite.get("total"):
-                return {
-                    "date": bundle.get("generated", ""),
-                    "engine": bundle.get("engine", ""),
-                    "path": bundle.get("_path", ""),
-                    "sha256": suite.get("skill_sha256", ""),
-                    "passed": suite.get("passed", 0),
-                    "total": suite.get("total", 0),
-                }
-    return None
+    """One skill's receipt, through the canonical rule.
+
+    `tied` is new and it is the reason this goes through
+    `receipt_ranking.newest_for` rather than looping here: a non-empty `tied`
+    means the bundle this returns won on its basename alone, so every other
+    name in it is just as much the newest result. The old loop could not tell
+    the difference, which is how the library published the older of two bundles
+    dated the same day on six separate days and only ever found out when the
+    sha happened to disagree.
+    """
+    found = receipt_ranking.newest_for(bundles, skill)
+    if found is None:
+        return None
+    bundle, suite, tied = found
+    return {
+        "date": bundle.get("generated", ""),
+        "engine": bundle.get("engine", ""),
+        "path": bundle.get("_path", ""),
+        "sha256": suite.get("skill_sha256", ""),
+        "passed": suite.get("passed", 0),
+        "total": suite.get("total", 0),
+        "tied": [receipt_ranking.source_name(b) for b in tied],
+    }
 
 
 def check_receipts(skills_dir: str, results_dir: str) -> int:
     """Print, per skill, whether the newest recorded receipt describes the
     file as it stands now. Returns the number of skills that fail, which is
-    the number tests/test_skill_receipts.py will fail on."""
+    the number tests/test_skill_receipts.py will fail on.
+
+    A receipt that won a tie counts as a failure here, and that is the half of
+    this check that did not exist before. Six shipped instances of the
+    same-day-bundle defect all presented as a stale sha, which made the gate
+    look self-reporting, and PR #881 measured that it is not: on 2026-11-09 a
+    second bundle landed on a date that already had one and `--receipts`
+    reported all ten skills current, because the new name happened to sort
+    first. The right answer by luck. 2026-11-02 carries four bundles and never
+    raised a red either, so the number of wrongly published receipts was never
+    bounded by the number of reds anybody had seen. Now a tie is the red.
+    """
     skills = load_skills(skills_dir)
     bundles = load_bundles(results_dir)
     stale = []
@@ -1195,6 +1204,12 @@ def check_receipts(skills_dir: str, results_dir: str) -> int:
             print(f"  MISSING  {name}: no bundle scores this skill, so the page "
                   f"has no receipt to show")
             continue
+        if receipt["tied"]:
+            stale.append(name)
+            print(f"  TIED     {name}: {os.path.basename(receipt['path'])} was "
+                  f"published as the newest result, but it ranks exactly equal "
+                  f"to {', '.join(receipt['tied'])} and won on its filename")
+            continue
         if receipt["sha256"] == sha:
             print(f"  ok       {name}: {receipt['passed']}/{receipt['total']} on "
                   f"{receipt['date']}, sha {sha}")
@@ -1204,11 +1219,14 @@ def check_receipts(skills_dir: str, results_dir: str) -> int:
               f"({receipt['date']}, {receipt['path']}) measured "
               f"{receipt['sha256']}")
     if stale:
-        print(f"\n{len(stale)} of {len(skills)} receipts do not describe today's "
-              f"text: {', '.join(stale)}.")
+        print(f"\n{len(stale)} of {len(skills)} receipts are not a measurement "
+              f"of today's text chosen by recency: {', '.join(stale)}.")
         print("The page will say so and tests/test_skill_receipts.py will fail. "
               "Re-run the trigger test and commit its bundle in the same commit "
-              "as the SKILL.md edit, not a later one:")
+              "as the SKILL.md edit, not a later one. On a day that already has "
+              "a bundle, write a full ISO-8601 `generated` stamp rather than a "
+              "bare date, which is what makes the re-run outrank the bundle it "
+              "supersedes instead of tying with it:")
         print("  python3 skills/_validation/trigger_test.py "
               "--json skills/_validation/results/<date>-<engine>-<slug>.json")
     elif skills:
