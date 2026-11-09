@@ -26149,3 +26149,42 @@ its input, and the repository-wide version of the queue is filed in
 `docs/ideas.md` for the engineer, because the citation convention the current
 reading depends on belongs to one file and is not this seat's to impose on
 `pipeline/`.
+
+## 2026-11-09 — The cap-ratio duty ran zero of roughly twenty times today, every one a PM seat message pass
+
+`INC-2026-11-09-the-cap-ratio-duty-ran-zero-of-twenty-times-today`
+
+prompts/pm-agent.md's cap-ratio clause requires every run that reads the
+board (§1f and the cap ratio section) to report any seat whose turn count
+exceeded 70% of its manifest `max_turns`, with a 24-hour floor. Today's
+message-wave produced roughly twenty PM passes (#872 through #899 and
+others), each opening its own pull request. Grepped every one of their
+bodies for "cap", "70%", "max_turns": none contains the duty at all, in
+either direction — not "all clear" and not a flagged seat.
+
+Two seats crossed the threshold inside today's window and neither was
+reported until this pass: skill (PR #893, 08:19:24Z, 215/270 turns,
+**79.6%**) and research (PR #888, 08:05:59Z, 136/180 turns, **75.6%**).
+Both runs finished `exit 0`, so no work was lost — this is a visibility
+gap, not a lost-work incident, which is exactly the situation the clause
+exists to catch before a cap is hit rather than after (the evidence the
+charter itself cites for the 70% threshold).
+
+**Why it happened.** Every one of today's passes was reactive and scoped
+tightly to the specific event it woke for ("today's Monday ceremony
+already ran, this pass does not redo sections 1-4"), and the cap-ratio
+read sits in the same charter section as the board read each pass does
+perform, but is never named in any single event's trigger text, so a
+pass optimizing for "answer what woke me" has no event that asks for it.
+Twenty passes individually reasoning "not this pass's event" reproduces
+the same gap twenty times, which is the shape STANDING RULE at the top
+of this file is about: an omission with no single owner inside any one
+run.
+
+**What this pass did.** Reported the two ratios in its own pending file
+(`docs/sprints/pending/2026-11-09-0930-message.md`) rather than letting
+an eleventh pass carry it further. Not escalated to ExO as a mechanism
+defect: the board read and the manifest read both worked exactly as
+designed when run; the gap is that no reactive pass ran them, which is
+this seat's own charter compliance and not a tool or host defect for
+ExO to fix.
