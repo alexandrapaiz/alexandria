@@ -540,3 +540,20 @@ def test_the_company_flag_is_declared_probeable_and_refuses_before_reading_the_d
     src = (ROOT / 'tools' / 'ship_first.py').read_text()
     assert src.index('resolve_target.check') < src.index('every, unjoined = collect('), \
         'the roster check has to run before the corpus is read, or the probe hangs'
+
+
+def test_the_json_output_names_the_selector_it_used(tmp_path, capsys):
+    """`--json` is a published surface and the selector is now part of what a
+    reader needs to interpret it: the same record set means something different
+    depending on what was asked for, and before this the json said only the
+    deadline."""
+    write_audit(tmp_path, [run_row('s1', agent='ursa-exo', turns=30)])
+    write_transcript(tmp_path, 'ursa-exo', 's1', {4: 'git push'}, 30)
+    args = ['--projects', str(tmp_path / 'projects'),
+            '--audit', str(tmp_path / 'audit.jsonl'),
+            '--company', 'Ursa', '--json']
+    assert sf.main(args) == 0
+    got = json.loads(capsys.readouterr().out)
+    assert got['selector'] == 'company Ursa', 'the spelling as given, not folded'
+    assert got['deadline'] == 10
+    assert [r['session'] for r in got['records']] == ['s1']
