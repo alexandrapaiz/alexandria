@@ -237,9 +237,16 @@ window. It is that the app-password pattern needs an assignment or a quoting
 context to be worth firing at all, and until it has one its output is read by
 hand, which is what happened here.
 
-**The working tree** was scanned whole alongside the delta and is unchanged from
-the 2026-11-09 audit's reading: four files match, all four already described
-there as clean, and this run's own diff adds no match.
+**The working tree, all 2,153 tracked files.** Eighteen matches in eleven
+distinct files, and all eighteen are clean. Three DSNs in
+`tests/test_mcp_dsn_redaction.py` against its own synthetic host, two `sk-`
+shaped literals in `tests/test_press_resilience.py` of which the second is the
+sentinel `sk-this-must-never-be-printed` that the test exists to assert is never
+printed, the documented placeholder connection string in two registers, and
+eleven app-password shapes that are all ordinary English. Four of those eleven
+are new to this reading and three of the four are in files this seat has no
+hand in, including both vendored standards, which is the method note above
+rather than a change in the tree. This run's own diff adds no match.
 
 ## 6. Dependencies
 
@@ -382,13 +389,32 @@ the merged tree, so the eight were not a `checks` red and the workflow's silence
 about them was correct. `deploy-main`: six most recent all `success`, newest
 2026-11-02, which is expected since the seats left Actions on 2026-10-17.
 
-**The suite on `main`, and the red count fell.** `python3 -m pytest tests/ -q`
-against this branch, whose only difference from `main` is this report: see the
-line below for the final count. #829 measured 9 failures on `main` three
-quarters of an hour ago and attributed 7 of them to `main` itself, four in
-`tests/test_target_census.py`, two in `tests/test_plugin_manifest.py` and one in
-`tests/test_reading_queue.py`. #809 and #820 landed between that measurement and
-this one and carried the census rows and the pin.
+**The suite on `main`, and the red count did not fall.** `python3 -m pytest
+tests/ -q` against this branch, whose only difference from `main` is this
+report: **2,761 passed, 7 failed, 3 skipped** in 11 minutes 34 seconds.
+
+The seven are `main`'s and they are the same seven #829 measured three quarters
+of an hour ago, file for file: four in `tests/test_target_census.py`, two in
+`tests/test_plugin_manifest.py`, one in `tests/test_reading_queue.py`. #829
+reported 9 and attributed 7 to `main`, so the two that went away were that
+branch's own and were never the trunk's.
+
+**And this paragraph was written wrong before the measurement arrived, which is
+the correction rather than the finding.** The first draft of this section said
+the red count fell, on the reasoning that #809 and #820 had landed between the
+two readings and that one of them carried a census row. Both halves of that were
+false. The census rows for `tools/target_census.py` are on the ExO seat's open
+#819, which #829 said plainly and which this run had already read; #820 carried
+the CI pin and deliberately not the rows, to avoid duplicating them. So the
+inference had the evidence against it in this seat's own previous report, and
+the only thing that caught it was waiting for the number. **A delta predicted
+from what merged is not a delta, and this seat filed the same class against
+itself on 2026-11-09 over a ledger bound measured from a ref chosen by
+timestamp.** Named here rather than filed again, because it is the same entry.
+
+Owners unchanged: the census rows are on #819, the manifest count is on the
+engineer's #823 and #832, and `tests/test_reading_queue.py` is the research
+seat's live queue with no open branch carrying it.
 
 **Imports and the build.** Unchanged and re-measured: all Python files under
 `pipeline/`, `tools/`, `mcp/`, `tests/`, `skills/` and `docs/` compile with 0
