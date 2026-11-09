@@ -604,7 +604,7 @@ def test_a_page_of_one_shape_is_named_before_the_send():
                "which is the page she read and rejected. " * 8) + "\n")
     found = [f for f in findings(body) if f.rule == "one-shape"]
     assert len(found) == 1
-    assert found[0].level == gate.WARN
+    assert found[0].level == gate.BLOCK
 
 
 def test_a_list_is_one_of_the_two_devices_that_answers_it():
@@ -652,21 +652,38 @@ def test_the_pre_send_gate_and_the_canon_agree_on_the_served_issue():
     assert canon_fails == gate_fails is True
 
 
-def test_the_shape_rule_warns_and_cannot_hold_a_send_today():
-    """Deliberate and recorded, not an oversight.
+def test_the_shape_rule_can_hold_a_send_and_says_what_to_do_about_it():
+    """`block` rather than `warn`, which was a judgment and is pinned here.
 
-    All three served editions fail this rule, so blocking it today would hold
-    every send rather than improve one issue, which is this file's own stated
-    policy for `warn`. The promotion to `block` is a ledger proposal with this
-    count as its evidence. The test is here so a run that promotes it has to
-    delete a test that says why it was not promoted.
+    The generator states law 14 as "A hard gate" that "can fail an issue by
+    itself", and `check_voice.py ungated` counts BLOCK rules only, so a warning
+    would have left this row UNGATED while looking like a repair in the diff.
+
+    The second assertion is the half that makes blocking defensible rather than
+    merely strict: a blocking finding is handed to the generator as its one
+    retry instruction, so the detail has to be the move to make and not a
+    complaint about the page.
     """
-    assert gate.WARN in {f.level for f in findings(
-        "# T\n\n## A heading\n\n" + ("Prose at length. " * 30) + "\n")}
-    one_shape = [f for f in findings("# T\n\n## A heading\n\n"
-                                     + ("Prose at length. " * 30) + "\n")
-                 if f.rule == "one-shape"]
-    assert one_shape and all(f.level == gate.WARN for f in one_shape)
+    body = "# T\n\n## A heading\n\n" + ("Prose at length. " * 30) + "\n"
+    one_shape = [f for f in blocking(body) if f.rule == "one-shape"]
+    assert one_shape and all(f.level == gate.BLOCK for f in one_shape)
+    instruction = gate.corrections(findings(body))
+    assert "one-shape" in instruction
+    assert "genuinely parallel" in instruction and "written turn" in instruction
+
+
+def test_the_served_issue_is_held_by_this_rule_and_that_is_the_point():
+    """Stated as a test because it is the cost of the change rather than a
+    side effect of it.
+
+    2026-W39 is the edition the archive treats as cleanest and it is the one
+    this rule holds. The generator mandates the shape it lacks, "Bullets where
+    the results are parallel", so this is a deviation from the instructions
+    rather than a rule nothing can meet, and the body is written to the
+    digests table whether or not the email goes (`hold_for_quality`).
+    """
+    body = (REPO / "site" / "content" / "issues" / "2026-W39.md").read_text(encoding="utf-8")
+    assert [f.rule for f in blocking(body)] == ["one-shape"]
 
 
 def test_the_tier_is_reachable_so_the_rule_is_not_unsatisfiable():
@@ -714,3 +731,14 @@ def test_the_served_archive_gets_the_verdict_it_has_earned():
         verdicts[issue.stem] = bool(
             [f for f in findings(body) if f.rule == "one-shape"])
     assert verdicts == {"2026-W37": False, "2026-W39": True}, verdicts
+
+
+def test_the_shape_finding_cites_the_ban_list_entry_that_is_about_it():
+    """Every rule in this file cites the entry it enforces, and this one has
+    an entry rather than an `n/a`: ban list 49, "One shape for a whole issue",
+    whose own specimen is 2026-W39, the file this rule holds."""
+    body = "# T\n\n## A heading\n\n" + ("Prose at length. " * 30) + "\n"
+    entry = [f.ban_list for f in blocking(body) if f.rule == "one-shape"]
+    assert entry == ["49"]
+    listed = (REPO / "docs" / "voice" / "ban-list.md").read_text(encoding="utf-8")
+    assert "49. One shape for a whole issue" in listed

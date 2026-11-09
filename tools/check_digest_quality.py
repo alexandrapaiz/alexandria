@@ -480,14 +480,33 @@ def check(body: str, kind: str = "weekly") -> list[Finding]:
     # `docs/voice/check_voice.py devices` takes, so the two commands cannot
     # reach different verdicts on one page.
     #
-    # Why it warns rather than blocks, which is this file's own policy and not
-    # a softening of the law: `block` is for what the generator can fix, and
-    # all three served editions fail this today, so blocking it now would hold
-    # every send rather than improve one issue. The GOOD fixture in
-    # tests/test_digest_quality.py satisfies it, so the tier is reachable and
-    # the promotion to `block` is a ratchet waiting on one issue that clears
-    # it. That proposal is in docs/ideas.md rather than taken here, because
-    # holding the press is a policy call and not an engineering one.
+    # Why it blocks, which was a judgment made against this file's own policy
+    # and is recorded because it could have gone the other way. `warn` is for a
+    # rule the generator cannot satisfy, and the first draft of this rule
+    # warned on exactly that reading, because the served issue fails it. Three
+    # facts moved it:
+    #
+    #   1. `prompts/digest.md` states this one as "A hard gate (canon law 14)"
+    #      that "can fail an issue by itself", and "One kind is a failing
+    #      issue, whatever the word counts say". Blocking is implementing that
+    #      sentence rather than tightening it.
+    #   2. The same file mandates the shape it wants, "Bullets where the
+    #      results are parallel", so the generator is already told to do this
+    #      and 2026-W39 is a deviation from its instructions rather than a
+    #      rule nothing can meet. The GOOD fixture in
+    #      tests/test_digest_quality.py meets it.
+    #   3. `docs/voice/check_voice.py ungated` counts rules the press cannot
+    #      refuse, and it counts BLOCK rules only. A warning leaves this row
+    #      UNGATED, which is the L-A22 condition of a target-zero rule
+    #      enforced by a model reading a long file. A warning would have
+    #      looked like a repair in a diff and moved that register not at all.
+    #
+    # The cost is bounded and it is not the issue. A blocking finding gives the
+    # generator one more try with `corrections()` as instructions, and this
+    # instruction is structural rather than a matter of taste, so the retry is
+    # the likely end of it. If it survives the retry the email is held and the
+    # body is still written to the digests table, which is `hold_for_quality`'s
+    # contract and not new here.
     if kind == "weekly":
         devices = []
         for block in re.split(r"\n\s*\n", body):
@@ -512,10 +531,13 @@ def check(body: str, kind: str = "weekly") -> list[Finding]:
                 # fixed here, because docs/voice/ is that seat's surface.
                 devices.append("list")
         if not devices:
-            add(WARN, "one-shape", 0,
-                "no list and no written turn anywhere in the issue; law 14 calls "
-                "a page of one shape a design failure the writer owns, not a "
-                "neutral default", "n/a")
+            add(BLOCK, "one-shape", 0,
+                "the page is one shape, with no list and no written turn in it; "
+                "find the material in the payload that is genuinely parallel, "
+                "meaning several results that did the same kind of thing, and "
+                "set that part as a list with a short bold lead per item on the "
+                "same line as its sentence, or give a section running past four "
+                "paragraphs a third-level written turn", "49")
 
     # --- the daily has its own floor ---
     if kind == "daily" and "nothing worth your time" not in lowered:
