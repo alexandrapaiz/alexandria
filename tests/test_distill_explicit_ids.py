@@ -67,7 +67,15 @@ class FakeConn:
         if "information_schema.columns" in flat:
             return FakeCursor([(1,)] if params[1] in self.columns else [])
         if "from papers p" in flat:
-            return FakeCursor([r for r in self.papers if r[0] in wanted])
+            # Both halves of `p.id = any(%s) or p.id like any(%s)`. A fake that
+            # ran only the first passed a route that reported every firehose
+            # paper absent, which is what it did until 2026-11-09.
+            likes = params[1] if len(params) > 1 else []
+            return FakeCursor([
+                r for r in self.papers
+                if r[0] in wanted
+                or any(r[0].startswith(pat[:-1]) for pat in likes)
+            ])
         if "from claims" in flat:
             return FakeCursor([r for r in self.claims if r[0] in wanted])
         raise AssertionError(f"unexpected statement: {flat}")
@@ -307,3 +315,82 @@ def test_an_unmigrated_database_reads_every_named_paper_rather_than_raising():
     # And the claims table is not read at all, because reading it is what would
     # have raised.
     assert not any("from claims" in s for s, _ in conn.statements)
+
+
+# --- both id shapes, which is the hand half of INC-2026-10-05 ---------------
+
+def test_a_firehose_paper_named_by_its_bare_id_is_found_not_reported_absent():
+    """The defect of 2026-11-09. `pipeline/ingest.py` stores
+    `arxiv:2609.08371v1`; a caller types `arxiv:2609.08371`. The old equality
+    join reported the paper absent and sent the caller to an ingest whose
+    insert is `on conflict (id) do nothing`, so the advice could not work
+    either."""
+    conn = FakeConn(papers=[
+        ("arxiv:2609.08371v1", "EvoSafeHarness", "an abstract", "distill",
+         "arxiv", None),
+    ])
+    rows, lines = distill.explicit_intake(conn, ["arxiv:2609.08371"], shas=TODAY)
+    assert [r[0] for r in rows] == ["arxiv:2609.08371v1"]
+    assert not [line for line in lines if "no row in `papers`" in line]
+
+
+def test_a_paper_absent_under_every_shape_is_still_reported_absent():
+    """The fix must not turn every absence into a match, which is the direction
+    a prefix match fails in."""
+    conn = FakeConn(papers=[
+        ("arxiv:2609.08371v1", "EvoSafeHarness", "a", "distill", "arxiv", None),
+    ])
+    rows, lines = distill.explicit_intake(conn, ["arxiv:2610.07639"], shas=TODAY)
+    assert rows == []
+    assert any("no row in `papers` for arxiv:2610.07639" in line for line in lines)
+
+
+def test_the_claims_lookup_asks_about_the_id_the_corpus_holds():
+    """`claims.paper_id` carries the real id, so a lookup keyed on what the
+    caller typed finds no prior reading and reads a versioned paper twice."""
+    conn = FakeConn(
+        papers=[("arxiv:2609.08371v2", "EvoSafeHarness", "a", "distill",
+                 "arxiv", dt.datetime(2026, 9, 14))],
+        claims=[("arxiv:2609.08371v2", TODAY["paper"])],
+    )
+    rows, lines = distill.explicit_intake(conn, ["arxiv:2609.08371"], shas=TODAY)
+    claims_query = [(s, prm) for s, prm in conn.statements if "from claims" in s][0]
+    assert claims_query[1][0] == ["arxiv:2609.08371v2"]
+    assert rows == []
+    assert any("same reading twice" in line for line in lines)
+
+
+def test_a_duplicate_pair_is_named_and_resolved_the_way_the_queue_resolves_it():
+    """This route re-reads a distilled paper on purpose, so `pick_held`'s
+    distilled-first rule would be wrong here and is not used. The shape
+    ordering IS shared, and that is deliberate: two routes resolving one
+    duplicated paper to two different shapes would write claims under two ids
+    and rebuild the defect both are being fixed for."""
+    conn = FakeConn(papers=[
+        ("arxiv:2609.08371", "EvoSafeHarness", "a", "discard", "hf-daily",
+         dt.datetime(2026, 9, 14)),
+        ("arxiv:2609.08371v2", "EvoSafeHarness", "a", "distill", "arxiv", None),
+    ])
+    rows, lines = distill.explicit_intake(conn, ["arxiv:2609.08371"], shas=TODAY)
+    assert [r[0] for r in rows] == ["arxiv:2609.08371"]
+    assert rows[0][0] == rq_pick_shape(["arxiv:2609.08371", "arxiv:2609.08371v2"])
+    assert any("held under 2 ids" in line and "INC-2026-10-05" in line
+               for line in lines)
+
+
+def rq_pick_shape(ids):
+    """The queue's own ordering, asked rather than restated, so this test fails
+    if the two routes ever diverge."""
+    import reading_queue
+
+    return max(ids, key=reading_queue.version_rank)
+
+
+def test_the_statement_itself_carries_both_halves():
+    """The query and not the fake, because a fake taught both shapes will pass
+    a statement that matches one."""
+    conn = FakeConn(papers=[])
+    distill.explicit_intake(conn, ["arxiv:2609.08371"], shas=TODAY)
+    select = [(s, prm) for s, prm in conn.statements if "from papers p" in s][0]
+    assert "p.id = any(%s) or p.id like any(%s)" in select[0]
+    assert select[1] == (["arxiv:2609.08371"], ["arxiv:2609.08371v%"])

@@ -346,6 +346,70 @@ def read_file(path: str | pathlib.Path = QUEUE_PATH) -> str:
         return ""
 
 
+VERSION = re.compile(r"v(?P<n>[0-9]+)$")
+
+
+def shapes(paper_id: str) -> tuple[str, str]:
+    """The two arguments every lookup of a paper in `papers` has to pass.
+
+    `papers.id` holds arXiv papers under two shapes, `arxiv:2610.07639` and
+    `arxiv:2610.07639v2`, because `pipeline/ingest.py` stores whatever version
+    arXiv's feed supplied while this module and `hf-daily` write the bare id.
+    So the only correct lookup is `where id = %s or id like %s`, and this
+    returns that pair so no caller has to remember the `v` or get the escaping
+    of the `%` wrong. `INC-2026-10-05-absence-asserted-from-an-unnormalised-id-join`
+    is what one caller forgetting it costs: five of six papers reported absent,
+    and a corrected count of 21 rows for 19 papers.
+    """
+    bare = version_free(paper_id)
+    return bare, f"{bare}v%"
+
+
+def version_free(paper_id: str) -> str:
+    """`arxiv:2610.07639v2` -> `arxiv:2610.07639`, and anything else untouched.
+
+    A blog post's `papers.id` is a url hash, which this must not rewrite, so
+    the suffix comes off only when it is `v` followed by digits at the end.
+    """
+    return VERSION.sub("", paper_id or "")
+
+
+def version_rank(paper_id: str) -> tuple[bool, int]:
+    """How to order the shapes of one paper: bare first, then by version.
+
+    Bare first because that is what this module and `hf-daily` write, so a
+    request drained twice resolves to the same row both times. Then the integer
+    rather than the string, because `order by id` puts `v10` before `v9` and
+    this corpus will reach `v10`.
+    """
+    match = VERSION.search(paper_id or "")
+    return (match is None, int(match.group("n")) if match else 0)
+
+
+def pick_held(held: list[tuple]) -> tuple | None:
+    """One row out of every shape the corpus holds this paper under.
+
+    `held` rows are `(id, title, abstract, source, distilled_at)`, newest
+    version last is not something SQL can order for us: `order by id` puts
+    `v10` before `v9`, so the ordering is done here on the integer.
+
+    Three rules, in this order, and the first is the one that matters.
+
+    1. **A row that has been distilled wins.** The whole point of the
+       `already read` branch is not paying to read a paper twice, and a paper
+       read under one shape has been read. Ordering this first is what makes
+       the branch reachable for a duplicated paper at all.
+    2. Then the bare id, because that is the shape `reading-queue` and
+       `hf-daily` write and the one a queue line names, so a line that has been
+       drained before resolves to the same row it resolved to last time.
+    3. Then the highest version, because that is the newest paper arXiv has.
+    """
+    if not held:
+        return None
+
+    return max(held, key=lambda row: (row[4] is not None,) + version_rank(row[0]))
+
+
 def resolve(conn, items, *, fetch_metadata: Callable[[str], dict | None],
             log=print) -> list[tuple]:
     """Resolve queue items into rows distill can distill, ingesting what is new.
@@ -363,22 +427,57 @@ def resolve(conn, items, *, fetch_metadata: Callable[[str], dict | None],
       research seat can strike the line now; nothing is re-read.
     - `unavailable`: arXiv returned no metadata for the id, which usually means
       the id is wrong. The line stays for a human.
+
+    **The lookup matches both id shapes, and it did not until 2026-11-09.** It
+    was `where id = %s` against `item.paper_id`, which `normalise_id` strips the
+    version from, while `pipeline/ingest.py` stores whatever version arXiv's
+    feed put on the entry (`tests/test_arxiv_window.py` asserts
+    `arxiv:2609.08371v1`). So for every paper the daily firehose saw first, this
+    lookup returned nothing and took the `ingested` branch: a second `papers`
+    row under the bare id, a second `triage_log` row, and claims written against
+    an id that the firehose's row does not carry. The `already read` branch
+    could not fire for such a paper at all, so a paper distilled last month was
+    read and paid for again. That is the live half of
+    `INC-2026-10-05-absence-asserted-from-an-unnormalised-id-join`, which
+    measured 322 papers held twice, 656 rows, 73 pairs triaged twice with
+    different decisions, and routed the cause to the engineer seat.
+
+    Two things follow from matching both shapes, and they are the behaviour
+    change rather than the query. The row handed to distill carries **the id the
+    corpus actually holds**, not the id the queue line was written with, because
+    a claim has to attach to the row that exists. And `already read` is decided
+    across every shape, since a paper read under one of them has been read.
+
+    The duplicate pair is logged when it is met. Nothing here repairs it: the
+    rows are a write against a corpus this module reaches only from inside the
+    job, and deduplicating 322 pairs with 73 contested decisions is the owner's
+    call and not a side effect of a drain.
     """
     rows = []
     for item in items:
         who = f" (asked by {item.asked_by})" if item.asked_by else ""
-        found = conn.execute(
-            "select title, abstract, source, distilled_at from papers where id = %s",
-            (item.paper_id,),
-        ).fetchone()
+        held = conn.execute(
+            """
+            select id, title, abstract, source, distilled_at from papers
+            where id = %s or id like %s
+            """,
+            shapes(item.paper_id),
+        ).fetchall()
+        if len(held) > 1:
+            log(f"reading-queue: {item.paper_id} is held under "
+                f"{len(held)} ids ({', '.join(sorted(r[0] for r in held))}), "
+                "which is the duplicate shape INC-2026-10-05 names; reading the "
+                "one below and repairing neither")
+        found = pick_held(held)
         if found:
-            title, abstract, source, distilled_at = found
+            pid, title, abstract, source, distilled_at = found
             if distilled_at is not None:
                 log(f"reading-queue: {item.paper_id} already read "
-                    f"{str(distilled_at)[:10]}, nothing to do{who}")
+                    f"{str(distilled_at)[:10]} as {pid}, nothing to do{who}")
                 continue
-            log(f"reading-queue: {item.paper_id} queued, read first today{who}")
-            rows.append((item.paper_id, title, abstract, "deep_read", source))
+            log(f"reading-queue: {item.paper_id} queued as {pid}, "
+                f"read first today{who}")
+            rows.append((pid, title, abstract, "deep_read", source))
             continue
 
         meta = fetch_metadata(item.paper_id)
@@ -458,11 +557,17 @@ LINE = "- [ ] arxiv:{arxiv_id} \u2014 {why} \u2014 asked by {asked_by} \u2014 {d
 def normalise_id(raw: str) -> str:
     """`arxiv:2602.05366v2`, `2602.05366`, ` 2602.05366 ` -> `2602.05366`.
 
-    The version suffix is dropped because `papers` is keyed on the bare id and
-    `resolve` looks the line up there: a line that carries `v2` and a corpus row
-    that does not are the same paper, and keeping the suffix here would make the
-    duplicate check below miss its own file. `parse` already reads a `v2` line
-    correctly, so existing lines are unaffected.
+    The version suffix is dropped so that this file has one spelling per paper:
+    a line carrying `v2` and a line carrying the bare id are the same request,
+    and keeping the suffix would make `hits` below miss its own file. `parse`
+    already reads a `v2` line correctly, so existing lines are unaffected.
+
+    **This docstring used to give a second reason and it was false**, which is
+    worth leaving on the record because `resolve` was written to it. It said
+    `papers` is keyed on the bare id. `papers` holds arXiv papers under both
+    shapes, and mostly under the versioned one, because `pipeline/ingest.py`
+    stores the version arXiv's feed supplies. `resolve` matches both shapes now
+    rather than trusting this; the reason is in its own docstring.
     """
     found = ARXIV.search(raw if raw.lower().startswith("arxiv:") else f"arxiv:{raw}")
     return found.group("id") if found else ""

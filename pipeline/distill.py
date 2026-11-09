@@ -1275,21 +1275,59 @@ def explicit_intake(conn, paper_ids, shas=None, force=False):
     if not wanted:
         return [], ["an explicit list was given and it parsed to no ids"]
 
+    rows, lines = [], []
+
     # `papers`, not `distill_queue`. The left join is what lets a paper with no
     # triage row be named at all: the view's filter is `decision in ('distill',
     # 'deep_read')`, and a caller naming an id has made that decision already.
-    found = {}
-    for row in conn.execute(
+    #
+    # Both id shapes, and it was one until 2026-11-09. `papers.id` carries the
+    # arXiv version suffix for everything the firehose ingested and does not for
+    # the reading-queue and hf-daily routes, so `p.id = any(%s)` on a bare id
+    # reported a paper absent that the corpus holds and sent the caller to
+    # `modal run pipeline/ingest.py --ids`, where the insert is `on conflict
+    # (id) do nothing` and nothing would happen. That is the hand half of
+    # INC-2026-10-05; the scheduled half was `reading_queue.resolve`, which
+    # inserted a duplicate row instead of reporting a false absence. The id
+    # arithmetic lives in `reading_queue` so there is one implementation of it.
+    queue_ids = reading_queue()
+    asked_shapes = [queue_ids.shapes(pid) for pid in wanted]
+    rows_held = conn.execute(
         """
         select p.id, p.title, p.abstract,
                coalesce(t.decision, 'distill'), p.source, p.distilled_at
         from papers p
         left join latest_triage t on t.paper_id = p.id
-        where p.id = any(%s)
+        where p.id = any(%s) or p.id like any(%s)
         """,
-        (wanted,),
-    ).fetchall():
-        found[row[0]] = row
+        ([bare for bare, _ in asked_shapes], [like for _, like in asked_shapes]),
+    ).fetchall()
+
+    # Keyed on what the caller asked for, carrying the id the corpus holds.
+    # `rows.append(tuple(row[:5]))` below hands that real id to the walk, which
+    # is what makes the claims it writes attach to the row that exists.
+    by_base = {}
+    for row in rows_held:
+        by_base.setdefault(queue_ids.version_free(row[0]), []).append(row)
+    found = {}
+    for pid in wanted:
+        held = by_base.get(queue_ids.version_free(pid)) or []
+        if not held:
+            continue
+        # Not `pick_held`, which prefers a distilled shape so the reading
+        # queue does not pay to read one paper twice. This route exists to read
+        # a distilled paper again, so that rule is wrong here and only the
+        # shape ordering is shared. Sharing it is the point: if this route
+        # resolved a duplicated paper to one shape and the queue to the other,
+        # the two routes would write claims under two ids and rebuild the
+        # defect they are both being fixed for.
+        found[pid] = max(held, key=lambda r: queue_ids.version_rank(r[0]))
+        if len(held) > 1:
+            lines.append(
+                f"{pid} is held under {len(held)} ids "
+                f"({', '.join(sorted(r[0] for r in held))}), which is the "
+                f"duplicate shape INC-2026-10-05 names; reading "
+                f"{found[pid][0]} and repairing neither")
 
     # Asked rather than assumed, the way every other optional column in this
     # file is asked about. `prompt_sha` ships with the code that writes it and
@@ -1306,12 +1344,11 @@ def explicit_intake(conn, paper_ids, shas=None, force=False):
     # absent there is no evidence about what has been read, which is the same
     # answer a NULL gives and takes the same branch: read it again.
     stamped = {}
-    rows, lines = [], []
     stamping = has_column(conn, "claims", "prompt_sha")
     if stamping:
         for pid, sha in conn.execute(
             "select paper_id, prompt_sha from claims where paper_id = any(%s)",
-            (wanted,),
+            ([row[0] for row in found.values()],),
         ).fetchall():
             stamped.setdefault(pid, []).append(sha)
     else:
@@ -1331,7 +1368,10 @@ def explicit_intake(conn, paper_ids, shas=None, force=False):
         row = found.get(pid)
         if row is None:
             continue
-        existing = stamped.get(pid, [])
+        # The id the corpus holds, not the id the caller typed: `stamped` was
+        # built from the rows this query returned, and for a firehose paper
+        # those differ by the version suffix.
+        existing = stamped.get(row[0], [])
         # A NULL `prompt_sha` means "written before the column existed", so it
         # is not evidence that today's prompt has read this paper. Any NULL in
         # the set sends the paper through, which is the conservative direction:
