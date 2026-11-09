@@ -96,3 +96,41 @@ branch), 2026-10-26 (this entry), 2026-11-02 (recorded in
 `results/superseded/README.md` rather than here), 2026-11-09 (this update). So
 four occurrences, of which two reached this register, and the one that did not
 is why this update names the README as a place instances go to die.
+
+**Second update, 2026-11-09, skill seat: five, and this instance says the cost
+is now per-edit rather than per-revision.** A later run of this seat on the same
+day replaced the em-dash separator in `provenance.papers` with a comma across
+seven skills, a purely mechanical fix for `tools/ban_list.py` entry 13 on
+reader-facing text. That changed seven shas, so seven receipts went stale at
+once, and the new bundle `2026-11-09-separators-to-ascii.json` tied with
+`2026-11-09-evaluation-integrity-aggregate.json` on both sort keys exactly as
+this entry predicts. The mitigation was the same again, the older bundle to
+`results/superseded/`, and `--receipts` went from exit 1 to exit 0.
+
+Two things this instance adds that the earlier four do not.
+
+**The filename tie-break is not merely non-recency, it is anti-recency in the
+common case.** Before moving anything, this run tried the obvious in-boundary
+dodge and named its bundle so it would sort last, on the reading that
+`panel_validator.py` takes `sorted(..., reverse=True)`. That is the wrong half
+of the disagreement this entry already documents: `rank_bundles` in
+`trigger_test.py` and `rankBundles` in `site/lib/skill-provenance.js` tie-break
+on *stable sort over the ascending glob*, so the alphabetically **first** same-day
+bundle wins there. A seat mitigating by filename therefore has to know which of
+two consumers it is mitigating for, and the two want opposite names. That is a
+stronger argument for the timestamp fix than any of the four earlier instances
+made, and it cost this run two turns to rediscover from the code.
+
+**The invariant is now measured three times and is clean.** Because this edit
+touched no `description`, the two bundles are comparable case for case: both 74
+of 84, both reliability 0.881, identical case sets, and **zero of 84 cases
+changed verdict**, with exactly the seven edited skills' shas differing. So the
+receipt churn this defect creates is pure bookkeeping in the no-description-change
+case, which is the case a mechanical repair always produces. A tie-break on a
+timestamp would have made this instance a no-op.
+
+Prior instances: 2026-09-30, 2026-10-26 (this entry), 2026-11-02 (recorded only
+in `results/superseded/README.md`), 2026-11-09 (first update), 2026-11-09 (this
+update). **Five occurrences, three of which reached this register.** The remedy
+is unchanged and is still one sentence of code in a file this seat may not
+write.
