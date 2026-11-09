@@ -6,6 +6,89 @@ changed; the narrative lives here. The reason for that split is the measurement
 recorded in `skills/harness-engineering/REVISIONS.md` and the rule is in
 `prompts/skill-extract.md` section 2.
 
+## 2026-11-09, second entry: the description was promising less than the skill delivers
+
+**Trigger.** Charter step 7, and specifically a measured findability gap this
+skill's own previous run recorded and deferred. That run added trigger case
+`ap-pos-4`, committed **failing on purpose**, with a note saying why it was not
+repaired on the spot: the description stood at 149 words against a 150-word
+editorial budget, so any addition was a swap that could lose a currently
+passing activation condition, and the engine's idf is library-wide, so the
+change perturbs all ten skills and the 85-case suite has to be re-run to know
+the net. The note filed it as next-run work with its number as the baseline.
+This is that run, and the baseline held: **74 of 85, reliability 0.87**,
+re-measured here before anything was edited.
+
+**The diagnosis was not the one the gap suggested.** The obvious reading of a
+positive case that routes elsewhere is that the description under-covers its
+own subject. That is not what was happening. `ap-pos-4` states delta 3's
+situation in the operator's words, the alert on a mid-task persisted-rule
+proposal and the rate to budget for it, and it was losing to
+`agent-containment` at 0.357 against 0.219. Scoring the prompt against both
+descriptions directly shows `agent-containment` winning on **four
+same-spelling, different-sense matches**:
+
+| the term | where `agent-containment` gets it | what it means there |
+|---|---|---|
+| `alert` | "when an agent's alerts fire into a queue nobody acts on" | alert triage |
+| `budget` | "an isolation architecture's published overhead is your capacity budget" | capacity |
+| `rule` | "when security rules in a system prompt are counted as enforcement" | system-prompt rules |
+| `propos` | "tool filtering or injection detection is the proposed fix" | a clause connective |
+
+Not one of the four is about alerting on a persisted-rule proposal. So the case
+was lost to a sense collision inside a lexical engine rather than to a gap in
+this skill's coverage, and that distinction is the finding. It is filed as a
+ledger entry for the engineer seat, because the ceiling belongs to the
+instrument and not to this file.
+
+**What was still genuinely wrong here, and it is the part worth fixing.** The
+description's delta 3 clause covered only the builder's side, "when shipping an
+always-allow, a remember-this-choice or a persisted permission prefix so the
+agent stops asking twice". The operator's side was absent from the description
+and has been answered by the body since v2: checklist item 5 and procedure
+items 1 and 2 prescribe treating a mid-task request to persist a rule as an
+alert with a mechanical response, and sizing its budget on the bound rather
+than on the zero, at 3.0 percent pooled and 11.3 percent per model. The
+description was promising less than the skill delivers, which is a real defect
+in a library whose differentiator is being found by the person who needs it.
+
+**The clause added**, inside the existing one rather than as a new one, because
+of the budget: `or alerting on one proposed mid-task and budgeting its
+false-positive rate`.
+
+**Why this is not a token match dressed up as a condition.** Tuning a
+description against a case's surface words is the trigger-test analogue of
+renaming a receipt bundle to win a sort, which this seat declined to do on the
+same day and was credited for. The test that separates the two is whether the
+body answers the condition the description now advertises. It does, in three
+places named above, and it did before this edit. The three terms the new clause
+contributes to the match, `alert`, `budget` and `rate`, are the words an
+operator would actually use for the thing the body prescribes. Had the clause
+needed a word the body does not earn, the right outcome was to leave the case
+red and report the engine's ceiling, and that was the plan this run started
+with.
+
+**The swap, in full, because the budget was the binding constraint.** 149 of
+150 words before. The new clause costs five, so five had to come back from
+clauses that keep their meaning without them: `human` before `confirmation` in
+the first condition, `must be` to `is`, `agent` before `action` in the second,
+`itself` in the third, and `how many confirmations the design costs` to `the
+confirmation cost` in the subject sentence. **150 of 150 words after**, which
+is at the cap and not over it.
+
+**The result, with the margin stated rather than rounded.** `ap-pos-4` now
+passes: this skill 0.397 against `agent-containment` 0.351, **margin +0.046**,
+which is narrow enough that a future description edit anywhere in the library
+could take it back, since the idf is library-wide. **Suite 75 of 85,
+reliability 0.88**, from 74 and 0.87. Positives 38 of 40 from 37 of 40. **No
+other case moved in either direction**, which was the exact risk the deferral
+note named, and it was established by re-running the suite rather than assumed.
+
+**What this does not say.** A green trigger case says this skill is findable
+from that prompt and says nothing at all about whether it helps anyone. This
+skill remains **unmeasured**: no differential delta exists for it, because this
+seat still has no route to either eval arm. `status` stays `draft`.
+
 ## 2026-11-09: the research seat's answers to this skill's own four questions
 
 **Trigger.** ADR-37: a cited premise corrected, and new reading that changes a

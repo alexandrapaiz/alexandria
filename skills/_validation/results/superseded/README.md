@@ -244,11 +244,53 @@ invisible to both.
   no description changed moved nothing, and the one pair where a description
   changed moved three cases in two other suites.
 
-The real repair is in the ledger and in
-`INC-2026-10-26-the-library-shows-the-older-of-two-receipts-dated-the-same-day`:
-tie-break on a timestamp, and record the library membership in the bundle so a
-receipt says what composition produced it. This directory is a holding pattern
-until that lands, not the fix.
+## The repair landed on 2026-11-09, and this directory stops growing
+
+Every paragraph above was written while the fix did not exist, and it does now,
+so read the rest of this file as a record rather than as a procedure.
+
+Two halves. The engineer seat built `tools/receipt_ranking.py`, one tie-break
+function with a declared third key, and made the panel and the page call it.
+This seat's gate calls it too and keeps no copy, so the three readers that
+disagreed in three directions now give one answer. And
+`skills/_validation/trigger_test.py` writes `generated` as a full UTC stamp
+instead of `date.today()`, which is the half that makes the remedy followable:
+`--receipts` had been telling readers to give the newer bundle a full ISO-8601
+stamp while the only tool that writes these bundles could not produce one. A
+stamped re-run now outranks the bare day it supersedes, for free, because the
+rule compares `generated` as a plain string and a bare day is a prefix of any
+stamp that starts with it.
+
+So the condition this directory exists for cannot recur in the same shape. A
+second run on an occupied day writes a stamp, wins by recency, and moves
+nothing. The first bundle written that way is
+`../2026-11-09-lexical-2.2-approval-paths-v3.json`, stamped `08:38:37Z`, and it
+superseded the day's bare-dated bundle with no file moved and no name chosen.
+
+**The files already here are staying, deliberately.** The ranking no longer
+needs them out of the glob, so restoring them would be defensible, and the
+reason not to is that it buys nothing and risks something. Every entry above
+documents what its bundle proves as a control, which is information the file
+path does not carry either way, and a bulk move of twenty-six files into the
+ranked directory would put many bare-dated bundles back in one namespace to no
+end. What was a mitigation is now an archive with a reason, and that is a better
+thing for it to be than a scar someone feels obliged to undo.
+
+**One thing this does not fix**, and it is named here so the next reader does
+not assume otherwise: the stale `policy.pre_registered` boolean described in the
+`caption-correction` entry above. A bundle written under an older engine still
+records `true` forever, and the canonical rule reads the recorded flag rather
+than comparing the bundle's `engine` against the live `ENGINE_VERSION`. The
+timestamp makes that harmless in the ordinary case, because recency is decided
+before the policy key is ever consulted, so the flag now only matters between
+two bundles carrying the identical stamp. It remains in the ledger.
+
+The count for this class is kept in
+`INC-2026-10-26-the-library-shows-the-older-of-two-receipts-dated-the-same-day`
+and in
+`INC-2026-10-27-three-same-day-receipt-bundles-lost-one-tie-and-the-two-readers-break-it-opposite-ways`,
+because an instance recorded only here is an instance nobody sweeps. Six
+occurrences shipped before the repair.
 
 - `2026-11-09-containment-plan-integrity.json`. Written by the run that took
   `agent-containment` to v9 from IsolateGPT and ACE (#838, merged). Moved here by

@@ -112,7 +112,7 @@ sys.path.insert(
         "tools"))
 import receipt_ranking                                    # noqa: E402
 from earned_pass import REFUSAL, verdict                  # noqa: E402
-from datetime import date
+from datetime import datetime, timezone
 
 # ---------------------------------------------------------------------------
 # Pre-registered decision policy.
@@ -641,7 +641,18 @@ def run(skills_dir: str, decoys_path: str,
     total_cases = sum(s["total"] for s in suites)
     all_cases = [c for s in suites for c in s["cases"]]
     return {
-        "generated": date.today().isoformat(),
+        # A full UTC stamp and not a bare day, which is the half that makes the
+        # gate's own prescription followable. `--receipts` tells a reader with
+        # a stale receipt to "give the newer one a full ISO-8601 `generated`
+        # stamp", and until this line the writer emitted `date.today()`, so the
+        # only tool that produces these bundles could not produce the thing the
+        # failure message asked for. A re-run on a day that already had a bundle
+        # tied with it instead of superseding it, and the ranking then fell
+        # through to the basename, which is where six days of wrong published
+        # receipts came from. The ranking rule compares `generated` as a plain
+        # string on purpose, so a bare day is a prefix of any stamp beginning
+        # with it and the stamp sorts above it for free.
+        "generated": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "engine": engine.name,
         "policy": {
             "floor": FLOOR,
