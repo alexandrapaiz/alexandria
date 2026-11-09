@@ -488,6 +488,58 @@ def sort_inbox(messages, seat, company):
     return buckets
 
 
+def later_from_sender(buckets):
+    """For every directed message, how many newer ones its sender has sent.
+
+    This exists because of a defect in the bus that this seat owns, reported
+    by `alexandria/security` on 2026-11-02T05:11Z and reproduced from its own
+    inbox. A wake carries at most `wake_limit` characters of a message and
+    tells the reader so, which makes the reader fetch the tail. **The tail is
+    not the remedy.** Security was woken twice for one exchange, both
+    truncated, fetched both tails as instructed, and the inbox also held a
+    third message sent thirteen minutes after the second wake was composed
+    that withdrew the claim the second one made. Nothing announced the third.
+
+    So truncation and staleness compound rather than add: a partial message
+    whose missing tail you are told to fetch makes fetching the tail feel like
+    the whole job, and the tail still carries the withdrawn claim.
+
+    The count is over **directed** messages only, from the same
+    `from_company/from_seat` pair, because a broadcast is not a sender
+    changing their disposition towards this seat. A sender with later
+    messages in the window is not a defect and this never gates: it is the
+    one fact a reader needs to know it has not finished reading, and the
+    cheap half of the repair, because it needs nothing from the wake payload.
+
+    Returns `{id: {"later": n, "newest": ts}}` for every directed message,
+    including the zeros, so that a caller can tell "no later message" from
+    "this id was not looked at" (the rule `address_of` follows for `theirs`).
+    """
+    directed = [m for m in buckets["yours"] + buckets["ambiguous"]]
+    out = {}
+    for message in directed:
+        sender = (
+            (message.get("from_company") or "").casefold(),
+            (message.get("from_seat") or "").casefold(),
+        )
+        mine = str(message.get("ts") or "")
+        after = [
+            str(other.get("ts") or "")
+            for other in directed
+            if other is not message
+            and (
+                (other.get("from_company") or "").casefold(),
+                (other.get("from_seat") or "").casefold(),
+            ) == sender
+            and str(other.get("ts") or "") > mine
+        ]
+        out[message.get("id")] = {
+            "later": len(after),
+            "newest": max(after) if after else None,
+        }
+    return out
+
+
 def render_inbox(buckets, seat, company, show_broadcast=False, width=100, truncated=False):
     """The inbox as a seat reads it, with the bucket named on every message.
 
@@ -495,6 +547,8 @@ def render_inbox(buckets, seat, company, show_broadcast=False, width=100, trunca
     a decision, and a reader who stops after the first screen should have
     stopped on the one that needs them rather than on the one that does not.
     """
+    later = later_from_sender(buckets)
+
     def block(label, group, note=""):
         out = [f"{label}  ({plural(len(group), 'message')}){note}"]
         if not group:
@@ -509,10 +563,36 @@ def render_inbox(buckets, seat, company, show_broadcast=False, width=100, trunca
             if ref := message.get("ref"):
                 out.append(f"      ref: {ref}")
             out.append(f"      id:  {message.get('id')}")
+            # Printed on the message it is about rather than once at the top,
+            # because the reader who needs it is the one acting on this
+            # sender's disposition, and a note at the top is read before any
+            # message has been chosen.
+            if (mark := later.get(message.get("id"), {})).get("later"):
+                out.append(
+                    f"      later: {plural(mark['later'], 'newer message')} from this "
+                    f"sender in this window, newest "
+                    f"{str(mark['newest'])[:16].replace('T', ' ')} "
+                    f"<- its disposition may have moved since this one"
+                )
         out.append("")
         return out
 
     lines = [f"inbox for {company}/{seat}", "=" * (len(company) + len(seat) + 11), ""]
+    # The count a wake payload cannot give a run. A wake is composed at a
+    # moment and a run reads this at a later one, so the only way a run can
+    # tell three messages exist where two arrived is to be told how many are
+    # here now. Asked for as the payload's own field on the relay; printed
+    # here because this half needs no grant.
+    directed = len(buckets["yours"]) + len(buckets["ambiguous"])
+    newest = max(
+        [str(m.get("ts") or "") for m in buckets["yours"] + buckets["ambiguous"]],
+        default="",
+    )
+    lines.append(
+        f"{plural(directed, 'message')} addressed to this seat in this window"
+        + (f", newest {newest[:16].replace('T', ' ')}" if newest else "")
+    )
+    lines.append("")
     lines += block(
         "addressed to this seat but to no company",
         buckets["ambiguous"],
@@ -1196,7 +1276,8 @@ def cmd_inbox(args):
 
     if args.json:
         print(json.dumps(
-            {"truncated": truncated, "seat": seat, "seat_on_bus": not unknown_seat, **buckets},
+            {"truncated": truncated, "seat": seat, "seat_on_bus": not unknown_seat,
+             "later_from_sender": later_from_sender(buckets), **buckets},
             indent=2, sort_keys=True,
         ))
     else:
