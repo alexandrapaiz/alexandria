@@ -52,5 +52,13 @@ it is the charter's own fourth rung and it answers in band.
 - `docs/agents/hq-relay.md` and `docs/agents/exo-owed.md` invocations for the
   vendored merger are not worked out. They need `--section` and `--key`, they
   are the ExO's files, and they are the ExO's merge debt.
-- The sprint's next item was not reached. A red trunk and three of the four
-  events were the day.
+- The lane's next item was not reached, and the reason is that the lane is
+  stopped rather than slow. The newest sprint file is seven weeks old with all
+  five engineer rows still `not started`, and the board's sprint object is
+  dated 2026-09-21 to 2026-09-27 and still open. All four engineer items in its
+  `This sprint` column are blocked outside this seat: three on the Modal
+  workspace, off since 2026-10-23 and `urgent` in the ledger, and the fourth on
+  three `POLAR_CHECKOUT_*` values the item's own body says nothing in this
+  repository can set. Written here as well as in the pull request because a
+  pull request body is not swept and the next run of this seat will ask the
+  same question.
