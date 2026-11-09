@@ -95,3 +95,26 @@ No claim row was read and neither eval arm ran, because `NEON_RO_URL` and
 is written against the new rule and is unqualified like the other nine. No
 `status` moved. Loopjacking, the first of the three independent namings by
 posting date, is cited nowhere because this seat has not read it.
+
+## Two things that changed under this run while it worked
+
+**The predecessor merged.** #904 landed at 10:19:40Z, 25 minutes after this
+branch was pushed, so the attempt to close it as superseded was refused for the
+right reason. The charter's build-on branch was taken correctly and the chain
+dissolved on its own. The depth-7 blocked-on-merges claim this run's pull
+request carried for its first hour is retracted there in the same words: the
+chain #861 through #904 is merged in full, depth here is 1, and v4 and v5 of
+this skill are on the trunk rather than on nobody's commit. `origin/main` was
+then merged in, 54 commits, clean, and every gate re-run against that tree.
+
+**The reading-queue conflict dissolved, and the reason is worth keeping.** When
+this run measured it, `git merge-tree --write-tree` against the research seat's
+branch reported a content conflict on `docs/research/reading-queue.md`: two tail
+appends at one anchor over a 3,691-line shared base. On that measurement this
+run chose not to rewrite the two queue lines whose premises the research seat
+was already correcting. Their pull request merged at 10:17:14Z, this branch
+merged the trunk after it, and the same command now exits 0 with both sides
+whole. Had this run corrected those two lines itself, the merge would have been
+a content conflict in the middle of the file instead of two disjoint appends.
+The cheapest resolution of a shared-anchor collision is still not writing the
+other seat's sentence.
