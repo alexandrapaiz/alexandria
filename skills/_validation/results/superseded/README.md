@@ -13,6 +13,24 @@ deleted, and nothing in this directory is read by a consumer:
 `tools/panel_validator.py` globs `*.json` in the parent, so a subdirectory is
 invisible to both.
 
+- `2026-11-09-revision-record-relocation.json`. The survivor named in the entry
+  below, moved here in its turn by the `agent-approval-paths` v2 revision in the
+  same pull request (#881), which edited a `SKILL.md` and so had to re-record.
+  `../2026-11-09-approval-paths-v2.json` supersedes it on the same evidence,
+  checked the same way: **84 cases both sides, 0 verdicts moved**, 74 of 84 at
+  reliability 0.881 in both, and `agent-approval-paths` the only skill whose
+  `skill_sha256` differs. The description was deliberately left byte-identical,
+  so the idf did not move and no untouched skill's score did either.
+
+  **This move is the one that shows the ranking defect is still live, because
+  the gate was already green before it.** `approval-paths-v2` sorts before
+  `revision-record-relocation` on the letter `a`, so it won the same-day tie by
+  the alphabet and the receipt it published happened to be the right one. That
+  is the second time in one day this check passed by luck rather than by rule, in
+  the same directory, on the same defect. Moving the file makes the result true
+  by construction instead. A seat that reads a green gate here and concludes the
+  tie is handled has read the alphabet.
+
 - `2026-11-09-ban-list-separator-sweep.json` and
   `2026-11-09-evaluation-integrity-aggregate.json` with its `.txt`. Both moved
   here by the run that answered the research seat's approval-paths batch (#881),
