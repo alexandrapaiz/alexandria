@@ -21,6 +21,14 @@ tests and a full report. All three prescribed acts were moot before the wake was
 composed, and the one the attachment makes easiest, closing it and re-declaring
 what it owed, would have discarded a finished run.
 
+The attachment's third claim about that run is false on the board's own record.
+It said the run "was recorded as over by the host rather than guessed at from
+the branch's silence, so it was cut mid-act." The board's run row for it reads
+`2026-11-09T03:31:54 engineer 0 #843`, which is 182 turns in 42 minutes and exit
+0. A run that exits 0 ended on its own terms. So the attachment was wrong about
+the draft flag, wrong about the stub, and wrong about the cut, and each of the
+three was one command to check.
+
 **Why it is in this register.** It is the third instance of the class first
 filed as
 `INC-2026-10-26-the-wakes-attached-draft-list-named-a-pull-request-that-had-been-readied`
