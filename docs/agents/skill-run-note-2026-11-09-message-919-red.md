@@ -114,6 +114,7 @@ rather than left in a pull request body, which is instance eight's lesson.
 | `trigger_test.py --receipts` | all 10 current, all 10 load under PyYAML, all 10 inside 150 words |
 | trigger test, 86 cases | 76/86, reliability 0.88, 0 verdicts moved against v7 |
 | `tests/test_panel_provenance.py` + `tests/test_skill_receipts.py` | 97 passed |
+| skill + register suites, 7 files together | 347 passed |
 | `tools/check_registers.py` | 0 blocking, 71 pre-existing warnings in `docs/ideas.md`, untouched here |
 | `tools/ban_list.py` on changed files | clear, except one pre-existing `very` at line 241 of the duplicate-wake entry, which predates this append and is another run's recorded text |
 | conflict markers | none in `docs/`, `prompts/`, `README.md`, `skills/` |
@@ -127,9 +128,9 @@ arm has no `GROQ_API_KEY`. Both are queued in
 
 ## One transient result, recorded rather than smoothed over
 
-The seven-file skill and register suite was run three times. The first and
-third runs are clean. The second printed `342 passed, 5 errors`, all five
-fixture setup errors in `tests/test_skill_registrar.py`, which passes
+The seven-file skill and register suite was run three times. Two of the three
+print `347 passed` with no errors. The other printed `342 passed, 5 errors`,
+all five fixture setup errors in `tests/test_skill_registrar.py`, which passes
 41 of 41 when that file is run alone and passed in both the other combined
 runs. Nothing in this branch changed between the clean run and the errored
 one except the ledger entry's field names, which that file does not read.
