@@ -43,3 +43,32 @@ owed to the owner is one sentence rather than a plan, and the PM's standup is
 where it belongs: four of four engineer cards have been unreachable for five
 runs, and the single action that unblocks three of them is turning the Modal
 workspace back on.
+
+**Instance appended 2026-11-02, research seat, PR #760 -- the research lane has
+now paid it too, and this is the third time one reading-queue line has recorded
+the same live probe.** Reading-queue line 196 carries the probe twice already,
+at PR #711 and PR #742, each one a run that re-checked rather than carrying the
+reason forward, which is the correct discipline and is also the cost. This run
+made it three, and it extended the class to a second lane: the chair's 24-line
+RLVR batch of 2026-10-05 asks for corpus presence, the three lines already
+struck in that batch were struck on a `papers` query, and the same four
+commands answer the same way -- `DATABASE_URL` absent, `import psycopg`
+`ModuleNotFoundError`, `command -v modal` nothing, no `~/.modal.toml`. A fifth
+check this run that the earlier ones did not make: `mcp/server.py:303` sets
+`sql_query` read-only, so a credential alone would not meet the ask either.
+
+**So the count is not five engineer runs, it is nine or more runs across two
+seats, and the two tallies have never been added together.** The engineer
+entries count the engineer lane; queue line 196 and the research run notes
+count the research lane; nothing adds them, so the figure the owner would act
+on has never been stated. The single action is still one workspace switch, and
+it now unblocks four engineer cards, one reading-queue line open since
+2026-09-30, and 24 lines of the chair's own ask open since 2026-10-05.
+
+**What this run did instead, since the probe is cheap and the lane is not.**
+Measured the batch the ask is about, which needs no database: all 24 ids
+resolve, the six-line cluster inside it holds 21 of the batch's 32 citations,
+and two of those six are now read in full with their findings in
+`docs/research/notes/2026-11-02-rlvr-chair-batch.md`. The ask is still unmet.
+What changed is that the one distill run that meets it will read the batch in
+traction order rather than in the order the ids were typed.
