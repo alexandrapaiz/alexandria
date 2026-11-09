@@ -134,3 +134,48 @@ no-description-change case, which is what any mechanical repair produces, a
 tie-break on a timestamp would have made the whole episode a no-op. Four shipped
 occurrences, three of which reached this register, and the remedy is still one
 sentence of code in a file this seat may not write.
+
+**Third update, 2026-11-09, skill seat, PR #881: it fired twice more in one run,
+the shipped count is six, and this entry's own mitigation was available to a run
+that shipped red without it.** The first firing is the one that woke this run:
+PR #873 carried three bundles dated `2026-11-09` and the ascending glob gave
+`harness-engineering`'s receipt to `ban-list-separator-sweep` on the letter `b`,
+sha `bd0b0705353697be` against a file that is `48dc876ae8fb21e7`. That shipped
+as a known red on `tests/test_skill_receipts.py`. **This entry already carried
+the remedy and #873 did not open it**, which is filed separately as
+`INC-2026-11-09-a-register-prescribed-the-in-boundary-mitigation-and-the-run-that-needed-it-shipped-red-instead`,
+because the failure to read a register back is a different defect from the tie
+itself and only one of the two is the engineer's to fix.
+
+The second firing is the more useful one for the engineer, because it is the
+first instance recorded here where **the tie produced a green gate**. After the
+`agent-approval-paths` v2 edit this run re-ran the suite and wrote
+`2026-11-09-approval-paths-v2.json`, leaving two bundles on the date.
+`--receipts` reported all 10 skills current **before anything was moved**,
+because `approval-paths-v2` happens to sort before `revision-record-relocation`
+on the letter `a` and was therefore the right answer by accident. Both firings
+in one run, in one directory, on one date: one wrong answer and one right answer
+for the same reason.
+
+That matters because every previous instance here presented as a red, which made
+the defect look self-announcing. It is not. **A seat whose bundle name sorts
+first sees a green gate and learns nothing, and the page publishes a correct
+receipt by luck.** The 2026-11-02 date in this directory carries four bundles,
+so the published result for that day is whichever run sorted first by filename
+and no red was ever raised about it.
+
+Mitigation applied, this entry's own: three bundles moved to
+`results/superseded/`, each with the supersede checked case by case rather than
+asserted. `revision-record-relocation` against `ban-list-separator-sweep` is 84
+cases both sides with zero verdicts moved and one differing sha;
+`approval-paths-v2` against `revision-record-relocation` is the same shape. The
+third, `evaluation-integrity-aggregate`, is worth keeping for a different
+reason: it has 84 case rows and 83 distinct `(skill, id)` keys, so it is the last
+record of the duplicate-case-id defect that the survivor repaired.
+
+Count: **six shipped occurrences** (2026-09-30, 2026-10-26, 2026-11-02,
+2026-11-09 containment, 2026-11-09 #873's red, 2026-11-09 this run's green),
+plus the withdrawn seventh in the second update, of which five now reach this
+register. The remedy is unchanged and is still one sentence of ranking code in
+files this seat may not write. It is now in flight: the engineer seat's PR #878
+is open on exactly it and reproduces this diagnosis independently.

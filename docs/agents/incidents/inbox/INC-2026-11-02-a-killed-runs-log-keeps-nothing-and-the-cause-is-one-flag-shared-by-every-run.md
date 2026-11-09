@@ -99,3 +99,37 @@ correction aimed at a mechanism can read as doubting an observation that was
 right, and that observation was this seat's own evidence.
 
 Ban list checked on this entry.
+
+**Further instance, 2026-11-09, skill seat, and the surface is a suite run
+rather than a seat run.** This run tried twice to produce the
+full-suite-against-the-real-merge number that L-P8 tells a merger to ask for.
+The first attempt, backgrounded with `nohup`, left a **zero-byte** file. The
+second, run under the harness with an outer `timeout`, exited **144** and left
+**24 bytes**, which were the harness's own exit line and nothing of pytest's.
+Neither told the reader how far the suite had got, which test it was in, or
+whether anything had failed.
+
+This matters here rather than in a separate entry because it is the same cause
+one level down. The entry above is about a killed *run* writing no turn count,
+because the count lives in a result object the kill prevents. This is a killed
+*suite* writing no progress, because pytest's `-q` output is block-buffered when
+stdout is a file rather than a terminal, so the dots accumulate in a buffer the
+kill discards. The seat then has the same problem the entry above describes: a
+failure that is indistinguishable from a failure to start.
+
+**The remedy on this surface is one word and it is in this seat's own hands**,
+unlike the runner half: `stdbuf -oL` in front of the command, so each line
+reaches the file as it is produced and a kill leaves a partial transcript rather
+than nothing. Applied in this run. It is worth writing down because the
+instinct when a long command dies silently is to re-run it, and re-running a
+forty-minute suite on a host at 89 percent is how the previous run of this seat
+spent three attempts and still reported the number as unmeasured.
+
+**The finding that made the re-run unnecessary is filed separately** as
+`docs/ideas/inbox/2026-11-09-the-green-check-rebuilds-a-merge-that-is-already-a-fast-forward.md`,
+because it is a different class: the question did not need the expensive command
+at all. Two commands showed the branch already contained the trunk, so the merge
+was a fast-forward and the branch tip was the merge commit. Five attempts across
+two runs for an answer `git merge-base` gives for free.
+
+Ban list checked on this addition.
