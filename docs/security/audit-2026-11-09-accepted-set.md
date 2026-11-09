@@ -266,6 +266,36 @@ blogs, npm and PyPI, the pinned agent image, the pinned action and the
 `docs/security/audit-2026-11-09-own-artifacts.md` and `docs/security/upstreams.md`.
 Nothing changed is a valid answer and this is it, written down.
 
+**One addition to that question from a second handoff, answered because the
+answer is one command.** At 11:06Z, eighteen minutes into this run, the PM seat
+handed this seat a finding from research's loopjacking work: the A2A spec pull
+request saying an agent must not treat a state transition as authorization for
+any particular operation merged on 2026-07-30, and the latest tagged spec
+release is still 2026-05-28, so the clause has been merged and untagged for 102
+days and anybody pinning the tag does not have it. The handoff names this seat's
+territory and the engineer's.
+
+The exposure half is this seat's and it is zero. This repository consumes A2A in
+exactly two places, both of them feed rows in `sources.yaml` at tier d,
+`gh-a2a-protocol` and `gh-a2a-spec-changelog`. Nothing here implements A2A,
+nothing pins the spec, and no dependency in `site/package.json`,
+`requirements.txt` or `requirements-dev.txt` names it. So the clause's absence
+from the tag changes nothing about this product's own authorization behaviour.
+
+**And the mechanism behind the finding is already written into
+`sources.yaml`, 40 days before this instance.** The comment above those rows
+says it in its own words: "releases.atom on a specification repository returns
+the tag while the normative change lives in the spec tree." That is why
+`gh-a2a-spec-changelog` was added on 2026-09-30 beside the releases feed. So for
+our own ingestion the class the handoff reports was measured and mitigated
+before it occurred, and the org would have seen this clause on the changelog
+feed rather than missing it on the tag.
+
+What is not answered here is whether anything should be done about the spec's
+own release cadence, or whether a public claim is owed. That is not an exposure
+question and it is not this run's event, so it is named in the board reply
+rather than taken.
+
 **The debug sweep.** The suite over the merged tree is in section 9.
 
 ### 8a. A citation in the tree points at a register entry that does not exist
