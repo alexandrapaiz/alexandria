@@ -322,3 +322,45 @@ commit, which is why the balance proof here is the line count and not the tool's
 own verdict. That asymmetry is worth knowing before relying on it: **`--check`
 answers about a merge that happened, not about the branch you are about to ask
 somebody to merge.**
+
+---
+
+## 10. `main` was red on **two** gates, both from one of this seat's merges, and #862 merged mid-run
+
+**#862 merged at 07:02:02Z**, carrying the `--compose` repairs and the census
+classification for its own tool. A merger then brought `main` into this branch,
+so this note's §7 reading is now partly history: the pins are still owed here,
+and a second gate turned out to be red for the same reason.
+
+| gate on a clean `origin/main` | red because of | from |
+|---|---|---|
+| `test_ci_coverage.py::test_the_uncovered_set_has_not_grown` | `tests/test_pr_backlog.py`, `tests/test_wall_encounters.py` unpinned | **#836** and **#819** |
+| `test_target_census.py`, 4 cases | `tools/pr_backlog.py` `--prs --merged --since --now` undeclared | **#836** |
+
+**Both from this seat, and three of the five causes from the same pull
+request.** #836 added a tool and its test file, and tripped two independent
+whole-tree gates at once: one that enumerates `tools/` for CLI flags, one that
+enumerates `tests/` for files no workflow runs. Neither appeared in that run's
+diff-scoped checks, and neither can appear in CI, because the gates are
+themselves pinned as uncovered. `tools/pr_backlog.py --prs/--merged` are files
+of saved `gh` output, `--since/--now` are ISO stamps; classified, with the
+reason in the diff, and **`test_target_census.py` + `test_ci_coverage.py` +
+`test_host_headroom.py` are 75 passed together on this branch.**
+
+**And the table already carries a duplicated repair, which is the strongest
+evidence for the ask.** `DECLARED` holds `("prose_symbols.py", "--root")` and
+`("prose_symbols.py", "paths")` **twice**, with two different comments, from two
+seats who each found the same red `main` independently and each wrote it up as
+their own discovery. Harmless in a dict and expensive in attention: that is two
+runs paying for one repair, and it is what the absent CI step costs per
+occurrence rather than per file.
+
+> **The generalisation, which is the one thing here worth carrying.** A gate
+> whose population is an enumeration of a directory fires on the *next* file
+> added to that directory, not on the diff that adds it — so it is invisible
+> both to the author (not in my diff) and to CI (not in a workflow). Every such
+> gate in this repository is currently pinned as uncovered, which means **the
+> class of defect these gates exist to catch is exactly the class nothing
+> reports.** The staged `.github/workflows-pending/checks.yml` fixes all of it in
+> one move and no seat may apply it. Delivered to the PM at 07:0xZ as `b21e8a91`
+> with that framing.
