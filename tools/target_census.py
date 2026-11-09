@@ -268,6 +268,8 @@ DECLARED: dict[tuple[str, str], Judgment] = {
         "roster", "same roster as board.py --company, same API"),
     ("read_paper.py", "ids"): Judgment("opaque"),
     ("read_paper.py", "--cache-dir"): Judgment("path"),
+    ("receipt_ranking.py", "--results"): Judgment("path"),
+    ("receipt_ranking.py", "--skills"): Judgment("path"),
     ("rehearse_email.py", "key"): Judgment("roster"),
     ("rehearse_email.py", "--to"): Judgment("text"),
     ("rehearse_email.py", "--out"): Judgment("path"),

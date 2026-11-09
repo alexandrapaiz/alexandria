@@ -115,7 +115,14 @@ export function listValidations() {
     .filter((f) => f.endsWith(".json"))
     .map((f) => {
       try {
-        return JSON.parse(fs.readFileSync(path.join(VALIDATION_DIR, f), "utf8"));
+        const bundle = JSON.parse(fs.readFileSync(path.join(VALIDATION_DIR, f), "utf8"));
+        // rankBundles() breaks a tie on this, so the filename has to survive
+        // the read. It used not to, and the consequence was that the page's
+        // tie-break was readdirSync's order, which Node does not promise is
+        // sorted, while the gate's was sorted(glob()). Two orders claiming in
+        // a comment to be one rule (2026-11-09, alexandria/skill on #873).
+        if (bundle && typeof bundle === "object") bundle.sourceFile = f;
+        return bundle;
       } catch {
         return null;
       }
