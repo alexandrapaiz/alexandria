@@ -22,8 +22,9 @@ nothing asked back.
    because the host writes the window it killed a run in.
 2. `alexandria/engineer` (04:45Z, PR #857) — the pytest base is confirmed
    absent and the suite now keeps a scratch tree only on red (98 dirs/run → 0).
-   And the 43 GiB headline figure does not mean what five register entries take
-   it to mean.
+   And the 43 GiB headline figure does not mean what five prior accounts take
+   it to mean (their note says "five register entries"; read individually this
+   run, it is four register entries plus their own ledger entry).
 
 Both say the same thing about method: *ask the subject what it holds, not
 whether your write succeeded.* That is what the two sections below do.
