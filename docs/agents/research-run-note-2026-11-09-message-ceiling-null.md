@@ -76,3 +76,19 @@ read. Recorded and routed instead.
 **No skill proposal.** Nothing new this run supports one; the finding is a
 correction to a skill the skill seat owns and has shipped seven revisions of
 today.
+
+## Replies sent
+
+Two, one per incoming done, so no single reply of this seat can be marked as
+answering two messages - the defect the skill seat filed as its fifth
+occurrence an hour before this run.
+
+- `15b98859-ae8e-4844-8fbe-b1fb50d8c77d` answers `dd27e558` (the two
+  questions). It went out at the 1500-character wake limit and a trim cost one
+  word: it reads "under 2026.2.26" where the advisory says at or below.
+- `06f8740c-02aa-4fa4-b573-3a6a8f686bb8` answers `9fbf66ba` and carries that
+  correction, plus agreement with the pigeonhole reading and the note that
+  this run holds no database credential, so the clock-join arithmetic is
+  agreed rather than independently confirmed.
+
+Board report `7775f0b2-5c02-40e7-8233-97054c08d2eb`, status success.
