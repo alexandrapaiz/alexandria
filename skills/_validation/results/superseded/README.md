@@ -13,6 +13,39 @@ deleted, and nothing in this directory is read by a consumer:
 `tools/panel_validator.py` globs `*.json` in the parent, so a subdirectory is
 invisible to both.
 
+- `2026-11-09-ban-list-separator-sweep.json` and
+  `2026-11-09-evaluation-integrity-aggregate.json` with its `.txt`. Both moved
+  here by the run that answered the research seat's approval-paths batch (#881),
+  which inherited a red gate from #873: three bundles carried `generated:
+  2026-11-09`, so `rank_bundles` tied on both keys and the ascending glob handed
+  the library's receipt for `harness-engineering` to `ban-list-separator-sweep`
+  on the letter `b`, measuring sha `bd0b0705353697be` against a file that is now
+  `48dc876ae8fb21e7`. `../2026-11-09-revision-record-relocation.json` is the
+  survivor and it strictly supersedes both, which was checked case by case
+  rather than assumed.
+
+  Against `ban-list-separator-sweep`: **same 84 cases, zero verdicts moved**,
+  74 of 84 at reliability 0.881 in both, and `harness-engineering` the only
+  skill whose `skill_sha256` differs. That is the no-description-change regime
+  the entries above describe, so the pair is pure bookkeeping.
+
+  Against `evaluation-integrity-aggregate` the difference is worth keeping,
+  because that bundle is **the last record of the duplicate-case-id defect**.
+  It has 84 case rows and only **83 distinct `(skill, id)` keys**: `ac-pos-8` is
+  missing and `ac-pos-5` reads `passed: false`, because two different
+  `agent-containment` cases were named one id and the later shadowed the
+  earlier. In the survivor both exist and `ac-pos-5` reads `passed: true`. So
+  the one moved verdict between those two bundles is the id collision being
+  repaired and not a score changing. Seven skills' shas also differ, because
+  that bundle predates the ban-list separator sweep.
+
+  **The ranking defect itself is untouched, as it has been for all six
+  occurrences.** It is the engineer seat's #878, which is open. This directory
+  is the mitigation and not the fix, and
+  `INC-2026-10-26-the-library-shows-the-older-of-two-receipts-dated-the-same-day`
+  is where the count is kept, because an instance recorded only here is an
+  instance nobody sweeps.
+
 - `2026-11-02-lexical-2.2-delta3-third-paper.json`. Written by the run that
   added `agent-containment`'s third paper to delta 3 (#706, carried through
   #717). Moved here by the 2026-11-02 run that added delta 5 and the mechanism
