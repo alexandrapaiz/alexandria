@@ -129,6 +129,10 @@ defines. Statuses below are untouched; only the owner moves them.
   tree — `@clerk/nextjs` is a live site dependency, `site/middleware.js`,
   `site/vercel.json`, and the sign-in/sign-up routes all exist. Named
   for the owner or the building seat to confirm and flip to `built`.
+- Groomed 2026-11-09 (PM, Monday ceremony, 28 days after the last note):
+  same tree, same finding, still `accepted`. Re-confirmed rather than
+  re-argued: this is a one-line status flip waiting on the owner, not a
+  build task.
 
 ### 2026-09-17 — Skill-extract prompt
 - Trigger: gold layer needs its authoring prompt
@@ -154,6 +158,9 @@ defines. Statuses below are untouched; only the owner moves them.
   exists and is cited throughout later skill-seat ledger entries as the
   live extraction method. Named for the owner or the building seat to
   confirm and flip to `built`.
+- Groomed 2026-11-09 (PM, Monday ceremony, 28 days after the last note):
+  unchanged, still `accepted`. A one-line status flip waiting on the
+  owner.
 - Done this run (skill agent, 2026-09-18, PR skill/2026-09-18-b-self-improving-post-training-loops):
   the "first step" above is now done. `prompts/skill-extract.md` itself is
   still only on the still-open PR #12 branch
@@ -420,6 +427,11 @@ below.
   under `site/app` as of this ceremony. Ranked #2 by leverage, right
   behind the institution backfill, because it gates drafted
   sales-outreach notes. Treat as one item, satisfied once either ships.
+- Groomed 2026-11-09 (PM, Monday ceremony): built since the last note.
+  `site/app/left-behind` shipped 2026-10-15 (commit `d6c7c842`, sprint
+  2026-10-12 item 4), satisfying this entry and "The Left-Behind Index
+  as a public page" below under the "treat as one item" rule above.
+  Named for the owner to confirm and flip both to `built`.
 - Groomed 2026-09-18 (PM, closing all-hands triage): accepted. Sales'
   redispatched plan (PR #22, merged) independently proposes a
   "Left-Behind Index" public page (see that entry under "Sales agent
@@ -1328,6 +1340,9 @@ build.
   `description:` field in `skills/harness-engineering/SKILL.md` now
   carries almost verbatim the suggested replacement clause. Named for
   the owner or the building seat to confirm and flip to `built`.
+- Groomed 2026-11-09 (PM, Monday ceremony, 28 days after the last note):
+  unchanged, still `accepted`. A one-line status flip waiting on the
+  owner.
 
 ### 2026-09-18 — trigger_reliability is now computable, and option (b) is the one to build (skill agent)
 - Trigger: the verification-badge schema entry filed earlier on
@@ -1596,6 +1611,12 @@ owning seat rather than assumed. Arguments in docs/sales/.
   skills, terms, unsubscribe). Ranked #2 by leverage in this week's
   accepted-backlog order, right behind the institution backfill.
   Pulled into sprint-2026-10-12 as item 5.
+- Groomed 2026-11-09 (PM, Monday ceremony): built since the last note.
+  `site/app/left-behind` shipped 2026-10-15 (commit `d6c7c842`), three
+  days after the sprint item above. Satisfies this entry and "Make
+  'left behind' the public flagship" together, per both entries' own
+  "treat as one item" rule. Named for the owner to confirm and flip
+  both to `built`.
 
 ### 2026-09-18 — The Receipt Standard: publish the provenance spec plus a conformance linter
 - Trigger: 69% of 216 audited public Claude Code skills won't reliably
@@ -23604,6 +23625,10 @@ has nothing to go red against.
   2" above it. So the gate is correct now and the charter tells a run to
   distrust the one verdict that no longer needs distrusting.
 - Status: accepted
+- Groomed 2026-11-09 (PM, Monday ceremony): the entry's own text records
+  this as "Accepted and landed 2026-10-27," and the sentence is live in
+  `prompts/digest.md`'s step 3. Thirteen days on `accepted` after its own
+  report of landing. Named for the owner to confirm and flip to `built`.
 
 ### 2026-11-01 - The pre-send heading ban and the voice canon's heading ban share no phrase, and four live headings walked through both (writer seat, for the engineer)
 - Trigger: the grade of `2026-W42` in
