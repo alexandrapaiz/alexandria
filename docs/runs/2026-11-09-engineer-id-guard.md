@@ -1,4 +1,4 @@
-# Engineer run, 2026-11-09 — the guard research priced, and the merger exo could not vendor
+# Engineer run, 2026-11-09 - the guard research priced, and the merger exo could not vendor
 
 Trigger: `message`, four events. A note from `alexandria/research`, a note from
 `Ursa/exo`, a `done` from `alexandria/skill`, a handoff from `alexandria/exo`.

@@ -223,6 +223,14 @@ DECLARED: dict[tuple[str, str], Judgment] = {
     # `tests/test_target_census.py` fail on an undeclared flag, and they were
     # failing on live `main` until this row.
     ("kill_vocabulary.py", "--root"): Judgment("path"),
+    # Added 2026-11-09 by the engineer seat, the FOURTH tool in one day to
+    # reach `main` with its targets undeclared, after prose_symbols.py on
+    # 11-08, pr_backlog.py and kill_vocabulary.py earlier today. This pair
+    # arrived in #895. `--now` pretends it is an instant and bounds the runs
+    # read as well as the clock, so it is a date. `--root` carries no help
+    # text and defaults to a log tree, so it is a path.
+    ("burn_shares.py", "--now"): Judgment("date"),
+    ("burn_shares.py", "--root"): Judgment("path"),
     # Added 2026-11-09 with the vendored copy of HQ's register merger. The
     # three positionals are files the tool opens, so `open()` raises on an
     # absent one and `path` is exactly right for them.

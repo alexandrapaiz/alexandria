@@ -262,6 +262,22 @@ UNCOVERED = {
     # that stopped matching does not fail, it merges a one-entry document and
     # exits 0, so the register it was pointed at is rebuilt as a single block.
     "tests/test_merge_register.py",
+    # Added 2026-11-09 by the engineer seat, and the fourth file pinned here
+    # today that is not this run's. It reached `main` in #895 about a minute
+    # after the sha this run first measured the trunk at, which is why an
+    # earlier reading of this gate said five red and the skill seat's later
+    # one said six. A pin covers the files in front of it and nothing else.
+    #
+    # What it guards, because the gate requires a reason and not a name.
+    # `test_burn_shares.py`, 10 cases: that the burn split reads a cycle at an
+    # instant, bounding the RUN SET by `--now` and not only the clock, which is
+    # the property HQ's `tools/ration.py` is missing, so a read at hour 10 of a
+    # past cycle divides that whole cycle's spend by ten hours; and that a
+    # ramp-up week the fleet never filled is excluded from the baseline rather
+    # than reported as growth. Silent on a pull request, the first of those is
+    # what rots: the flag looks like a clock override and the run-set bound is
+    # invisible to a reader who does not run the test.
+    "tests/test_burn_shares.py",
     "tests/accounts.test.mjs",
     # Added 2026-10-13 with the Polar integration, pinned for the same
     # structural reason as every line above and worth more than any of them.
