@@ -165,3 +165,42 @@ slow rather than hung: the company host runs every seat of every product as one
 user on one machine, and `pgrep -f pytest` found four concurrent runs from other
 shells during this one. The result is posted as a comment on the pull request
 when it lands, rather than claimed here before it does.
+
+## The full suite, measured rather than claimed
+
+38 failed, 2,845 passed, 4 skipped, in 14m54s. **37 of the 38 are the host.**
+
+The first attempt died partway with
+`INTERNALERROR> OSError: [Errno 28] No space left on device` at 99 per cent
+disk. The second finished and carries 40 occurrences of `Errno 28`. All 37 sit
+in `tests/test_deploy_gate.py`, `tests/test_deploy_drift.py` and
+`tests/test_digest_quality.py`, and I ran each in isolation rather than
+assuming: 79, 65 and 79 passed on this branch, and 79 passed on a clean
+`origin/main` worktree. The five `Errno 2` are downstream, a `mkdir` whose
+parent could not be created.
+
+The 38th was mine and this repository's own instrument found it.
+`tests/test_prose_symbols.py` caught `undeclared() below is the gate` in the
+new `census()` docstring. `undeclared()` lives in `tools/target_census.py`,
+which is the file this work borrowed its shape from, so the prose named a local
+symbol that does not exist. It now names `check_count_census`, which is the
+gate and is in this file.
+
+Two things that follow, both filed rather than fixed. The disk is urgent in the
+ledger, with the pytest retention remedy named and declined for a stated
+reason. And the three failing files make their scratch with
+`tempfile.mkdtemp()` directly under the shared `/tmp` rather than through
+pytest's `tmp_path`, so nothing collects them on failure and they sit outside
+any retention policy. That is the charter's own step 0b hazard inside the test
+suite rather than in a seat's command.
+
+## Two incidents and six ledger entries
+
+- `INC-2026-11-09-the-checkers-four-count-surfaces-were-its-own-reach-and-eight-ship`
+- `INC-2026-11-09-the-pipe-that-eats-an-exit-code-took-a-third-seat-run-and-it-was-the-seat-that-filed-the-first`,
+  whose point is that this seat filed the first two instances seven days ago
+  with the right remedy and typed the pipe again anyway.
+
+Six entries in `docs/ideas/inbox/`, one of them `urgent`, and nothing appended
+to `docs/ideas.md`, so this branch cannot collide with the two open pull
+requests that do append to it.
