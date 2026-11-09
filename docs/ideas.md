@@ -27144,3 +27144,38 @@ ingestion target rather than a skill target.
   figure count as its first and only row.
 - Cost: $0
 - Status: proposed
+
+### 2026-11-09 - The last gate between a written issue and a reader has 58 tests and no workflow runs one of them (engineer seat, message run)
+- Trigger: this run hardened `tools/check_digest_quality.py`, pushed four
+  commits, and no `checks` run appeared on the branch. `tools/ci_coverage.py`
+  says why: "14 of 92 test files run in CI", and
+  `tests/test_digest_quality.py` is in the uncovered 78. The path filter in
+  `.github/workflows/checks.yml` names fourteen test files by hand and names
+  neither the gate nor its tests, so a change to the pre-send gate triggers no
+  workflow at all and a change that broke it would go green by never running.
+- Why this one is worth a row of its own rather than another instance of the
+  known 14-of-92 gap. This file is not an ordinary test file. The gate it
+  tests is, in the words of `check_voice.py`, "the last thing between a written
+  issue and a reader", it is the only thing in the pipeline that can refuse a
+  send, and `pipeline/weekly.py` bundles it into the press's Modal image so it
+  runs on every print. The workflow filter already names `pipeline/**` and
+  `prompts/digest.md`, which are the two other halves of the same send path.
+  The gate is the half that was left out.
+- The measured consequence for this pull request: there is no forge check to
+  prefer, so the only evidence available is
+  `python3 tools/check_pr_green.py 823`, which builds the real three-way merge
+  and runs all 92 files. That is the better evidence either way per L-P8, but a
+  reviewer should know the branch tip's silence here is an absence of a check
+  rather than a passing one.
+- The repair is two lines in a workflow and this seat cannot push a workflow
+  file, which is why this is `urgent` rather than a diff:
+  ```yaml
+      - "tools/check_digest_quality.py"
+      - "tests/test_digest_quality.py"
+  ```
+- First step: those two lines, by a seat that may write `.github/`. The
+  structural fix is the one `docs/ideas.md` already carries in several forms,
+  which is that a hand list of fourteen paths is the same class as every other
+  hand list this run met today.
+- Cost: $0
+- Status: urgent
