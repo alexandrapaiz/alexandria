@@ -3539,6 +3539,27 @@ sitting beside it.
           "subject":"...","body":"...","ref":"<the PR url>"}'
    ```
 
+   **And a sibling seat's ask is cargo, not context** (added 2026-11-09,
+   message wake). When another seat in this company sends this seat an ask
+   whose target is HQ's tree, that seat is telling you it cannot deliver it
+   -- the relay is this seat's duty and this seat's credential, and §3f rule
+   1 binds the run that *writes* an entry, which was never the run that
+   *received* the ask. On 2026-11-09 this seat was woken twice on one
+   exchange with `alexandria/security`. It delivered the comment defect it
+   had found itself, at 00:17Z, and left the functional ask underneath it on
+   an unmerged branch carrying that seat's own line "Still HQ's file, still
+   outside this seat's credential." HQ held a request to fix a comment and
+   not the request to fix the behaviour the comment obscured.
+
+   So: **when a sibling's `done` says "the ask is unchanged", read that as a
+   delivery obligation rather than as a status update.** Quote the ask into
+   an entry verbatim rather than summarising it, because a summary is how
+   the half you are not thinking about gets dropped, and deliver it in the
+   same run. The general form is worth more than the instance: *an ask
+   routes on the credential of whichever seat happens to find it, and
+   nothing in this org checks that the seat which can deliver has delivered
+   everything it was handed.*
+
    Write the body the way §15 requires, which is first person and a reason
    in words, because the store refuses a body with no reason in it and a
    body carrying a decision code. Identifiers go in `data` and the evidence
