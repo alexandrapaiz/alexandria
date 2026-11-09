@@ -7,6 +7,12 @@
     python3 tools/prose_symbols.py --json                 # the verdict as a script reads it
     python3 tools/prose_symbols.py --max-unresolved 0     # opt in to a failing threshold
 
+`--root` defaults to this file's own repository, so a copy of this script run
+from outside a checkout points the tool at whatever directory happens to be its
+parent's parent. That is a real invocation -- it is how `alexandria/security`
+ran it on 2026-11-09 -- and the walk it falls back to is bounded for that
+reason; see `walk_python`. Exit is 2 when the bound binds, never a short list.
+
 It answers one question per file: **does every function this file's prose names
 in call form actually exist in the file?** Comments and docstrings are the only
 part of a module that no test, no type checker and no linter reads, so a name
@@ -61,6 +67,18 @@ next reader, not an error, and this repo's prose has never once been checked, so
 the first run of this tool measures a backlog rather than a regression. Exit is
 0 unless a caller asks for a threshold with `--max-unresolved`, which is how a
 sweep opts in without every pull request inheriting the backlog.
+
+**The limitation worth stating loudest: this tool checks names, not claims.**
+A clean report means every function the prose names in call form exists. It
+says nothing about whether the prose is *true*. The proof arrived from inside
+this file on 2026-11-09: the ownership question's docstring said its answer was
+"asked of git rather than inferred from a failure" while its own `except`
+clause inferred it from a failure, and this checker read that sentence, found
+no call form in it, and passed the file. Every name in it was real. So passing
+here is not evidence that a module's prose is honest about what it does, and a
+seat reading a comment still owes it the same suspicion it owes a metric. The
+class is not obviously checkable by a tool, which is a reason to write it down
+rather than a reason to leave the impression that it is covered.
 """
 
 from __future__ import annotations
@@ -71,6 +89,7 @@ import builtins
 import difflib
 import io
 import json
+import os
 import re
 import subprocess
 import sys
@@ -122,22 +141,135 @@ PROSE_NOT_SYMBOLS = {
 }
 
 
-def tracked_python(root: Path, paths: list[Path]) -> list[Path]:
-    """The Python files to read: git's list where git knows, a walk where it does not.
+class WalkTooWide(Exception):
+    """The non-checkout walk hit its bound, so the file list would be a guess.
+
+    Raised rather than truncated. A truncated list reads exactly like a complete
+    one in the report -- `files_read` would be the cap and nothing would say so
+    -- and this tool's whole output is a count of absences, where a short list
+    means a quiet zero.
+    """
+
+
+# Directories the non-checkout walk never descends into. `git ls-files` needs no
+# such list, which is why the checkout path does not have one; the walk does,
+# because it is pointed at trees nobody has declared the contents of.
+WALK_PRUNE = {
+    "__pycache__", ".git", ".hg", ".svn", "node_modules", "site-packages",
+    ".venv", "venv", ".tox", ".nox", ".eggs", ".mypy_cache",
+    ".pytest_cache", ".ruff_cache", "build", "dist",
+}
+
+
+def is_checkout(root: Path) -> bool:
+    """Does git own this tree, asked of git and never inferred from a failure.
+
+    Separating the question from the listing was only half the repair, and the
+    half that was missing is this function's own error path. Splitting the
+    question out and then catching every failure of it into `return False`
+    moves the conflation up one call rather than removing it: the caller reads
+    False as "git does not own this tree", so a thirty-second timeout inside
+    this repository's own checkout came back as a filesystem walk of it exactly
+    as before. Reproduced 2026-11-09 by `alexandria/security`, who timed out
+    this call alone against a real checkout and got an untracked file back.
+
+    So the two answers are kept apart here too. A non-zero exit is git saying
+    no, and it returns False. A timeout, or no git binary to ask, is git saying
+    nothing at all, and it raises -- `main` turns that into an explicit
+    could-not-look with exit 2, because a tool whose output is a count of
+    absences must never answer a question it could not ask.
+    """
+    proc = subprocess.run(
+        ["git", "-C", str(root), "rev-parse", "--is-inside-work-tree"],
+        capture_output=True, text=True, timeout=30,
+    )
+    if proc.returncode != 0:
+        return False
+    return proc.stdout.strip() == "true"
+
+
+def walk_python(root: Path, max_files: int, excluded: list[str] | None = None) -> list[Path]:
+    """Every Python file of a tree git does not own, bounded in four ways.
+
+    `Path.rglob` is unbounded in all four, and that is what this replaces. It
+    descends into vendored trees, it descends into *other checkouts*, it
+    follows links out of the tree, and it has no cap, so pointing the tool at a
+    directory whose only Python file is the tool itself can hand the parser
+    every seat's sandbox under a shared temp. Measured 2026-11-09: 201 files
+    where the answer was 1, 200 of them from two nested checkouts and a
+    `node_modules`, reported as 90 findings about trees the caller never named.
+    `alexandria/security` hit the same path against the real shared temp and
+    killed it at twelve minutes.
+
+    The four bounds: `WALK_PRUNE` for vendored noise, a nested `.git` for a tree
+    that is somebody else's and that git would list properly if asked,
+    `max_files` for everything neither catches, and an entry that is not a
+    regular file of this tree.
+
+    **The fourth bound was missing until 2026-11-09, and the first three could
+    not stand in for it, because all three are decisions about a directory.**
+    `os.walk` is given `followlinks=False`, which stops the descent into a
+    linked *directory* and says nothing about a linked *file*: a symlink named
+    `x.py` arrives in `filenames` like any other entry, and appending it reads
+    whatever it points at under a path inside the root the caller named.
+    Reproduced by `alexandria/security`, who aimed one at a file inside a
+    nested checkout the second bound had just excluded and got the finding
+    printed as a path inside the named root -- two files read where the answer
+    was one, which is this tool's own failure mode in the one case its repair
+    did not cover. The same guard refuses a fifo or a device named `.py`, which
+    would otherwise block the reader rather than widen it.
+
+    Skipping is right and silence about skipping is not, so what the bound
+    excluded is appended to `excluded` and reported. From outside a tool, a
+    quiet exclusion looks exactly like a clean tree.
+    """
+    files: list[Path] = []
+    for dirpath, dirnames, filenames in os.walk(root, followlinks=False):
+        here = Path(dirpath)
+        dirnames[:] = [
+            d for d in dirnames
+            if d not in WALK_PRUNE and not (here / d / ".git").exists()
+        ]
+        for name in filenames:
+            if not name.endswith(".py"):
+                continue
+            path = here / name
+            # `is_symlink` first and on its own: it does not follow the link,
+            # so a dangling one is refused here rather than at `open`, and a
+            # live one is refused for pointing out of the tree rather than for
+            # what it points at.
+            if path.is_symlink() or not path.is_file():
+                if excluded is not None:
+                    excluded.append(str(path))
+                continue
+            files.append(path)
+        if len(files) > max_files:
+            raise WalkTooWide(
+                f"{root} is not a git checkout and holds more than {max_files} "
+                f"Python files outside vendored and nested-checkout trees. "
+                f"Narrow it with --root, name paths explicitly, or raise "
+                f"--max-files if the whole tree is really meant."
+            )
+    return files
+
+
+def tracked_python(root: Path, paths: list[Path], max_files: int = 2000,
+                   excluded: list[str] | None = None) -> list[Path]:
+    """The Python files to read: git's list where git owns the tree, a bounded walk where not.
 
     Asking git rather than walking keeps vendored trees and `__pycache__` out
     without a blocklist that goes stale, and the walk is the fallback for a
     tree that is not a checkout -- which is the case this tool is pointed at
     when it reads the host's runtime.
     """
-    try:
+    if is_checkout(root):
         out = subprocess.run(
             ["git", "-C", str(root), "ls-files", "-z", "*.py"],
             capture_output=True, text=True, timeout=30, check=True,
         ).stdout
         files = [root / p for p in out.split("\0") if p]
-    except (subprocess.SubprocessError, FileNotFoundError):
-        files = [p for p in root.rglob("*.py") if "__pycache__" not in p.parts]
+    else:
+        files = walk_python(root, max_files, excluded)
     if paths:
         wanted = [p if p.is_absolute() else (root / p) for p in paths]
         files = [f for f in files if any(
@@ -351,6 +483,10 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("paths", nargs="*", type=Path, help="limit to these files or directories")
     parser.add_argument("--root", type=Path, default=REPO_ROOT, help="tree to read")
+    parser.add_argument(
+        "--max-files", type=int, default=2000,
+        help="bound on the walk used when --root is not a git checkout (default: 2000)",
+    )
     parser.add_argument("--json", action="store_true", help="print the report as JSON")
     parser.add_argument("--verbose", action="store_true",
                         help="also list the mentions that claim no locality")
@@ -362,7 +498,23 @@ def main(argv=None):
 
     root = args.root.resolve()
     cache: dict[Path, set[str]] = {}
-    files = tracked_python(root, args.paths)
+    excluded: list[str] = []
+    try:
+        files = tracked_python(root, args.paths, args.max_files, excluded)
+    except WalkTooWide as exc:
+        print(f"prose_symbols: {exc}", file=sys.stderr)
+        return 2
+    except (subprocess.SubprocessError, FileNotFoundError) as exc:
+        # An explicit could-not-look, and exit 2 like the other bound. git was
+        # never asked whether it owns this tree, so both answers are available
+        # and neither was given; walking anyway is the conflation this tool was
+        # repaired twice to stop making.
+        print(
+            f"prose_symbols: git could not be asked whether {root} is a checkout, "
+            f"so the file list would be a guess: {exc}",
+            file=sys.stderr,
+        )
+        return 2
     findings = [f for path in files for f in check_file(path, root, cache)]
     unresolved = [f for f in findings if f["verdict"] == "unresolved"]
     unverifiable = [f for f in findings if f["verdict"] == "unverifiable"]
@@ -376,12 +528,17 @@ def main(argv=None):
         "stale_local_claims": stale,
         "mentioned_not_found": mentioned,
         "unverifiable_count": len(unverifiable),
+        "entries_not_read": sorted(excluded),
     }
 
     if args.json:
         print(json.dumps(report, indent=2))
     else:
         print(f"{len(files)} Python files read under {root}")
+        if excluded:
+            print(f"{len(excluded)} .py entries not read, being links or not regular files:")
+            for e in sorted(excluded):
+                print(f"  {e}")
         print(f"{len(stale)} prose claims that a named function is in this module, where it is not")
         for f in stale:
             near = f" (nearest defined name: {f['nearest']})" if f["nearest"] else " (no near match)"

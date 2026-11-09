@@ -1,7 +1,7 @@
 # Install the library
 
 The skills are distributed as a Claude Code plugin, served from a marketplace
-manifest in this repository. Two lines get a reader from nothing to nine
+manifest in this repository. Two lines get a reader from nothing to ten
 skills loaded, and both of them are facts about files on `main` rather than
 copy, which is what `tools/check_plugin_manifest.py` exists to keep true.
 
@@ -44,24 +44,26 @@ own front matter. Read the `status` field before you lean on one.
 
 | Skill | Status | The decision it is for |
 | --- | --- | --- |
+| `agent-approval-paths` | draft | What a human confirmation in an agent's action loop buys, and what authority survives the yes |
 | `agent-containment` | provisional | Where to enforce the boundary an agent runs inside, and what each choice measures |
 | `agent-memory-selection` | provisional | The write-versus-read split in what an assistant remembers across a long horizon |
-| `agent-security-measurement` | draft | Judging and siting the defences around an agent that faces an adversary |
-| `context-window-engineering` | active | Spending a finite token budget, including which eviction rule a fixed KV cache forces |
-| `evaluation-integrity` | active | Whether an evaluation can be trusted when the instrument is itself generated |
-| `harness-engineering` | active | Rebuilding the harness around a model rather than fine-tuning the model |
-| `recursive-harness-self-improvement` | active | Loops where an agent rewrites its own scaffold unattended and keeps or reverts on evidence |
-| `self-improving-post-training-loops` | active | Closed-loop post-training where a model grades or teaches its own next step |
-| `skill-library-engineering` | active | What a SKILL.md has to contain to beat loading nothing, and how it gets picked |
+| `agent-security-measurement` | provisional | Judging and siting the defences around an agent that faces an adversary |
+| `context-window-engineering` | provisional | Spending a finite token budget, including which eviction rule a fixed KV cache forces |
+| `evaluation-integrity` | provisional | Whether an evaluation can be trusted when the instrument is itself generated |
+| `harness-engineering` | provisional | Rebuilding the harness around a model rather than fine-tuning the model |
+| `recursive-harness-self-improvement` | provisional | Loops where an agent rewrites its own scaffold unattended and keeps or reverts on evidence |
+| `self-improving-post-training-loops` | provisional | Closed-loop post-training where a model grades or teaches its own next step |
+| `skill-library-engineering` | provisional | What a SKILL.md has to contain to beat loading nothing, and how it gets picked |
 
 ADR-36 defines two of those three grades. A skill with no eval behind it is
 `draft` and never `active`, and a skill whose eval shows no gain is retired
 with the numbers rather than quietly kept. The third grade, `provisional`, is
-carried by two skills today and no decision record defines it, which is a gap
+carried by nine of the ten skills today and no decision record defines it,
+which is a gap
 in this project's own register rather than a subtlety a reader should have to
 infer. It is filed in `docs/ideas.md` as of 2026-10-18.
 
-What every one of the nine shares is that no reviewer panel has passed it yet.
+What every one of the ten shares is that no reviewer panel has passed it yet.
 ADR-13 created that panel and the `provenance.validated` field of each skill is
 still empty, which each file says in its own front matter rather than leaving a
 reader to assume.
@@ -98,13 +100,23 @@ trust the sentence.
 
 ## Keeping it honest
 
-`tools/check_plugin_manifest.py` reads the two manifests, the skill
-directories and the marked block above, and fails when the sentence and the
-repository disagree. It checks the marketplace name, the install id, the
-repository slug and every count of skills inside the block, because the
-catalogue page on the site spent weeks telling visitors the library held two
-skills while nine sat on `main`. A number in a sentence needs a gate behind it
-or it is a number from the day somebody last looked.
+`tools/check_plugin_manifest.py` reads every distribution manifest, the
+skill directories and the marked block above, and fails when the sentence and
+the repository disagree. It checks the marketplace name, the install id, the
+repository slug and every count of skills it can reach. On 2026-10-18 the
+catalogue page on the site had spent weeks telling visitors the library held
+two skills while nine sat on `main`. A number in a sentence needs a gate
+behind it or it is a number from the day somebody last looked.
+
+The reach is the part worth knowing, because it decided the answer once
+already. The manifests are found by directory convention rather than listed,
+so a second ecosystem's manifest is covered on the day it lands. The prose
+surfaces are enumerated and each one carries a declared disposition, and a
+file that names a count and has no disposition fails. That gate exists
+because on 2026-11-09 this checker reported four problems over four surfaces
+it had been told about, and there were eight: `.cursor-plugin/plugin.json`
+and the three counts on `/llms.txt` were outside it. The command prints how
+many surfaces it read, so a clean pass can be told from an unread tree.
 
 ```
 python3 tools/check_plugin_manifest.py

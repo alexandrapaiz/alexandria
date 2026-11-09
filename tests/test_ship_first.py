@@ -423,12 +423,11 @@ def test_the_roster_the_refusal_uses_is_the_one_the_board_already_declares():
 
 
 def test_a_bare_agent_key_is_disclosed_and_never_claimed_for_a_company(tmp_path, capsys):
-    """The host has not always written `<company>-<seat>`. On 2026-11-09 the
-    audit log carries 8 bare keys over 659 of 3,222 rows, and `--company
-    alexandria`, this tool's default, could not consider one of them. Every
-    bare name is also an alexandria seat name, which is suggestive and is not a
-    fact the log carries, so the count is reported and the rows are not
-    claimed."""
+    """The host writes HQ's seat name with no company in front of it, so a
+    product company's selector must not claim one. This was already the
+    behaviour of the `--company` branch when the owner of those rows was an
+    open question, and it is still the behaviour now that the answer is known,
+    which is the half of this change that did not move."""
     write_audit(tmp_path, [run_row('s1', agent='alexandria-pm', turns=30),
                            run_row('s2', agent='pm', turns=30)])
     write_transcript(tmp_path, 'alexandria-pm', 's1', {4: 'git push'}, 30)
@@ -438,28 +437,111 @@ def test_a_bare_agent_key_is_disclosed_and_never_claimed_for_a_company(tmp_path,
     assert sf.main(args) == 0
     out = capsys.readouterr().out
     assert '1 runs selected' in out
-    assert 'names a seat and not a company (pm 1)' in out
-    assert 'No --company selector can match one' in out
+    assert 'agent key with no company in it (pm 1)' in out
+    assert "HQ's own seats rather than this company's" in out
+    assert '--company alexandra-systems' in out, 'and the reader is told where they are'
 
 
-def test_the_bare_key_a_seat_selector_does_match_is_disclosed_too(tmp_path, capsys):
-    """`--seat` has always matched the bare key as a fallback, which is how the
-    convention change stayed invisible and is also a cross-company claim: `pm`
-    names a seat without naming a company, so it reaches every company's seat
-    filter of that name. Kept, because the historical rows are real, and
-    disclosed, because the claim is not free."""
-    write_audit(tmp_path, [run_row('s1', agent='pm', turns=30)])
-    write_transcript(tmp_path, 'pm', 's1', {4: 'git push'}, 30)
-    args = ['--projects', str(tmp_path / 'projects'),
-            '--audit', str(tmp_path / 'audit.jsonl'),
-            '--company', 'Ursa', '--seat', 'pm']
-    assert sf.main(args) == 0
-    out = capsys.readouterr().out
-    assert 'selected on a bare key (pm)' in out
-    assert "without naming a company" in out
+def test_a_product_seat_selector_does_not_import_hqs_seat_of_the_same_name(tmp_path):
+    """The bug this replaces, and it ran the opposite way to the one the file
+    was guarding against. `--seat` matched the bare key as a fallback, so every
+    product company's reading of a seat whose name HQ also uses carried HQ's
+    rows. On this host `--company alexandria --seat engineer` returned 1,389
+    rows of which 1,015 were HQ's, and five alexandria seats were over half
+    another company's work.
+
+    Both halves are asserted, because the repair is not simply narrower: the
+    rows are real and they belong to somebody, so HQ's own selector has to
+    reach them."""
+    write_audit(tmp_path, [run_row('s1', agent='alexandria-engineer', turns=30),
+                           run_row('s2', agent='engineer', turns=30)])
+    write_transcript(tmp_path, 'alexandria-engineer', 's1', {4: 'git push'}, 30)
+    write_transcript(tmp_path, 'engineer', 's2', {4: 'git push'}, 30)
+    records, _ = sf.collect(projects=str(tmp_path / 'projects'),
+                            audit=str(tmp_path / 'audit.jsonl'))
+    got, _n = sf.select(records, company='alexandria', seat='engineer')
+    assert [r['session'] for r in got] == ['s1'], "HQ's engineer is not ours"
+    got, _n = sf.select(records, company='alexandra-systems', seat='engineer')
+    assert [r['session'] for r in got] == ['s2'], 'and it is not nobody\'s either'
 
 
-def test_unprefixed_counts_only_the_keys_no_company_selector_can_reach():
+def test_hqs_company_selector_reaches_every_one_of_its_keys(tmp_path):
+    """`--company alexandra-systems` returned zero rows and printed
+    `alexandra-systems seats (none)` three lines above a row counting 653
+    unowned ones. The two lines were the question and its answer, printed
+    adjacent and rendered as unrelated.
+
+    `exo-centralizer` is in here because the hyphen is not the test. It is
+    HQ's ninth key and all 24 of its PR-bearing rows name alexandra-systems,
+    so a rule that reads the head as the company files 859 rows under a
+    company called `exo`."""
+    write_audit(tmp_path, [run_row('s1', agent='pm', turns=30),
+                           run_row('s2', agent='exo-centralizer', turns=30),
+                           run_row('s3', agent='alexandria-pm', turns=30)])
+    for agent, session in (('pm', 's1'), ('exo-centralizer', 's2'),
+                           ('alexandria-pm', 's3')):
+        write_transcript(tmp_path, agent, session, {4: 'git push'}, 30)
+    records, _ = sf.collect(projects=str(tmp_path / 'projects'),
+                            audit=str(tmp_path / 'audit.jsonl'))
+    got, _n = sf.select(records, company='alexandra-systems')
+    assert sorted(r['session'] for r in got) == ['s1', 's2']
+    got, _n = sf.select(records, company='alexandria')
+    assert [r['session'] for r in got] == ['s3']
+
+
+def test_the_owner_of_a_key_is_decided_by_the_roster_and_not_by_the_hyphen():
+    """The rule, stated once. A key whose head is a declared company belongs to
+    that company, and every other key that names anything at all is HQ's,
+    because HQ is the one company the host writes unprefixed. Over this host's
+    log the rule agrees with the `pr` field on 887 of 889 PR-bearing rows, and
+    the two exceptions are HQ seats writing into product repositories."""
+    roster = {'alexandria', 'ursa', 'alexandra-systems'}
+    assert sf.owner('alexandria-pm', roster) == 'alexandria'
+    assert sf.owner('URSA-ExO', roster) == 'ursa', 'and the fold still applies'
+    assert sf.owner('pm', roster) == 'alexandra-systems'
+    assert sf.owner('exo-centralizer', roster) == 'alexandra-systems'
+    assert sf.owner('-pm', roster) is None, 'a key with an empty half names nothing'
+    assert sf.owner('pm-', roster) is None
+    assert sf.owner('', roster) is None
+    assert sf.owner(None, roster) is None
+
+
+def test_a_company_whose_own_name_has_a_hyphen_is_matched_whole():
+    """The defect this change just removed, waiting one level down inside the
+    fix for it. `alexandra-systems` is on the roster and contains a hyphen, so
+    partitioning a key on its first hyphen yields `alexandra`, which is on no
+    roster, and a membership test on that can never be true. The host writes no
+    key in this shape today, which is the only reason it was free to fix: the
+    cost of finding it later is the cost of `exo-centralizer`, which is the
+    same split meeting the same kind of name."""
+    roster = {'alexandria', 'alexandra-systems'}
+    assert sf.owner('alexandra-systems-pm', roster) == 'alexandra-systems'
+    assert sf.owner('alexandria-pm', roster) == 'alexandria', 'and the short name still wins its own key'
+    # `alexandra-pm` matches no roster name, so it lands on HQ by the ordinary
+    # rule. Asserted through `sf.HQ` rather than by its value, because HQ's name
+    # is `alexandra-systems` and writing that string here would read as a match
+    # on the roster when it is the opposite.
+    assert sf.owner('alexandra-pm', roster) == sf.HQ
+    assert 'alexandra' not in roster, 'which is what makes the line above a fallthrough'
+
+
+def test_an_unreadable_roster_attributes_nothing_to_hq():
+    """The attribution rests on the roster being readable, so an empty roster
+    falls back to the shape rule rather than sweeping every hyphenated key it
+    cannot check into HQ. Same reason
+    `test_an_unreadable_roster_refuses_nothing` exists: a claim built on an
+    empty roster is worse than the narrower reading it replaces.
+
+    A bare key is the exception and stays HQ's, because that attribution comes
+    from the `pr` field rather than from the roster."""
+    assert sf.owner('nosuchco-pm', set()) == 'nosuchco'
+    assert sf.owner('pm', set()) == 'alexandra-systems'
+
+
+def test_unprefixed_counts_the_keys_the_host_writes_with_no_company_in_them():
+    """Renamed with the behaviour. This used to be called "the keys no company
+    selector can reach", which stopped being true the moment
+    `--company alexandra-systems` reached them."""
     assert sf.unprefixed([{'agent': 'alexandria-pm'}, {'agent': 'pm'},
                           {'agent': 'PM'}, {'agent': None},
                           {'agent': 'engineer'}]) == {'pm': 2, 'engineer': 1}
@@ -490,27 +572,42 @@ def test_an_unreadable_roster_refuses_nothing(tmp_path, monkeypatch):
     assert sf.main(args) == 0
 
 
-def test_a_bare_key_is_never_offered_to_a_reader_as_a_company(tmp_path, capsys):
-    """A defect in this change's own first output, caught by running it. The
-    key list split on `-` unconditionally, so the live run printed the nine
-    bare seat keys among the companies, which are the keys the same change had
-    just finished disclosing as not companies."""
+def test_no_key_is_ever_offered_to_a_reader_as_a_company_that_does_not_exist(tmp_path, capsys):
+    """Two defects in this function's output, in opposite directions, both
+    caught by running it rather than by reading it.
+
+    The first: the key list split on `-` unconditionally, so the live run
+    printed the nine bare seat keys among the companies, which are the keys the
+    same change had just finished disclosing as not companies. The second
+    arrived with the repair for the first, which dropped every bare key and
+    then printed `exo` as the fifth of five companies. `exo` is the head of
+    `exo-centralizer`, one of HQ's seats, and 859 rows sat under it. So a reader
+    was offered a company the portfolio does not have, twice, by two different
+    readings of the same hyphen.
+
+    Both keys now resolve to the company that actually ran them, and the
+    assertion is on the absences as well as the presences, because the thing
+    that went wrong both times is a name appearing in a list of companies."""
     write_audit(tmp_path, [run_row('s1', agent='ursa-exo', turns=30),
-                           run_row('s2', agent='pm', turns=30)])
-    write_transcript(tmp_path, 'ursa-exo', 's1', {4: 'git push'}, 30)
-    write_transcript(tmp_path, 'pm', 's2', {4: 'git push'}, 30)
+                           run_row('s2', agent='pm', turns=30),
+                           run_row('s3', agent='exo-centralizer', turns=30)])
+    for agent, session in (('ursa-exo', 's1'), ('pm', 's2'),
+                           ('exo-centralizer', 's3')):
+        write_transcript(tmp_path, agent, session, {4: 'git push'}, 30)
     records, _ = sf.collect(projects=str(tmp_path / 'projects'),
                             audit=str(tmp_path / 'audit.jsonl'))
-    companies, _seats = sf.keys_present(records)
-    assert companies == ['ursa'], 'pm names a seat, not a company'
+    companies, _seats = sf.keys_present(records, roster={'ursa', 'alexandra-systems'})
+    assert companies == ['alexandra-systems', 'ursa']
+    assert 'pm' not in companies, 'pm names a seat, not a company'
+    assert 'exo' not in companies, 'and neither does the head of exo-centralizer'
     assert '' not in companies, 'and an empty name is not a key at all'
     args = ['--projects', str(tmp_path / 'projects'),
             '--audit', str(tmp_path / 'audit.jsonl'), '--company', 'Epitome']
     assert sf.main(args) == 0
     out = capsys.readouterr().out
-    assert 'companies      ursa' in out
-    assert 'no company     pm 1' in out
-    assert 'No --company selector reaches one' in out
+    assert 'companies      alexandra-systems, ursa' in out
+    assert 'unprefixed     pm 1' in out
+    assert '`--company alexandra-systems` selects them' in out
 
 
 def test_a_malformed_agent_key_is_not_read_as_a_company(tmp_path):
