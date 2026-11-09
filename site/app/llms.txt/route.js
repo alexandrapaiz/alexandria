@@ -9,10 +9,10 @@
 // distribution seat against the routes as they are, with the sources named:
 //
 //   /library and /library/<week>   app/library/page.jsx, app/library/[week]/page.jsx
-//                                  — free in full, no entitlement check on the route
-//   /left-behind                   app/left-behind/page.jsx — public by vision.md §0
-//   /skills                        app/skills/page.jsx — catalogue public, bodies entitled
-//   /pricing                       app/pricing/page.jsx — the three offers, no date
+//                                  - free in full, no entitlement check on the route
+//   /left-behind                   app/left-behind/page.jsx - public by vision.md section 0
+//   /skills                        app/skills/page.jsx - catalogue public, bodies entitled
+//   /pricing                       app/pricing/page.jsx - the three offers, no date
 //   the install lines              README.md, between install-line:start/end,
 //                                  checked against the manifests by
 //                                  tools/check_plugin_manifest.py
