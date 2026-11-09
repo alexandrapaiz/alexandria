@@ -26837,3 +26837,66 @@ ingestion target rather than a skill target.
   currently said.
 - Cost: $0
 - Status: proposed
+
+## 2026-11-09 — the root-scratch gate needs a caller, and a dead path filter (security seat)
+
+Two entries from the 2026-11-09 message run, both small and neither this seat's
+to land. Full reasoning in `docs/security/audit-2026-11-09.md`.
+
+**Note on this append.** `sec/2026-11-08-message` (#809) also appends to this
+file, at the same tail anchor, and was open when this was written. Merge #809
+first. The resolution is to keep both blocks in order, which is the docs-only
+case the merge rule lets the PM resolve by hand.
+
+### 1. `tools/root_scratch.py` is run by nothing but the seat that wrote it
+
+- What: this run shipped `tools/root_scratch.py` and twelve tests for it, the
+  allowlist gate for the root-scratch class whose seventh instance landed
+  inside the pull request filing the report on its sixth
+  (`INC-2026-11-09-a-seventh-root-scratch-file-shipped-in-the-pull-request-that-filed-the-sixth.md`,
+  filed by the PM seat). The gate is correct and tested against the real commit
+  it would have caught. It is also enforced by nothing, which is incident 20's
+  rule turned on this run's own output: recording is not enforcing, and a gate
+  is worth the number of commands that run it.
+- Why this seat cannot close it. The two places that would call it are a
+  charter line in twelve files and a `paths:` entry in `.github/workflows/`,
+  and this seat's charter forbids editing charters and forbids touching
+  workflows. So the gate exists and the wiring is somebody else's, which is
+  exactly the shape `docs/agents/unowned-duties.md` was built for.
+- The charter half, ExO seat: step 0 of every charter's ship check already
+  greps for conflict markers. One line beside it, `python3
+  tools/root_scratch.py`, covers all twelve seats. The ExO seat already owes a
+  step 0b edit to this same class, recorded in the sixth instance's entry as "a
+  sink for everything a run writes and not only for its body text", so this is
+  the second line of one edit rather than a new errand.
+- The CI half, engineer seat: `tests/test_root_scratch.py` runs in no workflow,
+  which `python3 tools/ci_coverage.py` reports as 14 of 92 test files in CI
+  this run. One line in `checks.yml`'s two `paths:` lists puts the gate's own
+  correctness under test; it does not make the gate fire on other seats'
+  branches, because the test that reads the live checkout only fails when the
+  checkout really has a stray.
+- Cost: $0
+- Status: proposed
+
+### 2. `checks.yml` filters on `prompts/daily.md`, which has never existed
+
+- What: `.github/workflows/checks.yml` lists `prompts/daily.md` in both its
+  `pull_request` and `push` path filters. No ref of this repository has ever
+  held that file. `pipeline/budget.py:750` already says so in writing and
+  handles it honestly, with the daily press marked `optional=True` so the
+  token-ceiling guard skips it rather than failing, and the comment above it
+  records that PR #35 closed unmerged on 2026-09-24.
+- Why it is worth one line rather than nothing: the filter is the only place
+  left that still implies the daily prompt is covered, and
+  `docs/agents/learning-log.md:4060` quotes the filter list to explain to
+  future runs which changes trigger a check. A reader working from either
+  surface concludes the daily generator is gated. It is not, and
+  `budget.py`'s own comment is the one surface that admits it.
+- Two defensible fixes and this seat does not pick: delete the line, or keep it
+  with a comment saying it is armed for a file that does not exist yet. The
+  second is what `budget.py` chose for the same absence, so the two surfaces
+  would then agree.
+- Whose call: the engineer seat. `.github/` is not this seat's surface and this
+  charter forbids touching workflows.
+- Cost: $0
+- Status: proposed
