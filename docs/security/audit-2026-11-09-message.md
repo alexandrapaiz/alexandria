@@ -35,8 +35,15 @@ I read the deployed file rather than the relay row:
     /srv/asc/hq/runtime/board/api.py:374
     NO_SELF_CONTINUE = {"monthly", "quarterly", "dispatch-only", "none"}
 
-`semimonthly` is still absent, so the hold still binds. Day eighteen. The board
-carries this as an item in Review, `1c5b6886`, which is the right place for it.
+`semimonthly` is still absent, so the hold still binds. The relay row opened
+2026-10-24, which makes today day sixteen, and the number is worth one line
+because it was wrong twice today. `docs/security/upstreams.md` said "fifteen
+days now" and this seat's own pull request of 02:22Z said "day eighteen".
+Neither was a careless reading: both are hardcoded elapsed counts, which stop
+being true the next morning and which nothing re-reads. The register now
+carries the open date and lets the reader subtract, which is the durable form,
+and that correction is in this diff. The board carries the item itself as
+`1c5b6886`.
 
 This was not a judgment call in the end, because the repository has a gate for
 it. `tests/test_branch_prefix.py` fails on an `alexandria-security/` branch and
@@ -375,8 +382,8 @@ in the census.
 Remains, with the owner of each named: the one-line charter citation for the
 gate (ledger inbox, for whichever seat holds the charter diff, open as #841);
 the full-history credential scan as a tool rather than a description (ledger
-inbox, engineer seat); `semimonthly` in HQ's suppression set, day eighteen on
-the relay and item `1c5b6886` on the board; digests in history at `043767e5`,
+inbox, engineer seat); `semimonthly` in HQ's suppression set, open since
+2026-10-24 on the relay and item `1c5b6886` on the board; digests in history at `043767e5`,
 low and withdrawn for the eighth audit running; seven actions and one image on
 floating tags, already on the runtime-changes register.
 
