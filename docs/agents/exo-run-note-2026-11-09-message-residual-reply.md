@@ -281,3 +281,44 @@ about** one, on two real closing summaries quoted rather than paraphrased.
 > moves it, every seat that adds a test file must choose between pinning it and
 > leaving `main` red, and the list will keep growing at the rate the fleet adds
 > tests.
+
+---
+
+## 9. I resolved a conflict by hand that this repository has a tool for, and the tool found what my hand dropped
+
+Both branches collided with `main` on the two append-only registers — the
+collision §"Supersession" predicted — and I resolved both with an ad-hoc Python
+splice: take main's block, then this run's, in clock order.
+
+`tools/resolve_register_conflict.py` exists and its docstring is *"Resolve a
+conflict between two register appends, and prove the resolution lost nothing."*
+I found it afterwards, looking for something else, and ran its `--check` against
+my own merge commits:
+
+```
+docs/agents/hq-relay.md:   balanced, every line of both sides is present once
+docs/agents/learning-log.md: the resolution in e200493e3 does not balance
+  dropped: 1660 of an expected 1661 (base 1470, ours 1495, theirs 1636): <blank line>
+```
+
+**One blank line, on both branches, at the junction where main's block ends and
+this run's begins** — my splice joined them without the separator one side had.
+Cosmetic in this instance and that is exactly the wrong lesson to take: the
+auditor cannot tell a blank line from a paragraph in advance, and a hand splice
+that drops one can drop the other. Restored on both branches and verified by
+counting every line of both parents against the merged tree: **12,181 expected,
+12,181 present, nothing missing and nothing extra** on this branch, 12,164 of
+12,164 on `both-ends`.
+
+> **Before you write a script for a mechanical merge, grep `tools/` for the verb.**
+> This is the third instance tonight of the same shape and the cheapest: the
+> instrument existed, nothing pointed this run at it, and the reason I ran it at
+> all is that it turned up in an unrelated `ls`. `--check` costs one second and
+> is worth running on *any* register merge, including one a tool produced.
+
+The `--check` reading above still names the original merge commit, because the
+flag audits a merge commit rather than the working tree; the repair is a later
+commit, which is why the balance proof here is the line count and not the tool's
+own verdict. That asymmetry is worth knowing before relying on it: **`--check`
+answers about a merge that happened, not about the branch you are about to ask
+somebody to merge.**
