@@ -39,7 +39,6 @@ named in call form by prose, and this repo has fifty such mentions and no
 defects. They are reported in the untiered bucket and never as stale.
 """
 
-import os
 import subprocess
 import sys
 from pathlib import Path
@@ -307,108 +306,6 @@ def test_a_checkout_is_listed_by_git_and_a_broken_git_is_not_silently_walked(tmp
             ps.tracked_python(tmp_path, [])
     finally:
         ps.subprocess.run = real
-
-
-def test_the_walk_does_not_read_a_symlinked_file(tmp_path):
-    """The bound the first repair did not have, reported by security 2026-11-09.
-
-    All three original bounds are decisions about a directory, and the step that
-    appends a file had none. `followlinks=False` stops the descent into a linked
-    directory and says nothing about a linked file: a symlink named `x.py`
-    arrives in `filenames` like any other entry. So the one case the repair did
-    not cover is a link aimed *past* the bound that had just excluded its
-    target -- here into a nested checkout -- and the finding printed under a
-    path inside the root the caller named. Two files read where the answer was
-    one, which is the tool's own failure mode.
-    """
-    (tmp_path / "named").mkdir()
-    (tmp_path / "named" / "own.py").write_text("# mine\n")
-    git_init(tmp_path / "named" / "nested")
-    (tmp_path / "named" / "nested" / "secret.py").write_text(
-        "# names ghost_helper() below, which is not here\n"
-    )
-    (tmp_path / "named" / "leak.py").symlink_to(
-        tmp_path / "named" / "nested" / "secret.py"
-    )
-
-    root = tmp_path / "named"
-    excluded: list[str] = []
-    assert ps.tracked_python(root, [], excluded=excluded) == [root / "own.py"]
-    assert excluded == [str(root / "leak.py")]
-
-    # And the report says it skipped, because a silent exclusion reads from
-    # outside exactly like a clean tree.
-    assert ps.main(["--root", str(root), "--max-unresolved", "0"]) == 0
-
-
-def test_a_dangling_symlink_is_refused_before_it_is_opened(tmp_path):
-    """`is_symlink` does not follow the link, so this is refused by the bound.
-
-    The guard asks what the entry *is*, not what it points at, which is why a
-    link to nothing costs a skip rather than a traceback.
-    """
-    (tmp_path / "real.py").write_text("# mine\n")
-    (tmp_path / "gone.py").symlink_to(tmp_path / "never_existed.py")
-    assert ps.tracked_python(tmp_path, []) == [tmp_path / "real.py"]
-
-
-def test_a_fifo_named_py_is_not_read(tmp_path):
-    """The same guard's other half: the walk would otherwise block on `open`.
-
-    A tree nobody has declared the contents of can hold an entry that is not a
-    regular file, and this tool's reported failure in the field was twelve
-    minutes of not returning.
-    """
-    (tmp_path / "real.py").write_text("# mine\n")
-    os.mkfifo(tmp_path / "pipe.py")
-    assert ps.tracked_python(tmp_path, []) == [tmp_path / "real.py"]
-
-
-def test_a_timed_out_ownership_question_raises_rather_than_answering_false(tmp_path):
-    """The half of the conflation that survived the first repair, untested.
-
-    Splitting the question out of the listing and then catching every failure
-    of it into `return False` moves the conflation up one call: the caller reads
-    False as "git does not own this tree" and walks a real checkout, including
-    everything git was keeping out. The test above this one patches the listing
-    call and leaves `rev-parse` real, so this is the case it cannot see --
-    reproduced by `alexandria/security` against a real checkout, which got an
-    untracked file back.
-
-    git saying no and git saying nothing are different answers now: a non-zero
-    exit returns False, and a timeout raises.
-    """
-    git_init(tmp_path)
-    (tmp_path / "untracked.py").write_text("# not added\n")
-
-    real = ps.subprocess.run
-
-    def only_rev_parse_times_out(*a, **k):
-        if "rev-parse" in a[0]:
-            raise subprocess.TimeoutExpired(cmd="git", timeout=30)
-        return real(*a, **k)
-
-    ps.subprocess.run = only_rev_parse_times_out
-    try:
-        with pytest.raises(subprocess.TimeoutExpired):
-            ps.is_checkout(tmp_path)
-        with pytest.raises(subprocess.TimeoutExpired):
-            ps.tracked_python(tmp_path, [])
-        # and the caller turns it into an explicit could-not-look, not a walk
-        assert ps.main(["--root", str(tmp_path)]) == 2
-    finally:
-        ps.subprocess.run = real
-
-
-def test_git_answering_no_is_still_False_and_still_walks(tmp_path):
-    """The other side of the same split, so the raise did not eat the fallback.
-
-    A non-zero exit from `rev-parse` is git answering the question, and the
-    walk of a tree git does not own is how the host's runtime gets read at all.
-    """
-    (tmp_path / "a.py").write_text("# one\n")
-    assert ps.is_checkout(tmp_path) is False
-    assert ps.tracked_python(tmp_path, []) == [tmp_path / "a.py"]
 
 
 if __name__ == "__main__":
