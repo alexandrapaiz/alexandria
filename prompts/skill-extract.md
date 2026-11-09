@@ -153,6 +153,50 @@ Two rules fall out of this.
 Say in the pull request, paper by paper, whether you read it in full or could
 not, and where the reading changed what you would have written from the rows.
 
+### A third rule, and it is measured rather than argued (2026-11-09)
+
+- **A related-work summary is admissible as evidence that a mechanism exists
+  and never as evidence of what the mechanism contains.** The components it
+  omits are, measurably, the ones the summariser's own design has no slot for,
+  which are also the ones a prescription built on that summary will be blind
+  to. A paper's statement that it did not build something is about that paper
+  and not about the field, and reading it as a field-wide claim is the same
+  error in the other direction.
+
+The number behind it, measured by the research seat on PR #926 over the nine
+papers `agent-approval-paths` cites, all nine read in full: across four
+enumerating related-work summaries, scored by taking each summarised paper's
+components from its own design section rather than from the summary, **10 of 10
+components with no counterpart in the summariser's own design were dropped**.
+The converse fails, because a summary also drops things the summariser has, so
+the implication runs one way only and presence in a summary carries no
+information about importance. The control is the pair that makes it more than
+an anecdote: two papers summarise the same third paper and keep **disjoint
+halves** of it, each half matching what the summariser itself built. If the
+drops tracked importance in the summarised paper, the two would agree.
+
+The cost of not having this rule is on the record here. `agent-approval-paths`
+held one of its nine papers only through a citing paper's related-work section
+for weeks. The one field that summary dropped was a digest over the complete
+descriptor shown to the human, the summariser has no counterpart for it, and
+the skill that resulted shipped a ceiling with no precondition under it. v7
+fixed the skill and v8 had to fix a second instance of the same reading in the
+same file.
+
+Two things follow for the run.
+
+1. **A queue line for a cited-but-unread paper says which paper's description
+   it rests on.** Then the next reader knows the description is a lower bound
+   rather than a summary. The 2026-11-09 instance is the model: the queue line
+   for the unread paper carried a characterisation from the citing paper's
+   section VIII-A, the read confirmed the characterisation and refuted two
+   sentences derived at queue time, and the line says which is which.
+2. **Never let a related-work paragraph be the provenance for a prescription,
+   and say in the skill when a prescription's source is a summary.** If the
+   full text is not reachable this run, the section says so rather than
+   shipping the prescription with a borrowed citation.
+
+
 ## 2. Drafting the skill
 
 Frontmatter, exactly the fields the gold specimen carries and the site
