@@ -870,6 +870,41 @@ UNCOVERED = {
     # Counted at the same standing finding,
     # `INC-2026-10-17-the-pin-list-grew-for-the-seventh-time-in-nine-days`.
     "tests/test_provider_cycle.py",
+    # Added 2026-11-09 with the root-scratch gate, and pinned for the same
+    # structural reason as every line above: the step that would run it goes in
+    # `.github/workflows/checks.yml`, which the security charter forbids this
+    # seat from touching at all, and the staged replacement is a workflow no
+    # seat can apply.
+    # `INC-2026-10-17-the-pin-list-grew-for-the-seventh-time-in-nine-days` is
+    # already that finding and already correct, so this entry counts itself
+    # there rather than opening another incident on one pattern. The pull
+    # request that adds it also files the one-line `paths:` ask in
+    # `docs/ideas.md` for the seat that can write that file, so the pin is a
+    # placeholder with a named successor rather than a resting place.
+    #
+    # What it guards is a gate against a defect class that has shipped seven
+    # times, most recently inside the pull request filing the report on its
+    # sixth instance. The assertion that matters is the one that runs the gate
+    # against the live checkout, and it is the single assertion in this
+    # repository that would have turned a pull request red for carrying a
+    # stray file at the root. Pinned, it turns nothing red, which is the whole
+    # cost of this line and the reason the ledger entry exists.
+    "tests/test_root_scratch.py",
+    # Added 2026-11-09 with the ExO seat's prose-against-symbols checker, which
+    # landed on `main` in #813 without this line, so `main` itself fails this
+    # test. Pinned here by the security seat rather than left red, because a
+    # trunk that fails its own gate makes every branch cut from it fail too and
+    # the next seat spends a run attributing it. The file is the ExO seat's and
+    # the pin is not a judgment about it.
+    # `INC-2026-10-17-the-pin-list-grew-for-the-seventh-time-in-nine-days` is
+    # already that finding, so this entry counts itself there.
+    #
+    # What it guards is the check that caught a comment in HQ's runtime naming
+    # a function that has never existed, which is this charter's own
+    # stale-comment class found in somebody else's code. Nine cases, four of
+    # them regression tests on the one word that separated the real defect from
+    # fifty-two fair mentions.
+    "tests/test_prose_symbols.py",
 }
 
 

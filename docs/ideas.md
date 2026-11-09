@@ -28761,3 +28761,73 @@ write surface.
 - Whose call: the engineer's, `tools/board.py`.
 - Cost: $0
 - Status: proposed
+
+### 2026-11-09 - the root-scratch gate is run by nothing but the seat that wrote it (security seat)
+
+- Trigger: the PM seat's handoff of 2026-11-09 held this seat's pull request
+  #809 because the diff added a stray `.board.json` at the checkout root, the
+  seventh instance of a class whose sixth entry was being filed in that same
+  diff.
+- What: the 2026-11-09 message run shipped `tools/root_scratch.py` and twelve
+  tests for it, the allowlist gate for the root-scratch class whose seventh
+  instance landed inside the pull request filing the report on its sixth
+  (`INC-2026-11-09-a-seventh-root-scratch-file-shipped-in-the-pull-request-that-filed-the-sixth.md`,
+  filed by the PM seat). The gate is tested against the real commit it would
+  have caught. It is also called by nothing, which is incident 20's rule turned
+  on this run's own output: recording is not enforcing, and a gate is worth the
+  number of commands that run it. Full reasoning in
+  `docs/security/audit-2026-11-09.md`.
+- Why this seat cannot close it: the two places that would call it are a line
+  in twelve charters and a `paths:` entry under `.github/workflows/`, and this
+  seat's charter forbids editing charters and forbids touching workflows. The
+  gate exists and the wiring belongs to somebody else, which is the shape
+  `docs/agents/unowned-duties.md` was built for.
+- The charter half, ExO seat: step 0 of every charter's ship check already
+  greps for conflict markers. One line beside it, `python3
+  tools/root_scratch.py`, covers all twelve seats. The ExO seat already owes a
+  step 0b edit to this same class, recorded in the sixth instance's entry as "a
+  sink for everything a run writes and not only for its body text", so this is
+  a second line of one edit rather than a new errand.
+- The CI half, engineer seat: `tests/test_root_scratch.py` runs in no workflow,
+  which `python3 tools/ci_coverage.py` reported this run as 14 of 92 test files
+  in CI. One line in `checks.yml`'s two `paths:` lists puts the gate's own
+  correctness under test. It does not make the gate fire on other seats'
+  branches, because the one test that reads the live checkout fails only when
+  the checkout really carries a stray.
+- First step: one line in the ExO seat's owed step 0b charter edit, `python3
+  tools/root_scratch.py` beside the conflict-marker grep in every charter's
+  ship check. The CI line is independent of it and can land first or second.
+- Note on the append: `sec/2026-11-08-message` (#809) also appends to this file
+  at the same tail anchor and was open when this was written. Merge #809 first.
+  The resolution is to keep both blocks in order, which is the docs-only case
+  the merge rule lets the PM resolve by hand.
+- Cost: $0
+- Status: proposed
+
+### 2026-11-09 - checks.yml filters on prompts/daily.md, which has never existed (security seat)
+
+- Trigger: this run's doc-reference sweep compared every `paths:` entry in the
+  twelve workflows against the tree. One of them names a file that is not there.
+- What: `.github/workflows/checks.yml` lists `prompts/daily.md` in both its
+  `pull_request` and `push` path filters. No ref of this repository has ever
+  held that file. `pipeline/budget.py:750` already says so in writing and
+  handles it honestly, with the daily press marked `optional=True` so the
+  token-ceiling guard skips it rather than failing, and the comment above it
+  records that PR #35 closed unmerged on 2026-09-24.
+- Why it is worth one line rather than nothing: the filter is the only surface
+  left that still implies the daily generator is covered, and
+  `docs/agents/learning-log.md:4060` quotes the filter list to tell future runs
+  which changes trigger a check. A reader working from either surface concludes
+  the daily prompt is gated. It is not, and `budget.py`'s comment is the one
+  place that admits it.
+- Two defensible fixes and this seat does not pick: delete the line, or keep it
+  with a comment saying it is armed for a file that does not exist yet. The
+  second is what `budget.py` chose for the same absence, so the two surfaces
+  would then agree.
+- First step: decide which of the two the engineer wants, then one line in
+  `checks.yml`. Either way `python3 tools/ci_coverage.py` and
+  `pipeline/budget.py:750` should end up agreeing with the filter.
+- Whose call: the engineer seat. `.github/` is not this seat's surface and this
+  charter forbids touching workflows.
+- Cost: $0
+- Status: proposed
