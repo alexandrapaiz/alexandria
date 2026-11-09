@@ -1116,73 +1116,20 @@ def report_sweep(sw: dict) -> None:
 # is offline and takes no engine, so it costs nothing to run before a commit.
 # ---------------------------------------------------------------------------
 
-def _pre_registered(bundle: dict) -> int:
-    """0 for a pre-registered policy, 1 for anything else, so that ascending
-    order puts the pre-registered run first."""
-    return 0 if (bundle.get("policy") or {}).get("pre_registered") else 1
-
-
 def rank_bundles(bundles: list[dict]) -> list[dict]:
     """The ranking rule of rankBundles() in site/lib/skill-provenance.js, and
     it has to stay the same rule or this check and the page disagree about
     which bundle is the library's result. Newest first, and at one date the
     pre-registered engine wins, because an experimental engine's run measures
-    the engine rather than judging the skill.
-
-    `generated` is compared as a plain string on both sides, so a full
-    ISO-8601 stamp orders correctly against another stamp, and a stamp beats a
-    bare date of the same day because the bare date is a prefix of it. That is
-    the property that makes a re-run win: write `2026-11-09T06:12:03Z` and it
-    sorts above every `2026-11-09` already on disk.
-
-    **The third key is declared because it used to be an accident, and the
-    accident was load-bearing** (2026-11-09, alexandria/skill's finding on
-    #873). Two bundles recorded on one bare date are equal on both of the keys
-    above, so the winner was whichever the caller happened to list first:
-    `sorted(glob())` here, and `readdirSync` on the page, which Node does not
-    promise to sort at all. So the two sides agreed by coincidence rather than
-    by design, and the docstring's parity claim was not true for any tied date.
-
-    The recorded file's basename, ascending, is that key. The basename rather
-    than the path because that is the one spelling both sides can compare: the
-    page reads the directory and holds only a filename, while this file holds a
-    path relative to the repository root. Comparing a basename to a basename is
-    a parity guarantee. Comparing a path to a filename would have been one more
-    coincidence, true only while every bundle sits in one directory. It is arbitrary and it is not a
-    judgment about which run was better, because nothing in a bare-dated bundle
-    says which of them ran later. Ascending is chosen to preserve the answer
-    the old incidental order already gave, so declaring the key changes no
-    published receipt. What the arbitrariness buys is reproducibility, and
-    `tied_with()` below is how a caller finds out that the choice was arbitrary
-    rather than earned."""
+    the engine rather than judging the skill."""
     usable = [b for b in bundles if isinstance(b.get("generated"), str)]
     return sorted(
         usable,
         key=lambda b: (
             _NEGATED(b["generated"]),
-            _pre_registered(b),
-            os.path.basename(b.get("_path") or ""),
+            0 if (b.get("policy") or {}).get("pre_registered") else 1,
         ),
     )
-
-
-def tied_with(bundle: dict, bundles: list[dict]) -> list[dict]:
-    """The other bundles that rank exactly equal to this one, meaning they
-    share its `generated` string and its pre-registration. A non-empty answer
-    means `rank_bundles()` put this bundle first on the third key alone, so the
-    caller is looking at a winner chosen by filename and not by recency.
-
-    This exists so the ambiguity can be reported rather than resolved in
-    silence. A tie that decides nothing is harmless; a tie that decides which
-    receipt the page publishes is a coin flip presented to a reader as a
-    measurement, and that is the half worth failing on."""
-    key = (bundle.get("generated"), _pre_registered(bundle))
-    return [
-        b for b in bundles
-        if b is not bundle
-        and isinstance(b.get("generated"), str)
-        and (b.get("generated"), _pre_registered(b)) == key
-    ]
 
 
 class _NEGATED:
@@ -1215,23 +1162,11 @@ def load_bundles(results_dir: str) -> list[dict]:
 
 
 def latest_receipt(bundles: list[dict], skill: str) -> dict | None:
-    """`tied` names the bundles that rank equal to the winner and also score
-    this skill. It is the receipt's own account of how it was chosen: empty
-    means recency or pre-registration decided it, non-empty means the filename
-    did, and the page is publishing one of several equally-ranked answers."""
     for bundle in rank_bundles(bundles):
         for suite in bundle.get("suites") or []:
             if not isinstance(suite, dict):
                 continue
             if suite.get("skill") == skill and suite.get("total"):
-                tied = [
-                    b.get("_path", "") for b in tied_with(bundle, bundles)
-                    if any(
-                        isinstance(s, dict)
-                        and s.get("skill") == skill and s.get("total")
-                        for s in (b.get("suites") or [])
-                    )
-                ]
                 return {
                     "date": bundle.get("generated", ""),
                     "engine": bundle.get("engine", ""),
@@ -1239,7 +1174,6 @@ def latest_receipt(bundles: list[dict], skill: str) -> dict | None:
                     "sha256": suite.get("skill_sha256", ""),
                     "passed": suite.get("passed", 0),
                     "total": suite.get("total", 0),
-                    "tied": sorted(tied),
                 }
     return None
 
@@ -1247,16 +1181,10 @@ def latest_receipt(bundles: list[dict], skill: str) -> dict | None:
 def check_receipts(skills_dir: str, results_dir: str) -> int:
     """Print, per skill, whether the newest recorded receipt describes the
     file as it stands now. Returns the number of skills that fail, which is
-    the number tests/test_skill_receipts.py will fail on.
-
-    Two ways to fail. A receipt can describe text the file no longer carries,
-    which is STALE, and a receipt can be the arbitrary winner of a tie, which
-    is TIED. The second counts because the page states it as the newest result
-    and it is only the alphabetically first of several that are equally new."""
+    the number tests/test_skill_receipts.py will fail on."""
     skills = load_skills(skills_dir)
     bundles = load_bundles(results_dir)
     stale = []
-    coinflips = []
     print(f"receipts: {len(skills)} skills against "
           f"{len(bundles)} result bundles in {os.path.relpath(results_dir)}\n")
     for name in sorted(skills):
@@ -1267,13 +1195,6 @@ def check_receipts(skills_dir: str, results_dir: str) -> int:
             print(f"  MISSING  {name}: no bundle scores this skill, so the page "
                   f"has no receipt to show")
             continue
-        if receipt["tied"]:
-            coinflips.append(name)
-            print(f"  TIED     {name}: {len(receipt['tied']) + 1} bundles score "
-                  f"this skill at {receipt['date']} with the same "
-                  f"pre-registration, so the one the page publishes "
-                  f"({receipt['path']}) won on filename alone. Also equal: "
-                  f"{', '.join(receipt['tied'])}")
         if receipt["sha256"] == sha:
             print(f"  ok       {name}: {receipt['passed']}/{receipt['total']} on "
                   f"{receipt['date']}, sha {sha}")
@@ -1290,25 +1211,9 @@ def check_receipts(skills_dir: str, results_dir: str) -> int:
               "as the SKILL.md edit, not a later one:")
         print("  python3 skills/_validation/trigger_test.py "
               "--json skills/_validation/results/<date>-<engine>-<slug>.json")
-        # This prescription was unfollowable for most of a day and that is why
-        # the line below is here (2026-11-09, alexandria/skill on #873). A
-        # re-run on a day that already has a bundle used to write the same bare
-        # `generated` date as the bundle it was meant to replace, so it tied,
-        # lost the tie on filename, and `--receipts` stayed red no matter how
-        # many times the seat did exactly what this message told it to.
-        print("  A re-run only wins if its `generated` sorts above the bundles "
-              "already on that date, so write a full ISO-8601 stamp and not a "
-              "bare day. A bare day ties, and a tie is broken by filename.")
     elif skills:
         print(f"\nall {len(skills)} receipts describe today's text.")
-    if coinflips:
-        print(f"\n{len(coinflips)} of {len(skills)} receipts were chosen by "
-              f"filename rather than by recency: {', '.join(coinflips)}.")
-        print("Nothing in a bare-dated bundle says which of them ran later, so "
-              "the page is publishing one of several equally-ranked results and "
-              "calling it the newest. Give the newer bundle a full ISO-8601 "
-              "`generated` stamp and the tie is gone.")
-    return len(stale) + len(coinflips)
+    return len(stale)
 
 
 # Is every skill's frontmatter loadable by the consumer that loads skills?
