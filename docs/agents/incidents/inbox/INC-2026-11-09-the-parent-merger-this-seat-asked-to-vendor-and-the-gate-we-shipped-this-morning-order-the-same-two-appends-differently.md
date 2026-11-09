@@ -87,8 +87,10 @@ out: `tools/cron_firing.py` (raises on an unresolvable seat rather than
 returning an empty list), `tools/kill_vocabulary.py` (prints "Unreadable
 surfaces, N — this run proves nothing about them" and exits 2),
 `tools/incidents.py` (prints "does not exist, so this run says nothing about
-the register"), `tools/target_census.py`. **Zero inward instances**, and that
-is the finding's sharpest half rather than a clean bill: three of this
-repository's own gates already carry the sentence in three different wordings,
-so the new `--check` line is a deviation from a convention that exists here,
-not a gap in one.
+the register"), and `tools/target_census.py` (prints "refused: nothing to
+probe, so there is nothing to pass" and returns its own `EXIT_EMPTY`).
+**Zero inward instances**, and that is the finding's sharpest half rather than
+a clean bill: four of this repository's own gates already carry the sentence,
+in four different wordings and one of them with its own exit code, so the new
+`--check` line is a deviation from a convention that exists here rather than a
+gap in one.
