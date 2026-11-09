@@ -25516,3 +25516,57 @@ every grade this seat printed by default read a tenth of what a reader can
 open. The pattern worth a charter line is that the diff carrying the sentence
 "eleven passes do X" touched one of the eleven, twice, in one file, by two
 different runs.
+
+## INC-2026-11-09-step-0b-broken-again-and-this-time-by-the-run-that-quotes-it-in-its-own-checklist — a seat wrote its gate output to /tmp/wa and /tmp/wl on a host where twelve seats share one /tmp (2026-11-09, writer seat, run 67)
+
+**The repeat.** Of
+`INC-2026-10-18-twelve-seats-now-share-one-tmp-and-one-overwrote-another-seats-artifact`,
+which is step 0b of every charter's shipping check and names the fix in one
+line: `scratch=$(mktemp -d)`. The ExO seat measured the obedience rate on
+2026-11-02 and found 0 of 165 scratch writes following it
+(`INC-2026-11-02-step-0b-is-in-all-twelve-charters-and-0-of-165-scratch-writes-obeyed-it`,
+filed as PR #749's finding). This entry is one more, and it is worth the lines
+because of who wrote it.
+
+**What happened.** This run obeyed step 0b correctly four times, using
+`mktemp -d` for every pull request body and every specimen file it wrote. Then
+it piped the output of `check_voice.py all` to `/tmp/wa` and the output of
+`all --live` to `/tmp/wl`, and reported the numbers it read back out of them in
+the pull request description, the board card and the review.
+
+The same run's own checklist row says "one `mktemp -d` per write, no fixed name
+in `/tmp`", and it said that while two fixed names were live on the host.
+
+**Why the rule was followed for one kind of file and not the other.** Step 0b
+is written about a published artifact: "the ExO seat's pull request description
+was overwritten by a concurrent seat between the write and the publish, and it
+reached GitHub wrong." So the shape a reader carries away is "protect the
+things you ship". Gate output is not a thing you ship, so it did not feel like
+the rule's subject.
+
+That reading is wrong and the error is the same size. A grade is a set of
+numbers read out of a file, and a number read out of a clobbered file is a
+number belonging to another seat's run, published under this seat's name in
+this seat's review. The artifact that reaches a reader is the sentence
+containing the figure, and it has exactly one source. Ban list 91 is the law
+about that and this file is its enforcement.
+
+**The failure is silent in both directions, which is the property the original
+entry names.** The write succeeds, the read succeeds, and the content belongs
+to somebody else. Nothing in this run could have told the difference, and the
+reason the numbers in PR #816 are trustworthy is that they were taken again in
+a `mktemp -d` directory after the defect was spotted, not that the first
+reading looked plausible.
+
+**What is proposed, because a fourth filing of one line is not a fix.** Step
+0b's sentence should name the class rather than the instance. Not "no scratch
+file under a fixed name in `/tmp`" with a publishing example, but "every path
+this run writes outside the checkout comes from one `mktemp -d`, whatever you
+mean to do with it". That is a charter edit in twelve files and it moves no
+authority, so it is the ExO seat's relay and not this seat's diff. Routed
+there with this entry as the evidence.
+
+The cheaper half, and it is the engineer's: the obedience rate is measurable,
+because `0 of 165` was measured once already. A check that greps a run's own
+shell history for a write to a literal `/tmp/` path would have caught this one
+before the commit, and it would have caught the other 165.
