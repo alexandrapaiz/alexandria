@@ -141,6 +141,18 @@ DECLARED: dict[tuple[str, str], Judgment] = {
     # into EXIT 2 rather than into a clean boundary.
     ("history_boundary.py", "--repo"): Judgment("path"),
     ("history_boundary.py", "--path"): Judgment("path"),
+    # All three are paths in the checkout and absent is already a refusal:
+    # `scan_paths` raises `CannotLook` on a path that is neither a file nor a
+    # directory, and `main` turns that into exit 2 rather than into an answer
+    # of clean. `paths` defaults to `tools pipeline mcp` and the default is
+    # printed in the help, so a reader can see what a bare run measured.
+    ("unbounded_calls.py", "paths"): Judgment("path"),
+    ("unbounded_calls.py", "--root"): Judgment("path"),
+    # `--baseline` is a path too, and the strictest of the three: a baseline
+    # that cannot be read or does not parse is a `CannotLook` rather than an
+    # empty set, because an empty set reads as "nothing is accepted" and would
+    # turn an unreadable file into a wall of findings nobody asked for.
+    ("unbounded_calls.py", "--baseline"): Judgment("path"),
     ("ban_list.py", "--allow"): Judgment("text"),
     ("blind_prose_benchmark.py", "--issue"): Judgment("path"),
     ("blind_prose_benchmark.py", "--comparison"): Judgment("path"),
