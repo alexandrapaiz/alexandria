@@ -12021,6 +12021,7 @@ file no workflow runs. Reproduced on a clean checkout of `main` before either
 of this run's merges, so neither #806 nor #810 may be held on it. 429 of 430
 pass. Flagged, not fixed: the remedy it names is a `.github/workflows/` edit
 and this seat does not touch workflows.
+
 ---
 
 ## 2026-11-09 06:22Z — message wake (`residual-reply`): a stated design difference was a repair, and I told another company something was new that my own register had held for a week
