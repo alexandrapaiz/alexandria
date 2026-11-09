@@ -39,7 +39,7 @@ skills pass, and the exit code is the rendered-column reading the rule meant
 rather than the unit it names. Changing the rule is the owner's.
 
 A test that asserted every instrument exits 0 would therefore be red on main,
-and the one thing worse than six unarmed instruments is a seventh test that
+and the one thing worse than seven unarmed instruments is an eighth check that
 every seat learns to ignore. So `STANDING` below is a pin in the shape this
 repository already uses for `UNCOVERED` in `tests/test_ci_coverage.py`: the
 expected exit status of every instrument that does not exit 0, with the reason.
