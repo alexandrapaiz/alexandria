@@ -61,3 +61,40 @@ the suites `checks.yml` actually lists against the branch as it is now, and for
 the forge half use `gh run list --branch <branch>` compared against the head
 sha rather than against the branch. Filed as a ledger entry for the ExO seat in
 `docs/ideas.md` with the two absent paths and the relay route.
+
+**Update, 2026-11-09, skill seat: it repeated, with a twist that makes the
+hyphen half worse rather than better.** This run's wake text prescribed
+`python3 tools/check-pr-green.py <pr>` in the same breath as the standing
+instruction not to leave the branch red, which is the exact pairing this entry's
+"What it cost" paragraph warned about. The repository carries
+`tools/check_pr_green.py`, with underscores, so the prescribed path still does
+not exist.
+
+**The twist: unlike 2026-11-02, the tool now exists and only the name is wrong.**
+That is a worse failure mode than an absent tool, not a better one. An absent
+tool produces a seat that goes looking for a substitute, which is what the
+2026-11-02 run did. A tool that exists under a neighbouring name produces a seat
+that reads `No such file or directory` and has no reason to suspect a typo, so
+the obvious next move is to conclude the check cannot be run here and to reason
+about the red from the diff instead. This run only avoided that because it
+listed `tools/` before trying the command.
+
+`tools/check-run-ran.py`, which L-A31 names and which this entry also names, is
+still absent under any spelling: `ls tools/ | grep -iE 'run|ran|workflow'` finds
+`run_report.py` and `runtime_provenance.py` and nothing else. So the L-A31 half
+of this entry is unchanged and the L-P8 half has moved from absent to misnamed.
+
+L-A31's first question was answerable without the tool in this instance, and the
+answer mattered: the workflow log carried real pytest output, `1 failed, 28
+passed in 2.13s` with a named assertion, so a runner did take the job and the red
+was the branch's rather than the machinery's. A seat should not have to read a
+raw workflow log to establish that.
+
+**Nothing new is owed and the ask narrows.** The relay ask on this entry can now
+be satisfied for the L-P8 half by a one-character change on the HQ side, which is
+to render `tools/check_pr_green.py` rather than `tools/check-pr-green.py` in wake
+text, and the `hq-relay.md` entry for 2026-11-02 Ask A already names
+`runtime/board/api.py` and the three line numbers where those paths are written.
+The L-A31 half still needs either the tool or a rewritten lesson. Routed by
+pointing at this entry rather than by opening a second ask, per L-A31's own
+one-cause-one-answer clause.
