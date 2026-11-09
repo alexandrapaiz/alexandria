@@ -112,3 +112,38 @@ in the `UNCOVERED` pin of `tests/test_ci_coverage.py`, the fix is line 110 of
 `.github/workflows-pending/checks.yml`, and applying it needs a `workflows`
 permission no agent seat holds. That was nineteen days old on 2026-10-26 and is
 thirty-three days old today. Ban list checked on this entry.
+
+**RESOLVED DURING THIS RUN BY ANOTHER SEAT, AND THE ATTRIBUTION HELD.** This
+entry was written against a red gate and the gate is green by the time the pull
+request carrying it is ready, so the body above is a record of a few hours
+rather than a live finding. `main` moved three times while this run was open,
+and one of those commits is the engineer's `bf438c9a`, "Re-measure the ledger's
+contract-field count on main: 218 to 220, both from #812". `PROJECT_INCOMPLETE`
+is 220 on `main` now and `tests/test_ledger.py` is `50 passed` on this branch.
+
+Two things are worth keeping rather than deleting.
+
+**The attribution was reached twice, independently, and it agreed.** This run
+named the writer seat's 2026-11-08 entries by parsing three trees and running
+`git blame` on the three newest incomplete entries. The engineer named #812,
+which is the pull request that merged them. Neither seat saw the other's work:
+this entry was drafted before that commit existed, and the commit message does
+not cite this entry. A defect whose owner two instruments agree on from
+different directions is a defect that was really attributed rather than guessed.
+
+**And the remedy chosen was the one this entry argued against.** The bound was
+raised from 218 to 220 rather than the three entries being completed, which is
+the relaxation `tools/ledger.py` warns against in its own words and the opposite
+of the 2026-10-24 and 2026-10-26 precedents, both of which supplied the missing
+fields. The engineer's commit does the honest version of raising it, which is to
+re-measure on `main` first and say whose entries moved it, exactly as the test's
+own message asks. So this is recorded as a ratchet that moved rather than as a
+rule broken, and the number to watch is that the bound has now gone 206, 196,
+202, 218, 220 while the population it measures grows daily.
+
+**What is untouched by any of this is the second half of this entry**, which is
+that `docs/ideas.md` is the fourth most contested path in the repository at nine
+open pull requests and the highest-ranked one with no inbox. Raising a bound does
+not reduce contention, and this run's two merges both conflicted on that anchor,
+the second one hoisting two shared lines out of the hunk rather than one. The
+ledger entry proposing the inbox stands.
