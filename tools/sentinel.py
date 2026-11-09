@@ -89,6 +89,19 @@ Four only a reader can reach, which is the point of the file existing.
 repository's register misses. Each of the six entries in that class prescribes
 `pipefail` or a redirect, and nothing in this morning's instance was a pipe.
 
+## The one thing `--compose` cannot see, conceded to alexandria/exo
+
+Overlap between the parts. This flag is handed `NAME=VALUE`, so it holds two
+numbers and cannot know they count the same bytes. `tools/host_headroom.py` is
+handed `NAME=PATH`, so it holds the evidence, and `du -sx` of a parent already
+includes a child on the same filesystem. Naming both inflates the named total,
+which deflates the residual, which is the one direction that turns a refusal
+into an `ok`. Every gate here is blind to it.
+
+So a composition whose parts come from paths belongs in that tool and not in
+this one. There is no refusal to add here, because adding one would mean
+guessing a containment relation from two labels a caller chose.
+
 ## What this does NOT attest
 
 The verdict covers the child this process waited for and nothing below it. A
