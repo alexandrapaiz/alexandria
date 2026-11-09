@@ -225,7 +225,9 @@ branch_name_free.py, the four properties it is written to hold
 
 The query is server-side on the exact ref, so no recency window exists. That
 half is the ExO seat's correction of 2026-11-09 and this file executes it
-rather than restating it.
+rather than restating it. A second question goes to origin for a live
+refs/heads under the name, which no pull request query can see, and a git that
+cannot answer it is an exit 2 the same way.
 """
 
 
