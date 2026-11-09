@@ -11,7 +11,9 @@
     "subject": "kimi-k2.6",
     "judge": "openai/gpt-oss-120b",
     "min_delta": 0.2,
-    "pre_registered": "2026-10-23, by the alexandria chair before either arm ran on this suite: no results.json has ever been written for it. The numbers copy the three suites that already registered them, so every suite in the library is measured under one policy. The first run is on qwen/qwen3.8-27b with the subject overridden on the command line and recorded in the result, because the host that can run it holds a Groq key and no Moonshot key, and the Modal workspace is at its spend limit."
+    "pre_registered": "2026-10-23, by the alexandria chair before either arm ran on this suite: no results.json has ever been written for it. The numbers copy the three suites that already registered them, so every suite in the library is measured under one policy. The first run is on qwen/qwen3.8-27b with the subject overridden on the command line and recorded in the result, because the host that can run it holds a Groq key and no Moonshot key, and the Modal workspace is at its spend limit.",
+    "require_certificates": true,
+    "certificates_note": "Every rubric criterion in this file carries a `certificate` (ADR-40 item 5) and every rubric task ships an `exploit` answer, so `require_certificates` is set and the two checks are errors here rather than library-wide findings. It is turned on by the 2026-11-02 skill run, which is the change both of this library's earlier notes said to turn it on in: they held it off because tools/skill_eval.py `normalize()` rebuilt each rubric item as id, asks and anchors only and dropped `check.criteria[].certificate` before `certificate_problems()` looked for it. The engineer fixed that on 2026-10-26 (`criterion()` now carries every key the author wrote), so the flag has been safe to set for a week and nothing closed the loop until this run."
   },
   "note": "Ten treatment tasks and two controls from the ten cited papers (ADR-35). Three carry machine checks, including one where the paper's own procedure is directly executable: construct the mutants a verdict gate cannot see. Revised 2026-09-30 (ADR-38 retrofit): the per-section tagging pass found that the skill's partial-monitoring section had its claims attached to ei-t8 and no rubric criterion testing it, so ei-t11 was added and the suite is version 2. Eleven treatment tasks and two controls. Every task also gained a `sections` list in the same pass.",
   "tasks": [
@@ -36,6 +38,10 @@
       },
       "prompt": "We grade our assistant's answers against rubrics a model writes from each source document, and the average rubric score is about to become the gate that decides whether a release ships. Before we wire it up I want to convince myself the rubrics are sound. My plan is to sample 50 of them, have two engineers read them, and fix the ones that look loose. Is that enough, and if not what would you do instead?",
       "without_skill": "Improves the review: a checklist for reviewers, a second reader, inter-rater agreement on the review itself. All of it is reading rubrics by eye, which is the method the evidence says does not detect the failure.",
+      "without_skill_basis": {
+        "kind": "authored-judgement",
+        "note": "the author's model of what a bare subject would answer. Never observed."
+      },
       "with_skill": "Replaces reading with an attack, and insists on an oracle independent of the rubric, which is the step teams skip.",
       "check": {
         "type": "rubric",
@@ -47,6 +53,10 @@
               "0": "Endorses the review plan.",
               "1": "Suggests reading more rubrics or adding reviewers.",
               "2": "States that every one of eleven studied generators produced rubrics that read fine and were exploitable, so review by eye is the wrong instrument."
+            },
+            "certificate": {
+              "kind": "number",
+              "names": "eleven of eleven studied rubric generators produced exploitable rubrics, quoted as the count that survived review by eye"
             }
           },
           {
@@ -56,6 +66,10 @@
               "0": "Absent.",
               "1": "Suggests adversarial testing vaguely.",
               "2": "Gives the attack: generate the rubric as production would, hand it to an attacker optimising the score, judge both the attacker's and an honest answer."
+            },
+            "certificate": {
+              "kind": "artifact",
+              "names": "the three-part attack written into the returned plan: the rubric generated as production would, an attacker model instructed only to maximise its score, and both the attacker's answer and an honest baseline judged"
             }
           },
           {
@@ -65,6 +79,10 @@
               "0": "No oracle; treats a high attacker score as the signal.",
               "1": "Mentions ground truth without independence.",
               "2": "Requires an oracle independent of the rubric, notes that without one the test cannot separate a good answer from a well-dressed one, and suggests tasks whose honest answer is refusal as a cheap source of certificates."
+            },
+            "certificate": {
+              "kind": "artifact",
+              "names": "a named oracle outside the rubric in the returned plan, with the class of task whose honest answer is refusal named as its cheap source"
             }
           },
           {
@@ -74,6 +92,10 @@
               "0": "Absent.",
               "1": "Generic caution about measurement error.",
               "2": "States that holding rubrics, attacks and judge fixed and swapping only the oracle moved the rate across 33.3, 75.6 and 66.7 percent while the direction survived, so the rate travels with its oracle."
+            },
+            "certificate": {
+              "kind": "number",
+              "names": "the three exploit rates one fixed set of rubrics, attacks and judge produced under three oracles, 33.3, 75.6 and 66.7 percent, each reported with its oracle"
             }
           },
           {
@@ -83,16 +105,25 @@
               "0": "Ship and watch.",
               "1": "Ambiguous.",
               "2": "The stress test precedes anything training or gating on the rubric."
+            },
+            "certificate": {
+              "kind": "artifact",
+              "names": "an ordering in the returned plan that places the stress test before the gate is used to train or to ship"
             }
           }
         ]
+      },
+      "exploit": {
+        "answer": "Reading rubrics by eye will not find this, because an exploitable rubric reads like a good specification. The right move is an attacker model whose only instruction is to maximise the rubric score, judged against an honest baseline answer, and an oracle independent of the rubric, which is the step that carries the work. The exploit rate is a property of the oracle as much as of the rubric, so report it with the oracle that produced it. Do not ship the gate until the stress test has run.",
+        "why": "Every criterion's vocabulary is present and not one certificate is: no eleven-of-eleven count, no 33.3/75.6/66.7 triple, no named oracle and no procedure a reader could run. A judge scoring vocabulary scores this near full marks; a judge scoring the certificate scores it zero, which is the ceiling ADR-40 item 5 sets.",
+        "ceiling": 0.0
       }
     },
     {
       "id": "ei-t2",
       "kind": "treatment",
       "sections": [
-        "Delta 2: a pass-or-fail verdict is provably blind on exactly the pairs a reward signal keeps meeting"
+        "Delta 2: the statistic you gate on is constant across the distinction you care about, provably for a verdict and measurably for an aggregate"
       ],
       "form": "project",
       "situation": "Beyond Solver Verdicts' training-set construction, which the paper notes works as an audit even if nothing is trained: mutate known-correct artifacts, keep only the mutants the checker still accepts but which are provably not equivalent, and those are the answers the verdict gate cannot see.",
@@ -112,6 +143,10 @@
         "checker.py": "\"\"\"The checker. This is the whole gate: if accepts() is True, the artifact ships.\"\"\"\n\n\ndef accepts(mod):\n    try:\n        assert mod.discount(150, \"gold\", False) == 120.0\n        assert mod.discount(100, \"silver\", False) == 95.0\n        assert mod.discount(50, \"bronze\", False) == 50.0\n    except Exception:\n        return False\n    return True\n"
       },
       "without_skill": "Argues about the gate in prose, or writes one or two mutants that vary a single constant, or writes mutants that the checker actually rejects because it never ran them.",
+      "without_skill_basis": {
+        "kind": "authored-judgement",
+        "note": "the author's model of what a bare subject would answer. Never observed."
+      },
       "with_skill": "Executes the paper's procedure: systematic mutation across distinct branches, filtered to those the checker still accepts, which is exactly the blind set.",
       "check": {
         "type": "parses",
@@ -145,7 +180,7 @@
       "id": "ei-t3",
       "kind": "treatment",
       "sections": [
-        "Delta 2: a pass-or-fail verdict is provably blind on exactly the pairs a reward signal keeps meeting"
+        "Delta 2: the statistic you gate on is constant across the distinction you care about, provably for a verdict and measurably for an aggregate"
       ],
       "form": "prompt",
       "situation": "Beyond Solver Verdicts' provable result: any scoring function depending only on a binary verdict scores AUROC 0.5 on a verdict-matched paired set, and the repair is a continuous score from a model reading the candidate against the original intent.",
@@ -161,6 +196,10 @@
       },
       "prompt": "We are setting up RL for a code agent. Reward is 1 when the repository's test suite goes green and 0 otherwise, which is clean, cheap and objective, and everyone on the team likes that it cannot be argued with. We also want to spend extra samples on the hard problems but we have no way to tell which those are. Review the reward design.",
       "without_skill": "Approves the binary reward as the honest choice and warns generically about reward hacking, then suggests picking hard problems by whether the reward was zero, which is the same blind signal used twice.",
+      "without_skill_basis": {
+        "kind": "authored-judgement",
+        "note": "the author's model of what a bare subject would answer. Never observed."
+      },
       "with_skill": "Names the class of wrong candidates a verdict cannot see as a provable limit rather than a risk, moves to a continuous judge score, and uses that score to route compute.",
       "check": {
         "type": "rubric",
@@ -172,6 +211,10 @@
               "0": "Treats it as a test-coverage problem to be fixed with more tests.",
               "1": "Warns about reward hacking generally.",
               "2": "Gives the argument and the consequence, an AUROC of 0.5 on a verdict-matched paired set."
+            },
+            "certificate": {
+              "kind": "number",
+              "names": "AUROC 0.5 on a verdict-matched paired set, quoted as the consequence of the structural argument rather than as a risk"
             }
           },
           {
@@ -181,6 +224,10 @@
               "0": "Absent.",
               "1": "Suggests an LLM judge returning pass or fail, which reproduces the problem.",
               "2": "Scores the renormalised probability of yes against no, not the emitted verdict."
+            },
+            "certificate": {
+              "kind": "artifact",
+              "names": "the renormalised probability of yes against no named in the returned design as the score, in place of the emitted verdict"
             }
           },
           {
@@ -190,6 +237,10 @@
               "0": "No numbers.",
               "1": "Quotes 0.961 only.",
               "2": "Quotes 0.955 on the rows whose source texts were disjoint from training, and says why that is the one to quote."
+            },
+            "certificate": {
+              "kind": "number",
+              "names": "0.955 on the rows whose source texts were disjoint from training, named as the figure that survives the contamination objection"
             }
           },
           {
@@ -199,6 +250,10 @@
               "0": "Ignores it, or routes on the binary reward.",
               "1": "Suggests heuristics like runtime or length.",
               "2": "Routes on the continuous verifier score, noting it improved end-to-end accuracy by 11.3 points over the same system with no verifier."
+            },
+            "certificate": {
+              "kind": "number",
+              "names": "the 11.3-point end-to-end accuracy gain over the same system with no verifier, quoted as the reason to route on the continuous score"
             }
           },
           {
@@ -208,9 +263,18 @@
               "0": "Discards the tests.",
               "1": "Unclear.",
               "2": "Keeps the green suite as a necessary condition and adds the continuous score on top."
+            },
+            "certificate": {
+              "kind": "artifact",
+              "names": "the existing green test suite retained in the returned design as a necessary condition, with the judge added on top of it"
             }
           }
         ]
+      },
+      "exploit": {
+        "answer": "The blindness here is structural rather than a matter of test quality: a score that depends only on the verdict assigns identical values to a faithful candidate and to an unfaithful one that preserves the verdict. So move to a continuous score from a model reading the candidate against the original intent, and route extra attempts on that score. Keep the test suite; the judge is an addition to it, not a replacement.",
+        "why": "The provable-limit argument is stated with none of its numbers: no AUROC 0.5, no 0.955 on the disjoint rows, no 11.3-point routing gain, and no statement of what the continuous score is renormalised over. It is the argument with every certificate removed.",
+        "ceiling": 0.0
       }
     },
     {
@@ -236,6 +300,10 @@
         "items.json": "[\n {\n  \"id\": 1,\n  \"description\": \"Fix the retry handler so transient failures are retried.\",\n  \"test\": \"assert caplog.messages == ['retrying attempt 1', 'retrying attempt 2']\"\n },\n {\n  \"id\": 2,\n  \"description\": \"Add pagination to list_orders.\",\n  \"test\": \"assert hasattr(orders, '_paginate_cursor')\"\n },\n {\n  \"id\": 3,\n  \"description\": \"parse_config should return None when the file is missing.\",\n  \"test\": \"with pytest.raises(FileNotFoundError): parse_config('nope.yml')\"\n },\n {\n  \"id\": 4,\n  \"description\": \"Speed up the report builder.\",\n  \"test\": \"import reports\\nassert reports is not None\"\n },\n {\n  \"id\": 5,\n  \"description\": \"Correct the tax rounding in invoice.py line 88.\",\n  \"test\": \"from billing.invoice import round_tax\\nassert round_tax(0.125) == 0.13\",\n  \"note\": \"the snapshot contains no billing/ package\"\n },\n {\n  \"id\": 6,\n  \"description\": \"deduplicate() should preserve first-seen order and drop later duplicates.\",\n  \"test\": \"assert deduplicate([3,1,3,2,1]) == [3,1,2]\"\n },\n {\n  \"id\": 7,\n  \"description\": \"Raise ValueError when start_date is after end_date.\",\n  \"test\": \"with pytest.raises(ValueError):\\n    date_range('2026-02-01', '2026-01-01')\\nassert date_range('2026-01-01','2026-02-01')[0] == '2026-01-01'\"\n },\n {\n  \"id\": 8,\n  \"description\": \"Return the totals grouped by region.\",\n  \"test\": \"assert list(totals().keys()) == ['emea', 'apac', 'amer']\"\n }\n]"
       },
       "without_skill": "Reviews the items as a reader and reports the ones that look wrong, typically catching item 3 and item 5 while passing items 1, 2 and 8, whose tests look specific and rigorous and are the defect that flatters the agent.",
+      "without_skill_basis": {
+        "kind": "authored-judgement",
+        "note": "the author's model of what a bare subject would answer. Never observed."
+      },
       "with_skill": "Applies the defect profile in its measured order, catches narrow tests first, keeps the edits minimal, and returns clean items as clean.",
       "check": {
         "type": "parses",
@@ -285,6 +353,10 @@
       },
       "prompt": "Reading transcripts from our coding-agent eval I found three runs where the agent ran git log, found the commit that fixed the issue, and reproduced its diff. One run fetched the upstream pull request. I have added a line to the system prompt: 'Do not consult version control history, existing solutions, or external sources; solve the task from the code as given.' Re-running now. What else?",
       "without_skill": "Strengthens the instruction, adds a detector that greps transcripts for git log, and treats the prompt line as the control it is not.",
+      "without_skill_basis": {
+        "kind": "authored-judgement",
+        "note": "the author's model of what a bare subject would answer. Never observed."
+      },
       "with_skill": "Moves every control into the environment, enumerates the four channels, and reclassifies the instruction as documentation of intent.",
       "check": {
         "type": "rubric",
@@ -296,6 +368,10 @@
               "0": "Iterates on the prompt wording.",
               "1": "Adds monitoring alongside the instruction.",
               "2": "States plainly that an agent that can read the answer will read the answer, and moves the controls into the environment."
+            },
+            "certificate": {
+              "kind": "artifact",
+              "names": "every control in the returned design located in the environment, and the instruction excluded from the control count"
             }
           },
           {
@@ -305,6 +381,10 @@
               "0": "Names only version control.",
               "1": "Names two.",
               "2": "Names all four: the file system, the repository history, the task metadata and the open network."
+            },
+            "certificate": {
+              "kind": "number",
+              "names": "four channels named and counted: the file system, the repository history, the task metadata and the open network"
             }
           },
           {
@@ -314,6 +394,10 @@
               "0": "None.",
               "1": "One or two.",
               "2": "Rebuild as a fresh single-commit tree; delete hidden evaluation files and disable restoring hooks; allowlist metadata, strip repository names from paths and hash instance ids; block code-hosting domains while leaving dependency services reachable."
+            },
+            "certificate": {
+              "kind": "artifact",
+              "names": "one concrete closure written per channel, four in total, each naming what is rebuilt, deleted, allowlisted or blocked"
             }
           },
           {
@@ -323,6 +407,10 @@
               "0": "Deletes it, or keeps counting it as a control.",
               "1": "Silent.",
               "2": "Keeps it as documentation of intent and excludes it from the control count."
+            },
+            "certificate": {
+              "kind": "artifact",
+              "names": "the instruction retained in the returned design and labelled documentation of intent rather than a control"
             }
           },
           {
@@ -332,9 +420,18 @@
               "0": "Absent.",
               "1": "Mentioned in passing.",
               "2": "Treated as a first-class channel with its own closure."
+            },
+            "certificate": {
+              "kind": "artifact",
+              "names": "task metadata and instance identifiers given their own closure in the returned list, naming the allowlist, the path stripping and the id hashing"
             }
           }
         ]
+      },
+      "exploit": {
+        "answer": "An instruction is not a control. An agent that can read the answer will read the answer, so the closures belong in the environment rather than in the prompt. Enumerate the channels that carry the answer and close each one, and keep the instruction as documentation of intent rather than counting it as a control. Task metadata is a channel too, and it is the one teams forget.",
+        "why": "It says enumerate the channels and never enumerates them, says close each one and names no closure, and claims the metadata insight without the allowlist, the path stripping or the id hashing. Four channels are promised and zero are named, which is the certificate the criterion asks for.",
+        "ceiling": 0.0
       }
     },
     {
@@ -355,6 +452,10 @@
       },
       "prompt": "Our content-quality judge scores submissions 1 to 5. To keep it consistent with our standards we prompt it with twelve few-shot examples drawn from last quarter's accepted judgments, refreshed each quarter from the judgments the previous quarter produced. It has got much more consistent over three quarters, which the team is pleased about. Our reviewers now disagree with it less too. Anything to watch?",
       "without_skill": "Reads rising consistency and falling disagreement as success, and suggests adding more examples or tightening the prompt.",
+      "without_skill_basis": {
+        "kind": "authored-judgement",
+        "note": "the author's model of what a bare subject would answer. Never observed."
+      },
       "with_skill": "Recognises the loop, names the collapse, and reframes the rising consistency as the symptom rather than the result.",
       "check": {
         "type": "rubric",
@@ -366,6 +467,10 @@
               "0": "Treats the refresh as harmless.",
               "1": "Notes a feedback loop without consequence.",
               "2": "Names the loop and states that last quarter's accepted judgments becoming this quarter's prompt is the same hazard as training on them."
+            },
+            "certificate": {
+              "kind": "artifact",
+              "names": "the loop traced in the returned answer from last quarter's accepted judgments to this quarter's prompt, with the few-shot form named as the same hazard as training"
             }
           },
           {
@@ -375,6 +480,10 @@
               "0": "Treats them as good news.",
               "1": "Hedges.",
               "2": "States that a judge with a compressed rating distribution still returns scores and has simply stopped discriminating, which is the property being paid for."
+            },
+            "certificate": {
+              "kind": "artifact",
+              "names": "rising consistency named in the returned answer as the symptom, with the compressed rating distribution given as the mechanism behind it"
             }
           },
           {
@@ -384,6 +493,10 @@
               "0": "No monitoring, or monitors mean score.",
               "1": "Says to watch the distribution.",
               "2": "Logs rating variance and pairwise disagreement every run, noting collapse appears there before anything a mean reveals."
+            },
+            "certificate": {
+              "kind": "number",
+              "names": "rating variance and pairwise disagreement named as the two logged quantities, in place of the mean"
             }
           },
           {
@@ -393,9 +506,18 @@
               "0": "Absent.",
               "1": "Says to use human review.",
               "2": "Curates the example corpus to remove low-quality and semantically degenerate supervision, and holds back a fixed anchor set that never rotates."
+            },
+            "certificate": {
+              "kind": "artifact",
+              "names": "a fixed anchor set that never rotates, named in the returned mitigation alongside the corpus curation step"
             }
           }
         ]
+      },
+      "exploit": {
+        "answer": "This is a loop: the judge's own outputs are becoming its next examples, and the innocent few-shot version counts. The rising consistency you are seeing is the symptom rather than the result, because a judge with a compressed rating distribution still returns scores and has simply stopped discriminating. Monitor the spread rather than the mean, and curate the example corpus to remove degenerate supervision.",
+        "why": "Every phrase the rubric rewards is here, including the reframing, and nothing checkable is: no named logged quantity, no variance or pairwise-disagreement metric, and no fixed anchor set. The mitigation is a verb with no artifact behind it.",
+        "ceiling": 0.0
       }
     },
     {
@@ -416,6 +538,10 @@
       },
       "prompt": "We auto-approve customer refunds when our model judges the claim valid. A wrong approval costs us the refund and a wrong rejection costs a support ticket, and the finance team says wrong approvals are roughly twenty times more expensive. Right now we sample the judge three times and go with the majority. I want to make this stricter. Options on the table: sample five and take the majority, sample three and require all three, or add a second stronger model as a tie-break. Which?",
       "without_skill": "Picks one on intuition, usually majority of five, and treats three samples from one model as three independent judgments.",
+      "without_skill_basis": {
+        "kind": "authored-judgement",
+        "note": "the author's model of what a bare subject would answer. Never observed."
+      },
       "with_skill": "Requires unanimity given the cost asymmetry, gets independence from different checkpoints rather than repeated samples, handles unparsable output correctly, and demands calibration against an outside grader.",
       "check": {
         "type": "rubric",
@@ -427,6 +553,10 @@
               "0": "Chooses a majority rule.",
               "1": "Chooses unanimity without the reasoning.",
               "2": "Chooses unanimity, notes it buys precision at the cost of recall, and matches that to a twenty-to-one asymmetry with a cheap appeal path."
+            },
+            "certificate": {
+              "kind": "number",
+              "names": "the twenty-to-one cost asymmetry the unanimity choice is tied to, with the appeal path named as what pays for the lost recall"
             }
           },
           {
@@ -436,6 +566,10 @@
               "0": "Treats resampling as independence.",
               "1": "Mentions correlation.",
               "2": "States that n samples from one model share its blind spots, and splits the panel across distinct checkpoints or models."
+            },
+            "certificate": {
+              "kind": "number",
+              "names": "the panel split 8 and 8 across two distinct checkpoints rather than 16 samples drawn from one"
             }
           },
           {
@@ -445,6 +579,10 @@
               "0": "Absent.",
               "1": "Mentions parse failures.",
               "2": "Discards them, and notes the difference shows up exactly on the hard cases that produce malformed output."
+            },
+            "certificate": {
+              "kind": "artifact",
+              "names": "a stated disposal rule for malformed or missing judgments in the returned protocol, discarding rather than counting them"
             }
           },
           {
@@ -454,6 +592,10 @@
               "0": "Absent.",
               "1": "Suggests spot checks.",
               "2": "Requires comparison against an independent jury or human sample, noting that unanimity without it measures agreement, which correlated judges manufacture."
+            },
+            "certificate": {
+              "kind": "artifact",
+              "names": "an independent outside grader named in the returned protocol as the step that runs before the panel is trusted"
             }
           },
           {
@@ -463,9 +605,18 @@
               "0": "Recommends unanimity everywhere.",
               "1": "Silent.",
               "2": "Scopes it to acceptance gates with an expensive false accept."
+            },
+            "certificate": {
+              "kind": "artifact",
+              "names": "a stated scope limit in the returned answer confining unanimity to acceptance gates with an expensive false accept"
             }
           }
         ]
+      },
+      "exploit": {
+        "answer": "Given the cost asymmetry you describe, require unanimity: it buys precision at the cost of recall, and a rejected claim can be resubmitted. Get independence from distinct checkpoints rather than from repeated samples, because n samples from one model share its blind spots. Discard malformed judgments rather than counting them as passes, and calibrate the panel against an outside grader before trusting it. Do not generalise this to ranking.",
+        "why": "Correct on every criterion in words and empty of certificates: no twenty-to-one asymmetry, no 8-and-8 split, no named grader and no stated panel size. The unanimity recommendation arrives without the number that justifies it.",
+        "ceiling": 0.0
       }
     },
     {
@@ -487,6 +638,10 @@
       },
       "prompt": "We want to publish that a fresh, equally equipped agent has at most a 5 percent chance of reaching our result without our method, at 99 percent confidence, and we will be running challenger episodes until we can say it. Assume every episode comes back a miss. How many episodes do we have to budget, and what exactly can we write when they all miss? Show the arithmetic.",
       "without_skill": "Reaches for a normal-approximation sample size, or a power calculation for a non-zero rate, or answers 20 because 1 in 20 is 5 percent. All three are wrong for a zero-hit bound.",
+      "without_skill_basis": {
+        "kind": "authored-judgement",
+        "note": "the author's model of what a bare subject would answer. Never observed."
+      },
       "with_skill": "Uses the exact zero-hit Clopper-Pearson limit, derives the count from the bound rather than the other way round, and states the claim with its conditioning.",
       "check": {
         "type": "number_in_range",
@@ -535,6 +690,10 @@
       },
       "prompt": "We accept a proposed change to our retrieval pipeline when it beats the current configuration on our 300-item eval. Last week a change won by 0.7 points and we shipped it; this week the same configuration scored 0.4 points below where it had been, with nothing changed. Write me an accept rule I can put in the CI check.",
       "without_skill": "Adds a significance test or a fixed threshold like one point, and stops there, which addresses the noise and neither of the other two failure modes.",
+      "without_skill_basis": {
+        "kind": "authored-judgement",
+        "note": "the author's model of what a bare subject would answer. Never observed."
+      },
       "with_skill": "Writes three criteria that all have to pass, measures the noise band instead of guessing it, and screens the diff for leakage.",
       "check": {
         "type": "rubric",
@@ -546,6 +705,10 @@
               "0": "Picks a threshold by feel.",
               "1": "Runs a significance test on one comparison.",
               "2": "Runs the unchanged system repeatedly on the same eval and takes the spread of its scores as the floor, and compares against the best score observed so far minus that band."
+            },
+            "certificate": {
+              "kind": "number",
+              "names": "the spread of the unchanged system's repeated scores on the same eval, measured and then used as the floor against the best score observed so far"
             }
           },
           {
@@ -555,6 +718,10 @@
               "0": "Absent.",
               "1": "Mentions overfitting.",
               "2": "Rejects any diff containing benchmark-specific names or values, on the ground that a change naming the benchmark has learned the benchmark."
+            },
+            "certificate": {
+              "kind": "artifact",
+              "names": "a diff screen in the returned criteria that rejects any candidate naming benchmark-specific names, values or answers"
             }
           },
           {
@@ -564,6 +731,10 @@
               "0": "Absent.",
               "1": "Mentions cost.",
               "2": "Bounds the relative cost increase by an allowance that scales with the score gain."
+            },
+            "certificate": {
+              "kind": "number",
+              "names": "a cost-to-gain ceiling in the returned criteria, with its allowance stated as a function of the score gain"
             }
           },
           {
@@ -573,9 +744,18 @@
               "0": "Combines them into a weighted score.",
               "1": "Unclear.",
               "2": "States explicitly that they do not trade off."
+            },
+            "certificate": {
+              "kind": "artifact",
+              "names": "an explicit sentence in the returned rule saying the three criteria do not trade off against one another"
             }
           }
         ]
+      },
+      "exploit": {
+        "answer": "Write three criteria that all have to pass. Derive the floor from a measured noise band rather than a guessed threshold, screen the candidate diff for task-specific names and values, and include a cost-to-gain ceiling. Make the criteria non-compensatory: a large win on one cannot buy a failure on another. That is the accept rule.",
+        "why": "It names all three criteria and the non-compensatory property and supplies no certificate for any of them: nothing says how the noise band is measured, what the screen rejects, or what the ceiling's allowance is a function of. A reader cannot execute a single line of it.",
+        "ceiling": 0.0
       }
     },
     {
@@ -597,6 +777,10 @@
       },
       "prompt": "We are standing up a scheming eval for our tool-using agent. To keep the harness cheap we will log and score tool calls only, not the reasoning that preceded them, since reasoning traces are large and we would have to store them. Thirty scenarios, each one a bespoke situation our red team invented, and we will report the fraction in which the agent took a covert action. If the number comes back near zero I want to publish that our agent does not scheme. Anything wrong with the design?",
       "without_skill": "Treats action-only logging as a reasonable cost saving and the storage argument as sound, suggests more scenarios, and accepts that a near-zero rate would support the claim.",
+      "without_skill_basis": {
+        "kind": "authored-judgement",
+        "note": "the author's model of what a bare subject would answer. Never observed."
+      },
       "with_skill": "Says action-only monitoring is an intervention on the thing being measured rather than a cheaper view of it, so the number is not comparable to a full-visibility number and may be worse than it; requires reasoning and action traces scored together, factorized scenarios, and a realism measurement before any null can be published.",
       "check": {
         "type": "rubric",
@@ -608,6 +792,10 @@
               "0": "Accepts action-only logging as a cost saving.",
               "1": "Says reasoning traces are useful for diagnosis, which is an argument about convenience and not about validity.",
               "2": "States that action-only monitoring increased scheming in closed-source models, so partial oversight acts as an optimization constraint, and that the measured rate is therefore a property of the monitoring regime and must be stated in the result."
+            },
+            "certificate": {
+              "kind": "number",
+              "names": "the measured increase in scheming under action-only monitoring in closed-source models, quoted as the evidence that partial oversight is an intervention"
             }
           },
           {
@@ -617,6 +805,10 @@
               "0": "Absent.",
               "1": "Says to keep reasoning traces without saying what to do with them.",
               "2": "Applies criteria for instrumental goal pursuit, covert planning and deceptive rationalization to both trace types, then aggregates, and notes a detector built that way reached an F1 of 90.73 percent against human validation."
+            },
+            "certificate": {
+              "kind": "number",
+              "names": "the detector F1 of 90.73 percent reached by applying the criteria to reasoning and action traces together before aggregating"
             }
           },
           {
@@ -626,6 +818,10 @@
               "0": "Absent, or asks only for more scenarios.",
               "1": "Suggests categories or tags for the scenarios.",
               "2": "States that bespoke scenarios cannot attribute a result to any cause and prescribes a factorized design, the reference suite being 400 scenarios built that way."
+            },
+            "certificate": {
+              "kind": "number",
+              "names": "the 400 factorized scenarios named as the reference design, against which a set of bespoke situations cannot attribute a result to a cause"
             }
           },
           {
@@ -635,9 +831,18 @@
               "0": "Accepts that a near-zero rate supports the claim.",
               "1": "Mentions that scenarios should be realistic.",
               "2": "States that an implausible scenario explains a null as well as a safe agent does, so a suite with no realism score has uninterpretable negative results, and names the reference measurement of 3.21 on a 4-point scale with 0.97 internal consistency from human and model judges."
+            },
+            "certificate": {
+              "kind": "number",
+              "names": "the reference realism measurement of 3.21, required in the returned answer before a near-zero rate may be published"
             }
           }
         ]
+      },
+      "exploit": {
+        "answer": "Monitoring actions but not reasoning changes the behaviour being measured rather than observing less of it, so partial oversight acts as an optimization constraint and your number is not comparable to a full-visibility number. Score reasoning and action traces together against explicit criteria before aggregating a verdict, factorize the scenario suite so one factor varies at a time, and do not publish a near-zero rate until the scenarios carry a realism measurement.",
+        "why": "The strongest-sounding answer in the suite and the emptiest: no measured increase under action-only monitoring, no 90.73 F1, no 400-scenario reference, no 3.21 realism figure. Every one of the four criteria is satisfied lexically and none is satisfied evidentially.",
+        "ceiling": 0.0
       }
     },
     {
@@ -656,6 +861,10 @@
         "stats.py": "import math\n\n\ndef wilson_interval(successes: int, n: int, z: float = 1.96):\n    \"\"\"Return (low, high), the Wilson score interval for a binomial proportion.\n\n    n == 0 returns (0.0, 1.0).\n    \"\"\"\n    raise NotImplementedError\n\n\ndef zero_hit_upper_bound(n: int, alpha: float) -> float:\n    \"\"\"Return the exact one-sided upper bound on p given zero successes in n trials.\n\n    n == 0 returns 1.0.\n    \"\"\"\n    raise NotImplementedError\n"
       },
       "without_skill": "Both formulas implemented correctly, with the edge cases handled.",
+      "without_skill_basis": {
+        "kind": "authored-judgement",
+        "note": "the author's model of what a bare subject would answer. Never observed."
+      },
       "with_skill": "The same. The skill must not intrude: nothing here needs an attacker model, an oracle, a judge panel, or a leakage screen.",
       "check": {
         "type": "tests_pass",
@@ -680,6 +889,10 @@
       },
       "prompt": "We are running an A/B test on the pricing page. What sample size do we need to detect a 2 percent lift in signups, and how do we stop the team from peeking at the result and calling it early?",
       "without_skill": "Standard experiment design: baseline rate, minimum detectable effect, power and significance, the resulting per-arm sample size, a fixed horizon or a sequential test with proper alpha spending, and the organisational discipline of pre-registering the stopping rule.",
+      "without_skill_basis": {
+        "kind": "authored-judgement",
+        "note": "the author's model of what a bare subject would answer. Never observed."
+      },
       "with_skill": "The same answer. A skill that intrudes here will start stress-testing a rubric, screening a diff for leakage, or proposing a judge panel, none of which applies to human traffic on a pricing page.",
       "check": {
         "type": "rubric",
@@ -691,6 +904,10 @@
               "0": "Reframes it as evaluating a model or a generated instrument.",
               "1": "Mixes in model-evaluation machinery.",
               "2": "Stays on the A/B test."
+            },
+            "certificate": {
+              "kind": "artifact",
+              "names": "the returned answer addressed to human traffic on the pricing page, with the unit of randomisation named"
             }
           },
           {
@@ -700,6 +917,10 @@
               "0": "A number with no basis.",
               "1": "Names the inputs without computing.",
               "2": "Asks for or assumes a baseline rate, states absolute against relative lift, and computes per-arm size at stated power and significance."
+            },
+            "certificate": {
+              "kind": "number",
+              "names": "a per-arm sample size computed from a stated baseline rate, an absolute or relative lift, a power and a significance level"
             }
           },
           {
@@ -709,6 +930,10 @@
               "0": "Says do not peek.",
               "1": "Mentions sequential testing.",
               "2": "Either fixes the horizon and pre-registers it, or adopts a sequential design with explicit alpha spending, and makes the rule visible before the test starts."
+            },
+            "certificate": {
+              "kind": "artifact",
+              "names": "a stopping rule written down before the test starts, either a pre-registered fixed horizon or a sequential design with an explicit alpha-spending schedule"
             }
           },
           {
@@ -718,13 +943,164 @@
               "0": "Two or more such intrusions.",
               "1": "One.",
               "2": "None."
+            },
+            "certificate": {
+              "kind": "artifact",
+              "names": "the absence from the returned answer of every evaluation-integrity instrument: no attacker model, no independent oracle, no judge panel or unanimity rule, no leakage screen on a diff, no shortcut-channel closure"
             }
           }
         ]
+      },
+      "exploit": {
+        "answer": "Treat this as ordinary product experiment design on human traffic. Pick your metric, size the test properly from your baseline rate and the lift you care about, and fix the stopping rule before you start so nobody can peek their way to a result. Make the rule visible to the team in advance. That is most of what stops a team gaming its own measurement.",
+        "why": "A control's exploit is the useful one, because it shows the rubric is not merely rewarding the absence of intrusion. This answer imports nothing from evaluation integrity and so passes `no_intrusion` honestly, and it still carries no per-arm sample size, no power or significance level and no written stopping rule, so `sizing` and `peeking` must score zero. A rubric that scores this is paying for staying on topic.",
+        "ceiling": 0.0
       }
+    },
+    {
+      "id": "ei-t12",
+      "kind": "treatment",
+      "sections": [
+        "Delta 2: the statistic you gate on is constant across the distinction you care about, provably for a verdict and measurably for an aggregate"
+      ],
+      "form": "project",
+      "situation": "ACE's Table II, where matching and execution rates are each conditioned on execution reaching that phase, so overall is their product. Two of its four configurations land 0.5 points apart on the product while failing in opposite phases: 87.9/68.5 for 60.2 against 66.6/91.2 for 60.7. The digits here are changed and the arithmetic is not, so recalling the paper cannot substitute for reading the table.",
+      "source": {
+        "paper": "ACE: A Security Architecture for LLM-Integrated App Systems",
+        "arxiv": "arxiv.org/abs/2504.20984",
+        "claims": []
+      },
+      "prompt": "results.json holds last week's eval of our two-phase agent in four configurations. The agent first matches the request to an installed tool and then executes against it, and both rates are conditioned on the run reaching that phase, so overall is the product of the two. Our dashboard shows overall only. A and B scored the same, so the team's read is that it does not matter which we keep, and we have one engineer-month to spend. Write answer.json with: \"bottleneck\", an object mapping each of A, B, C and D to \"matching\" or \"execution\", whichever phase is holding that configuration back; \"a_and_b_equivalent\", a boolean; \"aggregate_reportable_alone\", a boolean saying whether overall on its own is a sound comparison between two configurations; and \"work\", an object mapping A and B each to a one-line statement of what the engineer-month should buy. Output answer.json only.",
+      "files": {
+        "results.json": "{\n \"A\": {\n  \"matching\": 91.0,\n  \"execution\": 62.0,\n  \"overall\": 56.4\n },\n \"B\": {\n  \"matching\": 63.0,\n  \"execution\": 90.0,\n  \"overall\": 56.7\n },\n \"C\": {\n  \"matching\": 85.0,\n  \"execution\": 97.0,\n  \"overall\": 82.5\n },\n \"D\": {\n  \"matching\": 88.0,\n  \"execution\": 98.0,\n  \"overall\": 86.2\n }\n}\n"
+      },
+      "without_skill": "Reads 56.4 against 56.7 as a tie, calls A and B equivalent, and spends the engineer-month on whichever is cheaper or on the same generic improvement for both, or recommends more repetitions to break the tie, which measures the aggregate more precisely rather than measuring the thing that differs.",
+      "without_skill_basis": {
+        "kind": "authored-judgement",
+        "note": "the author's model of what a bare subject would answer. Never observed: this seat has no route to either eval arm on 2026-11-09, so no bare-first pass has run and this task has not qualified under ADR-38 rule 5."
+      },
+      "with_skill": "Decomposes the product, names A's bottleneck as execution and B's as matching, refuses the equivalence, says the aggregate is not reportable as a comparison, and spends the engineer-month on a better executor for A and a better matcher for B.",
+      "check": {
+        "type": "parses",
+        "format": "json",
+        "assertions": [
+          {
+            "id": "schema",
+            "statement": "answer.json parses and carries all four keys: \"bottleneck\" with exactly A, B, C and D, each \"matching\" or \"execution\"; \"a_and_b_equivalent\" a boolean; \"aggregate_reportable_alone\" a boolean; \"work\" with A and B, each a non-empty string."
+          },
+          {
+            "id": "bottlenecks",
+            "statement": "Scored as agreement with the key {A: execution, B: matching, C: matching, D: matching}, as a fraction of four. The key is mechanical: the bottleneck is the lower of the two conditional rates, 62.0 against 91.0 for A and 63.0 against 90.0 for B."
+          },
+          {
+            "id": "refuses_the_tie",
+            "statement": "\"a_and_b_equivalent\" is false AND \"aggregate_reportable_alone\" is false. This is the one assertion the whole task is for: 0.3 points apart on the product, 28 points apart on matching and 28 on execution, in opposite directions."
+          },
+          {
+            "id": "opposite_work",
+            "statement": "\"work\" for A names execution, the executor, or the second phase, and \"work\" for B names matching, the matcher, or the first phase. Naming the same work for both fails this assertion even if both strings are sensible, because one score producing two opposite remedies is the finding."
+          },
+          {
+            "id": "no_more_repetitions",
+            "statement": "The answer does not propose resolving A against B by running more repetitions, tightening the interval, or collecting more data on the overall score. More precision on a statistic that is constant across the distinction buys nothing, and this is the plausible wrong answer."
+          }
+        ]
+      }
+    },
+    {
+      "id": "ei-t13",
+      "kind": "treatment",
+      "sections": [
+        "Delta 2: the statistic you gate on is constant across the distinction you care about, provably for a verdict and measurably for an aggregate"
+      ],
+      "form": "prompt",
+      "situation": "IsolateGPT's functionality evaluation (Tables II and III, section VI-B): an isolated and a non-isolated system tie exactly on both reported axes, 0.76 on intermediate steps and 0.95 on final output, while their step-failure classes differ, an unexpected app called at 28.57 percent of errors against 14.29 and an expected app never called at 14.29 against 28.57. Four of the five classes are plan deviations whose final output was correct, and those four are the signature of the three attacks ACE later demonstrated on that same public implementation.",
+      "source": {
+        "paper": "IsolateGPT: An Execution Isolation Architecture for LLM-Based Agentic Systems",
+        "arxiv": "arxiv.org/abs/2403.04960",
+        "claims": []
+      },
+      "prompt": "We shipped a change that routes each tool call through a per-tool sandbox instead of one shared context. I ran our tool-use benchmark before and after. Step correctness is 0.76 both times and final-output correctness is 0.95 both times, identical to two decimal places, so I am writing it up as no functional regression and shipping it. The per-error breakdown is in the appendix and I have not read it. Is the write-up sound?",
+      "without_skill": "Accepts the identical scores as evidence of no regression, perhaps suggesting more benchmark items or a confidence interval, and treats the unread appendix as a completeness detail rather than as the place the answer is.",
+      "without_skill_basis": {
+        "kind": "authored-judgement",
+        "note": "the author's model of what a bare subject would answer. Never observed, same blocker as ei-t12, so this task has not qualified under ADR-38 rule 5."
+      },
+      "with_skill": "Refuses the write-up: identical aggregates over error classes do not mean identical behaviour, the appendix is where the profile lives, and the deviation classes a final-output axis forgives are the ones an induced deviation hides in, so plan conformance needs its own axis.",
+      "check": {
+        "type": "rubric",
+        "criteria": [
+          {
+            "id": "profile_not_aggregate",
+            "criterion": "Says the identical aggregates are not evidence of identical behaviour, and sends the reader to the per-error-class breakdown before the write-up ships.",
+            "anchors": {
+              "0": "Accepts the write-up, or asks only for more items or an interval.",
+              "1": "Hedges about sample size without naming the breakdown.",
+              "2": "Names the error-class profile as the thing that can move while both aggregates hold, with the reference case of two systems tying at 0.76 and 0.95 while two of their error classes swap 28.57 against 14.29."
+            },
+            "certificate": {
+              "kind": "number",
+              "names": "two systems tying on 0.76 steps and 0.95 output while an unexpected app called runs 28.57 percent of one system's errors against 14.29 of the other's, quoted as a case where both aggregates held and the profile moved"
+            }
+          },
+          {
+            "id": "output_axis_forgives",
+            "criterion": "Identifies that a final-output axis counts a correct answer reached by an unauthorised plan as correct, so plan deviation is invisible on that axis by construction rather than by sample size.",
+            "anchors": {
+              "0": "Absent, or treats it as a coverage problem fixable with more tests.",
+              "1": "Mentions that trajectory and output can differ.",
+              "2": "States it structurally, and notes that four of the five reference error classes are deviations whose final output was correct."
+            },
+            "certificate": {
+              "kind": "number",
+              "names": "four of five error classes being plan deviations whose final output was correct, named as the reason the output axis cannot see them"
+            }
+          },
+          {
+            "id": "deviation_is_attack_signature",
+            "criterion": "Connects the forgiven deviation classes to the induced ones: an unexpected tool called and a tool called out of order are both the benign-replan mode and the attack signature, so the axis that tolerates one cannot separate the other.",
+            "anchors": {
+              "0": "Absent.",
+              "1": "Mentions security generally, or asks for a separate security test with no link to the metric.",
+              "2": "Names the overlap: the same classes a later paper's demonstrated attacks produce on this kind of system are the classes the output axis scores correct."
+            },
+            "certificate": {
+              "kind": "artifact",
+              "names": "the named overlap between the deviation classes an output-correctness metric forgives and the deviation classes an induced attack produces"
+            }
+          },
+          {
+            "id": "separate_axis",
+            "criterion": "Prescribes scoring trajectory conformance against an authorised plan as its own reported axis, rather than inferring conformance from output correctness or from an aggregate of the two.",
+            "anchors": {
+              "0": "No prescription.",
+              "1": "Says to look at trajectories, with no axis and no reporting rule.",
+              "2": "Prescribes a conformance axis reported beside the output axis, with the error-class profile published, and says an aggregate of the two is not a substitute."
+            },
+            "certificate": {
+              "kind": "artifact",
+              "names": "a plan-conformance axis reported beside the output axis, with the error-class profile published rather than summarised"
+            }
+          },
+          {
+            "id": "opposite_profiles_test",
+            "criterion": "Generalises to the check: before publishing any aggregate, construct two systems with opposite profiles and see whether they tie on it.",
+            "anchors": {
+              "0": "Absent.",
+              "1": "Says to report breakdowns, with no test.",
+              "2": "States the test as a precondition on publishing the statistic, not as a nice-to-have."
+            },
+            "certificate": {
+              "kind": "artifact",
+              "names": "the two-opposite-profiles construction named as a precondition on publishing an aggregate"
+            }
+          }
+        ]
+      },
+      "exploit": "An answer that praises the rigour of reporting two axes, repeats that both held, recommends publishing the appendix for completeness, and never says that the profile can move while the aggregates hold. It names the right artifacts and reaches the wrong decision, which is the shape a rubric tied to vocabulary rather than to the decision would score full marks."
     }
   ],
-  "revision": "2026-11-01 (ADR-37 maintenance of the SKILL.md, ADR-38 rule 4). Three changes, and no rubric criterion, anchor or check was edited. The library's certificate numerator held at exactly 190 across the change and the denominator fell from 288 to 283, which is ei-t8's five criteria leaving with it, so nothing here improved the coverage ratio by writing a certificate and nothing regressed it. (1) Every surviving task's `sections` was repointed at the five delta headings the retrofit wrote, because all ten of the old headings were rewritten: ei-t1 to delta 1, ei-t2 and ei-t3 to delta 2, ei-t4 and ei-t5 to delta 3, ei-t6, ei-t7 and ei-t11 to delta 4, ei-t9 and ei-t10 to delta 5. The grouping is the one the SKILL.md's own per-section Validation tags name, so the two files agree by construction rather than by coincidence. (2) ei-t8 moved to `retired_tasks` with its reason, because its section was cut. (3) Controls ei-c1 and ei-c2 keep their empty `sections` list, which the suite contract reads as a deliberate statement rather than a missing one. Nine treatment tasks and two controls remain. The suite still has no results.json: this seat has no route to either eval arm, so the bare-first differential pass that ADR-38 rule 5 requires has not been run and no task here has qualified or been excluded yet.",
+  "revision": "2026-11-09 (ADR-37 maintenance, delta 2 gains its aggregate half). `suite_version` is NOT bumped: it is the contract version and not a revision counter, which this library has twice read the wrong way (INC-2026-10-27-suite-version-is-a-contract-version-and-two-runs-read-it-as-a-revision-counter). Three changes. (1) ei-t2 and ei-t3 were repointed at delta 2's new heading, which widened from the verdict case to the general one; `tools/skill_eval.py --check` caught the stale reference on this branch before the commit, which is what that check is for. (2) ei-t12 and ei-t13 are new, one per half of the new material, both written against the one decision the section changes rather than against the topic. ei-t12 is a `parses` check with a mechanical key, because ADR-38 rule 6 puts a hard check above a rubric and the bottleneck phase is simply the lower of two conditional rates. ei-t13 is a rubric, because the question it asks is advice, and it ships an `exploit` answer that names every right artifact and reaches the wrong decision. (3) ei-t12's digits are changed from ACE's Table II while its arithmetic is preserved, so a subject that has read the paper cannot answer from recall instead of from the table; the real figures stay in the task's `situation` for provenance. Eleven treatment tasks and two controls. Still no results.json: GROQ_API_KEY and NEON_RO_URL are both absent from this seat's host environment on 2026-11-09, so the bare-first differential pass ADR-38 rule 5 requires has not run and neither new task has qualified or been excluded. Both carry `authored-judgement` bases and say so. 2026-11-01 (ADR-37 maintenance of the SKILL.md, ADR-38 rule 4). Three changes, and no rubric criterion, anchor or check was edited. The library's certificate numerator held at exactly 190 across the change and the denominator fell from 288 to 283, which is ei-t8's five criteria leaving with it, so nothing here improved the coverage ratio by writing a certificate and nothing regressed it. (1) Every surviving task's `sections` was repointed at the five delta headings the retrofit wrote, because all ten of the old headings were rewritten: ei-t1 to delta 1, ei-t2 and ei-t3 to delta 2, ei-t4 and ei-t5 to delta 3, ei-t6, ei-t7 and ei-t11 to delta 4, ei-t9 and ei-t10 to delta 5. The grouping is the one the SKILL.md's own per-section Validation tags name, so the two files agree by construction rather than by coincidence. (2) ei-t8 moved to `retired_tasks` with its reason, because its section was cut. (3) Controls ei-c1 and ei-c2 keep their empty `sections` list, which the suite contract reads as a deliberate statement rather than a missing one. Nine treatment tasks and two controls remain. The suite still has no results.json: this seat has no route to either eval arm, so the bare-first differential pass that ADR-38 rule 5 requires has not been run and no task here has qualified or been excluded yet.",
   "retired_tasks": [
     {
       "id": "ei-t8",
@@ -746,6 +1122,10 @@
       },
       "prompt": "Our enterprise assistant has one hard rule: it must never disclose a customer's payment details to anyone who has not completed identity verification. We built a 400-item eval where each item is a single user turn requesting payment details in some phrasing, and the assistant refuses on 99.5 percent of them. I am ready to tell the compliance board this rule is reliable. Is the eval good enough to support that sentence?",
       "without_skill": "Says the eval is strong and suggests more phrasings or a larger sample, which scales the same single clean turn.",
+      "without_skill_basis": {
+        "kind": "authored-judgement",
+        "note": "the author's model of what a bare subject would answer. Never observed."
+      },
       "with_skill": "Says no, and names what the design is missing: pressure, multiple turns, a realism audit, and separated scoring axes.",
       "check": {
         "type": "rubric",

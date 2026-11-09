@@ -348,3 +348,347 @@ def test_the_cli_validates_the_manifests_strictly():
     assert report["success"], report
     assert report["manifest"]["errors"] == []
     assert report["manifest"]["warnings"] == []
+
+
+# ------------------------------- the reach, which is what the four was
+
+
+def test_a_second_ecosystems_manifest_is_found_without_being_listed(repo):
+    """The cursor case: a manifest nobody added to a constant.
+
+    `.cursor-plugin/plugin.json` landed 2026-10-26 and said the library ships
+    nine skills. This checker read the two paths written into it and reported
+    a clean pass for three weeks, so the number it printed was its own reach.
+    """
+    write(
+        repo / ".cursor-plugin" / "plugin.json",
+        json.dumps({"name": "demo-skills", "description": "Nine skills for a test."}),
+    )
+    found = problems(repo)
+    assert ".cursor-plugin/plugin.json" in found
+    assert "'Nine skills'" in found and "2 ship" in found
+
+
+def test_a_discovered_manifest_is_in_the_report_even_when_it_is_clean(repo):
+    write(
+        repo / ".cursor-plugin" / "plugin.json",
+        json.dumps({"name": "demo-skills", "description": "Two skills for a test."}),
+    )
+    report = checker.check(str(repo))
+    assert report["ok"], report["problems"]
+    assert ".cursor-plugin/plugin.json" in report["manifests"]
+    assert ".cursor-plugin/plugin.json" in report["surfaces"]["manifest descriptions"]
+
+
+def test_a_description_nested_inside_a_manifest_is_read_at_any_depth(repo):
+    edit_json(
+        repo,
+        ".claude-plugin/marketplace.json",
+        lambda d: d["metadata"].update(description="Seven skills for a test.")
+        if d.get("metadata") else d.update(metadata={"description": "Seven skills for a test."}),
+    )
+    assert "'Seven skills'" in problems(repo)
+
+
+def test_a_manifest_that_is_not_json_is_named_rather_than_crashing(repo):
+    write(repo / ".cursor-plugin" / "plugin.json", "{not json")
+    assert "is not valid JSON" in problems(repo)
+
+
+# ------------------------------- the census gate
+
+
+def test_a_count_surface_nobody_classified_is_the_finding(repo):
+    """The gate that turns the checker's reach into something a reader sees.
+
+    A file under the census roots that names a count and carries no
+    disposition is red on the day it lands, rather than being the seventh
+    unread surface in a tree somebody already called clean.
+    """
+    write(
+        repo / "site" / "app" / "pricing" / "page.jsx",
+        "export default function Page() {\n  return <p>Nine skills, one price.</p>;\n}\n",
+    )
+    found = problems(repo)
+    assert "site/app/pricing/page.jsx" in found
+    assert "not classified in COUNT_SURFACES" in found
+
+
+def test_a_classified_live_surface_with_a_stale_count_fails(repo):
+    """`/llms.txt` had this exact shape, and it is served to the public."""
+    write(
+        repo / "site" / "app" / "llms.txt" / "route.js",
+        "export const body = `\nThat installs nine skills, and none of them loads.\n`;\n",
+    )
+    found = problems(repo)
+    assert "site/app/llms.txt/route.js:2" in found
+    assert "'nine skills'" in found
+
+
+def test_the_other_phrasing_of_the_noun_counts_too(repo):
+    """`/llms.txt` used both phrasings four lines apart."""
+    write(
+        repo / "site" / "app" / "llms.txt" / "route.js",
+        "export const body = `\nThe nine skill files are in the repository.\n`;\n",
+    )
+    assert "'nine skill files'" in problems(repo)
+
+
+def test_a_file_classified_internal_is_not_checked(repo):
+    """A comment to the next engineer is not prose a reader meets.
+
+    It is still named in COUNT_SURFACES, because a reach that is written
+    down can be argued with and an implicit one cannot.
+    """
+    write(
+        repo / "site" / "lib" / "path.js",
+        "// a catalogue of nine skills has a short answer\nexport const n = 1;\n",
+    )
+    assert checker.check(str(repo))["ok"], problems(repo)
+    assert "site/lib/path.js" in checker.check(str(repo))["surfaces"]["classified"]
+
+
+# ------------------------------- dates, which make a stale count correct
+
+
+def test_a_count_with_a_date_in_its_own_sentence_is_a_record(repo):
+    write(
+        repo / "site" / "app" / "llms.txt" / "route.js",
+        "// Nine skills as of 2026-10-26, when this was measured.\n",
+    )
+    assert checker.check(str(repo))["ok"], problems(repo)
+
+
+def test_a_date_in_the_paragraphs_opening_sentence_covers_the_passage(repo):
+    """A writer dates a passage once, at its head, and means all of it."""
+    write(
+        repo / "site" / "app" / "llms.txt" / "route.js",
+        "// All eight completed the retrofit on 2026-09-30.\n"
+        "// Seven of the eight skills have no section validated by anything.\n",
+    )
+    assert checker.check(str(repo))["ok"], problems(repo)
+
+
+def test_a_date_further_down_the_paragraph_does_not_cover_a_claim_about_today(repo):
+    """The loophole a paragraph-wide rule would have opened.
+
+    `docs/product/install.md` carried this shape: a paragraph whose last
+    sentence says "as of 2026-10-18" around a middle sentence saying "two
+    skills today". "Today" is the one word that cannot be a record.
+    """
+    write(
+        repo / "site" / "app" / "llms.txt" / "route.js",
+        "// ADR-36 defines two of those grades.\n"
+        "// The third is carried by nine skills today and nothing defines it.\n"
+        "// It is filed in docs/ideas.md as of 2026-10-18.\n",
+    )
+    assert "'nine skills'" in problems(repo)
+
+
+def test_a_subset_that_names_its_denominator_passes(repo):
+    """And it is the better sentence, which is why there is no new rule."""
+    write(
+        repo / "site" / "app" / "llms.txt" / "route.js",
+        "// The grade is carried by one of the two skills today.\n",
+    )
+    assert checker.check(str(repo))["ok"], problems(repo)
+
+
+def test_a_markdown_section_number_is_not_a_count(repo):
+    """The census's one false positive on its first run over this repository.
+
+    `### 2.3 Skills compose; nothing today says how` otherwise reads as
+    "3 skills", so the gate's first act would have been to cry wolf on a
+    heading.
+    """
+    install = repo / "docs" / "product" / "install.md"
+    install.write_text("### 2.3 Skills compose; nothing says how\n\n" + install.read_text())
+    assert checker.check(str(repo))["ok"], problems(repo)
+
+
+# ------------------------------- the denominator, printed and not asserted
+
+
+def test_the_report_names_the_surfaces_it_read(repo):
+    report = checker.check(str(repo))
+    assert report["surfaces"]["unclassified"] == []
+    assert report["surfaces"]["classified"]["docs/product/install.md"] == "live"
+    assert report["surfaces"]["classified"]["README.md"] == "block"
+    assert ".claude-plugin/plugin.json" in report["surfaces"]["manifest descriptions"]
+
+
+def test_this_repository_has_no_unclassified_count_surface():
+    """The real tree, which is the one the four was measured over."""
+    report = checker.check(str(REPO))
+    assert report["surfaces"]["unclassified"] == [], report["problems"]
+    assert ".cursor-plugin/plugin.json" in report["manifests"]
+
+
+def test_one_wrong_count_in_a_guarded_live_file_is_one_problem(repo):
+    """`docs/product/install.md` is both guarded and `live`, and its block is
+    inside its text, so the two readers would otherwise report it twice."""
+    write(repo / "skills" / "gamma-skill" / "SKILL.md",
+          "---\nname: gamma-skill\ndescription: Use when counting.\n---\n\nBody.\n")
+    found = [p for p in checker.check(str(repo))["problems"] if "install.md" in p]
+    assert len(found) == 1, found
+
+
+def test_every_guarded_prose_file_carries_a_disposition(repo):
+    """An invariant rather than an artifact: a file the install line is
+    published in, with no classification, is the gap this census closes."""
+    for relative in checker.GUARDED_PROSE:
+        assert relative in checker.COUNT_SURFACES, relative
+
+
+def test_no_disposition_names_a_file_this_repository_does_not_have():
+    """The rot in the other direction from the census gate.
+
+    A `COUNT_SURFACES` entry for a deleted file is a judgment about nothing,
+    and it reads as coverage. Required empty against the real tree only,
+    because a fixture holds a deliberate subset.
+    """
+    assert checker.check(str(REPO))["surfaces"]["missing"] == []
+
+
+# ------------------------------- the status table, a word the count gate cannot see
+
+
+def grade(repo, **statuses) -> None:
+    """Give the fixture's skills a declared grade, as the real ones carry."""
+    for name, value in statuses.items():
+        skill = repo / "skills" / name.replace("_", "-") / "SKILL.md"
+        text = skill.read_text()
+        skill.write_text(
+            text.replace(
+                "description: Use when testing the checker.",
+                f"description: Use when testing the checker.\nstatus: {value}",
+            )
+        )
+
+
+def table(rows, header="| Skill | Status | The decision it is for |", caption="The grades:") -> str:
+    body = "\n".join(
+        f"| `{name}` | {value} | What it decides |" for name, value in rows
+    )
+    return f"\n{caption}\n\n{header}\n| --- | --- | --- |\n{body}\n"
+
+
+def graded_repo(repo, rows=(("alpha-skill", "provisional"), ("beta-skill", "draft")),
+                **kwargs) -> None:
+    """The fixture plus a correct status table on the install page."""
+    grade(repo, alpha_skill="provisional", beta_skill="draft")
+    page = repo / "docs" / "product" / "install.md"
+    page.write_text(page.read_text() + table(rows, **kwargs))
+
+
+def test_a_correct_status_table_passes(repo):
+    graded_repo(repo)
+    report = checker.check(str(repo))
+    assert report["ok"], report["problems"]
+    assert report["surfaces"]["status tables"] == ["docs/product/install.md:14"]
+    assert report["statuses"] == {"alpha-skill": "provisional", "beta-skill": "draft"}
+
+
+def test_a_grade_the_front_matter_does_not_declare(repo):
+    graded_repo(repo, rows=(("alpha-skill", "active"), ("beta-skill", "draft")))
+    found = problems(repo)
+    assert "grades `alpha-skill` 'active'" in found
+    assert "says 'provisional'" in found
+
+
+def test_a_skill_on_disk_with_no_row_is_a_silent_table(repo):
+    graded_repo(repo, rows=(("alpha-skill", "provisional"),))
+    assert "no row for `beta-skill`" in problems(repo)
+
+
+def test_a_row_for_a_skill_that_does_not_ship(repo):
+    graded_repo(repo, rows=(
+        ("alpha-skill", "provisional"),
+        ("beta-skill", "draft"),
+        ("ghost-skill", "provisional"),
+    ))
+    found = problems(repo)
+    assert "grades `ghost-skill`" in found
+    assert "no skills/ghost-skill/SKILL.md" in found
+
+
+def test_a_row_for_a_skill_whose_front_matter_declares_no_grade(repo):
+    """The table becomes the only place the grade exists, so nothing can
+    confirm it and the drift has nowhere to be caught."""
+    page = repo / "docs" / "product" / "install.md"
+    grade(repo, beta_skill="draft")
+    page.write_text(page.read_text() + table(
+        (("alpha-skill", "provisional"), ("beta-skill", "draft"))
+    ))
+    assert "declares no status" in problems(repo)
+
+
+def test_a_grade_outside_the_vocabulary_is_named(repo):
+    graded_repo(repo, rows=(("alpha-skill", "shipped"), ("beta-skill", "draft")))
+    grade_file = repo / "skills" / "alpha-skill" / "SKILL.md"
+    grade_file.write_text(grade_file.read_text().replace(
+        "status: provisional", "status: shipped"))
+    found = problems(repo)
+    assert "declares status 'shipped'" in found
+    assert "draft, provisional, active" in found
+
+
+def test_a_table_under_a_dated_caption_is_a_record(repo):
+    """A reading of the library on a day is right when it is stale, the same
+    exemption a dated count already gets."""
+    graded_repo(
+        repo,
+        rows=(("alpha-skill", "active"), ("beta-skill", "active")),
+        caption="The grades as of 2026-10-18:",
+    )
+    report = checker.check(str(repo))
+    assert report["ok"], report["problems"]
+
+
+def test_a_table_with_no_status_column_is_not_a_status_table(repo):
+    """The install page's own table of commands names no grades, and a gate
+    that read every table would have had to invent a disposition for it."""
+    graded_repo(repo)
+    page = repo / "docs" / "product" / "install.md"
+    page.write_text(page.read_text() + table(
+        (("alpha-skill", "anything"),),
+        header="| Skill | Command | The decision it is for |",
+    ))
+    report = checker.check(str(repo))
+    assert report["ok"], report["problems"]
+    assert len(report["surfaces"]["status tables"]) == 1
+
+
+def test_a_status_table_about_something_else_is_left_alone(repo):
+    """A `Status` header over rows that are not skills is somebody else's
+    table, and failing it would be the gate crying wolf on its first run."""
+    graded_repo(repo)
+    page = repo / "docs" / "product" / "install.md"
+    page.write_text(page.read_text() + table(
+        (("some-adr", "accepted"),), caption="Decisions:",
+    ))
+    report = checker.check(str(repo))
+    assert report["ok"], report["problems"]
+
+
+def test_a_second_page_that_grows_a_table_is_covered_without_being_listed(repo):
+    """The hand list of two manifests is what let a stale count ship through a
+    clean pass. A page is covered by the shape of its table, so this one needs
+    no entry anywhere."""
+    graded_repo(repo)
+    readme = repo / "README.md"
+    readme.write_text(readme.read_text() + table(
+        (("alpha-skill", "active"), ("beta-skill", "draft"))
+    ))
+    found = problems(repo)
+    assert "README.md" in found and "grades `alpha-skill` 'active'" in found
+
+
+def test_this_repositorys_status_table_is_found_and_correct():
+    """The gate against the real tree, which is the artifact it was written
+    for: the table a buyer reads has to equal the ten SKILL.md files."""
+    report = checker.check(str(REPO))
+    assert report["surfaces"]["status tables"] == ["docs/product/install.md:45"]
+    assert report["ok"], report["problems"]
+    assert set(report["statuses"]) == set(report["skills"])
+    assert all(report["statuses"].values()), report["statuses"]

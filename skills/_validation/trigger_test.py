@@ -10,6 +10,8 @@ receipts cannot ship an unmeasured trigger.
 Run:
     python3 skills/_validation/trigger_test.py            # human report
     python3 skills/_validation/trigger_test.py --json out.json
+    python3 skills/_validation/trigger_test.py --invariance  # the ENGINE gate
+    python3 skills/_validation/trigger_test.py --sweep       # all 255 panels
 
 Exit code 0 when every case passes, 1 when any case fails, 2 on a data error.
 No third-party dependencies, no network, no database, so this is the screen
@@ -40,22 +42,49 @@ not a test:
     PR. The finding was the instrument's, not the library's.
   lexical/2 (2026-09-18): replaces the absolute cutoff with the decoy panel.
   lexical/3 (2026-09-24, implemented but NOT the default): adds candidate-side
-    normalisation, the fix the 2026-09-22 ledger entry proposed. lexical/2.1
-    divides only by the prompt's own idf mass, so a longer description wins
-    strictly more prompts and the engine rewards verbosity, which is the
-    opposite of what a router wants. lexical/3 scores the harmonic mean of
-    that coverage and a precision term, the share of the description's own
-    idf mass the prompt accounts for. Select it with --engine lexical/3. It
-    is not the default because the run that implemented it also added a skill
-    the engine judges, and a seat does not get to change the instrument and
-    the artifact in one commit and call the result a pass. Adoption is a
-    separate decision with the two recorded bundles side by side.
-  lexical/2.1 (current default): same scores, conservative tie handling. The
-    pre-registered lexical/2 run produced an exact score tie between a library
-    skill and a decoy, which argmax resolved alphabetically; a coin flip is
-    not a verdict. A skill must now strictly outrank every decoy to fire. No
-    case outcome changed, and the affected case is still reported as a
-    zero-margin decision rather than a clean pass.
+    normalisation, the fix the 2026-09-22 ledger entry proposed. lexical/3
+    scores the harmonic mean of lexical/2.1's coverage and a precision term,
+    the share of the description's own idf mass the prompt accounts for.
+    Select it with --engine lexical/3. It is not the default because the run
+    that implemented it also added a skill the engine judges, and a seat does
+    not get to change the instrument and the artifact in one commit and call
+    the result a pass. Adoption is a separate decision with the two recorded
+    bundles side by side.
+      This entry used to say that lexical/2.1 "rewards verbosity" and that
+    lexical/3 was the fix for it. That is refuted and reversed, 2026-11-02,
+    and run_invariance() below is the proof. lexical/2.1's denominator is the
+    prompt's idf mass, which no candidate's text can move, so its score is
+    *exactly* invariant to any description change that misses the prompt.
+    lexical/3 divides by the candidate's own mass, so it is strictly
+    decreasing in unmatched description mass. The verbosity defect belongs to
+    the challenger alone. lexical/2.1 is monotone non-decreasing in the
+    candidate's term set, which is a real property and a different one: a
+    description wins more prompts by covering more *terms the prompt uses*,
+    never by being longer.
+  lexical/2.1 (2026-09-18): same scores as lexical/2, conservative tie
+    handling. The pre-registered lexical/2 run produced an exact score tie
+    between a library skill and a decoy, which argmax resolved
+    alphabetically; a coin flip is not a verdict. A skill must now strictly
+    outrank every decoy to fire. No case outcome changed, and the affected
+    case is still reported as a zero-margin decision rather than a clean
+    pass.
+  lexical/2.2 (2026-11-02, current default): identical scoring function,
+    three words added to STOPWORDS. "got", "last" and "think" are prompt
+    framing rather than topic, and weighting them is what wrote the refuted
+    length-bias finding above. This moves scores, so it owes a version
+    number; it moves no case. Measured both ways before the change landed:
+    61 of 67 either way, the same six cases failing, positives 29/29,
+    negatives 15/18, confusion 17/20 in both arms.
+      The gate on an engine change is run_invariance(), not the pass rate.
+    The pass rate cannot do that job and the number is exact: the two
+    engines are paired on the same 67 cases, 58 concordant passes and 6
+    concordant failures carry no information about which is better, and the
+    three discordant cases all favour the default. Six one-way discordances
+    is the floor for any two-sided McNemar verdict at 0.05, so at a
+    discordance rate of 3/67 a 67-case suite has power 0.079 against an
+    engine that wins every case it differs on, and would need 176 cases.
+    Invariance is a property of the scoring function, provable from the code
+    at power 1 with no cases at all.
 """
 
 from __future__ import annotations
@@ -63,11 +92,15 @@ from __future__ import annotations
 import argparse
 import glob
 import hashlib
+import itertools
 import json
 import math
 import os
 import re
 import sys
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from earned_pass import REFUSAL, verdict                  # noqa: E402
 from datetime import date
 
 # ---------------------------------------------------------------------------
@@ -81,21 +114,110 @@ from datetime import date
 # ---------------------------------------------------------------------------
 FLOOR = 0.05            # sanity floor: below this, nothing in the prompt matched
 NARROW_MARGIN = 0.02    # lead under which a win is reported as narrow, not failed
-USE_WHEN_BOOST = 1.25   # activation-condition terms outweigh framing prose
-ENGINE_VERSION = "lexical/2.1"
+USE_WHEN_BOOST = 1.25   # rests on NO published weight; see the block below
+ENGINE_VERSION = "lexical/2.2"
 ALPHA = 0.05            # 95% intervals
 
-# Description length is part of the decision policy, not a style preference.
-# LexicalEngine.score divides by the idf mass of the prompt's terms and never
-# by the candidate's own, so a longer description strictly dominates a terser
-# one on any prompt both cover. Incident 31 records two skills taking a
-# neighbour's trigger case that way, and the rule that would have caught it
-# (prompts/skill-extract.md: treat anything past 150 words as a defect) failed
-# twice because it lived in a prompt a run reads before it writes the field.
-# The runner is the one thing every skill run executes before shipping, so the
-# rule lives here as well.
-DESCRIPTION_WORD_MAX = 150   # past this, a description is a defect
-PANEL_LENGTH_TOLERANCE = 1.35  # library:decoy mean-length ratio a fair null allows
+# What a description costs its neighbours is its TERM SET, not its word count.
+# LexicalEngine.score sums idf over the prompt's terms and matches against the
+# candidate's stem set, so the score is monotone non-decreasing in that set and
+# exactly invariant to everything outside it. Incident 31's two skills took a
+# neighbour's trigger case by covering more of the prompt's vocabulary, and
+# word count is only a weak proxy for that: across the 17 live candidates the
+# two correlate at r = 0.286, so word count explains 8 percent of the variance
+# in the quantity that decides cases (2026-11-02, verified in panel_audit()).
+#
+# So there are two separate rules here and they are not interchangeable.
+# DESCRIPTION_WORD_MAX is the editorial budget, kept because a 150-word cap is
+# what prompts/skill-extract.md states and what a human can hold; it lived in
+# that prompt and failed twice, because a rule in a prompt is checked when
+# somebody reads the prompt, so the runner carries it too (L-A22).
+# PANEL_TERMSET_TOLERANCE is the validity gate, and it is the one that stands
+# between the suite and a silently unfair null.
+DESCRIPTION_WORD_MAX = 150   # past this, a description is a defect (editorial)
+PANEL_LENGTH_TOLERANCE = 1.35  # library:decoy mean-WORD ratio, reported not load-bearing
+# Tighter than the word gate on purpose. This is the quantity the score is
+# monotone in, and its natural spread is narrower: the 17 live candidates run
+# 51 to 70 stems, so a 1.20x gap between the two means is already about twelve
+# stems on a 60-stem description, and finding 1d of the 2026-11-02 audit moves
+# lexical/3 by 0.031 on four. Tested against an artifact known to fail it
+# (L-A21): the retired v1 panel sits at 2.60x on term sets and the live panel
+# at 0.95x.
+PANEL_TERMSET_TOLERANCE = 1.20  # library:decoy mean distinct-stem ratio
+# The third asymmetry, found 2026-11-02 by building the gate above rather than
+# by reading. USE_WHEN_BOOST multiplies a candidate's activation-clause terms
+# by 1.25, and activation_clause() is a POSITIONAL slice, so what fraction of
+# a description gets boosted is decided by where its "Use when" sits. A
+# Measured
+# today: the decoys carry 94.4 percent of their term set inside the boosted
+# slice and the library 79.6, a 0.84x gap, because every decoy opens with its
+# activation clause and library descriptions carry more framing prose first.
+# Turning the boost off moves three of 67 cases, which is the same count the
+# engine choice moves and which the pass rate has power 0.079 to see.
+#
+# A uniform boost is a no-op on the RANKING and not on the verdict, and the
+# distinction is this file's own defect reported back to it by the research
+# seat on 2026-11-02. route() reads three things and two of them read an
+# absolute number: `library_score >= FLOOR` and `abs(null_margin) <
+# NARROW_MARGIN`. A uniform boost scales both. Measured: off and uniform agree
+# on all 67 fired decisions and disagree on one narrow flag, he-conf-2 at
+# +0.0179 against +0.0224, across the 0.02 threshold. So the no-op is a
+# property of THIS PANEL rather than of the scheme, and a comparison that
+# prints only the fired decision cannot see it.
+#
+# The coefficient itself had no evidence behind it and now has evidence
+# against it (2026-11-02, skills/_validation/use_when_evidence.py, after the
+# research seat answered this seat's queued question by reading both ids in
+# full):
+#   arXiv:2510.22670 ablates a when-to-use field add-one and one-out on a
+#     dense and a sparse retriever over thirty-five unified datasets and keeps
+#     it; the field its authors drop is example-usage. HAVING the clause is
+#     supported. Its section 4.1 is the finding, and its 2.2 carries a
+#     sentence naming the wrong field that reverses it.
+#   arXiv:2602.05366 publishes learned per-field weights, and this library
+#     cited them against USE_WHEN_BOOST until 2026-11-02. **That magnitude
+#     citation is WITHDRAWN.** The row is Table 5's `examples`, and the
+#     research seat settled the field identification by fetching both papers:
+#     `examples` is 22670's `example_usage`, which holds query text, and not
+#     its `when_to_use`, which holds the activation clause. The per-field
+#     definition says "representative user intents", the query side aligns the
+#     field with "a concrete user utterance", and Table 4's cells hold strings
+#     like "clean up podcast recordings by removing background noise". So the
+#     0.269x-1.363x range (median 0.695x, below description in five of six) is
+#     a weight on somebody else's field. It could not have transferred even if
+#     the fields had matched, because MFTR scores `examples` against the
+#     query's own intent field, making part of that weight query-to-query
+#     homophily, and an activation condition is not query text.
+# So the literature supports HAVING the clause and rules out a constant in
+# either direction on 05366's own methodological conclusion. **There is no
+# published weight for this field at all, so 1.25 is undefended rather than
+# contradicted**, and the reason not to retune it is the sweep measurement
+# below rather than the literature. Full reconciliation:
+# docs/research/notes/2026-11-02-field-identification.md.
+#
+# The coefficient is NOT retuned here, and the reason is a measurement rather
+# than caution. Swept over the published range, this suite's pass rate runs 48
+# to 61 of 67 through the positional slice, and under a uniform boost every
+# arm at 0.5x and above scores exactly 60. All of the suite's apparent
+# preference for a high coefficient is the 0.84x asymmetry, so tuning 1.25 on
+# the pass rate would be tuning on a confound, and the prerequisite repair is
+# the panel rewrite already queued as decoy panel v3. arXiv:2602.05366 lands
+# the same warning independently: the variant that applies field weights to
+# raw unstandardized documentation is the one that fluctuates, and its
+# conclusion is that a unified schema is the prerequisite. A positional slice
+# of free prose is that variant, and the 0.84x is what it costs.
+#
+# One consequence for the failure list. The boost's three moved cases are +2
+# and -1 rather than a net of one: it wins cwe-neg-1 and rhsi-conf-1 and
+# LOSES he-conf-2, which is one of the six the suite reports as failing today.
+# he-conf-2 passes at boost off and under a uniform boost, and fails live at
+# -0.0034. So today's 61 of 67 is five library failures and one instrument
+# artifact.
+PANEL_BOOST_TOLERANCE = 1.15  # library:decoy boosted-share ratio
+# Measured on the STEM COUNT, which is not the quantity the boost multiplies:
+# score() weights by idf mass. Both readings trip this tolerance, 0.8435x on
+# stems and 0.8538x on idf mass, so the finding stands either way and the gap
+# is recorded rather than repaired (2026-11-02).
 
 STOPWORDS = {
     "a", "about", "actually", "after", "all", "already", "also", "an", "and",
@@ -111,6 +233,32 @@ STOPWORDS = {
     "using", "want", "wants", "was", "were", "what", "when", "where",
     "whether", "which", "while", "who", "why", "will", "with", "would", "you",
     "your",
+    # Added 2026-11-02. These three are prompt framing, not topic, and giving
+    # them idf weight is what produced the 2026-09-30 "length bias" result:
+    # the whole published +0.1353 for lexical/2.1 between a 41-word and a
+    # 123-word decoy was the single word "last", out of "after the last
+    # release" (reproduced at +0.1311 against today's nine-skill library,
+    # which recomputes idf; the decomposition is the same either way).
+    #
+    # The three are NOT interchangeable, and this is the half the first
+    # version of this comment left out (2026-11-02, decomposed by the research
+    # seat and reproduced in use_when_evidence.py). Only "last" is
+    # load-bearing: making it alone a stopword takes the delta to zero.
+    # Stripping either of the other two ALONE grows the delta to +0.1501,
+    # because both sit in the prompt and in neither description, so removing
+    # one shrinks the denominator and leaves the numerator untouched. So the
+    # case for "got" and "think" is that they are framing, which is an
+    # editorial argument, and not that they carried the length bias, which
+    # they did not.
+    #
+    # Measured before changing it, and on more than the pass rate, which is
+    # the other half the first version understated: the suite scores 61/67
+    # with and without them, the same six cases failing either way, and the
+    # three also move no narrow flag and move nothing across the floor. So the
+    # change is clean on every field the bundle carries rather than on the
+    # headline number alone, and it removes a term that can only mislead the
+    # instrument.
+    "got", "last", "think",
 }
 
 WORD_RE = re.compile(r"[a-z][a-z0-9'\-]*")
@@ -195,7 +343,32 @@ def load_skills(skills_dir: str) -> dict:
     return skills
 
 
+def refuse_unresolved(flag: str, value: str, what: str, found) -> None:
+    """Refuse a flag value that nothing in this checkout carries, by name.
+
+    The engineer seat measured the class on 2026-11-02: across the tools tree
+    fifty-six flags name something a tool could resolve, and three of the eight
+    probed answered a confident zero with exit zero. The worst was the panel
+    validator, whose verdicts gate promotion. This seat probed its own six
+    instruments the same way and found the same defect twice, in
+    `prediction_basis.py` and `project_fixture_probe.py`, plus two more that
+    refused only by traceback. A zero that means "nothing matched" and a zero
+    that means "the path was wrong" must not print the same.
+    """
+    if found:
+        return
+    raise SystemExit(
+        f"{flag} {value!r}: no {what} found there, so there is nothing to "
+        f"measure. This is a refusal and not a result of zero."
+    )
+
+
 def load_decoys(path: str) -> dict:
+    if not os.path.exists(path):
+        raise SystemExit(
+            f"--decoys {path!r}: no such file, so there is nothing to measure. "
+            f"This is a refusal and not a result of zero."
+        )
     data = json.load(open(path, encoding="utf-8"))
     out = {}
     for d in data["decoys"]:
@@ -384,19 +557,11 @@ def run(skills_dir: str, decoys_path: str,
                  for sk in skills.values()
                  if word_count(sk["description"]) > DESCRIPTION_WORD_MAX]
 
-    # The same defect at panel scale. A null model systematically shorter than
-    # the library it nulls decides negative cases by length, not by topic.
-    lib_lens = [word_count(sk["description"]) for sk in skills.values()]
-    dec_lens = [word_count(d["description"]) for d in decoys.values()]
-    lib_mean = sum(lib_lens) / len(lib_lens)
-    dec_mean = sum(dec_lens) / len(dec_lens)
-    ratio = lib_mean / dec_mean if dec_mean else float("inf")
-    if ratio > PANEL_LENGTH_TOLERANCE or ratio < 1 / PANEL_LENGTH_TOLERANCE:
-        warnings.append(
-            f"{os.path.relpath(decoys_path)}: decoy panel averages "
-            f"{dec_mean:.0f} words against the library's {lib_mean:.0f}, a "
-            f"{ratio:.2f}x gap past the {PANEL_LENGTH_TOLERANCE}x tolerance; "
-            f"negative cases are partly decided by length rather than topic")
+    # The same defect at panel scale. A null model systematically narrower
+    # than the library it nulls decides negative cases by breadth of
+    # vocabulary rather than by topic.
+    audit = panel_audit(skills, decoys)
+    warnings += audit.pop("warnings")
 
     case_files = sorted(glob.glob(os.path.join(skills_dir, "*", "triggers.json")))
     if not case_files:
@@ -434,6 +599,16 @@ def run(skills_dir: str, decoys_path: str,
                 "scores": decision["scores"],
                 "rationale": case.get("rationale", ""),
             })
+        if not results:
+            # Before 2026-11-02 this fell through to `passed / len(results)`
+            # and died on a ZeroDivisionError, which exits 1, which is this
+            # file's code for "a case failed". A new skill shipped with
+            # `"cases": []` therefore read as a trigger-suite failure rather
+            # than as a suite nobody had written yet. It is a data error.
+            raise SystemExit(
+                f"{cf}: the suite carries no cases, so there is nothing to "
+                "measure for " + owner + ". " + REFUSAL.format(
+                    gate="trigger test", unit="cases"))
         passed = sum(1 for r in results if r["passed"])
         suites.append({
             "skill": owner,
@@ -453,6 +628,7 @@ def run(skills_dir: str, decoys_path: str,
 
     total_pass = sum(s["passed"] for s in suites)
     total_cases = sum(s["total"] for s in suites)
+    all_cases = [c for s in suites for c in s["cases"]]
     return {
         "generated": date.today().isoformat(),
         "engine": engine.name,
@@ -467,22 +643,126 @@ def run(skills_dir: str, decoys_path: str,
         },
         "library": {k: {"path": v["path"], "sha256": v["sha256"]}
                     for k, v in skills.items()},
-        "length_audit": {
-            "budget_words": DESCRIPTION_WORD_MAX,
-            "panel_tolerance": PANEL_LENGTH_TOLERANCE,
-            "library_mean_words": round(lib_mean, 1),
-            "decoy_mean_words": round(dec_mean, 1),
-            "ratio": round(ratio, 3),
-            "over_budget": sorted(sk["name"] for sk in skills.values()
-                                  if word_count(sk["description"])
-                                  > DESCRIPTION_WORD_MAX),
-        },
+        # Kept under its old key as well, because every recorded bundle and
+        # every reader of one indexes "length_audit". The new key is the one
+        # that carries the load-bearing number.
+        "length_audit": audit,
+        "panel_audit": audit,
         "warnings": warnings,
         "suites": suites,
         "passed": total_pass,
         "total": total_cases,
         "reliability": round(total_pass / total_cases, 4) if total_cases else 0.0,
         "reliability_ci95": clopper_pearson(total_pass, total_cases),
+        # One averaged reliability hides the thing the panel actually does.
+        # The three case kinds depend on the panel with opposite signs
+        # (r = +0.82, -0.43 and +0.11 against panel size over all 255
+        # subsets), so the average is the one number that cannot be read.
+        "by_kind": {kind: _kind_block(all_cases, kind)
+                    for kind in ("positive", "negative", "confusion")},
+    }
+
+
+def _kind_block(cases: list[dict], kind: str) -> dict:
+    sel = [c for c in cases if c["kind"] == kind]
+    k, n = sum(1 for c in sel if c["passed"]), len(sel)
+    return {
+        "passed": k,
+        "total": n,
+        "rate": round(k / n, 4) if n else 0.0,
+        "ci95": clopper_pearson(k, n),
+        "failed": [c["id"] for c in sel if not c["passed"]],
+    }
+
+
+def panel_audit(skills: dict, decoys: dict) -> dict:
+    """Is the null model a fair one?
+
+    Two ratios, and only the second decides anything. Word count is the
+    editorial budget. The distinct stemmed term set is what both engines'
+    scores are functions of, and across the 17 live candidates the two
+    correlate at r = 0.286. The guard watched word count alone from
+    2026-09-30 to 2026-11-02 and was valid only because the retired v1 panel
+    happened to be skewed on both at once (3.34x words, 2.60x term sets). At
+    the margin the panel now occupies it is blind: 1.11x on words, inside
+    tolerance, and 0.95x on term sets, which nothing was looking at.
+    """
+    def means(group, fn):
+        vals = [fn(c["description"]) for c in group.values()]
+        return sum(vals) / len(vals) if vals else 0.0
+
+    def termset(text: str) -> int:
+        return len(set(tokens(text)))
+
+    def boosted_share(c: dict) -> float:
+        body = set(tokens(c["description"]))
+        return len(set(tokens(c["activation"])) & body) / len(body) if body else 0.0
+
+    def share_mean(group):
+        vals = [boosted_share(c) for c in group.values()]
+        return sum(vals) / len(vals) if vals else 0.0
+
+    lib_words, dec_words = means(skills, word_count), means(decoys, word_count)
+    lib_stems, dec_stems = means(skills, termset), means(decoys, termset)
+    lib_boost, dec_boost = share_mean(skills), share_mean(decoys)
+    word_ratio = lib_words / dec_words if dec_words else float("inf")
+    stem_ratio = lib_stems / dec_stems if dec_stems else float("inf")
+    boost_ratio = lib_boost / dec_boost if dec_boost else float("inf")
+
+    warnings = []
+    if (boost_ratio > PANEL_BOOST_TOLERANCE
+            or boost_ratio < 1 / PANEL_BOOST_TOLERANCE):
+        favoured = "library" if boost_ratio > 1 else "decoy panel"
+        warnings.append(
+            f"decoy panel: the {favoured} gets more of its vocabulary inside "
+            f"the {USE_WHEN_BOOST}x activation boost, {lib_boost:.1%} of the "
+            f"library's term set against {dec_boost:.1%} of the panel's, a "
+            f"{boost_ratio:.2f}x gap past the {PANEL_BOOST_TOLERANCE}x "
+            f"tolerance; activation_clause() is a positional slice, so this "
+            f"is word order deciding cases. Measured at 3 cases on 2026-11-02, "
+            f"when the suite held 67; the figure is dated rather than live "
+            f"because nothing in this function recomputes it, and it read "
+            f"'3 of 67 today' until the suite reached 68. The "
+            f"repair is a panel rewrite that matches the library's boosted "
+            f"share, and it is deliberately NOT done in the same commit that "
+            f"reports a pass rate")
+    if (stem_ratio > PANEL_TERMSET_TOLERANCE
+            or stem_ratio < 1 / PANEL_TERMSET_TOLERANCE):
+        wider = "library" if stem_ratio > 1 else "decoy panel"
+        warnings.append(
+            f"decoy panel: the {wider} averages the wider vocabulary, "
+            f"{lib_stems:.1f} distinct stems against {dec_stems:.1f}, a "
+            f"{stem_ratio:.2f}x gap past the {PANEL_TERMSET_TOLERANCE}x "
+            f"tolerance; both engines are monotone in the term set, so "
+            f"negative cases are partly decided by vocabulary breadth "
+            f"rather than by topic")
+    if (word_ratio > PANEL_LENGTH_TOLERANCE
+            or word_ratio < 1 / PANEL_LENGTH_TOLERANCE):
+        warnings.append(
+            f"decoy panel: mean word counts are {lib_words:.0f} against "
+            f"{dec_words:.0f}, a {word_ratio:.2f}x gap past the "
+            f"{PANEL_LENGTH_TOLERANCE}x editorial tolerance; this is a "
+            f"readability signal, not a validity one, and the term-set "
+            f"ratio above is the gate")
+    return {
+        "budget_words": DESCRIPTION_WORD_MAX,
+        "panel_tolerance": PANEL_LENGTH_TOLERANCE,
+        "termset_tolerance": PANEL_TERMSET_TOLERANCE,
+        "library_mean_words": round(lib_words, 1),
+        "decoy_mean_words": round(dec_words, 1),
+        "ratio": round(word_ratio, 3),
+        "library_mean_termset": round(lib_stems, 1),
+        "decoy_mean_termset": round(dec_stems, 1),
+        "termset_ratio": round(stem_ratio, 3),
+        "boost_tolerance": PANEL_BOOST_TOLERANCE,
+        "library_mean_boosted_share": round(lib_boost, 4),
+        "decoy_mean_boosted_share": round(dec_boost, 4),
+        "boosted_share_ratio": round(boost_ratio, 3),
+        "gate": ["termset_ratio", "boosted_share_ratio"],
+        "over_budget": sorted(sk["name"] for sk in skills.values()
+                              if word_count(sk["description"])
+                              > DESCRIPTION_WORD_MAX),
+        "warnings": warnings,
     }
 
 
@@ -499,7 +779,18 @@ def report(res: dict, verbose: bool) -> None:
               else "EXPERIMENT, not the pre-registered policy")
     print(f"trigger test — engine {res['engine']}, floor {p['floor']}, "
           f"{p['decoy_count']} decoys ({stance})")
-    print(f"library: {len(res['library'])} skills, {res['total']} cases\n")
+    a = res["panel_audit"]
+    print(f"library: {len(res['library'])} skills, {res['total']} cases")
+    print(f"panel:   term sets {a['library_mean_termset']:.1f} library vs "
+          f"{a['decoy_mean_termset']:.1f} decoy = {a['termset_ratio']:.2f}x "
+          f"(gate, tolerance {a['termset_tolerance']}x)")
+    print(f"         boosted share {a['library_mean_boosted_share']:.1%} vs "
+          f"{a['decoy_mean_boosted_share']:.1%} = "
+          f"{a['boosted_share_ratio']:.2f}x "
+          f"(gate, tolerance {a['boost_tolerance']}x)")
+    print(f"         words {a['library_mean_words']:.0f} vs "
+          f"{a['decoy_mean_words']:.0f} = {a['ratio']:.2f}x "
+          f"(editorial, not load-bearing)\n")
     for w in res["warnings"]:
         print(f"  warning: {w}")
     if res["warnings"]:
@@ -530,10 +821,277 @@ def report(res: dict, verbose: bool) -> None:
     lo, hi = res["reliability_ci95"]
     print(f"TOTAL {res['passed']}/{res['total']} — "
           f"reliability {res['reliability']:.2f}, 95% CI [{lo:.2f}, {hi:.2f}]")
+    print("  and that average is the one number here that cannot be read, "
+          "because the three kinds move against the panel in opposite "
+          "directions (--sweep):")
+    for kind in ("positive", "negative", "confusion"):
+        b = res["by_kind"][kind]
+        klo, khi = b["ci95"]
+        fail = (", failing " + ", ".join(b["failed"])) if b["failed"] else ""
+        print(f"    {kind:<10} {b['passed']}/{b['total']} = "
+              f"{b['rate']:.3f}  95% CI [{klo:.2f}, {khi:.2f}]{fail}")
     if res["passed"] == res["total"]:
         print(f"A clean sweep of {res['total']} cases still only bounds true "
               f"trigger reliability at {lo:.2f} from below. Small n is the "
               f"honest limit here, not a result to advertise.")
+
+
+# ---------------------------------------------------------------------------
+# The engine gate (--invariance)
+#
+# This, and not the pass rate, is what an engine change has to clear.
+#
+# The pass rate cannot do the job, and the number is exact rather than a
+# worry. The two engines run on the same cases, so the design is paired: on
+# the current suite 58 cases are concordant passes and 6 are concordant
+# failures, and those 64 carry zero information about which engine is better.
+# Three cases are discordant and all three favour the default. Two-sided
+# exact McNemar on three is p = 0.25, and six one-way discordances is the
+# floor for any verdict at 0.05 no matter how many concordant cases sit
+# behind them. At a discordance rate of 3/67 that leaves a 67-case suite with
+# power 0.079 against an engine that wins every case it differs on, 0.041 at
+# nine in ten, 0.020 at four in five. It would take 176 cases for the first
+# and 1,601 for a 2-to-1 edge.
+#
+# Invariance is not a rate to be estimated. It is a property of the scoring
+# function, decided by the code in under a second with power 1 and variance
+# 0. So it is pre-registered here as the gate, and the pass rate stands as a
+# regression check rather than as the arbiter of engine choice.
+# ---------------------------------------------------------------------------
+
+INVARIANCE_FILLER = (
+    "kubernetes sidecar istio helm terraform ansible jenkins grafana "
+    "prometheus loki tempo thanos karpenter cilium envoy nomad consul vault "
+    "packer vagrant")
+
+
+def run_invariance(skills_dir: str, decoys_path: str) -> list[str]:
+    """Three properties, proved rather than sampled. Returns failures.
+
+    1. Both engines discard multiplicity, given the activation slice. The
+       tokenizer builds a set, so repeating a description cannot move either
+       term set and therefore cannot move a score. This is the property the
+       2026-09-30 engine-decision doc believed it had refuted; its test
+       varied length by *rewriting* the candidate, which moved the term set
+       too, and the whole published +0.1353 for lexical/2.1 decomposes to one
+       shared word plus a negligible idf shift.
+    2. lexical/2.1 and 2.2 are exactly invariant to unmatched description
+       mass. The denominator is the prompt's idf mass, which no candidate's
+       text can move, so a description can only gain by covering terms the
+       prompt actually uses.
+    3. lexical/3 is strictly decreasing in unmatched description mass,
+       because it divides by the candidate's own mass. The verbosity defect
+       the 2026-09-22 ledger entry attributed to the default belongs to the
+       challenger, and to it alone.
+    """
+    skills = load_skills(skills_dir)
+    decoys = load_decoys(decoys_path)
+    cand = {**skills, **decoys}
+    key = sorted(decoys)[0]
+    prompt = next(iter(skills.values()))["description"]
+    base = cand[key]["description"]
+    failures = []
+
+    def scores(text):
+        c = dict(cand)
+        c[key] = {**cand[key], "description": text,
+                  "activation": activation_clause(text)}
+        return (LexicalEngine(c).score(prompt, key),
+                NormalisedLexicalEngine(c).score(prompt, key))
+
+    print("invariance gate — properties of the scoring function, not a "
+          "sample of cases\n")
+
+    def scores_fixed_activation(text):
+        """The activation slice held at the real description's, so this
+        isolates the tokenizer's set semantics from the positional slice
+        property 4 measures."""
+        c = dict(cand)
+        c[key] = {**cand[key], "description": text,
+                  "activation": cand[key]["activation"]}
+        return (LexicalEngine(c).score(prompt, key),
+                NormalisedLexicalEngine(c).score(prompt, key))
+
+    # 1. multiplicity, given the activation slice
+    ref = scores_fixed_activation(base)
+    print(f"  1. multiplicity discarded, activation slice held "
+          f"(candidate {key})")
+    for mult in (1, 2, 3, 5, 9):
+        text = " ".join([base] * mult)
+        set_same = set(tokens(text)) == set(tokens(base))
+        got = scores_fixed_activation(text)
+        ok = got == ref and set_same
+        print(f"       x{mult}: {word_count(text):4d} words, "
+              f"{len(set(tokens(text))):3d} stems -> "
+              f"2.x {got[0]:.6f}  3 {got[1]:.6f}  {'ok' if ok else 'FAIL'}")
+        if not ok:
+            failures.append(f"multiplicity moved a score at x{mult}: "
+                            f"{ref} -> {got}")
+
+    # 2 and 3. unmatched mass, both directions at once
+    pool = [w for w in INVARIANCE_FILLER.split()
+            if stem(w) not in set(tokens(prompt))]
+    print(f"  2. lexical/{ENGINE_VERSION.split('/')[1]} invariant to "
+          f"unmatched mass; 3. lexical/3 strictly decreasing")
+    prev3 = None
+    for n in (0, 4, 8, 12, 16, 20):
+        s2, s3 = scores(base + " " + " ".join(pool[:n]))
+        inv_ok = abs(s2 - ref[0]) < 1e-12
+        dec_ok = prev3 is None or s3 < prev3 - 1e-12
+        print(f"       +{n:2d} unmatched stems -> "
+              f"2.x {s2:.6f} {'ok' if inv_ok else 'FAIL'}   "
+              f"3 {s3:.6f} {'ok' if dec_ok else 'FAIL'}")
+        if not inv_ok:
+            failures.append(f"the default engine moved by {s2 - ref[0]:+.2e} "
+                            f"on {n} unmatched stems; it must not move at all")
+        if not dec_ok:
+            failures.append(f"lexical/3 did not strictly decrease at {n} "
+                            f"unmatched stems: {prev3} -> {s3}")
+        prev3 = s3
+
+    # 4. the one place the engine reads word order rather than a set.
+    # Not a pass/fail assertion, because it is documented policy as of
+    # 2026-11-02 rather than a regression, and the asymmetry it creates is
+    # gated in panel_audit(). It is printed because it is the exception to
+    # everything above, and a reader who takes "the score is a function of
+    # the term set" away from properties 1 to 3 has read it slightly wrong.
+    print("  4. NOT invariant: activation_clause() is a positional slice, so "
+          "the 1.25x boost reads word order")
+    ref_pos = scores(base)
+    for mult in (1, 2, 3):
+        text = " ".join([base] * mult)
+        got = scores(text)
+        boosted = len(set(tokens(activation_clause(text)))
+                      & set(tokens(text))) / len(set(tokens(text)))
+        print(f"       x{mult}: boosted share {boosted:.1%} -> "
+              f"2.x {got[0]:.6f} ({got[0] - ref_pos[0]:+.6f})   "
+              f"3 {got[1]:.6f} ({got[1] - ref_pos[1]:+.6f})")
+    print("       Duplication is a pathological input and never occurs in the "
+          "library, but the same lever is live at scale: where a description "
+          "puts its 'Use when' decides how much of it the boost covers, and "
+          "the panel is asymmetric on exactly that today.")
+
+    print()
+    if failures:
+        for f in failures:
+            print(f"  FAIL: {f}")
+        print(f"\ninvariance: {len(failures)} properties violated. An engine "
+              f"that fails this is not a candidate, whatever its pass rate.")
+    else:
+        print("invariance: 3 of 3 properties hold. Power 1, no cases, no "
+              "model call. This is the pre-registered engine gate; the pass "
+              "rate below it has power 0.079 against the same question.")
+    return failures
+
+
+# ---------------------------------------------------------------------------
+# The panel sweep (--sweep)
+#
+# arxiv:2604.24594 section 5.2.1 publishes a curve over distractor count
+# rather than one cell, and the reason applies here: a single reliability
+# figure at one panel is a measurement of that panel as much as of the
+# library. Every non-empty subset of the decoys is affordable at eight, so
+# the whole curve is reported rather than sampled.
+# ---------------------------------------------------------------------------
+
+def run_sweep(skills_dir: str, decoys_path: str,
+              engine_version: str = ENGINE_VERSION) -> dict:
+    skills = load_skills(skills_dir)
+    all_decoys = load_decoys(decoys_path)
+    names = sorted(all_decoys)
+    cases = []
+    for cf in sorted(glob.glob(os.path.join(skills_dir, "*", "triggers.json"))):
+        for c in json.load(open(cf, encoding="utf-8"))["cases"]:
+            cases.append(c)
+
+    rows = []
+    for r in range(1, len(names) + 1):
+        for sub in itertools.combinations(names, r):
+            engine = ENGINES[engine_version](
+                {**skills, **{k: all_decoys[k] for k in sub}})
+            per = {"positive": [0, 0], "negative": [0, 0], "confusion": [0, 0]}
+            ok = 0
+            for c in cases:
+                passed = engine.route(c["prompt"])["fired"] == c.get("expect")
+                ok += passed
+                per[c["kind"]][0] += passed
+                per[c["kind"]][1] += 1
+            rows.append({
+                "size": r,
+                "decoys": list(sub),
+                "reliability": round(ok / len(cases), 4),
+                "by_kind": {k: round(v[0] / v[1], 4) if v[1] else 0.0
+                            for k, v in per.items()},
+            })
+
+    rels = [row["reliability"] for row in rows]
+    full = next(row for row in rows if row["size"] == len(names))
+    out = {
+        "subsets": len(rows),
+        "cases": len(cases),
+        "engine": engine_version,
+        "reliability_min": min(rels),
+        "reliability_max": max(rels),
+        "reliability_at_full_panel": full["reliability"],
+        "worst_panel": min(rows, key=lambda row: row["reliability"]),
+        "best_panel": max(rows, key=lambda row: row["reliability"]),
+        "by_size": {},
+        "kind_correlation_with_panel_size": {},
+    }
+    for r in range(1, len(names) + 1):
+        sel = [row for row in rows if row["size"] == r]
+        v = [row["reliability"] for row in sel]
+        out["by_size"][r] = {
+            "panels": len(sel),
+            "min": min(v), "max": max(v),
+            "mean": round(sum(v) / len(v), 4),
+            "by_kind_mean": {
+                k: round(sum(row["by_kind"][k] for row in sel) / len(sel), 4)
+                for k in ("positive", "negative", "confusion")},
+        }
+    sizes = [row["size"] for row in rows]
+    for kind in ("positive", "negative", "confusion"):
+        out["kind_correlation_with_panel_size"][kind] = round(
+            _pearson(sizes, [row["by_kind"][kind] for row in rows]), 3)
+    return out
+
+
+def _pearson(x: list, y: list) -> float:
+    n = len(x)
+    mx, my = sum(x) / n, sum(y) / n
+    cov = sum((a - mx) * (b - my) for a, b in zip(x, y))
+    vx = sum((a - mx) ** 2 for a in x)
+    vy = sum((b - my) ** 2 for b in y)
+    return cov / math.sqrt(vx * vy) if vx * vy else float("nan")
+
+
+def report_sweep(sw: dict) -> None:
+    print(f"panel sweep — engine {sw['engine']}, {sw['subsets']} non-empty "
+          f"decoy subsets, {sw['cases']} cases, library fixed\n")
+    print(f"  reliability spans {sw['reliability_min']:.4f} to "
+          f"{sw['reliability_max']:.4f}; the published cell, the full panel, "
+          f"is {sw['reliability_at_full_panel']:.4f}")
+    print(f"  worst: {sw['worst_panel']['reliability']:.4f} at "
+          f"{len(sw['worst_panel']['decoys'])} decoys "
+          f"{sw['worst_panel']['decoys']}")
+    print(f"  best:  {sw['best_panel']['reliability']:.4f} at "
+          f"{len(sw['best_panel']['decoys'])} decoys "
+          f"{sw['best_panel']['decoys']}")
+    print("\n  size  panels     min     max    mean | positive negative confusion")
+    for size, b in sw["by_size"].items():
+        k = b["by_kind_mean"]
+        print(f"  {size:>4}  {b['panels']:>6}  {b['min']:.4f}  {b['max']:.4f}  "
+              f"{b['mean']:.4f} |   {k['positive']:.4f}   {k['negative']:.4f}    "
+              f"{k['confusion']:.4f}")
+    print("\n  correlation of each kind's rate with panel size:")
+    for kind, r in sw["kind_correlation_with_panel_size"].items():
+        print(f"    {kind:<10} r = {r:+.3f}")
+    print("\n  The three signs are not the same, which is why one averaged "
+          "reliability is unreadable: a wider panel buys negative-case "
+          "rejection and costs confusion resolution. The maximum in this "
+          "table is not a target. Choosing the subset that scores best "
+          "would be tuning the instrument to the library, which is the one "
+          "thing a null model may never do.")
 
 
 # ---------------------------------------------------------------------------
@@ -653,7 +1211,7 @@ def check_receipts(skills_dir: str, results_dir: str) -> int:
               "as the SKILL.md edit, not a later one:")
         print("  python3 skills/_validation/trigger_test.py "
               "--json skills/_validation/results/<date>-<engine>-<slug>.json")
-    else:
+    elif skills:
         print(f"\nall {len(skills)} receipts describe today's text.")
     return len(stale)
 
@@ -741,9 +1299,56 @@ def check_frontmatter(skills_dir: str) -> int | SkippedGate:
               "unquoted description. Wrap the value in double quotes; both "
               "readers in this repository strip them, so the text a router "
               "scores does not change.")
-    else:
+    elif paths:
         print(f"\nall {len(paths)} skills load under a YAML parser.")
     return len(bad)
+
+
+# Is every description inside the editorial word budget?
+# (--budget, folded into --receipts)
+#
+# DESCRIPTION_WORD_MAX has been carried by run() since incident 31 and carried
+# there as a WARNING, which means it is read by whoever reads the bundle's
+# `warnings` array. On 2026-11-02 this seat shipped a 171-word description to
+# carry two new activation conditions, the warning was printed, and the cost
+# landed somewhere nobody would look for it: `evaluation-integrity`'s first
+# negative case went from silence to firing `agent-security-measurement` at a
+# null margin of 0.005. The seat that caused it is not the seat whose case goes
+# red, and the suite's exit code does not distinguish the two, so the warning
+# was still true and still unenforced.
+#
+# So it moves next to the frontmatter check, which is the sibling defect with
+# the sibling remedy: both are properties of one description that a seat can
+# only have broken in the edit it is about to commit, and `--receipts` is the
+# mode that edit is told to run. No engine, no cases, no model call.
+def check_budget(skills_dir: str) -> int:
+    """Count the descriptions past DESCRIPTION_WORD_MAX. Returns the number
+    over budget, which is the number of skills that outrank their neighbours
+    on breadth of vocabulary rather than on topic."""
+    skills = load_skills(skills_dir)
+    over = []
+    print(f"\nbudget: {len(skills)} descriptions against the "
+          f"{DESCRIPTION_WORD_MAX}-word editorial budget")
+    for name in sorted(skills):
+        words = word_count(skills[name]["description"])
+        if words > DESCRIPTION_WORD_MAX:
+            over.append(name)
+            print(f"  OVER     {name}: {words} words, "
+                  f"{words - DESCRIPTION_WORD_MAX} past the budget")
+            continue
+        print(f"  ok       {name}: {words} words")
+    if over:
+        print(f"\n{len(over)} of {len(skills)} descriptions are past the "
+              f"{DESCRIPTION_WORD_MAX}-word budget: {', '.join(over)}.")
+        print("A longer description outranks a terser one on any prompt both "
+              "cover, and the case that goes red is usually another skill's. "
+              "Cut the description, then re-run the trigger test, because the "
+              "bundle you are about to commit measures a composition that "
+              "includes this one.")
+    elif skills:
+        print(f"\nall {len(skills)} descriptions are inside the "
+              f"{DESCRIPTION_WORD_MAX}-word budget.")
+    return len(over)
 
 
 def main() -> int:
@@ -765,17 +1370,56 @@ def main() -> int:
                     help="offline check: does every skill's newest recorded "
                          "receipt describe its SKILL.md as it stands now? Run "
                          "this before committing a SKILL.md edit. No engine, "
-                         "no cases, exits non-zero on a stale receipt.")
+                         "no cases, exits non-zero on a stale receipt, on frontmatter "
+                         "no YAML parser can load, or on a description "
+                         "past the 150-word budget.")
+    ap.add_argument("--invariance", action="store_true",
+                    help="the pre-registered ENGINE gate: prove the scoring "
+                         "function's invariance properties from the code. "
+                         "Power 1, no cases, no model call. An engine change "
+                         "clears this, not the pass rate, which has power "
+                         "0.079 against the same question at 67 cases.")
+    ap.add_argument("--sweep", action="store_true",
+                    help="reliability over every non-empty decoy subset, "
+                         "split by case kind, because the three kinds depend "
+                         "on the panel with opposite signs and one averaged "
+                         "number hides it")
     ap.add_argument("-v", "--verbose", action="store_true")
     args = ap.parse_args()
 
+    if args.invariance:
+        return 1 if run_invariance(args.skills_dir, args.decoys) else 0
+
+    if args.sweep:
+        sw = run_sweep(args.skills_dir, args.decoys, args.engine)
+        report_sweep(sw)
+        if args.json:
+            with open(args.json, "w", encoding="utf-8") as fh:
+                json.dump(sw, fh, indent=2)
+            print(f"\nwrote {args.json}")
+        return 0
+
     if args.receipts:
+        # The denominator the gate was missing. `refuse_unresolved` above
+        # covers a path that holds no skills *directory*; this covers a
+        # directory that resolved and holds no skills, which printed "all 0
+        # receipts describe today's text" and exited 0 until 2026-11-02.
+        n_skills = len(load_skills(args.skills_dir))
         stale = check_receipts(args.skills_dir, args.results)
         unloadable = check_frontmatter(args.skills_dir)
         if isinstance(unloadable, SkippedGate):
             print(f"\nreceipts: FAIL, {unloadable}")
             return 1
-        return 1 if (stale or unloadable) else 0
+        over_budget = check_budget(args.skills_dir)
+        return verdict(
+            "receipts, frontmatter and budget", checked=n_skills, unit="skills",
+            failures=stale + unloadable + over_budget,
+            pass_line=f"receipts: all {n_skills} skills carry a receipt for "
+                      "today's text, load under a YAML parser and keep their "
+                      f"descriptions inside {DESCRIPTION_WORD_MAX} words.",
+            fail_line=f"receipts: {stale} stale, {unloadable} unloadable and "
+                      f"{over_budget} over the word budget, of {n_skills} "
+                      "skills.")
 
     res = run(args.skills_dir, args.decoys, args.engine)
     report(res, args.verbose)

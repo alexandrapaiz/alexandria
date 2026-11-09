@@ -1,0 +1,24 @@
+panel sweep — engine lexical/2.2, 255 non-empty decoy subsets, 67 cases, library fixed
+
+  reliability spans 0.7612 to 0.9403; the published cell, the full panel, is 0.9104
+  worst: 0.7612 at 1 decoys ['decoy-dependency-management']
+  best:  0.9403 at 6 decoys ['decoy-api-integration', 'decoy-cluster-capacity', 'decoy-data-pipeline-ops', 'decoy-frontend-layout', 'decoy-postgres-tuning', 'decoy-product-copy']
+
+  size  panels     min     max    mean | positive negative confusion
+     1       8  0.7612  0.8209  0.7873 |   0.9957   0.2986    0.9250
+     2      28  0.7910  0.8507  0.8230 |   0.9914   0.4544    0.9107
+     3      56  0.7910  0.8955  0.8526 |   0.9889   0.5794    0.9009
+     4      70  0.8209  0.9104  0.8753 |   0.9892   0.6738    0.8914
+     5      56  0.8358  0.9254  0.8915 |   0.9920   0.7421    0.8804
+     6      28  0.8806  0.9403  0.9088 |   0.9963   0.7897    0.8893
+     7       8  0.8955  0.9254  0.9142 |   1.0000   0.8194    0.8750
+     8       1  0.9104  0.9104  0.9104 |   1.0000   0.8333    0.8500
+
+  correlation of each kind's rate with panel size:
+    positive   r = +0.110
+    negative   r = +0.816
+    confusion  r = -0.434
+
+  The three signs are not the same, which is why one averaged reliability is unreadable: a wider panel buys negative-case rejection and costs confusion resolution. The maximum in this table is not a target. Choosing the subset that scores best would be tuning the instrument to the library, which is the one thing a null model may never do.
+
+wrote skills/_validation/results/2026-11-02-panel-sweep-255.json

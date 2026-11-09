@@ -243,9 +243,26 @@ def live():
 def test_the_suite_is_the_published_one_and_not_a_new_exam(live):
     """The cases come from skills/*/triggers.json, the same file the trigger
     receipts in skills/_validation/results/ are scored on. A measurement that
-    writes its own query set can pass by writing easy queries."""
-    assert live["cases"]["total"] == 67
-    assert live["cases"]["golden"] + live["cases"]["silent"] == 67
+    writes its own query set can pass by writing easy queries.
+
+    The count is read back from those files rather than pinned to a literal.
+    It was pinned at 67 until 2026-11-02, when `agent-containment` gained a
+    legitimate case for its new delta and this assertion went red on a suite
+    that had just got bigger. That is the same shape as the tripwire described
+    in `test_the_live_queue_serves_a_blocked_skills_papers_on_the_next_run`:
+    a literal that has to be edited by hand every time the library improves
+    will eventually be edited without being thought about, which is the one
+    failure mode this assertion exists to prevent. Deriving it keeps the real
+    guarantee, which is that the measurement scores the published cases and
+    not a set it wrote itself, and drops the part that only tracked the date.
+    """
+    published = sum(
+        len(json.loads(f.read_text()).get("cases", []))
+        for f in sorted((REPO / "skills").glob("*/triggers.json"))
+    )
+    assert published, "no published trigger cases were found to compare against"
+    assert live["cases"]["total"] == published
+    assert live["cases"]["golden"] + live["cases"]["silent"] == published
 
 
 def test_the_distractors_are_real_skills_from_this_checkout(live):
@@ -262,9 +279,26 @@ def test_scoping_loads_fewer_skills_and_less_context(live):
     2026-11-01. That test asserted the context win and the recall relation
     together, so when the recall relation inverted the context win stopped
     being measured too, and both halves had been unreported for days.
+
+    The count is derived rather than pinned, as of 2026-11-02. It read `== 29`,
+    which was 9 library skills plus the 20 distractors and correct on `main`
+    until `agent-approval-paths` made the library ten. The pin then went red on
+    a library that had grown exactly as intended, which is the fourth pinned
+    library count to do that in this repository and the third in this one file.
+    `test_the_suite_is_the_published_one_and_not_a_new_exam`, twelve lines
+    above, already carries the argument and the remedy in its own words: a
+    literal that has to be edited by hand every time the library improves will
+    eventually be edited without being thought about. It was not edited at all
+    here, and the red arrived on the branch that added the tenth skill.
+
+    What is worth asserting survives the derivation, and it is the only thing
+    the literal was ever guarding: the unscoped arm loads the whole pool, so
+    "unscoped" means unscoped and the comparison below is against everything
+    rather than against some already-filtered subset.
     """
     full = live["conditions"][-1]["arms"]
-    assert full["unscoped"]["mean_skills_loaded"] == 29
+    assert full["unscoped"]["mean_skills_loaded"] == \
+        live["library"]["count"] + live["distractor_pool"]["count"]
     assert full["scope/body"]["mean_skills_loaded"] <= ss.K_MAX
     assert full["scope/body"]["mean_context_words"] < \
         full["unscoped"]["mean_context_words"]

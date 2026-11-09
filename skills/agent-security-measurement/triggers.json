@@ -1,61 +1,78 @@
 {
-  "skill": "agent-security-measurement",
-  "suite_version": 1,
-  "written": "2026-09-30",
-  "author": "skill agent (ADR-22)",
-  "note": "Five-prompt trigger test required by prompts/skill-agent.md plus confusion cases for the two nearest library skills, agent-containment and evaluation-integrity. The negatives target this skill's worst false-positive risk, which is that security vocabulary reaches ordinary application security and ordinary incident work.",
-  "cases": [
-    {
-      "id": "asm-pos-1",
-      "kind": "positive",
-      "expect": "agent-security-measurement",
-      "prompt": "Our injection defence brought attack success on our internal suite from 45 percent down to 10 percent and the team wants to ship it. What am I not measuring yet, and how do I report this so the number survives review?",
-      "anchor": "when reporting or reviewing an attack success rate",
-      "rationale": "The operating-point section is the answer: a security rate with no utility number beside it can be won by refusing more, and a rate measured on a fixed attack set is a statement about that set. The prompt shows exactly the reporting the skill exists to correct."
-    },
-    {
-      "id": "asm-pos-2",
-      "kind": "positive",
-      "expect": "agent-security-measurement",
-      "prompt": "We run 200 agent accounts against shared internal services and the security team can only look at ten of them a day. Which ones should they look at, and how do I know our detector is any good when most of the harmful activity uses permissions the accounts legitimately hold?",
-      "anchor": "when choosing which agent-days a limited review budget should inspect",
-      "rationale": "The fleet-monitoring section is measured on precisely this setting, including the finding that the best monitor missed about half and that spending the budget unevenly beat applying the strongest monitor everywhere."
-    },
-    {
-      "id": "asm-pos-3",
-      "kind": "positive",
-      "expect": "agent-security-measurement",
-      "prompt": "We are adding an orchestrator agent above the two agents we already run, and our safety story is a line in the orchestrator's system prompt telling it never to touch the shutdown hooks. Is that enough?",
-      "anchor": "when a prompt-level prohibition or a content filter over tool metadata is the current control",
-      "rationale": "Both halves of the prompt are measured findings that reverse the user's expectation: one model went from 0 percent misbehaviour alone to 94 percent with an orchestrator, and the orchestrator forwarded every sabotage request it received. The written prohibition reduced the rate and was routed around by shadowing an import."
-    },
-    {
-      "id": "asm-neg-1",
-      "kind": "negative",
-      "expect": null,
-      "prompt": "A pentest found reflected XSS and a missing rate limit on the login endpoint of the web app that fronts our agent. How should we prioritise the fixes and what should the retest cover?",
-      "rationale": "Hard negative: pentest, attack, fix, retest and agent are all in or adjacent to this skill's vocabulary. But this is conventional application security on a web endpoint, with no agent behaviour being measured and no defence operating point to choose. A description matching on attack and security alone would fire here."
-    },
-    {
-      "id": "asm-neg-2",
-      "kind": "negative",
-      "expect": null,
-      "prompt": "Our agent gateway started returning 500s and the monitoring dashboard is showing a spike in refusals from the upstream model provider. Is this an outage on their side and should I page anyone?",
-      "rationale": "Hard negative and the more dangerous of the two: it says agent, monitoring, refusals and spike, which are four of this skill's own words, and refusal rates are section 1's subject. But refusal here is a provider error condition and the need is live incident triage, which the decoy panel owns."
-    },
-    {
-      "id": "asm-conf-1",
-      "kind": "confusion",
-      "expect": "agent-containment",
-      "prompt": "Our coding agent runs shell commands in customer repositories and our only defence is a list of forbidden commands we extend every week. What should the enforcement look like instead?",
-      "rationale": "Routes to the neighbouring containment skill. This skill's description names a content filter as a control it covers, so a prompt about a command deny list is the likeliest theft between the two; the answer wanted here is where to enforce, not what to measure."
-    },
-    {
-      "id": "asm-conf-2",
-      "kind": "confusion",
-      "expect": "evaluation-integrity",
-      "prompt": "Our model-written rubric grades agent transcripts and the scores have started clustering near the top. How many independent judgments should an accept require before I trust it?",
-      "rationale": "Routes to evaluation-integrity. Both skills care about whether a measurement can be trusted, and the boundary is the object: that skill judges the generated instrument, this one judges a defence against an adversary. A rubric and a judge belong there."
-    }
-  ]
+ "skill": "agent-security-measurement",
+ "suite_version": 2,
+ "written": "2026-09-30",
+ "author": "skill agent (ADR-22)",
+ "note": "Five-prompt trigger test required by prompts/skill-agent.md plus confusion cases for the two nearest library skills, agent-containment and evaluation-integrity. The negatives target this skill's worst false-positive risk, which is that security vocabulary reaches ordinary application security and ordinary incident work. Revised 2026-11-02: two positives added for the two activation conditions the description gained when Parallax (2604.12986) was read in full. asm-pos-4 is the saturated-arms prompt behind delta 2's new rule 5 and asm-pos-5 is the detector-transfer prompt behind delta 4's extended rule 2. The suite now runs five positives, two negatives and two confusion cases, which is above the charter's three-and-two floor. A green result here says this skill is findable on those two conditions and says nothing about whether it helps on them: that is the eval suite's question and it is still unmeasured.",
+ "cases": [
+  {
+   "id": "asm-pos-1",
+   "kind": "positive",
+   "expect": "agent-security-measurement",
+   "prompt": "Our injection defence brought attack success on our internal suite from 45 percent down to 10 percent and the team wants to ship it. What am I not measuring yet, and how do I report this so the number survives review?",
+   "anchor": "when reporting or reviewing an attack success rate",
+   "rationale": "The operating-point section is the answer: a security rate with no utility number beside it can be won by refusing more, and a rate measured on a fixed attack set is a statement about that set. The prompt shows exactly the reporting the skill exists to correct."
+  },
+  {
+   "id": "asm-pos-2",
+   "kind": "positive",
+   "expect": "agent-security-measurement",
+   "prompt": "We run 200 agent accounts against shared internal services and the security team can only look at ten of them a day. Which ones should they look at, and how do I know our detector is any good when most of the harmful activity uses permissions the accounts legitimately hold?",
+   "anchor": "when choosing which agent-days a limited review budget should inspect",
+   "rationale": "The fleet-monitoring section is measured on precisely this setting, including the finding that the best monitor missed about half and that spending the budget unevenly beat applying the strongest monitor everywhere."
+  },
+  {
+   "id": "asm-pos-3",
+   "kind": "positive",
+   "expect": "agent-security-measurement",
+   "prompt": "We are adding an orchestrator agent above the two agents we already run, and our safety story is a line in the orchestrator's system prompt telling it never to touch the shutdown hooks. Is that enough?",
+   "anchor": "when a prompt-level prohibition or a content filter over tool metadata is the current control",
+   "rationale": "Both halves of the prompt are measured findings that reverse the user's expectation: one model went from 0 percent misbehaviour alone to 94 percent with an orchestrator, and the orchestrator forwarded every sabotage request it received. The written prohibition reduced the rate and was routed around by shadowing an import."
+  },
+  {
+   "id": "asm-pos-4",
+   "kind": "positive",
+   "expect": "agent-security-measurement",
+   "prompt": "We A/B tested our tool-call validator on 90 adversarial tasks and attack success was 0 percent with the validator on, 0 percent with it off, and 0 percent with just safety text in the system prompt. Nobody can tell the arms apart. Does that mean the validator is dead weight, or did we run the wrong experiment?",
+   "anchor": "when a defence measures the same with it and without it because the model refused in both arms",
+   "rationale": "The activation condition is stated almost literally: three arms, one number, and the user asking which of the two readings is right. The skill's delta 2 rule 5 answers it with the injection point and prescribes the rerun, and delta 3's narrowed rule 1 is what stops the zero being read as 'this model needs no enforcement'. A skill that does not fire here leaves the user with the reading that cuts a control on a saturated measurement."
+  },
+  {
+   "id": "asm-pos-5",
+   "kind": "positive",
+   "expect": "agent-security-measurement",
+   "prompt": "We want to gate our agent's tool calls with an off-the-shelf prompt-injection classifier. Its model card says 98.8 percent accuracy on a held-out set of 16k samples. We will serialize each tool call, score it, and block above 0.85. Where should the threshold start?",
+   "anchor": "when an injection detector's published accuracy is carried across to tool-call payloads",
+   "rationale": "The prompt names the detector, the published accuracy, the payloads it will actually score and the threshold as the knob, which is the exact configuration delta 4's rule 2 was extended for on 2026-11-02. The question asked is the threshold, and the answer the skill carries is that the threshold is the wrong knob because the measured false positives arrive at confidence 1.00. This is the hardest kind of trigger to earn, because the surface vocabulary is classifier tuning rather than security measurement, so it is worth having in the suite whether or not it passes."
+  },
+  {
+   "id": "asm-neg-1",
+   "kind": "negative",
+   "expect": null,
+   "prompt": "A pentest found reflected XSS and a missing rate limit on the login endpoint of the web app that fronts our agent. How should we prioritise the fixes and what should the retest cover?",
+   "rationale": "Hard negative: pentest, attack, fix, retest and agent are all in or adjacent to this skill's vocabulary. But this is conventional application security on a web endpoint, with no agent behaviour being measured and no defence operating point to choose. A description matching on attack and security alone would fire here."
+  },
+  {
+   "id": "asm-neg-2",
+   "kind": "negative",
+   "expect": null,
+   "prompt": "Our agent gateway started returning 500s and the monitoring dashboard is showing a spike in refusals from the upstream model provider. Is this an outage on their side and should I page anyone?",
+   "rationale": "Hard negative and the more dangerous of the two: it says agent, monitoring, refusals and spike, which are four of this skill's own words, and refusal rates are section 1's subject. But refusal here is a provider error condition and the need is live incident triage, which the decoy panel owns."
+  },
+  {
+   "id": "asm-conf-1",
+   "kind": "confusion",
+   "expect": "agent-containment",
+   "prompt": "Our coding agent runs shell commands in customer repositories and our only defence is a list of forbidden commands we extend every week. What should the enforcement look like instead?",
+   "rationale": "Routes to the neighbouring containment skill. This skill's description names a content filter as a control it covers, so a prompt about a command deny list is the likeliest theft between the two; the answer wanted here is where to enforce, not what to measure."
+  },
+  {
+   "id": "asm-conf-2",
+   "kind": "confusion",
+   "expect": "evaluation-integrity",
+   "prompt": "Our model-written rubric grades agent transcripts and the scores have started clustering near the top. How many independent judgments should an accept require before I trust it?",
+   "rationale": "Routes to evaluation-integrity. Both skills care about whether a measurement can be trusted, and the boundary is the object: that skill judges the generated instrument, this one judges a defence against an adversary. A rubric and a judge belong there."
+  }
+ ],
+ "revised": "2026-11-02"
 }

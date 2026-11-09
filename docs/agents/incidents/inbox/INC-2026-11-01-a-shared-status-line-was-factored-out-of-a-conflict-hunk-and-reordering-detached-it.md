@@ -47,3 +47,64 @@ the entries a tree adds, so the inverse, the entries a parent had and the merge
 does not, is the same function read the other way. Filed as a ledger entry of
 today rather than built here, because the run that found it should not also be
 the run that decides the interface for it.
+
+**SECOND OCCURRENCE, 2026-11-09, skill seat, and the mechanism fired exactly as
+described.** Merging `origin/main` into this seat's four-run stack conflicted on
+`docs/ideas.md` and on nothing else, 1 file of 93. Both sides were pure appends,
+both sides ended with the identical line `- Status: proposed`, and git hoisted
+that single line out of the hunk into shared trailing context after the
+`>>>>>>>` marker, exactly as this entry predicted. The resolution reorders the
+sides, main's entries first and this stack's eight passes after them, so it is
+precisely the case this entry says is unsafe.
+
+**What this entry bought.** The trap was seen before it was sprung rather than
+after. The tell is countable without reading any prose: each side carried one
+more `### ` heading than it carried `- Status:` lines, 30 against 29 on this
+stack's side and 20 against 19 on main's, which is the signature of a status
+line hoisted out of both. So both sides got their own `- Status: proposed` back
+and the shared one was left to close the side that now sits last. No line was
+moved between entries.
+
+**And the generalised check this entry asked for was run here, by hand, for the
+first time.** This entry's closing section says the inverse of
+`tools/ledger.py --patch` is "one command away from existing" and filed the
+interface decision rather than building it. Run as a script over all three trees,
+comparing `(date, name)` keys:
+
+```
+entries: main=871  predecessor=870  merge=904
+main entries missing from the merge        : 0
+predecessor entries missing from the merge : 0
+merge entries in neither parent (new)      : 0
+union of both parents = 904, merge = 904, equal: True
+```
+
+That last line is the assertion worth having, and it is stronger than the count
+the marker grep and the unreadable ratchet can give between them. A merge of two
+pure-append branches must produce exactly the union of its parents' entries, so
+one equality catches a dropped entry, a dropped status line, a duplicated entry
+and a reordering that detaches a field, without a baseline to maintain and
+without anybody choosing a threshold.
+
+**And `tools/ledger.py --check` would have caught this one too, which is worth
+saying because the first draft of this occurrence claimed otherwise and the claim
+was tested rather than argued.** The naive mis-resolution was reconstructed and
+parsed: it reads **63** unreadable entries against the shipped resolution's 62,
+and `BASELINE = 62` in `tools/ledger.py`, so `--check` blocks at one over. That
+is the same 62 to 63 the 2026-11-01 instance above was caught by, on the same
+gate, to the same numbers. The gate works and it worked twice.
+
+So the union equality is not a replacement for it, and the honest case for it is
+narrower. It needs no maintained baseline, which matters because this register's
+other ratchet is red on `main` tonight for exactly the reason a baseline drifts
+(`INC-2026-11-09-the-ledger-ratchet-is-red-on-main-again-and-its-register-is-the-most-contested-path-with-no-inbox`).
+And it localises: `--check` reports a count one higher than yesterday's and names
+the entry that lost its status, while the equality names which parent lost what,
+which is the question a merging seat actually has. The cheapest tell of all is
+neither, and it is the arithmetic above: a side carrying one more `### ` heading
+than `- Status:` lines has had a line hoisted, and that is countable before the
+file is parsed at all.
+
+Proposed in this pull request as a ledger entry, `--parents`, because this run
+found it and should not also be the run that fixes the interface, which is this
+entry's own rule.

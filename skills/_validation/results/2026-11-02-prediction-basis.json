@@ -1,0 +1,1265 @@
+{
+  "total": 104,
+  "counts": {
+    "observed-bare-run": 1,
+    "this-repository-history": 4,
+    "authored-judgement": 98,
+    "refuted-and-survived": 0,
+    "measured-floor": 1
+  },
+  "refuted": [
+    {
+      "skill": "agent-containment",
+      "task": "ac-t9",
+      "verdict": "reject",
+      "axes": [
+        "skill-specificity",
+        "triggerability",
+        "non-redundancy"
+      ]
+    },
+    {
+      "skill": "agent-containment",
+      "task": "ac-t10",
+      "verdict": "reject",
+      "axes": [
+        "skill-specificity",
+        "triggerability",
+        "non-redundancy"
+      ]
+    },
+    {
+      "skill": "agent-memory-selection",
+      "task": "ams-t4",
+      "verdict": "revise",
+      "axes": [
+        "verifiability",
+        "gradability",
+        "triggerability"
+      ]
+    },
+    {
+      "skill": "agent-memory-selection",
+      "task": "ams-c1",
+      "verdict": "revise",
+      "axes": [
+        "triggerability"
+      ]
+    },
+    {
+      "skill": "skill-library-engineering",
+      "task": "sle-t8",
+      "verdict": "revise",
+      "axes": [
+        "verifiability",
+        "triggerability"
+      ]
+    }
+  ],
+  "survived_a_pass": 0,
+  "by_task_kind": {
+    "treatment": {
+      "observed-bare-run": 1,
+      "this-repository-history": 3,
+      "authored-judgement": 76,
+      "refuted-and-survived": 0,
+      "measured-floor": 1
+    },
+    "control": {
+      "observed-bare-run": 0,
+      "this-repository-history": 1,
+      "authored-judgement": 22,
+      "refuted-and-survived": 0,
+      "measured-floor": 0
+    }
+  },
+  "problems": [],
+  "rows": [
+    {
+      "skill": "agent-containment",
+      "task": "ac-t1",
+      "kind": "authored-judgement",
+      "task_kind": "treatment",
+      "refutation": null,
+      "detail": "the author's model of what a bare subject would answer. Never observed.",
+      "dated": false,
+      "repository_shape": false
+    },
+    {
+      "skill": "agent-containment",
+      "task": "ac-t2",
+      "kind": "authored-judgement",
+      "task_kind": "treatment",
+      "refutation": null,
+      "detail": "the author's model of what a bare subject would answer. Never observed.",
+      "dated": false,
+      "repository_shape": false
+    },
+    {
+      "skill": "agent-containment",
+      "task": "ac-t4",
+      "kind": "authored-judgement",
+      "task_kind": "treatment",
+      "refutation": null,
+      "detail": "the author's model of what a bare subject would answer. Never observed.",
+      "dated": false,
+      "repository_shape": false
+    },
+    {
+      "skill": "agent-containment",
+      "task": "ac-t5",
+      "kind": "authored-judgement",
+      "task_kind": "treatment",
+      "refutation": null,
+      "detail": "the author's model of what a bare subject would answer. Never observed.",
+      "dated": false,
+      "repository_shape": false
+    },
+    {
+      "skill": "agent-containment",
+      "task": "ac-t7",
+      "kind": "authored-judgement",
+      "task_kind": "treatment",
+      "refutation": null,
+      "detail": "the author's model of what a bare subject would answer. Never observed.",
+      "dated": false,
+      "repository_shape": false
+    },
+    {
+      "skill": "agent-containment",
+      "task": "ac-t11",
+      "kind": "authored-judgement",
+      "task_kind": "treatment",
+      "refutation": null,
+      "detail": "the author's model of what a bare subject would answer. Never observed.",
+      "dated": false,
+      "repository_shape": false
+    },
+    {
+      "skill": "agent-containment",
+      "task": "ac-c1",
+      "kind": "authored-judgement",
+      "task_kind": "control",
+      "refutation": null,
+      "detail": "the author's model of what a bare subject would answer. Never observed.",
+      "dated": false,
+      "repository_shape": false
+    },
+    {
+      "skill": "agent-containment",
+      "task": "ac-c2",
+      "kind": "authored-judgement",
+      "task_kind": "control",
+      "refutation": null,
+      "detail": "the author's model of what a bare subject would answer. Never observed.",
+      "dated": false,
+      "repository_shape": false
+    },
+    {
+      "skill": "agent-containment",
+      "task": "ac-t9",
+      "kind": "authored-judgement",
+      "task_kind": "treatment",
+      "refutation": {
+        "pass": "docs/research/notes/2026-11-02-prediction-refutation.md, the research seat's red-team refutation pass of 2026-11-02 on Skill-Use's five axes (arxiv:2608.04828, appendix B.1 and F.1, figure 15), requested by this seat so that it would not be marking its own homework",
+        "verdict": "reject",
+        "axes": [
+          "skill-specificity",
+          "triggerability",
+          "non-redundancy"
+        ],
+        "survived": false,
+        "amended": "2026-11-02. The rejected prediction was that the bare arm extends the deny list and that the effect and provenance probes keep failing. The pass showed the fixture argues against it and this seat then measured it: an implementation that reads only what `guard.py` documents passes both of those probes. The prediction is re-aimed at the one probe the fixture withholds. On non-redundancy, ac-t1 and ac-t5 also predict a deny-list answer; ac-t9 is the load-bearing one of the three because it is the only one with a hard check, and the other two are one claim tested at two more surfaces rather than two more confirmations."
+      },
+      "detail": {
+        "pass": "docs/research/notes/2026-11-02-prediction-refutation.md, the research seat's red-team refutation pass of 2026-11-02 on Skill-Use's five axes (arxiv:2608.04828, appendix B.1 and F.1, figure 15), requested by this seat so that it would not be marking its own homework",
+        "verdict": "reject",
+        "axes": [
+          "skill-specificity",
+          "triggerability",
+          "non-redundancy"
+        ],
+        "survived": false,
+        "amended": "2026-11-02. The rejected prediction was that the bare arm extends the deny list and that the effect and provenance probes keep failing. The pass showed the fixture argues against it and this seat then measured it: an implementation that reads only what `guard.py` documents passes both of those probes. The prediction is re-aimed at the one probe the fixture withholds. On non-redundancy, ac-t1 and ac-t5 also predict a deny-list answer; ac-t9 is the load-bearing one of the three because it is the only one with a hard check, and the other two are one claim tested at two more surfaces rather than two more confirmations."
+      },
+      "dated": true,
+      "repository_shape": true
+    },
+    {
+      "skill": "agent-containment",
+      "task": "ac-t10",
+      "kind": "authored-judgement",
+      "task_kind": "treatment",
+      "refutation": {
+        "pass": "docs/research/notes/2026-11-02-prediction-refutation.md, the research seat's red-team refutation pass of 2026-11-02 on Skill-Use's five axes (arxiv:2608.04828, appendix B.1 and F.1, figure 15), requested by this seat so that it would not be marking its own homework",
+        "verdict": "reject",
+        "axes": [
+          "skill-specificity",
+          "triggerability",
+          "non-redundancy"
+        ],
+        "survived": false,
+        "amended": "2026-11-02. The rejected prediction was that the bare arm adds an injection classifier or a narrower allowlist and that neither the provenance nor the intersection probe passes. Two things were wrong with it. The prompt foreclosed the allowlist half in its own words (\"the tool it used was one we intend to allow\"), and it asked in plain English for the property the intersection probe tests (\"so delegation cannot widen authority\"), so the prediction required the subject to disobey its own prompt. The prompt has lost that clause, which is a change to the task and not only to the prediction, and the prediction is re-aimed at delegation. On non-redundancy, ac-t2 predicts the same injection-classifier answer and this row no longer does. The clause was removed rather than the prediction weakened because a prompt that names the graded property cannot measure it."
+      },
+      "detail": {
+        "pass": "docs/research/notes/2026-11-02-prediction-refutation.md, the research seat's red-team refutation pass of 2026-11-02 on Skill-Use's five axes (arxiv:2608.04828, appendix B.1 and F.1, figure 15), requested by this seat so that it would not be marking its own homework",
+        "verdict": "reject",
+        "axes": [
+          "skill-specificity",
+          "triggerability",
+          "non-redundancy"
+        ],
+        "survived": false,
+        "amended": "2026-11-02. The rejected prediction was that the bare arm adds an injection classifier or a narrower allowlist and that neither the provenance nor the intersection probe passes. Two things were wrong with it. The prompt foreclosed the allowlist half in its own words (\"the tool it used was one we intend to allow\"), and it asked in plain English for the property the intersection probe tests (\"so delegation cannot widen authority\"), so the prediction required the subject to disobey its own prompt. The prompt has lost that clause, which is a change to the task and not only to the prediction, and the prediction is re-aimed at delegation. On non-redundancy, ac-t2 predicts the same injection-classifier answer and this row no longer does. The clause was removed rather than the prediction weakened because a prompt that names the graded property cannot measure it."
+      },
+      "dated": true,
+      "repository_shape": true
+    },
+    {
+      "skill": "agent-containment",
+      "task": "ac-t12",
+      "kind": "measured-floor",
+      "task_kind": "treatment",
+      "refutation": null,
+      "detail": "Partly measured, and the part that is measured is a floor rather than a prediction. The harness shipped in this task's own files was run against the suite unchanged and scores 2 of 5, keeping the utility probe; a reference implementation scores 5 of 5. That pair proves the five probes discriminate and bounds the task from below, because a subject that changes nothing cannot score above 2. It is NOT a measurement of the bare subject, which has never been run: a bare model given these files might repair more than nothing and still miss the label and judge probes, which is what the `without_skill` text above describes and what the bare-first pass of ADR-38 rule 5 would settle. Both runs are recorded in PR #723.",
+      "dated": false,
+      "repository_shape": false
+    },
+    {
+      "skill": "agent-containment",
+      "task": "ac-t13",
+      "kind": "authored-judgement",
+      "task_kind": "treatment",
+      "refutation": null,
+      "detail": "the author's model of what a bare subject would answer. Never observed. The cited rows are real and the inference from them is what the task is testing.",
+      "dated": false,
+      "repository_shape": true
+    },
+    {
+      "skill": "agent-memory-selection",
+      "task": "ams-t1",
+      "kind": "authored-judgement",
+      "task_kind": "treatment",
+      "refutation": null,
+      "detail": "the author's model of what a bare subject would answer. Never observed.",
+      "dated": false,
+      "repository_shape": false
+    },
+    {
+      "skill": "agent-memory-selection",
+      "task": "ams-t2",
+      "kind": "authored-judgement",
+      "task_kind": "treatment",
+      "refutation": null,
+      "detail": "the author's model of what a bare subject would answer. Never observed.",
+      "dated": false,
+      "repository_shape": false
+    },
+    {
+      "skill": "agent-memory-selection",
+      "task": "ams-t3",
+      "kind": "authored-judgement",
+      "task_kind": "treatment",
+      "refutation": null,
+      "detail": "the author's model of what a bare subject would answer. Never observed.",
+      "dated": false,
+      "repository_shape": false
+    },
+    {
+      "skill": "agent-memory-selection",
+      "task": "ams-t4",
+      "kind": "authored-judgement",
+      "task_kind": "treatment",
+      "refutation": {
+        "pass": "docs/research/notes/2026-11-02-prediction-refutation.md, the research seat's red-team refutation pass of 2026-11-02 on Skill-Use's five axes (arxiv:2608.04828, appendix B.1 and F.1, figure 15), requested by this seat so that it would not be marking its own homework",
+        "verdict": "revise",
+        "axes": [
+          "verifiability",
+          "gradability",
+          "triggerability"
+        ],
+        "survived": false,
+        "amended": "2026-11-02. On verifiability the prediction now names which of the five assertions the predicted answer fails, so one observed bare run can confirm or falsify it instead of half-doing both. On triggerability the prompt has lost \"I want to keep the quality and cut the latency\", which handed over the `quality` assertion's own requirement; the planted lure about offline retrieval metrics stays, because a lure is not a leak. On gradability the pass and this seat disagree and the measurement settles it the other way: `parses` is already scored as the mean of its assertion hits by `score_answer`, so this row does report partial credit and a four-of-five answer scores 0.8. It was this row's own `pass_condition` that said otherwise. The two task forms are the opposite way round from how the suites describe them, and the agent-containment rows are the ones that cannot show a partial."
+      },
+      "detail": {
+        "pass": "docs/research/notes/2026-11-02-prediction-refutation.md, the research seat's red-team refutation pass of 2026-11-02 on Skill-Use's five axes (arxiv:2608.04828, appendix B.1 and F.1, figure 15), requested by this seat so that it would not be marking its own homework",
+        "verdict": "revise",
+        "axes": [
+          "verifiability",
+          "gradability",
+          "triggerability"
+        ],
+        "survived": false,
+        "amended": "2026-11-02. On verifiability the prediction now names which of the five assertions the predicted answer fails, so one observed bare run can confirm or falsify it instead of half-doing both. On triggerability the prompt has lost \"I want to keep the quality and cut the latency\", which handed over the `quality` assertion's own requirement; the planted lure about offline retrieval metrics stays, because a lure is not a leak. On gradability the pass and this seat disagree and the measurement settles it the other way: `parses` is already scored as the mean of its assertion hits by `score_answer`, so this row does report partial credit and a four-of-five answer scores 0.8. It was this row's own `pass_condition` that said otherwise. The two task forms are the opposite way round from how the suites describe them, and the agent-containment rows are the ones that cannot show a partial."
+      },
+      "dated": true,
+      "repository_shape": true
+    },
+    {
+      "skill": "agent-memory-selection",
+      "task": "ams-t5",
+      "kind": "authored-judgement",
+      "task_kind": "treatment",
+      "refutation": null,
+      "detail": "the author's model of what a bare subject would answer. Never observed.",
+      "dated": false,
+      "repository_shape": false
+    },
+    {
+      "skill": "agent-memory-selection",
+      "task": "ams-c1",
+      "kind": "authored-judgement",
+      "task_kind": "control",
+      "refutation": {
+        "pass": "docs/research/notes/2026-11-02-prediction-refutation.md, the research seat's red-team refutation pass of 2026-11-02 on Skill-Use's five axes (arxiv:2608.04828, appendix B.1 and F.1, figure 15), requested by this seat so that it would not be marking its own homework",
+        "verdict": "revise",
+        "axes": [
+          "triggerability"
+        ],
+        "survived": false,
+        "amended": "2026-11-02, to the situation line only, which claimed a lexical adjacency the prompt does not carry. The claim was measured false word by word by the pass. The task itself is unchanged and the decoy that survived is the better construction: a ratio carried by the numbers rather than by the vocabulary. Skill-specificity cannot be attacked on this row by design, because the prediction being generic practice is the row's own thesis."
+      },
+      "detail": {
+        "pass": "docs/research/notes/2026-11-02-prediction-refutation.md, the research seat's red-team refutation pass of 2026-11-02 on Skill-Use's five axes (arxiv:2608.04828, appendix B.1 and F.1, figure 15), requested by this seat so that it would not be marking its own homework",
+        "verdict": "revise",
+        "axes": [
+          "triggerability"
+        ],
+        "survived": false,
+        "amended": "2026-11-02, to the situation line only, which claimed a lexical adjacency the prompt does not carry. The claim was measured false word by word by the pass. The task itself is unchanged and the decoy that survived is the better construction: a ratio carried by the numbers rather than by the vocabulary. Skill-specificity cannot be attacked on this row by design, because the prediction being generic practice is the row's own thesis."
+      },
+      "dated": true,
+      "repository_shape": true
+    },
+    {
+      "skill": "agent-memory-selection",
+      "task": "ams-c2",
+      "kind": "authored-judgement",
+      "task_kind": "control",
+      "refutation": null,
+      "detail": "the author's model of what a bare subject would answer. Never observed.",
+      "dated": false,
+      "repository_shape": false
+    },
+    {
+      "skill": "agent-security-measurement",
+      "task": "asm-t1",
+      "kind": "authored-judgement",
+      "task_kind": "treatment",
+      "refutation": null,
+      "detail": "the author's model of what a bare subject would answer. Never observed.",
+      "dated": false,
+      "repository_shape": false
+    },
+    {
+      "skill": "agent-security-measurement",
+      "task": "asm-t2",
+      "kind": "authored-judgement",
+      "task_kind": "treatment",
+      "refutation": null,
+      "detail": "the author's model of what a bare subject would answer. Never observed.",
+      "dated": false,
+      "repository_shape": false
+    },
+    {
+      "skill": "agent-security-measurement",
+      "task": "asm-t3",
+      "kind": "authored-judgement",
+      "task_kind": "treatment",
+      "refutation": null,
+      "detail": "the author's model of what a bare subject would answer. Never observed.",
+      "dated": false,
+      "repository_shape": false
+    },
+    {
+      "skill": "agent-security-measurement",
+      "task": "asm-t4",
+      "kind": "authored-judgement",
+      "task_kind": "treatment",
+      "refutation": null,
+      "detail": "the author's model of what a bare subject would answer. Never observed.",
+      "dated": false,
+      "repository_shape": false
+    },
+    {
+      "skill": "agent-security-measurement",
+      "task": "asm-t5",
+      "kind": "authored-judgement",
+      "task_kind": "treatment",
+      "refutation": null,
+      "detail": "the author's model of what a bare subject would answer. Never observed.",
+      "dated": false,
+      "repository_shape": false
+    },
+    {
+      "skill": "agent-security-measurement",
+      "task": "asm-t6",
+      "kind": "authored-judgement",
+      "task_kind": "treatment",
+      "refutation": null,
+      "detail": "the author's model of what a bare subject would answer. Never observed.",
+      "dated": false,
+      "repository_shape": false
+    },
+    {
+      "skill": "agent-security-measurement",
+      "task": "asm-t7",
+      "kind": "authored-judgement",
+      "task_kind": "treatment",
+      "refutation": null,
+      "detail": "the author's model of what a bare subject would answer. Never observed.",
+      "dated": false,
+      "repository_shape": false
+    },
+    {
+      "skill": "agent-security-measurement",
+      "task": "asm-t8",
+      "kind": "authored-judgement",
+      "task_kind": "treatment",
+      "refutation": null,
+      "detail": "the author's model of what a bare subject would answer. Never observed.",
+      "dated": false,
+      "repository_shape": false
+    },
+    {
+      "skill": "agent-security-measurement",
+      "task": "asm-t9",
+      "kind": "authored-judgement",
+      "task_kind": "treatment",
+      "refutation": null,
+      "detail": "the author's model of what a bare subject would answer. Never observed.",
+      "dated": false,
+      "repository_shape": false
+    },
+    {
+      "skill": "agent-security-measurement",
+      "task": "asm-t10",
+      "kind": "authored-judgement",
+      "task_kind": "treatment",
+      "refutation": null,
+      "detail": "the author's model of what a bare subject would answer. Never observed.",
+      "dated": false,
+      "repository_shape": false
+    },
+    {
+      "skill": "agent-security-measurement",
+      "task": "asm-t11",
+      "kind": "authored-judgement",
+      "task_kind": "treatment",
+      "refutation": null,
+      "detail": "the author's model of what a bare subject would answer. Never observed.",
+      "dated": false,
+      "repository_shape": false
+    },
+    {
+      "skill": "agent-security-measurement",
+      "task": "asm-t12",
+      "kind": "authored-judgement",
+      "task_kind": "treatment",
+      "refutation": null,
+      "detail": "the author's model of what a bare subject would answer. Never observed.",
+      "dated": false,
+      "repository_shape": false
+    },
+    {
+      "skill": "agent-security-measurement",
+      "task": "asm-c1",
+      "kind": "authored-judgement",
+      "task_kind": "control",
+      "refutation": null,
+      "detail": "the author's model of what a bare subject would answer. Never observed.",
+      "dated": false,
+      "repository_shape": false
+    },
+    {
+      "skill": "agent-security-measurement",
+      "task": "asm-c2",
+      "kind": "authored-judgement",
+      "task_kind": "control",
+      "refutation": null,
+      "detail": "the author's model of what a bare subject would answer. Never observed.",
+      "dated": false,
+      "repository_shape": false
+    },
+    {
+      "skill": "context-window-engineering",
+      "task": "cwe-t1",
+      "kind": "authored-judgement",
+      "task_kind": "treatment",
+      "refutation": null,
+      "detail": "the author's model of what a bare subject would answer. Never observed.",
+      "dated": false,
+      "repository_shape": false
+    },
+    {
+      "skill": "context-window-engineering",
+      "task": "cwe-t2",
+      "kind": "this-repository-history",
+      "task_kind": "treatment",
+      "refutation": null,
+      "detail": "the reason given is a change made to this suite on 2026-10-26, not anything about a subject model",
+      "dated": true,
+      "repository_shape": true
+    },
+    {
+      "skill": "context-window-engineering",
+      "task": "cwe-t3",
+      "kind": "authored-judgement",
+      "task_kind": "treatment",
+      "refutation": null,
+      "detail": "the author's model of what a bare subject would answer. Never observed.",
+      "dated": false,
+      "repository_shape": false
+    },
+    {
+      "skill": "context-window-engineering",
+      "task": "cwe-t4",
+      "kind": "authored-judgement",
+      "task_kind": "treatment",
+      "refutation": null,
+      "detail": "the author's model of what a bare subject would answer. Never observed.",
+      "dated": false,
+      "repository_shape": false
+    },
+    {
+      "skill": "context-window-engineering",
+      "task": "cwe-t5",
+      "kind": "authored-judgement",
+      "task_kind": "treatment",
+      "refutation": null,
+      "detail": "the author's model of what a bare subject would answer. Never observed.",
+      "dated": false,
+      "repository_shape": false
+    },
+    {
+      "skill": "context-window-engineering",
+      "task": "cwe-t8",
+      "kind": "this-repository-history",
+      "task_kind": "treatment",
+      "refutation": null,
+      "detail": "the reason given is that this skill itself asserted the wrong thing until 2026-10-26",
+      "dated": true,
+      "repository_shape": true
+    },
+    {
+      "skill": "context-window-engineering",
+      "task": "cwe-c1",
+      "kind": "authored-judgement",
+      "task_kind": "control",
+      "refutation": null,
+      "detail": "the author's model of what a bare subject would answer. Never observed.",
+      "dated": false,
+      "repository_shape": false
+    },
+    {
+      "skill": "context-window-engineering",
+      "task": "cwe-c2",
+      "kind": "authored-judgement",
+      "task_kind": "control",
+      "refutation": null,
+      "detail": "the author's model of what a bare subject would answer. Never observed.",
+      "dated": false,
+      "repository_shape": false
+    },
+    {
+      "skill": "context-window-engineering",
+      "task": "cwe-t9",
+      "kind": "authored-judgement",
+      "task_kind": "treatment",
+      "refutation": null,
+      "detail": "the author's model of what a bare subject would answer. Never observed.",
+      "dated": false,
+      "repository_shape": false
+    },
+    {
+      "skill": "context-window-engineering",
+      "task": "cwe-t10",
+      "kind": "authored-judgement",
+      "task_kind": "treatment",
+      "refutation": null,
+      "detail": "the author's model of what a bare subject would answer. Never observed.",
+      "dated": false,
+      "repository_shape": false
+    },
+    {
+      "skill": "context-window-engineering",
+      "task": "cwe-t11",
+      "kind": "this-repository-history",
+      "task_kind": "treatment",
+      "refutation": null,
+      "detail": "the reason given is that this suite's own skill asserted the wrong thing until 2026-10-26",
+      "dated": true,
+      "repository_shape": true
+    },
+    {
+      "skill": "evaluation-integrity",
+      "task": "ei-t1",
+      "kind": "authored-judgement",
+      "task_kind": "treatment",
+      "refutation": null,
+      "detail": "the author's model of what a bare subject would answer. Never observed.",
+      "dated": false,
+      "repository_shape": false
+    },
+    {
+      "skill": "evaluation-integrity",
+      "task": "ei-t2",
+      "kind": "authored-judgement",
+      "task_kind": "treatment",
+      "refutation": null,
+      "detail": "the author's model of what a bare subject would answer. Never observed.",
+      "dated": false,
+      "repository_shape": false
+    },
+    {
+      "skill": "evaluation-integrity",
+      "task": "ei-t3",
+      "kind": "authored-judgement",
+      "task_kind": "treatment",
+      "refutation": null,
+      "detail": "the author's model of what a bare subject would answer. Never observed.",
+      "dated": false,
+      "repository_shape": false
+    },
+    {
+      "skill": "evaluation-integrity",
+      "task": "ei-t4",
+      "kind": "authored-judgement",
+      "task_kind": "treatment",
+      "refutation": null,
+      "detail": "the author's model of what a bare subject would answer. Never observed.",
+      "dated": false,
+      "repository_shape": false
+    },
+    {
+      "skill": "evaluation-integrity",
+      "task": "ei-t5",
+      "kind": "authored-judgement",
+      "task_kind": "treatment",
+      "refutation": null,
+      "detail": "the author's model of what a bare subject would answer. Never observed.",
+      "dated": false,
+      "repository_shape": false
+    },
+    {
+      "skill": "evaluation-integrity",
+      "task": "ei-t6",
+      "kind": "authored-judgement",
+      "task_kind": "treatment",
+      "refutation": null,
+      "detail": "the author's model of what a bare subject would answer. Never observed.",
+      "dated": false,
+      "repository_shape": false
+    },
+    {
+      "skill": "evaluation-integrity",
+      "task": "ei-t7",
+      "kind": "authored-judgement",
+      "task_kind": "treatment",
+      "refutation": null,
+      "detail": "the author's model of what a bare subject would answer. Never observed.",
+      "dated": false,
+      "repository_shape": false
+    },
+    {
+      "skill": "evaluation-integrity",
+      "task": "ei-t9",
+      "kind": "authored-judgement",
+      "task_kind": "treatment",
+      "refutation": null,
+      "detail": "the author's model of what a bare subject would answer. Never observed.",
+      "dated": false,
+      "repository_shape": false
+    },
+    {
+      "skill": "evaluation-integrity",
+      "task": "ei-t10",
+      "kind": "authored-judgement",
+      "task_kind": "treatment",
+      "refutation": null,
+      "detail": "the author's model of what a bare subject would answer. Never observed.",
+      "dated": false,
+      "repository_shape": false
+    },
+    {
+      "skill": "evaluation-integrity",
+      "task": "ei-t11",
+      "kind": "authored-judgement",
+      "task_kind": "treatment",
+      "refutation": null,
+      "detail": "the author's model of what a bare subject would answer. Never observed.",
+      "dated": false,
+      "repository_shape": false
+    },
+    {
+      "skill": "evaluation-integrity",
+      "task": "ei-c1",
+      "kind": "authored-judgement",
+      "task_kind": "control",
+      "refutation": null,
+      "detail": "the author's model of what a bare subject would answer. Never observed.",
+      "dated": false,
+      "repository_shape": false
+    },
+    {
+      "skill": "evaluation-integrity",
+      "task": "ei-c2",
+      "kind": "authored-judgement",
+      "task_kind": "control",
+      "refutation": null,
+      "detail": "the author's model of what a bare subject would answer. Never observed.",
+      "dated": false,
+      "repository_shape": false
+    },
+    {
+      "skill": "harness-engineering",
+      "task": "he-t1",
+      "kind": "observed-bare-run",
+      "task_kind": "treatment",
+      "refutation": null,
+      "detail": "the 2026-09-12 A/B trial of the unaided arm, recorded in this skill's provenance",
+      "dated": true,
+      "repository_shape": true
+    },
+    {
+      "skill": "harness-engineering",
+      "task": "he-t2",
+      "kind": "authored-judgement",
+      "task_kind": "control",
+      "refutation": null,
+      "detail": "the author's model of what a bare subject would answer. Never observed.",
+      "dated": false,
+      "repository_shape": false
+    },
+    {
+      "skill": "harness-engineering",
+      "task": "he-t3",
+      "kind": "authored-judgement",
+      "task_kind": "control",
+      "refutation": null,
+      "detail": "the author's model of what a bare subject would answer. Never observed.",
+      "dated": false,
+      "repository_shape": false
+    },
+    {
+      "skill": "harness-engineering",
+      "task": "he-t4",
+      "kind": "authored-judgement",
+      "task_kind": "control",
+      "refutation": null,
+      "detail": "the author's model of what a bare subject would answer. Never observed.",
+      "dated": false,
+      "repository_shape": false
+    },
+    {
+      "skill": "harness-engineering",
+      "task": "he-t5",
+      "kind": "authored-judgement",
+      "task_kind": "control",
+      "refutation": null,
+      "detail": "the author's model of what a bare subject would answer. Never observed.",
+      "dated": false,
+      "repository_shape": false
+    },
+    {
+      "skill": "harness-engineering",
+      "task": "he-t6",
+      "kind": "authored-judgement",
+      "task_kind": "treatment",
+      "refutation": null,
+      "detail": "the author's model of what a bare subject would answer. Never observed.",
+      "dated": false,
+      "repository_shape": false
+    },
+    {
+      "skill": "harness-engineering",
+      "task": "he-t7",
+      "kind": "authored-judgement",
+      "task_kind": "treatment",
+      "refutation": null,
+      "detail": "the author's model of what a bare subject would answer. Never observed.",
+      "dated": false,
+      "repository_shape": false
+    },
+    {
+      "skill": "harness-engineering",
+      "task": "he-t8",
+      "kind": "authored-judgement",
+      "task_kind": "treatment",
+      "refutation": null,
+      "detail": "the author's model of what a bare subject would answer. Never observed.",
+      "dated": false,
+      "repository_shape": false
+    },
+    {
+      "skill": "harness-engineering",
+      "task": "he-t9",
+      "kind": "this-repository-history",
+      "task_kind": "control",
+      "refutation": null,
+      "detail": "relabelled 2026-11-02 at the research seat's request (PR #691). The reason this prediction gives is that the framing matches \"a claim from this very paper that our graph has since deprecated\", which is a fact about this repository's claim graph and not about any subject model. Nothing in this task's prompt has a graph in it: the prompt is a warehouse arm and 41 tool calls. It carried `authored-judgement` until today because the criterion being applied in practice was \"the reason contains a date\" and this reason contains none, which is the one error the gate cannot see.",
+      "dated": true,
+      "repository_shape": true
+    },
+    {
+      "skill": "harness-engineering",
+      "task": "he-t10",
+      "kind": "authored-judgement",
+      "task_kind": "treatment",
+      "refutation": null,
+      "detail": "the author's model of what a bare subject would answer. Never observed.",
+      "dated": false,
+      "repository_shape": false
+    },
+    {
+      "skill": "harness-engineering",
+      "task": "he-t11",
+      "kind": "authored-judgement",
+      "task_kind": "treatment",
+      "refutation": null,
+      "detail": "the author's model of what a bare subject would answer. Never observed.",
+      "dated": false,
+      "repository_shape": false
+    },
+    {
+      "skill": "harness-engineering",
+      "task": "he-c1",
+      "kind": "authored-judgement",
+      "task_kind": "control",
+      "refutation": null,
+      "detail": "the author's model of what a bare subject would answer. Never observed.",
+      "dated": false,
+      "repository_shape": false
+    },
+    {
+      "skill": "harness-engineering",
+      "task": "he-c2",
+      "kind": "authored-judgement",
+      "task_kind": "control",
+      "refutation": null,
+      "detail": "the author's model of what a bare subject would answer. Never observed.",
+      "dated": false,
+      "repository_shape": false
+    },
+    {
+      "skill": "recursive-harness-self-improvement",
+      "task": "rhsi-t1",
+      "kind": "authored-judgement",
+      "task_kind": "treatment",
+      "refutation": null,
+      "detail": "the author's model of what a bare subject would answer. Never observed.",
+      "dated": false,
+      "repository_shape": false
+    },
+    {
+      "skill": "recursive-harness-self-improvement",
+      "task": "rhsi-t2",
+      "kind": "authored-judgement",
+      "task_kind": "treatment",
+      "refutation": null,
+      "detail": "the author's model of what a bare subject would answer. Never observed.",
+      "dated": false,
+      "repository_shape": false
+    },
+    {
+      "skill": "recursive-harness-self-improvement",
+      "task": "rhsi-t3",
+      "kind": "authored-judgement",
+      "task_kind": "treatment",
+      "refutation": null,
+      "detail": "the author's model of what a bare subject would answer. Never observed.",
+      "dated": false,
+      "repository_shape": false
+    },
+    {
+      "skill": "recursive-harness-self-improvement",
+      "task": "rhsi-t4",
+      "kind": "authored-judgement",
+      "task_kind": "treatment",
+      "refutation": null,
+      "detail": "the author's model of what a bare subject would answer. Never observed.",
+      "dated": false,
+      "repository_shape": false
+    },
+    {
+      "skill": "recursive-harness-self-improvement",
+      "task": "rhsi-t5",
+      "kind": "authored-judgement",
+      "task_kind": "treatment",
+      "refutation": null,
+      "detail": "the author's model of what a bare subject would answer. Never observed.",
+      "dated": false,
+      "repository_shape": false
+    },
+    {
+      "skill": "recursive-harness-self-improvement",
+      "task": "rhsi-t6",
+      "kind": "authored-judgement",
+      "task_kind": "treatment",
+      "refutation": null,
+      "detail": "the author's model of what a bare subject would answer. Never observed.",
+      "dated": false,
+      "repository_shape": false
+    },
+    {
+      "skill": "recursive-harness-self-improvement",
+      "task": "rhsi-t7",
+      "kind": "authored-judgement",
+      "task_kind": "treatment",
+      "refutation": null,
+      "detail": "the author's model of what a bare subject would answer. Never observed.",
+      "dated": false,
+      "repository_shape": false
+    },
+    {
+      "skill": "recursive-harness-self-improvement",
+      "task": "rhsi-t8",
+      "kind": "authored-judgement",
+      "task_kind": "treatment",
+      "refutation": null,
+      "detail": "the author's model of what a bare subject would answer. Never observed.",
+      "dated": false,
+      "repository_shape": false
+    },
+    {
+      "skill": "recursive-harness-self-improvement",
+      "task": "rhsi-t10",
+      "kind": "authored-judgement",
+      "task_kind": "treatment",
+      "refutation": null,
+      "detail": "the author's model of what a bare subject would answer. Never observed.",
+      "dated": false,
+      "repository_shape": false
+    },
+    {
+      "skill": "recursive-harness-self-improvement",
+      "task": "rhsi-c1",
+      "kind": "authored-judgement",
+      "task_kind": "control",
+      "refutation": null,
+      "detail": "the author's model of what a bare subject would answer. Never observed.",
+      "dated": false,
+      "repository_shape": false
+    },
+    {
+      "skill": "recursive-harness-self-improvement",
+      "task": "rhsi-c2",
+      "kind": "authored-judgement",
+      "task_kind": "control",
+      "refutation": null,
+      "detail": "the author's model of what a bare subject would answer. Never observed.",
+      "dated": false,
+      "repository_shape": false
+    },
+    {
+      "skill": "self-improving-post-training-loops",
+      "task": "sipt-t1",
+      "kind": "authored-judgement",
+      "task_kind": "treatment",
+      "refutation": null,
+      "detail": "the author's model of what a bare subject would answer. Never observed.",
+      "dated": false,
+      "repository_shape": false
+    },
+    {
+      "skill": "self-improving-post-training-loops",
+      "task": "sipt-t2",
+      "kind": "authored-judgement",
+      "task_kind": "treatment",
+      "refutation": null,
+      "detail": "the author's model of what a bare subject would answer. Never observed.",
+      "dated": false,
+      "repository_shape": false
+    },
+    {
+      "skill": "self-improving-post-training-loops",
+      "task": "sipt-t3",
+      "kind": "authored-judgement",
+      "task_kind": "treatment",
+      "refutation": null,
+      "detail": "the author's model of what a bare subject would answer. Never observed.",
+      "dated": false,
+      "repository_shape": false
+    },
+    {
+      "skill": "self-improving-post-training-loops",
+      "task": "sipt-t4",
+      "kind": "authored-judgement",
+      "task_kind": "treatment",
+      "refutation": null,
+      "detail": "the author's model of what a bare subject would answer. Never observed.",
+      "dated": false,
+      "repository_shape": false
+    },
+    {
+      "skill": "self-improving-post-training-loops",
+      "task": "sipt-t5",
+      "kind": "authored-judgement",
+      "task_kind": "treatment",
+      "refutation": null,
+      "detail": "the author's model of what a bare subject would answer. Never observed.",
+      "dated": false,
+      "repository_shape": false
+    },
+    {
+      "skill": "self-improving-post-training-loops",
+      "task": "sipt-t6",
+      "kind": "authored-judgement",
+      "task_kind": "treatment",
+      "refutation": null,
+      "detail": "the author's model of what a bare subject would answer. Never observed.",
+      "dated": false,
+      "repository_shape": false
+    },
+    {
+      "skill": "self-improving-post-training-loops",
+      "task": "sipt-t7",
+      "kind": "authored-judgement",
+      "task_kind": "treatment",
+      "refutation": null,
+      "detail": "the author's model of what a bare subject would answer. Never observed.",
+      "dated": false,
+      "repository_shape": false
+    },
+    {
+      "skill": "self-improving-post-training-loops",
+      "task": "sipt-t8",
+      "kind": "authored-judgement",
+      "task_kind": "treatment",
+      "refutation": null,
+      "detail": "the author's model of what a bare subject would answer. Never observed.",
+      "dated": false,
+      "repository_shape": false
+    },
+    {
+      "skill": "self-improving-post-training-loops",
+      "task": "sipt-t9",
+      "kind": "authored-judgement",
+      "task_kind": "treatment",
+      "refutation": null,
+      "detail": "the author's model of what a bare subject would answer. Never observed.",
+      "dated": false,
+      "repository_shape": false
+    },
+    {
+      "skill": "self-improving-post-training-loops",
+      "task": "sipt-c1",
+      "kind": "authored-judgement",
+      "task_kind": "control",
+      "refutation": null,
+      "detail": "the author's model of what a bare subject would answer. Never observed.",
+      "dated": false,
+      "repository_shape": false
+    },
+    {
+      "skill": "self-improving-post-training-loops",
+      "task": "sipt-c2",
+      "kind": "authored-judgement",
+      "task_kind": "control",
+      "refutation": null,
+      "detail": "the author's model of what a bare subject would answer. Never observed.",
+      "dated": false,
+      "repository_shape": false
+    },
+    {
+      "skill": "self-improving-post-training-loops",
+      "task": "sipt-t10",
+      "kind": "authored-judgement",
+      "task_kind": "treatment",
+      "refutation": null,
+      "detail": "the author's model of what a bare subject would answer. Never observed.",
+      "dated": false,
+      "repository_shape": false
+    },
+    {
+      "skill": "skill-library-engineering",
+      "task": "sle-t1",
+      "kind": "authored-judgement",
+      "task_kind": "treatment",
+      "refutation": null,
+      "detail": "the author's model of what a bare subject would answer. Never observed.",
+      "dated": false,
+      "repository_shape": false
+    },
+    {
+      "skill": "skill-library-engineering",
+      "task": "sle-t2",
+      "kind": "authored-judgement",
+      "task_kind": "treatment",
+      "refutation": null,
+      "detail": "the author's model of what a bare subject would answer. Never observed.",
+      "dated": false,
+      "repository_shape": false
+    },
+    {
+      "skill": "skill-library-engineering",
+      "task": "sle-t3",
+      "kind": "authored-judgement",
+      "task_kind": "treatment",
+      "refutation": null,
+      "detail": "the author's model of what a bare subject would answer. Never observed.",
+      "dated": false,
+      "repository_shape": false
+    },
+    {
+      "skill": "skill-library-engineering",
+      "task": "sle-t4",
+      "kind": "authored-judgement",
+      "task_kind": "treatment",
+      "refutation": null,
+      "detail": "the author's model of what a bare subject would answer. Never observed.",
+      "dated": false,
+      "repository_shape": false
+    },
+    {
+      "skill": "skill-library-engineering",
+      "task": "sle-t5",
+      "kind": "authored-judgement",
+      "task_kind": "treatment",
+      "refutation": null,
+      "detail": "the author's model of what a bare subject would answer. Never observed.",
+      "dated": false,
+      "repository_shape": false
+    },
+    {
+      "skill": "skill-library-engineering",
+      "task": "sle-t6",
+      "kind": "authored-judgement",
+      "task_kind": "treatment",
+      "refutation": null,
+      "detail": "the author's model of what a bare subject would answer. Never observed.",
+      "dated": false,
+      "repository_shape": false
+    },
+    {
+      "skill": "skill-library-engineering",
+      "task": "sle-t7",
+      "kind": "authored-judgement",
+      "task_kind": "treatment",
+      "refutation": null,
+      "detail": "the author's model of what a bare subject would answer. Never observed.",
+      "dated": false,
+      "repository_shape": false
+    },
+    {
+      "skill": "skill-library-engineering",
+      "task": "sle-t8",
+      "kind": "authored-judgement",
+      "task_kind": "treatment",
+      "refutation": {
+        "pass": "docs/research/notes/2026-11-02-prediction-refutation.md, the research seat's red-team refutation pass of 2026-11-02 on Skill-Use's five axes (arxiv:2608.04828, appendix B.1 and F.1, figure 15), requested by this seat so that it would not be marking its own homework",
+        "verdict": "revise",
+        "axes": [
+          "verifiability",
+          "triggerability"
+        ],
+        "survived": false,
+        "amended": "2026-11-02. The refuted prediction was that the bare arm answers \"without noticing that the right answer turns on the mechanism\", and it was refuted by a field in this same task written by the same hand: the `exploit` answer's first sentence is \"It depends on how your harness routes\". The two fields contradicted each other and the `exploit` is the one with a measured ceiling attached. The prediction now predicts the shape and the certificate failure with a score, which this row was already built to measure, and that is a sharper claim than the one it replaces. The certificates are why this row survives its own leak, and they are what the other four rows in the pass should copy: the prompt can hand over a shape and it cannot hand over two named runbooks, the index fields or the twelve-of-twelve figure."
+      },
+      "detail": {
+        "pass": "docs/research/notes/2026-11-02-prediction-refutation.md, the research seat's red-team refutation pass of 2026-11-02 on Skill-Use's five axes (arxiv:2608.04828, appendix B.1 and F.1, figure 15), requested by this seat so that it would not be marking its own homework",
+        "verdict": "revise",
+        "axes": [
+          "verifiability",
+          "triggerability"
+        ],
+        "survived": false,
+        "amended": "2026-11-02. The refuted prediction was that the bare arm answers \"without noticing that the right answer turns on the mechanism\", and it was refuted by a field in this same task written by the same hand: the `exploit` answer's first sentence is \"It depends on how your harness routes\". The two fields contradicted each other and the `exploit` is the one with a measured ceiling attached. The prediction now predicts the shape and the certificate failure with a score, which this row was already built to measure, and that is a sharper claim than the one it replaces. The certificates are why this row survives its own leak, and they are what the other four rows in the pass should copy: the prompt can hand over a shape and it cannot hand over two named runbooks, the index fields or the twelve-of-twelve figure."
+      },
+      "dated": true,
+      "repository_shape": false
+    },
+    {
+      "skill": "skill-library-engineering",
+      "task": "sle-t9",
+      "kind": "authored-judgement",
+      "task_kind": "treatment",
+      "refutation": null,
+      "detail": "the author's model of what a bare subject would answer. Never observed.",
+      "dated": false,
+      "repository_shape": false
+    },
+    {
+      "skill": "skill-library-engineering",
+      "task": "sle-t10",
+      "kind": "authored-judgement",
+      "task_kind": "treatment",
+      "refutation": null,
+      "detail": "the author's model of what a bare subject would answer. Never observed.",
+      "dated": false,
+      "repository_shape": false
+    },
+    {
+      "skill": "skill-library-engineering",
+      "task": "sle-c1",
+      "kind": "authored-judgement",
+      "task_kind": "control",
+      "refutation": null,
+      "detail": "the author's model of what a bare subject would answer. Never observed.",
+      "dated": false,
+      "repository_shape": false
+    },
+    {
+      "skill": "skill-library-engineering",
+      "task": "sle-c2",
+      "kind": "authored-judgement",
+      "task_kind": "control",
+      "refutation": null,
+      "detail": "the author's model of what a bare subject would answer. Never observed.",
+      "dated": false,
+      "repository_shape": false
+    }
+  ],
+  "criteria_come_apart": [
+    {
+      "skill": "agent-containment",
+      "task": "ac-t9",
+      "kind": "authored-judgement"
+    },
+    {
+      "skill": "agent-containment",
+      "task": "ac-t10",
+      "kind": "authored-judgement"
+    },
+    {
+      "skill": "agent-containment",
+      "task": "ac-t13",
+      "kind": "authored-judgement"
+    },
+    {
+      "skill": "agent-memory-selection",
+      "task": "ams-t4",
+      "kind": "authored-judgement"
+    },
+    {
+      "skill": "agent-memory-selection",
+      "task": "ams-c1",
+      "kind": "authored-judgement"
+    },
+    {
+      "skill": "context-window-engineering",
+      "task": "cwe-t2",
+      "kind": "this-repository-history"
+    },
+    {
+      "skill": "context-window-engineering",
+      "task": "cwe-t8",
+      "kind": "this-repository-history"
+    },
+    {
+      "skill": "context-window-engineering",
+      "task": "cwe-t11",
+      "kind": "this-repository-history"
+    },
+    {
+      "skill": "harness-engineering",
+      "task": "he-t1",
+      "kind": "observed-bare-run"
+    },
+    {
+      "skill": "harness-engineering",
+      "task": "he-t9",
+      "kind": "this-repository-history"
+    }
+  ]
+}

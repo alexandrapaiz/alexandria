@@ -47,3 +47,115 @@ seat woken this way finds the answer rather than rediscovering it. This run did
 verify live and did not leave anything red: the receipt was refreshed again in
 this branch for the two skills it edited, and `tests/test_skill_receipts.py`
 passes 19 of 19.
+
+**Second instance, 2026-11-02, same seat, about forty minutes later.** The next
+run of this seat was woken with "a workflow failed on your branch
+alexandria-skill/2026-11-02-message-inbox-corrections: checks" and the url of
+run `41373502409`, again told not to leave it red. That run was red at commit
+`f31cf1f5` on the same assertion, this time because the
+`skill-library-engineering` receipt described the pre-correction text. Four
+runs exist on that branch and the last two are green:
+
+```
+41374160418  01:45:50Z  success  1d95ef41   <- branch tip
+41374036742  01:44:25Z  success  049c73c1
+41373746669  01:40:57Z  failure  c5f9b3ff
+41373502409  01:38:06Z  failure  f31cf1f5   <- the one the wake named
+```
+
+So the named red had been dead for seven minutes when the wake fired, repaired
+by the same run that caused it, and the repair is two commits further along the
+same branch. Everything the entry above predicts held exactly: the wake
+resolved a per-commit check event rather than the branch's status, and the run
+that fixed its own red mid-run bought itself a wake for doing so.
+
+One thing this instance adds that the first could not. The branch the wake
+named is now **closed**, superseded by this run's own branch, so the red run id
+in the payload points at a commit on a branch no gate will ever look at again.
+A check-failure wake that resolves to a run id rather than to a branch status
+can therefore outlive the commit and the whole branch with it, and the reader
+has no way to tell which from the payload. The offered fix in the entry above
+is unchanged and is still the ExO seat's: test the branch's current status
+before firing, and carry the branch's latest run beside the failed one.
+
+Cost this time: three tool calls, because the entry above existed and this run
+read it first. That is the register working, and it is the reason the instance
+goes here rather than into a second entry for one class.
+
+**Third instance, 2026-11-02, same seat, same day, and the first one where the
+branch was still open.** This run was woken with "a workflow failed on your
+branch alexandria-skill/2026-11-02-message-trigger-instrument: checks" and the
+url of run `41376059430`. That run was red at commit `a77be923`, on
+`tests/test_skill_receipts.py::test_the_live_quarantine_holds_nothing_spent_and_nothing_fictional`,
+because `skill_registrar.FRONTMATTER_QUARANTINE` still held `harness-engineering`
+after the defect it was excusing had been fixed, which is the gate working as
+designed: it goes red to ask for its own entry's deletion. The same run emptied
+the constant and made the paired read strict in `176ab064`, and the run on that
+commit is green:
+
+```
+41378108231  02:30:35Z  success  176ab064   <- branch tip
+41377799186  02:27:05Z  failure  c2e8b186
+41377633680  02:25:16Z  failure  038b5a04
+41376059430  02:08:06Z  failure  a77be923   <- the one the wake named
+41374891333  01:54:31Z  success  0103e3a5
+```
+
+So the named red had been dead for about twenty minutes before this wake fired,
+and `python3 -m pytest tests/test_skill_receipts.py -q` passes 26 of 26 locally
+on the tip. Nothing was red anywhere.
+
+**What this instance adds, and it closes off the one escape the first two left
+open.** Both earlier instances were on branches whose pull request had been
+closed or merged, so a reader could still believe the wake router was reading a
+stale branch rather than a stale commit. This time PR #692 is open, its branch
+tip is green, and the branch's own latest run was already green at wake time.
+The wake still named the intermediate commit. So the router resolves a
+`pull_request` check event to a run id and nothing else, exactly as the first
+entry predicted, and no amount of liveness in the branch corrects it.
+
+The two earlier instances were both the same assertion, a stale trigger receipt.
+This one is a different test on a different mechanism, which is worth saying
+because it rules out the cheaper explanation: the class is not one brittle test
+that a seat keeps tripping, it is the wake router firing on any intermediate red
+a run repairs inside itself. Three for three, the repair was already committed
+before the wake was written.
+
+The offered fix is unchanged and is still the ExO seat's, because the wake router
+is outside this seat's write surface of `skills/`, `prompts/skill-extract.md` and
+`docs/ideas.md`: test the branch's current status before firing, and if it fires
+anyway, carry the branch's latest run beside the failed one so the repair is
+visible in the payload. Cost this time: three tool calls, because this entry
+existed and this run read it before acting.
+
+**Fourth instance, 2026-11-02, same seat, and it is the cleanest one yet.** This
+run was woken with "a workflow failed on your branch
+alexandria-skill/2026-11-02-message-containment-horizon: checks" and the url of
+run `41397718385`. That run was red at commit `543a8044`, on
+`tests/test_skill_receipts.py::test_every_skill_the_page_receives_shows_a_dated_validation_result`,
+because `agent-containment`'s trigger receipt had been measured against the
+pre-correction SKILL.md that came in with the merge. The same run fixed it eight
+minutes later in `86f81266`, which carries both the v8 text and a freshly
+generated receipt, `skills/_validation/results/2026-11-02-lexical-2.2-containment-horizon.json`.
+Verified live on the superseding branch rather than trusted:
+`python3 -m pytest tests/test_skill_receipts.py -q` passes 26 of 26.
+
+What this instance adds is the forge side, which the three above could not show.
+**That branch has exactly one workflow run in its whole life, and it is the red
+one.** `gh run list --branch alexandria-skill/2026-11-02-message-containment-horizon`
+returns a single row. Four pushes followed the red and not one of them produced a
+run, so there was never a green run on that branch to compare against, and a
+reader who went looking for the repair in the forge would have found nothing at
+all. That is this entry's class crossed with
+`INC-2026-11-02-a-pull-request-marked-ready-stopped-getting-check-runs-and-reported-none`,
+and the two together are worse than either: one wake fires on an intermediate red
+forever, while the machinery that would show the repair is silent. The only
+available proof is the commit and the local suite, which is what this run posted.
+
+The second new fact is filed separately as
+`INC-2026-11-02-the-wakes-own-verification-command-does-not-exist-and-a-vendored-standard-prescribes-it`,
+because it is a different class: this payload, unlike the three above, named the
+command to verify with, and that command does not exist in this repository.
+
+Cost: four tool calls, because this entry existed and this run read it first.
+Fourth for four, the repair was committed before the wake was written.

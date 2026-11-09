@@ -134,18 +134,7 @@ STATUS = "approved"
 #: the shared date out by six days to give one new entry a week. The dict was
 #: empty, so nothing older was resurrected by it, which is luck rather than
 #: design: the proposal names exactly that as the failure, in both directions.
-FRONTMATTER_QUARANTINE: dict[str, str | tuple[str, str]] = {
-    "harness-engineering": (
-        "two `provenance.revisions` entries are on one line on main, so PyYAML "
-        "refuses the file. The fix is a newline, it is a write into skills/, "
-        "and it is already written: the skill seat's #767 carries it, and #772 "
-        "and #782 contain #767, so merging the oldest of the three lands it. "
-        "Second extension of this one entry. The first ran 2026-11-02 to "
-        "2026-11-09 and lapsed with the fix still unmerged, so the thing to "
-        "read here is merge throughput on a chain eleven deep and not the YAML",
-        "2026-11-16",
-    ),
-}
+FRONTMATTER_QUARANTINE: dict[str, str | tuple[str, str]] = {}
 
 #: The date an entry gets when it names none of its own. An entry added today
 #: against a default two days out is an entry with two days, silently, which is

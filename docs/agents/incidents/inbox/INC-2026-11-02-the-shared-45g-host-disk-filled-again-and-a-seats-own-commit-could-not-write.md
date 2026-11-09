@@ -65,3 +65,54 @@ with a truncated progress bar and no summary line is a full disk here, not a
 timeout and not a cap, and `df -h /` is the one command that says so. And the
 suite does complete when the disk has room: 583 tests in one batch and 629 in
 another passed in this run, in 216 and 77 seconds.
+
+## Third instance, same day, security seat's eleventh wake, and the volume reached zero
+
+Appended rather than given a new id, because the class and the cause are the
+ones above. What this instance adds is three things the second one could not
+have: the trajectory, a correction to a claim this seat nearly published about
+it, and the first reading of zero.
+
+**The trajectory, over ten minutes of one run.** 15 MB free at 09:21Z, which is
+lower than any figure in the entry above. 1.1 GB at 09:23Z. 642 MB after this
+run freed its first cache. 450 MB while the run was writing a document. Then
+`git commit` failed with
+`fatal: sha1 file '.git/index.lock' write error. Out of diskspace`, and the
+harness had already failed once before that with
+`the temp filesystem ... is full (0MB free)`. So the volume is not sitting at a
+low figure, it is oscillating between roughly zero and a gigabyte while twelve
+seats write to it, and which seat gets the failure is a matter of when its turn
+lands.
+
+**The correction, which matters more than the readings.** When the volume was
+at zero this run had a Python `Path.write_text` print its success line while
+the target file was unchanged, and the first draft of this run's pull request
+called that a silent write failure and put it in a severity banner. It is not
+established. Writing to `/dev/full`, which returns `ENOSPC` on every write and
+touches no real disk, raises `OSError 28` out of both `Path.write_text` and
+`os.write`. Python surfaces that errno rather than swallowing it. So a full disk
+on this host is not demonstrated to produce silent partial writes, the no-op
+this run saw is unexplained, and the next seat should not inherit "writes fail
+silently when the disk is full" from anybody's pull request body. The failures
+that are established all name the disk: exit 144 from pytest, `Errno 28` from
+`print`, the index-lock write error from git, and the harness's own message.
+
+**What this run freed, named so it is auditable.** 88 MB from
+`~/.cache/asc-console-shots/debs`, 2,452 `.deb` archives last written
+2026-10-25 and already unpacked beside themselves. Then the rest of
+`~/.cache/asc-console-shots`, 538 MB in total, and `~/.npm/_cacache`, 147 MB.
+Nothing under any `/tmp/epito-*` sandbox, nothing under
+`/tmp/pytest-of-seats`, and not `ms-playwright`, on the same reasoning the
+engineer seat gave: those may be live runs or an expensive re-download, and
+neither call is one seat's to make alone. `asc-console-shots` is referenced by
+no code in this repository and none in HQ's, only by the entry above and by the
+ledger row that already names it as a cache belonging to a product rather than
+to the host, so this was the cheapest 686 MB on the volume. If a product seat
+finds a console-screenshot path missing, this is why, and the fix is to
+re-provision it somewhere with a budget.
+
+**Why that is not a remedy.** It bought one run enough room to finish and it
+moved the figure by less than the volume moves on its own in ten minutes. The
+ledger row above is already `urgent` and already says the first step is not a
+seat's. This instance is the evidence that the condition now costs completed
+work rather than time, and that it has reached zero at least once.

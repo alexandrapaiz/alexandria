@@ -1,0 +1,22 @@
+invariance gate — properties of the scoring function, not a sample of cases
+
+  1. multiplicity discarded, activation slice held (candidate decoy-api-integration)
+       x1:  122 words,  63 stems -> 2.x 0.048138  3 0.038239  ok
+       x2:  244 words,  63 stems -> 2.x 0.048138  3 0.038239  ok
+       x3:  366 words,  63 stems -> 2.x 0.048138  3 0.038239  ok
+       x5:  610 words,  63 stems -> 2.x 0.048138  3 0.038239  ok
+       x9: 1098 words,  63 stems -> 2.x 0.048138  3 0.038239  ok
+  2. lexical/2.2 invariant to unmatched mass; 3. lexical/3 strictly decreasing
+       + 0 unmatched stems -> 2.x 0.048138 ok   3 0.038239 ok
+       + 4 unmatched stems -> 2.x 0.048138 ok   3 0.036757 ok
+       + 8 unmatched stems -> 2.x 0.048138 ok   3 0.035343 ok
+       +12 unmatched stems -> 2.x 0.048138 ok   3 0.034033 ok
+       +16 unmatched stems -> 2.x 0.048138 ok   3 0.032817 ok
+       +20 unmatched stems -> 2.x 0.048138 ok   3 0.031684 ok
+  4. NOT invariant: activation_clause() is a positional slice, so the 1.25x boost reads word order
+       x1: boosted share 93.7% -> 2.x 0.048138 (+0.000000)   3 0.038239 (+0.000000)
+       x2: boosted share 100.0% -> 2.x 0.052193 (+0.004055)   3 0.039457 (+0.001217)
+       x3: boosted share 100.0% -> 2.x 0.052193 (+0.004055)   3 0.039457 (+0.001217)
+       Duplication is a pathological input and never occurs in the library, but the same lever is live at scale: where a description puts its 'Use when' decides how much of it the boost covers, and the panel is asymmetric on exactly that today.
+
+invariance: 3 of 3 properties hold. Power 1, no cases, no model call. This is the pre-registered engine gate; the pass rate below it has power 0.079 against the same question.

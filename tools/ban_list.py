@@ -3,6 +3,7 @@
 
     python3 tools/ban_list.py skills/harness-engineering/SKILL.md
     python3 tools/ban_list.py --json docs/research/*.md
+    python3 tools/ban_list.py --fix skills/harness-engineering/SKILL.md
     python3 tools/ban_list.py --smoke
 
 Written for ADR-37's gate, which requires that "the ban list and the trigger
@@ -27,7 +28,13 @@ report says so in its own last line rather than leaving a reader to assume.
 
 Code is exempt. A fenced block and an inline span are skipped, because `robust`
 inside a variable name is not a prose tell, and a skill about harnesses quotes
-code constantly.
+code constantly. Entry 13 is the exception to that exception and runs over every
+line, because a character outside ASCII breaks a search box wherever it sits.
+
+`--fix` repairs exactly one of the six, the citation separator, and reports
+every finding it cannot reach. It exits 1 while any remains, so a seat that runs
+it and sees it do something cannot read that as a clean file. The reasoning and
+the three refusals are above `SEPARATOR` below.
 """
 
 from __future__ import annotations
@@ -124,6 +131,79 @@ def check(text: str, allow: str = "") -> list[dict]:
     return sorted(findings, key=lambda f: (f["line"], f["entry"]))
 
 
+# ---------------------------------------------------------------- the repair
+#
+# `--fix`, added 2026-11-09, and the narrowness is the whole design.
+#
+# Most of this file's findings cannot be repaired by a program. Entry 1 wants a
+# different sentence, entry 13 covers a person's name as the source spells it,
+# and a tool that guessed at either would write worse prose than the one it
+# replaced. Exactly one shape is mechanical end to end, and it is the shape that
+# made up all 48 findings in `skills/` on the day this landed: the U+2014 that
+# separates a citation's title from its locator inside a list item.
+#
+#     - "Prefix Sliding for Efficient Test-Time Scaling — arxiv.org/abs/2608.26070"
+#     - "Prefix Sliding for Efficient Test-Time Scaling, arxiv.org/abs/2608.26070"
+#
+# The comma form is not this file's invention. It is what the two most recently
+# written skills in the library already use, so the repair converges the library
+# on its own newest convention rather than on a preference.
+#
+# Two conditions on the substitution, both required, because each one is a way
+# the naive version would damage prose. The line must be a list item, so an em
+# dash in a paragraph is never touched. And what follows the separator must be a
+# bare URL, so a dash between two clauses of a list item is never touched
+# either.
+#
+# What stops a partial repair reading as a clean one is not a condition on the
+# write. The file is rewritten whenever there is a separator to swap, including
+# when findings this repair cannot reach survive it. `fix_file` reports those
+# survivors by line in the same breath as the swaps and the CLI exits 1 while
+# any remain, which is the actual protection and is under test both ways.
+SEPARATOR = re.compile(
+    r" \u2014 (?=(?:https?://|www\.|[A-Za-z0-9][A-Za-z0-9.-]*\.[a-z]{2,}/))")
+
+
+def repair(text: str) -> tuple[str, int]:
+    """The citation separator, swapped for the comma form. Count of swaps."""
+    out, swaps = [], 0
+    for line in text.split("\n"):
+        if line.strip().startswith("- "):
+            fixed, n = SEPARATOR.subn(", ", line)
+            out.append(fixed)
+            swaps += n
+        else:
+            out.append(line)
+    return "\n".join(out), swaps
+
+
+def fix_file(name: str, allow: str = "") -> tuple[int, int, list[str]]:
+    """Repair one file in place. Returns swaps, findings left, and the report.
+
+    A repair that leaves findings behind says so and the caller exits 1,
+    because the one failure mode worth engineering against here is a seat
+    running `--fix`, seeing it do something, and assuming the file is clean.
+    """
+    path = pathlib.Path(name)
+    text = path.read_text()
+    fixed, swaps = repair(text)
+    left = check(fixed, allow)
+    report = []
+    if swaps:
+        path.write_text(fixed)
+        report.append(f"fixed: {name}, {swaps} citation separators swapped for "
+                      "the comma form")
+    else:
+        report.append(f"nothing to fix: {name} carries no citation separator "
+                      "this repair covers")
+    if left:
+        report.append(f"still failing: {name}, {len(left)} findings need a "
+                      "reader and were not touched")
+        for f in left:
+            report.append(f"  line {f['line']}: {f['found']!r}, {f['why']}")
+    return swaps, len(left), report
+
+
 def render(path: str, findings: list[dict]) -> str:
     if not findings:
         return (f"ok: {path} clears the six mechanical entries of "
@@ -160,7 +240,103 @@ def smoke() -> int:
         print(("ok:   " if passed else "FAIL: ")
               + f"{label}: {got} findings, expected {expected}"
               + ("" if passed else f" ({[f['found'] for f in found]})"))
+    return 0 if (ok and smoke_expand() == 0) else 1
+
+
+def smoke_expand() -> int:
+    """The path-expansion cases, which are about arguments rather than prose.
+
+    Here rather than in a `tests/test_ban_list.py`, because this tool has never
+    had one: `--smoke` is its suite, and a new test file would land in the
+    `UNCOVERED` pin list in `tests/test_ci_coverage.py` that no workflow runs
+    and that `INC-2026-10-17-the-pin-list-grew-for-the-seventh-time-in-nine-days`
+    is already about. A case beside the ones above runs on every invocation of
+    `--smoke` instead, which is reachable by any seat and by the deploy gate.
+    """
+    import tempfile
+    ok = True
+
+    def case(label, passed):
+        nonlocal ok
+        ok = ok and passed
+        print(("ok:   " if passed else "FAIL: ") + f"expand: {label}")
+
+    with tempfile.TemporaryDirectory() as root:
+        top = pathlib.Path(root)
+        (top / "a.md").write_text("Plain prose.\n")
+        (top / "nested").mkdir()
+        (top / "nested" / "b.md").write_text("More plain prose.\n")
+        (top / "ignored.txt").write_text("not markdown\n")
+        names, failing = expand([str(top)])
+        case("a directory is walked for its Markdown, nested included",
+             [pathlib.Path(n).name for n in names] == ["a.md", "b.md"])
+        case("a directory holding Markdown is not itself a failure", not failing)
+        case("a non-Markdown file in the directory is not read",
+             all(not n.endswith(".txt") for n in names))
+
+        one = str(top / "a.md")
+        case("a file argument is passed through untouched",
+             expand([one]) == ([one], False))
+
+        empty = top / "empty"
+        empty.mkdir()
+        names, failing = expand([str(empty)])
+        case("an empty directory fails rather than passing quiet (L-A21)",
+             names == [] and failing)
+
+        missing = str(top / "nope.md")
+        case("a missing path is still reported by name rather than expanded",
+             expand([missing]) == ([missing], False))
+        case("and the CLI exits 1 on it", main([missing]) == 1)
+        case("the CLI reads a directory end to end", main([str(top / "nested")]) == 0)
+
+        citation = '- "A title \u2014 arxiv.org/abs/1"\n'
+        case("the repair swaps a citation separator for the comma form",
+             repair(citation) == ('- "A title, arxiv.org/abs/1"\n', 1))
+        clause = "A sentence \u2014 and its second half.\n"
+        case("and leaves an em dash in prose alone",
+             repair(clause) == (clause, 0))
+        case("and leaves a dash between two clauses of a list item alone",
+             repair("- one \u2014 and two\n") == ("- one \u2014 and two\n", 0))
+
+        dirty = top / "dirty.md"
+        dirty.write_text(citation + "This will unlock a tapestry.\n")
+        case("a repair that leaves findings behind exits 1 rather than passing",
+             main(["--fix", str(dirty)]) == 1)
+        case("and the separator it could repair is repaired",
+             '"A title, arxiv.org/abs/1"' in dirty.read_text())
+        case("and a second run of it is idempotent",
+             main(["--fix", str(dirty)]) == 1)
+
     return 0 if ok else 1
+
+
+def expand(paths) -> tuple[list[str], bool]:
+    """Every file to read, with directories walked for their Markdown.
+
+    A directory is what a caller means by `docs/ideas/inbox/`, and before
+    2026-11-09 it meant `IsADirectoryError` with a traceback: `read_text()` was
+    called on whatever the argument named, and only a missing path had an
+    honest answer. A gate that dies on a plausible invocation is a gate the
+    next seat stops running.
+
+    An empty directory is a failure rather than a pass, per L-A21: a check that
+    saw nothing must not read like a check that saw nothing wrong.
+    """
+    out: list[str] = []
+    failing = False
+    for name in paths:
+        path = pathlib.Path(name)
+        if path.is_dir():
+            found = sorted(str(p) for p in path.rglob("*.md") if p.is_file())
+            if not found:
+                print(f"failing: {name} is a directory holding no .md file, so "
+                      f"there was nothing to check")
+                failing = True
+            out.extend(found)
+            continue
+        out.append(name)
+    return out, failing
 
 
 def main(argv=None) -> int:
@@ -168,6 +344,9 @@ def main(argv=None) -> int:
     ap.add_argument("paths", nargs="*")
     ap.add_argument("--json", action="store_true")
     ap.add_argument("--smoke", action="store_true")
+    ap.add_argument("--fix", action="store_true",
+                    help="rewrite the citation separator this file can repair "
+                         "mechanically, and report everything it cannot")
     ap.add_argument("--allow", default="",
                     help="characters entry 13 lets through, for a name the "
                          "source spells that way")
@@ -178,8 +357,23 @@ def main(argv=None) -> int:
     if not args.paths:
         ap.error("a path, or --smoke")
 
-    out, failing = {}, False
-    for name in args.paths:
+    names, failing = expand(args.paths)
+
+    if args.fix:
+        for name in names:
+            path = pathlib.Path(name)
+            if not path.exists():
+                print(f"failing: {name} does not exist")
+                failing = True
+                continue
+            _, left, report = fix_file(name, args.allow)
+            for line in report:
+                print(line)
+            failing = failing or bool(left)
+        return 1 if failing else 0
+
+    out = {}
+    for name in names:
         path = pathlib.Path(name)
         if not path.exists():
             print(f"failing: {name} does not exist")

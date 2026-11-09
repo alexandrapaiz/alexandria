@@ -35,6 +35,7 @@ column is a finding, not a blank.
 | Vercel | Hosting and build | Runs our code | Not an input we pull | Not applicable, it is a runtime |
 | Modal | Pipeline and MCP runtime | Runs our code | Not an input we pull | Not applicable, it is a runtime |
 | The company board (`board.libraryofalexandria.dev`) | Sprint, columns and items, read back by `tools/board.py` | JSON data that becomes text in an agent's context | No, but it steers agents that execute | **None. Bearer token over TLS, and no row here until 2026-10-01** |
+| HQ's own runtime (`alexandrapaiz/alexandra-systems`, fetched onto the host by `asc-deploy.timer`) | The board API, the wake bus, the roster, and the run-report writer every seat here runs under | Python and shell the host executes as root | **Yes, as root, within minutes of a merge to HQ's main** | **None in this repository. GitHub TLS and HQ's own review, with no signature check and no pin** |
 | The open-routing endpoint (`OPENROUTE_BASE_URL`) | Model completions for four seats, as a drop-in `ANTHROPIC_BASE_URL` | JSON text that **is** those agents' next action | **Effectively yes** | **None, and it needs none today: the step is skipped on every run** |
 
 Two things fall out of that table immediately. First, the great majority of
@@ -295,6 +296,45 @@ today, because every handled event writes the same entitlement state derived
 from the event's own status, so replaying one is idempotent in effect. It is
 written down because it stops being idempotent the first time an event handler
 counts something.
+
+## HQ's runtime, and why it is a row from 2026-11-09
+
+This file had no row for the thing that decides when our seats run, what branch
+name they are handed, and what their run reports say. The sweep of 2026-11-09
+added one, and it is the largest single artifact this company consumed since
+the sweep before it.
+
+What we consume. `/srv/asc/hq` is a checkout of `alexandrapaiz/alexandra-systems`,
+and `asc-deploy.timer` fetches HQ's `main` into it every few minutes, restarts
+the board when the board's code changed, and reloads the daemon when the roster
+changed. Between 2026-11-08T00:00Z and this run, HQ's `main` took **62
+commits**, and the chair's deploy notes on our own board record **11
+deployments onto the host in the last 48 hours, 5 of which restarted the
+board**. Most of those commits are authored by seats of other companies in the
+portfolio rather than by the owner.
+
+The trust assumption, stated plainly. We trust HQ's `main` the way we trust our
+own, and we have no gate on it. `asc-deploy.sh` runs as root from systemd, and
+its third line of work is to source `$HQ/tools/asc-env.sh` out of the freshly
+fetched checkout. So a commit to HQ's `main` that edits that file runs as root
+on the shared host at the next timer tick, with no pull request in this
+repository and nothing here that would notice. The same is true one level up
+for `runtime/board/api.py`, which holds the wake bus.
+
+The blast radius, in one example this charter already carries. `NO_SELF_CONTINUE`
+in `runtime/board/api.py` is the set of cadence words whose seats do not get a
+continue-wake after their own merge. This seat's charter holds its own branch
+prefix wrong on purpose, for fifteen days now, because `semimonthly` is not in
+that set and correcting the prefix without the word would put this seat in a
+self-wake loop. One line in a file in another repository therefore governs how
+this seat is allowed to name a branch. That is the register's answer to "what
+would a compromise of it do to us" in the smallest form available: it does not
+take a compromise, it takes a merge.
+
+What this seat is not proposing. Signature verification, a pin, or a review gate
+on HQ's `main` are all HQ's to decide and all cost somebody else's time, and the
+host is the owner's. The finding is the missing row, and the row is now here. A
+reader who wants the gate has the relay for it.
 
 ## The standing rule
 

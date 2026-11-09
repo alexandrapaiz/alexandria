@@ -262,16 +262,16 @@ def test_harness_engineering_shows_the_note_the_sprint_item_names():
 
     raw = (SKILLS / "harness-engineering" / "SKILL.md").read_text()
     fm, _body = registrar.split_frontmatter(raw)
-    # `strict=False` while this skill is in `registrar.FRONTMATTER_QUARANTINE`:
-    # its `revisions:` list has two entries on one line on main, so a strict
-    # read raises and this test's subject would be the parser's refusal rather
-    # than the claim ids it is about. The glued line is in `revisions`, which
-    # nothing below reads; `claims:` is an inline array and parses either way.
-    # When the quarantine entry is spent, drop the argument.
-    assert "harness-engineering" in registrar.FRONTMATTER_QUARANTINE, (
-        "the quarantine entry is gone, so this read should be strict again"
-    )
-    listed = (registrar.parse_frontmatter(fm, strict=False)
+    # Strict again as of 2026-11-02, which is what the comment this replaces
+    # asked for. It read `strict=False` while `harness-engineering` sat in
+    # `registrar.FRONTMATTER_QUARANTINE`, because its `revisions:` list had two
+    # entries glued onto one line and a strict read raised, which would have
+    # made this test's subject the parser's refusal rather than the claim ids it
+    # is about. The newline is restored, the quarantine is empty, and the
+    # argument is dropped exactly as that comment instructed. A strict read is
+    # the stronger assertion, so this test now also fails if the glued line ever
+    # comes back, which the lenient version could not do.
+    listed = (registrar.parse_frontmatter(fm)
               .get("provenance") or {}).get("claims") or []
     assert listed, "the file itself lists no claim ids, so the page has nothing to show"
     assert he["claims"] == [str(c).strip() for c in listed], (

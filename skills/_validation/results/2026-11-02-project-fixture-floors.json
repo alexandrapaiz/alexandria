@@ -1,0 +1,171 @@
+{
+  "rows": [
+    {
+      "skill": "agent-containment",
+      "task": "ac-t9",
+      "starter": "guard.py",
+      "outcome": "ran",
+      "exit_code": 1,
+      "passed": 1,
+      "of": 4,
+      "harness_score": 0.0,
+      "declared": {
+        "passed": 1,
+        "of": 4
+      }
+    },
+    {
+      "skill": "agent-containment",
+      "task": "ac-t10",
+      "starter": "authz.py",
+      "outcome": "ran",
+      "exit_code": 1,
+      "passed": 2,
+      "of": 4,
+      "harness_score": 0.0,
+      "declared": {
+        "passed": 2,
+        "of": 4
+      }
+    },
+    {
+      "skill": "agent-containment",
+      "task": "ac-t12",
+      "starter": "controls.py",
+      "outcome": "ran",
+      "exit_code": 1,
+      "passed": 2,
+      "of": 5,
+      "harness_score": 0.0,
+      "declared": null
+    },
+    {
+      "skill": "context-window-engineering",
+      "task": "cwe-t2",
+      "starter": "compact.py",
+      "outcome": "ran",
+      "exit_code": 1,
+      "passed": 2,
+      "of": 8,
+      "harness_score": 0.0,
+      "declared": null
+    },
+    {
+      "skill": "context-window-engineering",
+      "task": "cwe-c1",
+      "starter": "cache.py",
+      "outcome": "ran",
+      "exit_code": 1,
+      "passed": 0,
+      "of": 6,
+      "harness_score": 0.0,
+      "declared": null
+    },
+    {
+      "skill": "evaluation-integrity",
+      "task": "ei-c1",
+      "starter": "stats.py",
+      "outcome": "ran",
+      "exit_code": 1,
+      "passed": 0,
+      "of": 7,
+      "harness_score": 0.0,
+      "declared": null
+    },
+    {
+      "skill": "harness-engineering",
+      "task": "he-t4",
+      "starter": "tools.py",
+      "outcome": "ran",
+      "exit_code": 1,
+      "passed": 3,
+      "of": 6,
+      "harness_score": 0.0,
+      "declared": null
+    },
+    {
+      "skill": "harness-engineering",
+      "task": "he-c1",
+      "starter": "http_client.py",
+      "outcome": "ran",
+      "exit_code": 1,
+      "passed": 4,
+      "of": 6,
+      "harness_score": 0.0,
+      "declared": null
+    },
+    {
+      "skill": "recursive-harness-self-improvement",
+      "task": "rhsi-c1",
+      "starter": "first_bad.py",
+      "outcome": "ran",
+      "exit_code": 1,
+      "passed": 0,
+      "of": 4,
+      "harness_score": 0.0,
+      "declared": {
+        "passed": 0,
+        "of": 4
+      }
+    },
+    {
+      "skill": "self-improving-post-training-loops",
+      "task": "sipt-c1",
+      "starter": "advantages.py",
+      "outcome": "ran",
+      "exit_code": 1,
+      "passed": 0,
+      "of": 7,
+      "harness_score": 0.0,
+      "declared": null
+    },
+    {
+      "skill": "skill-library-engineering",
+      "task": "sle-t10",
+      "starter": "router.py",
+      "outcome": "ran",
+      "exit_code": 1,
+      "passed": 2,
+      "of": 6,
+      "harness_score": 0.0,
+      "declared": null
+    },
+    {
+      "skill": "skill-library-engineering",
+      "task": "sle-c1",
+      "starter": "loader.py",
+      "outcome": "ran",
+      "exit_code": 1,
+      "passed": 3,
+      "of": 5,
+      "harness_score": 0.0,
+      "declared": null
+    }
+  ],
+  "problems": [],
+  "undeclared": [
+    "ac-t12",
+    "cwe-t2",
+    "cwe-c1",
+    "ei-c1",
+    "he-t4",
+    "he-c1",
+    "sipt-c1",
+    "sle-t10",
+    "sle-c1"
+  ],
+  "collapsed_to_zero": [
+    "ac-t9",
+    "ac-t10",
+    "ac-t12",
+    "cwe-t2",
+    "cwe-c1",
+    "ei-c1",
+    "he-t4",
+    "he-c1",
+    "rhsi-c1",
+    "sipt-c1",
+    "sle-t10",
+    "sle-c1"
+  ]
+}

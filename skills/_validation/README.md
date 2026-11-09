@@ -4,13 +4,17 @@ The instruments that decide whether a skill in this library has earned what
 its page says about it. Not a skill: this directory holds no `SKILL.md`, so
 the library listing skips it.
 
-- `trigger_test.py` — the executable trigger test. Run
+- `trigger_test.py` - the executable trigger test. Run
   `python3 skills/_validation/trigger_test.py` from the repository root.
   Exit 0 when every case passes, 1 when any case fails.
-- `decoys.json` — the null model. Eight plausible skills from domains this
+- `decoys.json` - the null model. Eight plausible skills from domains this
   library does not serve. A skill fires only when it strictly outranks all of
   them on a prompt.
-- `results/` — recorded runs. Each bundle names the engine version, the
+- `earned_pass.py` - the denominator gate, and the one place an instrument
+  here may say it passed. `--probe` runs every registered gate against an
+  input it cannot honestly pass and exits 1 if any of them reports a pass.
+  Five of five did before 2026-11-02.
+- `results/` - recorded runs. Each bundle names the engine version, the
   pre-registered policy, and the sha256 of every `SKILL.md` it judged, so a
   result is a receipt for exactly the text that produced it.
 

@@ -762,6 +762,27 @@ UNCOVERED = {
     # which is the shape of the two incidents this file's set exists to name.
     # Counted at the same standing finding as the line above.
     "tests/test_resolve_target.py",
+    # Added 2026-11-02 with the security seat's branch-prefix gate, pinned for
+    # the same structural reason as every line above and counted at the same
+    # standing finding, `INC-2026-10-17-the-pin-list-grew-for-the-seventh-time-in-nine-days`.
+    #
+    # This pin is the sharpest argument in the set for applying item 17, and
+    # the reason is that the run which added the file is the reason the file
+    # exists. The security seat's charter holds its branch prefix at `sec/` on
+    # purpose, because `semimonthly` is absent from the bus's self-continue
+    # suppression set, so moving the prefix would wake the seat on its own
+    # merges. Five runs were handed the forbidden name by their dispatch prompt
+    # and declined it. The sixth created the branch, pushed it and opened a
+    # pull request on it, because eleven of twelve seats here legitimately use
+    # the seat-name prefix and the ambient evidence agreed with the prompt
+    # against one paragraph of one charter.
+    #
+    # So this is a gate written after prose failed, which this set then cannot
+    # run, which means the next instance is caught by the same thing that
+    # failed the last one. It was verified by hand both ways before shipping,
+    # failing on the forbidden name and skipping on another seat's branch, and
+    # that hand-run is the only thing standing behind it until item 17 lands.
+    "tests/test_branch_prefix.py",
     # Added 2026-11-02 with `tools/target_census.py`, pinned for the same
     # structural reason as every line above, and this pin is the sharpest
     # argument in the set because of what the file is.
@@ -849,6 +870,65 @@ UNCOVERED = {
     # Counted at the same standing finding,
     # `INC-2026-10-17-the-pin-list-grew-for-the-seventh-time-in-nine-days`.
     "tests/test_provider_cycle.py",
+    # Added 2026-11-09 with the root-scratch gate, and pinned for the same
+    # structural reason as every line above: the step that would run it goes in
+    # `.github/workflows/checks.yml`, which the security charter forbids this
+    # seat from touching at all, and the staged replacement is a workflow no
+    # seat can apply.
+    # `INC-2026-10-17-the-pin-list-grew-for-the-seventh-time-in-nine-days` is
+    # already that finding and already correct, so this entry counts itself
+    # there rather than opening another incident on one pattern. The pull
+    # request that adds it also files the one-line `paths:` ask in
+    # `docs/ideas.md` for the seat that can write that file, so the pin is a
+    # placeholder with a named successor rather than a resting place.
+    #
+    # What it guards is a gate against a defect class that has shipped seven
+    # times, most recently inside the pull request filing the report on its
+    # sixth instance. The assertion that matters is the one that runs the gate
+    # against the live checkout, and it is the single assertion in this
+    # repository that would have turned a pull request red for carrying a
+    # stray file at the root. Pinned, it turns nothing red, which is the whole
+    # cost of this line and the reason the ledger entry exists.
+    "tests/test_root_scratch.py",
+    # Added 2026-11-09 with the instrument-discovery gate, and pinned for the
+    # one structural reason every line above is pinned: the step that would run
+    # it goes in `.github/workflows/checks.yml`, no seat's token may write that
+    # file (`docs/agents/pending-workflow-changes.md`), and
+    # `docs/sprints/sprint-2026-10-12.md` tells this seat in its own words not
+    # to attempt it again.
+    # `INC-2026-10-17-the-pin-list-grew-for-the-seventh-time-in-nine-days` is
+    # already that finding, so this entry counts itself there.
+    #
+    # What it guards is the thing this list is about, one level down. Seven
+    # programs under `skills/_validation/` have an exit status for their whole
+    # interface and no chain anywhere runs six of them, so they have been
+    # asserting into a terminal nobody stands in. This file is the chain, and
+    # pinned it reaches the suite every seat runs by hand and the staged
+    # replacement, which is how the skill seat's branch found the tripwire that
+    # produced this pull request. It does not reach a live pull request, and
+    # saying that plainly is the point of this list existing.
+    #
+    # Deliberately inserted above the `test_prose_symbols.py` block rather than
+    # at the tail of this set. #862 appends at that tail in the same hour, and
+    # two sets appended at one anchor conflict on the second merge however
+    # correct both lines are, which is incident 6's class. Fifteen lines of
+    # comment between the two hunks is enough that both apply in either order.
+    "tests/test_validation_instruments.py",
+    # Added 2026-11-09 with the ExO seat's prose-against-symbols checker, which
+    # landed on `main` in #813 without this line, so `main` itself fails this
+    # test. Pinned here by the security seat rather than left red, because a
+    # trunk that fails its own gate makes every branch cut from it fail too and
+    # the next seat spends a run attributing it. The file is the ExO seat's and
+    # the pin is not a judgment about it.
+    # `INC-2026-10-17-the-pin-list-grew-for-the-seventh-time-in-nine-days` is
+    # already that finding, so this entry counts itself there.
+    #
+    # What it guards is the check that caught a comment in HQ's runtime naming
+    # a function that has never existed, which is this charter's own
+    # stale-comment class found in somebody else's code. Nine cases, four of
+    # them regression tests on the one word that separated the real defect from
+    # fifty-two fair mentions.
+    "tests/test_prose_symbols.py",
 }
 
 

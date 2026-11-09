@@ -189,6 +189,31 @@ the frontmatter is what the site renders and the PR body is not. Corrected
 landed. While there is no route to either eval arm, also fill
 `provenance.differential_screen` with the reason the screen could not run.
 
+**And `provisional` is wrong for a skill that cites no claim ids, which this
+file did not say until 2026-11-02.** Two gates govern that case and only one of
+them was documented here. `tests/skill-provenance.test.mjs` requires
+`status: draft` when `provenance.claims` is empty, and it allows exactly ONE
+such skill in the library at a time, so a second one fails the suite rather
+than the gate. A seat following the paragraph above writes `provisional`, the
+test fails, and nothing in this file explains why. The third gate is the one to
+respect rather than route around: `tools/skill_registrar.py --files-only` fails
+a zero-claim skill outright, and `tools/panel_provenance.py`
+`waiting_on_the_queue` downgrades that failure to `waiting` only when all three
+of these hold at once.
+
+1. The skill says `status: draft`, so it is not published advice.
+2. Its `provenance.papers` names the papers it was built from, with arXiv ids.
+3. At least one of those papers is an **unchecked** `- [ ]` line in
+   `docs/research/reading-queue.md` whose text names `skills/<this-slug>`.
+
+Condition 3 is the one a run forgets, because the queue append usually happens
+at step 6 and the registrar runs before it. Append the ingestion lines first and
+the gate reads `waiting`; append them last and it reads `failing` for no reason
+but ordering. `skills/agent-approval-paths` landed this way on 2026-11-02, and
+`skills/agent-containment` on 2026-09-30 is the case the excuse path was written
+for. Write `claims: []` rather than omitting the key, because an empty list is a
+statement and a missing key is an oversight.
+
 Body shape, after the specimen:
 
 1. **Opening paragraph.** What the skill covers and why it is a delta from
