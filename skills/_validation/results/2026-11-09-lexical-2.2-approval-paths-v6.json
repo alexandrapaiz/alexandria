@@ -1,5 +1,5 @@
 {
-  "generated": "2026-11-09T10:28:50Z",
+  "generated": "2026-11-09T10:44:59Z",
   "engine": "lexical/2.2",
   "policy": {
     "floor": 0.05,
@@ -13,7 +13,7 @@
   "library": {
     "agent-approval-paths": {
       "path": "skills/agent-approval-paths/SKILL.md",
-      "sha256": "f8f0e47951bfe1d0"
+      "sha256": "24dabbf87a76b1cf"
     },
     "agent-containment": {
       "path": "skills/agent-containment/SKILL.md",
@@ -99,7 +99,7 @@
     {
       "skill": "agent-approval-paths",
       "source": "skills/agent-approval-paths/triggers.json",
-      "skill_sha256": "f8f0e47951bfe1d0",
+      "skill_sha256": "24dabbf87a76b1cf",
       "suite_version": 1,
       "cases": [
         {
