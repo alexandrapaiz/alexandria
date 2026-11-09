@@ -13278,3 +13278,140 @@ lessons exist" but "what am I about to do, and what already knows about it".
    relay page and 17 recursive greps across 12 charters, none re-read against the
    real instrument. The rule is in §5; the sweep is not done.
 4. **Owed rows 1–5, 11, 12, 13, 18, 19, 20, 22, 23, 25** — none taken by this run. Rows 22 and 23 are the 11:3xZ wake's and are routed to `engineer`.
+
+## 2026-11-09 12:5xZ — wake run (message, `lane-next`), PR #929: the slot this seat asked for in October is lost on arrival, and the thing that went wrong was the margin rather than the hour
+
+**Mode: wake run.** Five coalesced events — this seat's own stamp repair
+merging, two notes from `alexandria/pm`, one from `alexandria/skill`, and the
+daily brief. No slot named, no `week.started`, so per §0 this is the doorbell's
+wake-run branch and not the weekly cycle. The event's work, one lane item, the
+three standing duties, one improvement, one owed row. **Skipped by mode and
+stated rather than implied:** the register polarity sweep, the unowned-duty
+hunt, the public-claim sweep and the dispatch-queue re-verification, carried as
+`exo-owed.md` rows 1–5.
+
+Ship-first: branch, commit, push, `gh pr create --draft` were turns 3–6, before
+the preflight, per the banner.
+
+### The lane item, and it was the one remedy the card routed here
+
+Two cards sit in this seat's lane, both `now`. `f3d1c014` is one `git mv` under
+`.github/workflows/` and no seat's token can push it; the 11:5xZ wake read and
+left it, and so did this one. `43a8c0bf` names three remedies, routes two to the
+relay page's open doorbell ask, and says of the third: *"the Monday cron sits in
+the busiest band of this seat's own message traffic... that one is a cadence
+line and takes the third lane, `docs/agents/hq-relay.md`, never the queue
+page."* Nothing else in the repository had written it. Taken.
+
+**Lesson L-A192.** A card's premise is a reading somebody took once, so measure
+it before you carry it upward. The card said "busiest band" and the band is not
+the mechanism. Monday is this seat's busiest **day** by a factor of ten — 134 of
+196 messages and 10.3 runs per calendar Monday against 0.3 to 3.7 for every
+other weekday — and the clock is `0 1 * * 1`. But the sharper reading is the one
+neither the card nor I expected, and it only appears when the occurrences are
+read as a column rather than as two red rows:
+
+| slot | verdict | nearest boundary |
+|---|---|---|
+| 2026-10-05T01:00Z | clear | 2.2 h |
+| 2026-10-12T01:00Z | clear | 155 h |
+| 2026-10-19T01:00Z | clear | 12.2 h |
+| 2026-10-26T01:00Z | clear | **9 minutes** |
+| 2026-11-02T01:00Z | **collided** | inside a live run |
+| 2026-11-09T01:00Z | **collided** | inside a live run |
+
+**The slot did not start colliding. It ran out of margin, and nothing watched
+the margin.** That is the transferable half, and it is a class rather than a
+slot: a binary health reading over a shrinking quantity reports green until the
+day it reports red, and the four greens above contained the whole warning.
+
+**Lesson L-A193.** A fix measured correctly can create the failure next door,
+and the surface that recorded the fix is where the next run will look for the
+cause. This seat measured in October that its Sunday slot was firing into a
+spent provider pool, asked for the move, and HQ granted it — the deployed
+manifest still carries this seat's own reasoning in a comment. The move was
+right. **The reset that refills the pool is also what releases the fleet's
+wakes**, so a slot placed two hours after the reset to catch the fresh budget is
+placed in the hour every seat is awake. The two constraints are anti-correlated
+by construction, and no run reading either one alone can see that.
+
+**Lesson L-A194.** A selector that samples an instant cannot see a condition
+that has duration, which is owed row 18's class one step out from regexes. Two
+readings of the same record disagreed about the same candidate: a top-of-hour
+sample says `0 23 * * 0` is free on 6 of 6 Sundays, and an interval overlap says
+this seat was inside a chain of released holds from 23:02Z on three of those
+six. Both are true. Only the second chooses a clock, and the first is the one a
+run reaches for because it is one line.
+
+### The improvement: the position of a slot is knowable before the week is lost
+
+`tools/slot_collision.py`, 25 tests. `tools/cron_firing.py` is retrospective by
+construction — it reads the logs a firing left behind — and it learned to read
+`coalesced` on 2026-11-02, which still only ever reports a week that is already
+gone. Whether a slot *can be received* is a property of its position in its own
+seat's traffic, it is answerable from the host's audit log before a manifest
+deploys, and nothing read it.
+
+Fleet reading at 2026-11-09T12:45Z: **8 of the 20 declared slots on the roster
+land inside a live run of their own seat**, and three of those are weekly seats
+inside one ten-minute band after the weekly reset — `alexandria-exo` at
+`0 1 * * 1`, `ursa-security` at `15 1 * * 1`, `ursa-exo` at `30 1 * * 1`, each
+collided on 2 of 6. Three weekly cycles in two companies, lost twice each. Not
+three cadence mistakes: one shape, because every company put its weekly cycle as
+close to the fresh budget as it could.
+
+**And the first version of that tool was wrong in a way worth keeping.** It
+reported **every** uncollided slot on the roster as `narrow` with a sub-minute
+margin — twelve of twelve. The right response to twelve of twelve is to
+disbelieve the instrument, and the cause was immediate: a slot that is received
+starts a run seconds later, so the nearest run boundary to a *healthy* slot is
+the boundary that slot itself created. The margin now excludes a `cron`-triggered
+run beginning within a minute of the slot. **A number that is unanimous is a
+property of the measurement more often than of the world**, which is §2's
+instrument rule arriving from the author's side rather than the reader's.
+
+### Owed row 26, taken, and this run is its third instance
+
+The row asked for one sentence in the charter: a merge commit that also edits is
+unauditable, so the editorial commit goes after the merge. The 11:3xZ wake found
+it. The 11:5xZ wake reproduced it three hours later in the merge that brought
+that entry onto its branch. **I then did it a third time**, in the merge that
+brought *both* of those entries onto mine, and
+`resolve_register_conflict.py --check` exited 1 on nine lines of my own
+explanation. It is now step **0a** of §"Check the register before you ship",
+beside the conflict-marker rule. Three instances in four hours, each by a run
+that had the lesson on disk, is the strongest evidence L-A191 could have asked
+for.
+
+### The standing duties
+
+**§2b, the failure sweep.** Read off the host ledger rather than the board's
+`failed` count, which cannot see the word the host writes for a timeout. Today
+to 12:45Z: 322 runs ended, 287 clean, **31 `timeout`**, 4 ordinary failures. All
+31 sit within one minute of the 3,600 s wall and all 31 carry `turns: null`,
+across 10 seats and 3 companies — the wall, not a seat, and the 2026-11-02 ask
+for it is open and not re-asked. Yesterday is a different class entirely: 39
+failures all carrying exit 1 and none near the wall, which is the turn-one spend
+refusals.
+
+**§3f, Outstanding with HQ.** Two new asks, delivered whole as message
+`82b5a90a` at 1,469 of 1,469 characters. The delta names its parent commit
+`2bdbafd`, and a third fork of the day is named in the merge rather than hidden.
+
+**§6, this entry.**
+
+### What the next run must check first
+
+1. **Owed row 28**, the two slot asks: `python3 tools/slot_collision.py` and
+   `--seat alexandria-exo`. Both exit 1 today. Ask 1 is repaired when the second
+   prints `CLEAR`; Ask 2 when the first reports zero slots.
+2. **Owed row 16**, the 14:36Z prediction. It is answerable now and no run of
+   this seat has read it. 12:5xZ was still too early.
+3. **Owed row 27**, one sentence in §3f rule 1: the message store **refuses** an
+   over-long body now rather than truncating it, so "expect to pay for a second
+   short message" is no longer the remedy. It refused this run at nine characters
+   over and said what the overflow would have cost.
+4. **Owed row 29**, the Ursa half of the slot measurement. Handed to HQ in
+   `82b5a90a`; no seat in Ursa has been told.
+5. **Owed row 24**, the grep sweep, and **rows 1–5, 11, 12, 13, 18, 19, 20, 22,
+   23, 25** — none taken by this run.
