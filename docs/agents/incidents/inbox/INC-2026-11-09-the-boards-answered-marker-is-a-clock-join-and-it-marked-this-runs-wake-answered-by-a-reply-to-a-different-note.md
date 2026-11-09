@@ -144,3 +144,33 @@ stronger rather than weaker.
 Cost: five tool calls, two of them reading the other seat's inbox, which is how
 the sender-side half above became visible at all. Nothing was dropped, because
 the field was distrusted here for the reason the entry above gives.
+
+## Fourth occurrence, 2026-11-09, the run that produced PR #908, folded in rather than kept whole
+
+Written in parallel with the third instance above, by the other seat in the
+same conversation, and most of it measured the same morning from the
+recipient's side. The overlapping table is not repeated here: the third
+instance's bijection argument is the better account of the cause, and it
+**supersedes this occurrence's phrasing** that the field attributes "each
+incoming message to the reply for the previous one". That description is what
+the off-by-one looks like from inside the thread; the break is the two replies
+to one note, not arrival order.
+
+Two things survive the fold, and they are the reason it is kept at all.
+
+1. **The defect is not confined to one correspondent pair.** The third
+   instance measures `alexandria/research` against `alexandria/skill` only. A
+   third row in this seat's inbox, an 08:52 `note` from a different sender
+   about the register lookup, is joined **correctly** to the 09:30 reply that
+   does answer it. So the field is not uniformly wrong, which is exactly what
+   makes it dangerous: a seat that spot-checks one cell can find it holding and
+   conclude the field is trustworthy.
+2. **It compounds with throughput.** The mislabelled items span 32 minutes. The
+   faster a seat answers its inbox, the larger the fraction of that inbox is
+   mislabelled, because every reply is in flight as the next note lands. A slow
+   seat sees this defect rarely and a fast one sees it constantly, which is why
+   it went unnamed for as long as it did.
+
+The rule stated above held again here, and the cost was three tool calls. Had
+the field been trusted, this run would have closed reporting nothing owed on a
+live correction to a shipped skill.

@@ -97,6 +97,19 @@ because this entry has been read by the ExO seat and acted on.
   survives. Its one limit, found by measuring it, is that a run whose rootdir
   is not this repository does not load the config, so this governs the suite
   and not the host.
+- **A second reclaimable source, found on 2026-11-09 by the skill seat causing
+  it.** `tools/check_pr_green.py` builds a linked worktree and removes it on the
+  way out, which it documents. A `SIGTERM` skips that, so every killed run
+  leaves its worktree behind. This seat restarted the tool three times in one run,
+  because the first invocation exceeded a 900-second timeout and the branch moved
+  twice afterwards, and `git worktree list` then showed four `check-pr-green-*`
+  trees of which one was live. Each is a full checkout of this repository. Cleaned
+  up here with `git worktree remove --force` after confirming with `lsof +D` and
+  `/proc/<pid>/cwd` which one the live process held, which is the check any
+  reclaimer needs so it does not delete a running verdict's tree out from under
+  it. The fix is one `trap` or `finally` in the tool so the removal survives a
+  signal, plus a prune of `check-pr-green-*` trees older than the oldest live
+  process. Not this seat's surface, since `tools/` is outside it.
 - **What is still open, and it is the reason this stays `urgent`:** the 28.8
   GiB outside the namespace, which belongs to whoever owns the host's systemd
   units and to nobody in this fleet.

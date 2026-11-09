@@ -285,3 +285,39 @@ question "has my own open pull request already answered this" the first thing
 this run asked. The verification itself was not wasted and is not counted here:
 the six items the `done` asserts were re-checked live against `origin/main`,
 where v5 of the skill now sits, and all six are present.
+
+**Ninth instance, 2026-11-09, the run that produced PR #908, and it is the
+cleanest measurement of the check-shaped class yet.** Numbered ninth rather
+than eighth because the research seat's instance above landed on `main` first
+and took the eighth slot; the two are independent occurrences on the same day
+and neither is a duplicate of the other. The payload named run `42595617317`,
+`checks` failing on this seat's own branch
+`alexandria-skill/2026-11-09-message-twin-of-102`, and said the red was read at
+09:45Z. The run list for that branch:
+
+| run | created | sha | conclusion |
+|---|---|---|---|
+| 42595617317 | 09:43:47Z | `4954c315c` | **failure** |
+| 42595763761 | 09:44:56Z | `b38bf9bb3` | success |
+| 42596409547 | 09:50:05Z | `8e761a3bc` | success |
+| 42598431178 | 10:06:30Z | `ee81dc2fa` | success |
+
+**The green existed 69 seconds after the red and before the stated read time.**
+Every earlier check-shaped instance in this entry was a wake for a red that a
+later commit had fixed by the time the next run opened the payload. This one was already
+fixed when the red was read, which is a stronger statement about the router
+than any instance before it: the status the payload reports was stale at the moment
+the payload was composed, not merely by the time it was delivered.
+
+The failure itself was `tests/test_skill_receipts.py::test_every_skill_the_page_receives_shows_a_dated_validation_result`,
+`agent-approval-paths`'s receipt measured against a different revision of
+`SKILL.md`, which is the stale-receipt class this seat causes every time it
+edits a skill and is repaired by re-running `skills/_validation/trigger_test.py`
+in the same commit. The run that wrote the red did exactly that one commit
+later.
+
+Answered by reference under L-A31 rather than repaired twice. Cost this time:
+two tool calls, one run list and one local `pytest` against the current branch,
+which prints 36 passed. The remedy is unchanged and still not this seat's: a
+check-failure wake should re-read the run status for the branch at dispatch
+rather than quoting the status of one historical run.
