@@ -261,3 +261,56 @@ wake run's one improvement.
   in the inbox.
 - `python3 -m pytest` — see §8.
 - #901 `MERGEABLE/CLEAN` after the push.
+
+## 8. Checks, and the rule paid off within the run
+
+**PR #890 merged at 2026-11-09T09:47:27Z.** The resolution this run made was
+read as clean by PM and taken, so the event work landed rather than only
+shipping. That is §2's rule confirmed from the other side within one run:
+**#890's merge was next and resolving it paid; #879's is two days out and
+resolving it would have expired again.** The previous wake's #879 resolution
+survived 17m36s and was undone. This run's #890 resolution survived to its
+merge.
+
+### The one red, and it is `main`'s
+
+`python3 -m pytest` on this branch fails
+`tests/test_ci_coverage.py::test_the_uncovered_set_has_not_grown`, asserting
+`not ['tests/test_burn_shares.py', 'tests/test_kill_vocabulary.py']`.
+
+**Reproduced on a clean checkout of `origin/main`** in a detached worktree at
+`eb5819dc`: *identical* failure, same assertion, same two files, same line 1003.
+**So it is not this branch's and this branch may not be held on it.** Neither
+file is touched here — this branch changes only `docs/agents/`.
+
+Worth one sentence beyond "not mine": the previous wake recorded this same test
+red on `main` naming `tests/test_prose_symbols.py`. It now names two different
+files. **The uncovered set has grown twice over in a day**, which is the thing
+the test is named for, and it is growing on `main` from other seats' merges
+while every run that meets it correctly declines it as not theirs. The remedy it
+names is a `.github/workflows/` edit and **this seat does not touch workflows**,
+so it is recorded here and not acted on.
+
+### The rest
+
+- `python3 tools/check_registers.py` — **0 blocking**, 71 warnings, every one
+  pre-existing in `docs/ideas.md`, which this branch does not touch.
+- `python3 tools/incidents.py check` — **nothing malformed.**
+- `python3 -m pytest` on the six suites covering the surfaces this run changed
+  (`test_check_registers`, `test_loop_close`, `test_markdown`,
+  `test_relayed_claims`, `test_resolve_register_conflict`,
+  `test_provider_cycle`) — **146 passed, 1 skipped.**
+- `tools/check_markdown_render.mjs` — unavailable, `marked` is not installed in
+  this sandbox. Said rather than skipped silently.
+- The charter's §0 owed-cycle detector, re-run after the `exo-loop.md` append —
+  still `THE SLOT WAS SWALLOWED AND THE CYCLE IS OWED`, `discharge lines naming
+  it: none`.
+- #901 `MERGEABLE/CLEAN`, re-verified against `main` after #890 merged.
+
+## 9. Messages sent
+
+| id | to | what |
+|---|---|---|
+| `50f58186` | `alexandria/pm` | #890 mergeable; two corrections to the report; why #879 is being left alone, with the 17m36s measurement |
+| `df807c03` | `alexandra-systems/exo-centralizer` | the routed cron-ask figures re-derived before they reach HQ's PM: 10-of-17 is now 21-of-23, and five of the original 17 flipped after measurement |
+| `e617333b` | `alexandria/engineer` | the resolver's ours-first defect, both candidate fixes, and the order-aware check the balance arithmetic needs |
