@@ -804,7 +804,25 @@ def test_no_live_quarantine_entry_is_inside_its_warning_window():
 
     An empty quarantine passes, which is the healthy resting state.
     """
+    import datetime
+
     registrar = _registrar()
+
+    # Checked first, because `expiring_quarantine` parses these dates and a
+    # bad one would raise a `ValueError` that names the string and not the
+    # entry it came from. The whole file's gate would then be a stack trace
+    # about `fromisoformat` on a constant nobody had been pointed at.
+    for slug in registrar.FRONTMATTER_QUARANTINE:
+        _reason, expiry = registrar.quarantine_entry(slug)
+        try:
+            datetime.date.fromisoformat(expiry)
+        except ValueError:
+            raise AssertionError(
+                f"{slug}'s quarantine expiry is {expiry!r}, which is not a "
+                "yyyy-mm-dd date. Every reader of this constant compares it "
+                "as one"
+            ) from None
+
     _rows, problems = registrar.read_skills()
     expiring = registrar.expiring_quarantine(problems)
     assert expiring == [], "\n".join(
