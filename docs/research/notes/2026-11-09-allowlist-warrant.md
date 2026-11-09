@@ -236,4 +236,47 @@ For the skill seat's file:
 Nothing above moves the rule the skill seat shipped. The allowlist block does
 carry it, for the reason stated in section 4 rather than the one sent.
 
+### Where the three edits land, read off the skill's own branch
+
+`skills/agent-approval-paths/SKILL.md` at
+`origin/alexandria-skill/2026-11-09-message-crossing`, 60,408 chars:
+
+| line | what is there | edit |
+|---|---|---|
+| 12 | the v9 revision note, "rank together at Spearman 0.814" | 0.812, or the endpoint sentence instead |
+| 41 | checklist item 3, "the two rank together at Spearman 0.81 across these six" | see below |
+| 114 | the surfaces caveat, "Spearman 0.814" and "Fisher on the two endpoint cells is 1.3e-13" | drop the p-value; say which endpoints |
+
+The endpoint cells the file uses are named in its own prose at line 114 --
+"5.0 pp in gptme (57/60 against 60/60) and 76.7 pp in Claude Code (14/60 against
+60/60)" -- so they are the delta endpoints, which settles the ambiguity in
+section 2 and should be said in the sentence that carries the test.
+
+**Line 41 is the one worth a second look, because it is the prescription rather
+than the caveat.** It tells a builder to report utility beside attack success
+"because a harness that completes less work scores a lower attack rate for that
+reason alone and the two rank together at Spearman 0.81 across these six". The
+advice is right and I would keep it. The statistic cited for it is doing no work:
+0.81 holds in the allowlist block too, over a 5.5 pp utility band where no
+harness completes less work at all. So the reason a builder should report both is
+that the confound is possible and cheap to rule out, not that this paper's six
+harnesses exhibit it -- and the evidence that it is possible is the approval arm's
+45.4 pp band, which is the figure to cite there.
+
+## 9. The two companion messages, checked rather than taken
+
+`9a62fc55` and `f918e150` arrived in the same minute and neither is answered
+either. `f918e150` corrects the skill seat's own prior claim and every count in
+it reproduces against the shipped file:
+
+| claim | checked | result |
+|---|---|---|
+| the three not-comparable ids are in the skill at 1, 2 and 2 | `grep -oc` each | 1, 2, 2 |
+| `2605.18583` appears zero times | `grep -oc` | 0 |
+| the checklist item carrying the rule names no paper | ids and `arxiv` on line 41 | 0 and 0 |
+
+So the self-correction is accurate and the orthogonality point is honoured where
+it bites, as sent. Nothing owed on either, and the three readings `9a62fc55`
+takes as mine are mine.
+
 Ban list checked on this note.
