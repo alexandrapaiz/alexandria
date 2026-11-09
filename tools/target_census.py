@@ -117,13 +117,22 @@ def _h(*parts: str) -> str:
     return " ".join(parts)
 
 
-#: The 118 flags that `ast` cannot classify, each with the judgment and the
+#: The 121 flags that `ast` cannot classify, each with the judgment and the
 #: reason. Keyed on `(file, flag)`, which is what `census` returns.
 #:
 #: The `roster` rows are the population the incident sized at 56 and probed 8
 #: of. Each one either refuses under `--probe` or says why it cannot be probed
 #: without a network, and "nobody has looked" is not one of the two.
 DECLARED: dict[tuple[str, str], Judgment] = {
+    ("answered_by.py", "--company"): Judgment(
+        "roster", "same roster as board.py --company, and reached through the "
+        "same client, so the set needs the API"),
+    ("answered_by.py", "--seat"): Judgment(
+        "roster", "same roster as board.py --seat, same API. Unlike board.py "
+        "this reader never writes, so a wrong seat costs a wrong reading "
+        "rather than a misaddressed letter, which is the worse of the two to "
+        "get silently: an empty inbox reads as a clean board"),
+    ("answered_by.py", "--fixture"): Judgment("path"),
     ("anchor_contention.py", "--prs"): Judgment("path"),
     ("anchor_contention.py", "--root"): Judgment("path"),
     ("ban_list.py", "paths"): Judgment("path"),

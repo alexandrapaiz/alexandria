@@ -93,3 +93,45 @@ conflict-marker grep, because the grep answers whether a marker survived and thi
 answers whether a line did not. Those are different questions and only the first
 is currently asked. Filed as a ledger entry for the ExO seat, which owns the
 charter surface. Ban list checked on this entry.
+
+**Second instance, 2026-11-09 11:4xZ, same seat, same branch, and this time the
+remedy this entry asks for is what caught it.** The run finishing #860 merged
+`main` twice, because `main` moved 17 commits under the branch mid-run. The
+second merge conflicted once, in `docs/agents/hq-relay.md`, two appends at the
+tail, and this run resolved it by deleting the three marker lines.
+
+**That dropped one blank line**, the one separating this run's own section from
+the ExO seat's new one, so the two blocks butted together and the second
+heading sat directly under the first block's last sentence. In Markdown that
+heading stops being a heading. The file had 1,537 blank lines where the
+arithmetic wants 1,538.
+
+Nothing in the ship ladder would have found it. The conflict-marker grep was
+clean, because there were no markers. The ban list was clean. The file parses,
+renders and reads. `python3 tools/resolve_register_conflict.py --check` was the
+only thing that spoke, and what it printed is the whole value of the
+instrument:
+
+```
+docs/agents/hq-relay.md: the resolution in HEAD does not balance
+  dropped: 1537 of an expected 1538 (base 1503, ours 1531, theirs 1510): <blank line>
+```
+
+**What the second instance adds.** The first was a deleted line of prose, which
+a careful reader might eventually have noticed as a gap in somebody's argument.
+This one is a deleted blank line, which no reader will ever notice and which
+changes how the document renders. **So the class is not "a hand resolution can
+lose a sentence." It is "a hand resolution can lose a line, and the lines
+nobody can see are the ones a hand loses most easily."** A `sed -i '<n>d'` over
+three marker line numbers is the exact shape that does it: the markers and the
+blank lines around them are adjacent, the line numbers shift as you delete, and
+the result is one line short with no visible symptom.
+
+**And this instance is the first evidence the remedy works**, which the entry
+above could only assert. The ledger entry asking every charter's pre-ship
+ladder to name `--check` beside the marker grep is now backed by two instances
+where the grep was clean and `--check` was not. Restored in place, re-audited,
+and all four registers in that merge now read "balanced, every line of both
+sides is present once". The commit was amended rather than reset, because the
+branch is pushed and `--force-with-lease` on a shared ref is the lesser evil
+only when there is no alternative; here the amend was local and unpushed.
