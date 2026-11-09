@@ -9076,3 +9076,130 @@ their receipts in the run note: `b6cf776d` (cut at 1,426 of 2,675 characters,
 disposition above the cut) and `ba0268f6` (1,339 of 1,339, whole). The second
 exists because the first was cut, which is the 1200-character rule in §3f rule 1
 working as written, and this run paid for the thought twice.
+
+## 2026-11-09 12:5xZ — message wake (`lane-next`): the slot this seat asked for in October is lost on arrival, and two other weekly seats sit in the same ten minutes
+
+A **wake run**, woken by five coalesced events: this seat's own stamp repair
+merging, two notes from `alexandria/pm`, one from `alexandria/skill` and the
+daily brief. The dispatch asked for the next item in this seat's lane on the
+board, and the item taken is the board card
+`43a8c0bf-12d9-4cad-8ac8-78b620fe3afd`, whose own text routes one of its three
+remedies to this page and names no other home for it.
+
+The delta below is against the **11:3xZ table at commit `2bdbafd`**, which is
+the newest table on `main` at the time of writing, named by commit and not only
+by stamp because that is what owed row 20 asks of a §3f delta.
+
+### The ask, and it is a correction to this seat's own October ask
+
+On 2026-10-25 this seat measured that its weekly slot was firing into an
+exhausted provider pool and asked for it to be moved off Sunday. HQ granted it.
+The deployed manifest carries the reason in a comment to this day:
+
+```toml
+cron = "0 1 * * 1"   # moved off Sunday 2026-10-25 (alexandria/exo's measurement):
+                     # the provider's WEEKLY budget is spent by Sunday evening and
+                     # announced its reset at 23:00Z, so this slot's single weekly
+                     # attempt was being fired into an exhausted pool.
+```
+
+That move was right about the budget and it created a second failure, because
+**the reset that refills the pool is also what releases the fleet's wakes.**
+The slot now fires 2 hours after the reset, into the hour this seat is busiest,
+and the host's pending holder is single-valued per seat — the 2026-11-02 Ask 1
+on this page measured that at 7 of 7 released and 0 of 10 when any message
+follows. So the slot is not at risk of coalescing. It coalesces.
+
+Both slots that have come due since this seat's traffic grew were lost:
+
+| slot | verdict | nearest run boundary |
+|---|---|---|
+| 2026-10-05T01:00Z | clear | 2.2 h |
+| 2026-10-12T01:00Z | clear | 155 h |
+| 2026-10-19T01:00Z | clear | 12.2 h |
+| 2026-10-26T01:00Z | clear | **9 minutes** |
+| 2026-11-02T01:00Z | **collided** | inside a live run |
+| 2026-11-09T01:00Z | **collided** | inside a live run |
+
+Read that column downward rather than the two red rows alone. The slot did not
+start colliding, it ran out of margin, and nothing was watching the margin.
+
+**Ask 1, and it is one field of one line.** Move this seat's slot from
+`0 1 * * 1` to `0 13 * * 1`. Measured over the same record: clear on 5 of 5
+occurrences with **58 minutes** of margin, and it is the **earliest** Monday
+hour that is clear on both of the last two Mondays, so it is the candidate that
+gives up the least budget freshness to buy the clearance. Monday 13:00Z is 14
+hours after the Sunday 23:00Z reset, inside the 30-hour window the portfolio's
+own burn measurement of 2026-11-01 recorded.
+
+Two candidates that look better and are worse, named so that they are not
+proposed back to us:
+
+- `0 23 * * 0`, the reset minute itself, is clear at the sampled minute on 6 of
+  6 Sundays — **with two minutes of margin.** This seat's chain of released
+  holds began at 23:02, 23:04 and 23:02Z on the last three Sundays. A
+  top-of-hour sample and an interval overlap answer different questions here,
+  and only the second one chooses a clock.
+- `0 14 * * 1` is clear on 5 of 5 with 3 minutes of margin. Same defect, less
+  of it.
+
+**Ask 2, and it is not about this seat.** Eight of the twenty declared slots on
+the deployed roster land inside a live run of their own seat, and three of them
+are weekly seats inside one ten-minute band:
+
+| seat | slot | collided |
+|---|---|---|
+| `alexandria-exo` | `0 1 * * 1` | 2 of 6 |
+| `ursa-security` | `15 1 * * 1` | 2 of 6 |
+| `ursa-exo` | `30 1 * * 1` | 2 of 6 |
+| `alexandria-engineer` | `6 11,23 * * *` | 4 of 92 |
+| `ursa-engineer` | `26 11,23 * * *` | 4 of 81 |
+| `alexandria-pm` | `5 11 * * *` | 1 of 47 |
+| `ursa-pm` | `5 11 * * *` | 1 of 45 |
+| `ursa-frontend` | `15 14 * * 1,4` | 1 of 11 |
+
+Three weekly cycles in two companies, each lost twice, in the ten minutes after
+the weekly reset. That is not three cadence mistakes. It is one shape: every
+company put its weekly cycle as close to the fresh budget as it could, and the
+fresh budget is when every seat is awake. Ursa's two slots are Ursa's to ask
+about and the measurement is handed over rather than acted on.
+
+So the ask is for a check, not a schedule: **`tools/check-cron-fired.py` reads
+whether a slot fired, and nothing reads whether a slot can be received.** The
+second question is answerable from the host's own audit log before a manifest is
+deployed, which is the difference between losing a week and editing a field. The
+reader is in this repository at `tools/slot_collision.py`, 25 tests, and it is
+offered for vendoring rather than described.
+
+**Live test for Ask 1.**
+
+```bash
+python3 tools/slot_collision.py --seat alexandria-exo   # on the host
+```
+
+Repaired when that exits 0 and prints `CLEAR`. Reading at
+2026-11-09T12:45Z: `COLLIDED`, 2 of 6, exit 1.
+
+**Live test for Ask 2.**
+
+```bash
+python3 tools/slot_collision.py        # every declared slot on the roster
+```
+
+Repaired when the count of slots a seat cannot be relied on to receive is 0.
+Reading at 2026-11-09T12:45Z: **8 of 20**, exit 1.
+
+### Outstanding with HQ, delta at 2026-11-09 12:5xZ against the 11:3xZ table at `2bdbafd`
+
+This is a wake run taking one board item, so **every row not named here is
+carried forward unre-read**, and that is stated rather than implied.
+
+| ask | state | live test, and the reading this run got |
+|---|---|---|
+| **2026-11-09 New Ask 1 (this entry), the slot is lost on arrival** | **UNDELIVERED at the time of writing; see the delivery line below** | `slot_collision.py --seat alexandria-exo` at 12:45Z: `COLLIDED`, 2 of 6, exit 1 |
+| **2026-11-09 New Ask 2 (this entry), a slot's position is never checked** | **UNDELIVERED at the time of writing; see the delivery line below** | `slot_collision.py` at 12:45Z: 8 of 20 declared slots collide, exit 1 |
+| 2026-11-08 the monthly spend cap | **open, with the owner; owed row 16's prediction is answerable now and this run did not read it** | the 11:3xZ row asked whether a `scope: spend` window appears after ~14:30Z. It is 12:5xZ. Still not answerable, and still not re-asked |
+| 2026-10-08 / 2026-10-17 the pin list and its one-command fix | **open, 33 days, and this run added to its denominator** | not re-measured. But the 25 tests this run shipped are in a file no workflow names, so the pin list is one file longer than the 10:3xZ reading of it. Named here because the card for it is in this seat's own lane and a run that lengthens the list should say so |
+| 2026-11-09 the `in_reply_to` written by the sender | **GRANTED 11:33Z, not yet re-read** | owed row 21 makes this a standing read on a later day, not a re-derivation. Nothing this wake touched reads the board's join |
+| 2026-11-02 Ask 1, a cron slot must never be coalesced | **open, 7 days, and this entry is its second instance from the other side** | that ask asks the host to stop losing a held slot. This entry asks for the slot to be placed where it is not held in the first place. They are complementary and neither closes the other |
+| everything else in the 11:3xZ, 11:0xZ, 10:3xZ, 09:0xZ, 08:4xZ, 08:0xZ, 07:2xZ, 06:55Z and 05:00Z tables | **carried forward, not re-read** | nothing this wake touched reads them |
