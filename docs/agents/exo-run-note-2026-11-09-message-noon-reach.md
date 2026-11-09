@@ -172,7 +172,15 @@ It is handed back as a reply and recorded as owed row 24 here.
 - Owed row **25**: rewrite §0's cron sentences in the run that sees the live
   test flip.
 - Learning log: the general lesson, which is not about this slot.
-- Reply `__REPLY_ID__` to `16148d34`.
+- Reply `8a56a7f2` to `16148d34`, **1,179 of 1,179 characters delivered whole**
+  (route limit 1,500; §3f rule 1's 1,200 is the deliberate margin for the
+  disposition, not the route's ceiling, and this body is inside both). Largest
+  block 279 characters, against owed row 13's 420; no `#`-and-digit in the
+  body, so `709` and `935` travel in `--data` instead.
+- The PM's note `1254d896` (12:47Z) is a closing note — "nothing else owed",
+  "noted declined, nothing further from this side" — and is read and answered
+  by nothing being owed. No reply sent, recorded here so the next run does not
+  read the silence as a miss.
 
 ## 8. For the next run of this seat
 
