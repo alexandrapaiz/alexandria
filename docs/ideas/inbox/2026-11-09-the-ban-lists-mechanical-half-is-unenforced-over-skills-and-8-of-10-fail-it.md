@@ -37,39 +37,62 @@
 - Cost: $0
 - Status: proposed
 
-**Update, 2026-11-09, later run of the same seat: this seat's half is done, and
-the deferral's stated reason was half right.** The remaining 48 separators across
-7 skills are replaced with the comma form the two newest skills already used, so
-`python3 tools/ban_list.py skills/*/SKILL.md` is **0 findings over 10 of 10
-files**, down from 59 over 8 of 10 when this entry was written. Safe for the
-page because `site/lib/skill-provenance.js` returns `papers` verbatim and splits
-nothing on the separator, and the compliant entries already carried commas
-inside their quotes.
+**Update, 2026-11-09, later run of the same seat: this seat's half is done,
+measured, and then reverted, because the two halves of this entry turn out to be
+one change and the other half is the engineer's.** The entry above reads as two
+independent steps in two seats. They are not independent, and that is the finding
+this update adds.
 
-The deferral above gave two reasons and they did not survive equally.
+**What was built and measured.** All 48 remaining separators replaced with the
+comma form the two newest skills already use, by one command:
 
-*One skill per run* does not reach this, because the rule governs writing and
-revising a skill, and a separator swap in a frontmatter list is neither. No
-claim, number, prescription or line of prose moved in any of the seven.
+```
+sed -i 's/ — arxiv\.org\/abs\//, arxiv.org\/abs\//g' skills/*/SKILL.md
+```
 
-*A reader-facing edit invalidates the trigger receipt and should be measured
-rather than swept* was correct about the mechanism and wrong about the cost.
-`skills/_validation/trigger_test.py --receipts` did go to exit 1 with seven
-stale receipts, so the edit genuinely could not ship without a re-measurement.
-But the measurement is local, it is the pre-registered `lexical/2.2` engine with
-no network and no key, and it moved nothing: **74 of 84 at reliability 0.881
-before and after, identical case sets, zero of 84 cases changing verdict**, and
-exactly the seven edited shas differing. The thing that made this look expensive
-was the receipt bookkeeping rather than the measurement, and that bookkeeping is
-the same-day bundle tie recorded as
-`INC-2026-10-26-the-library-shows-the-older-of-two-receipts-dated-the-same-day`,
-now at five occurrences.
+- `python3 tools/ban_list.py skills/*/SKILL.md`: **59 findings over 8 of 10
+  files to 0 over 10 of 10.**
+- Safe for the page: `site/lib/skill-provenance.js` returns `papers` verbatim
+  and splits nothing on the separator, the compliant entries already carried
+  commas inside their quotes, and `node --test tests/skill-provenance.test.mjs`
+  is 28 of 28.
+- No `description` changed, checked by hashing all ten before and after. The
+  diff is 48 insertions and 48 deletions, every changed line a `papers:` entry.
+- Trigger suite re-run on the pre-registered `lexical/2.2` engine, locally, no
+  key: **74 of 84 at reliability 0.881 before and after, identical case sets,
+  zero of 84 cases changing verdict**, exactly the seven edited `skill_sha256`
+  differing. `trigger_test.py --receipts` returned to exit 0.
 
-**Step (1) is still open and still the engineer's**, which is why this entry
-stays `proposed` rather than closing. Nothing yet runs `tools/ban_list.py` over
-`skills/`, so the 0 of 10 measured today is a state and not a guarantee, and the
-next seat to paste a title with an en dash in it reintroduces the class silently.
-Folding the mechanical six into `tests/test_skill_receipts.py`, which already
-opens every `SKILL.md`, is what makes today's number hold. This is incident 20's
-class exactly: the gate that decides something gets written down exists, and the
-gate that decides it gets checked before shipping does not.
+So the deferral's two stated reasons did not survive equally. *One skill per run*
+does not reach a separator swap in a frontmatter list, which revises no claim,
+number or line of prose. *A reader-facing edit invalidates the trigger receipt
+and should be measured rather than swept* was right about the mechanism, since
+`--receipts` did go to exit 1 on seven stale receipts, and wrong about the cost,
+since the re-measurement is local and moved nothing.
+
+**Why it was reverted, and why step (1) is now a blocker rather than a
+follow-up.** The full suite then failed
+`tests/test_skill_gate.py::test_the_clause_is_the_delta_because_the_library_already_carries_findings`,
+which is a deliberate tripwire: `gate.ban_list_clause()` fails a revision only on
+findings it *adds* against the base ref and tolerates pre-existing ones as "the
+skill seat's backlog", so a test asserts the backlog is non-empty and its own
+message says a clean library is the signal to promote the clause to an absolute.
+Both files are the engineer's. **The cleaned state therefore cannot ship until
+the clause is promoted**, so steps (1) and (2) are one change in two seats and
+not two changes in any order. Filed as
+`INC-2026-11-09-cleaning-the-library-of-ban-list-findings-trips-a-tripwire-in-another-seats-file`.
+The sweep was reverted rather than left red, because a red check blocks a Tier B
+merge and would have held this run's event work behind it.
+
+**Revised first step, for the engineer, one run.** Promote `ban_list_clause`
+from a delta to an absolute, so any mechanical finding in any skill fails it.
+Replace the tripwire test with its mirror, that the library carries zero
+findings. Apply the one-line `sed` above and commit the trigger bundle in the
+same commit as the edit, which is what `--receipts` instructs. That is the whole
+change, every part of it proven against this library today, and it ends the class
+instead of clearing it once. The original step (1), folding the mechanical six
+into `tests/test_skill_receipts.py`, is subsumed: an absolute clause plus a green
+library is the gate, and nothing needs the second enforcement point.
+
+- Status: proposed, and now **blocking** rather than cosmetic, because this
+  seat cannot clear its own named backlog without it.
