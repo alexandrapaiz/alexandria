@@ -139,6 +139,51 @@ COUNT_SUFFIXES = (".md", ".js", ".jsx", ".ts", ".tsx")
 # word that cannot be a record.
 DATE = re.compile(r"\b20\d\d-\d\d-\d\d\b")
 
+# ---------------------------------------------------------------- status tables
+#
+# A grade is the other fact a reader leans on, and it drifts the way a count
+# does with one difference that made it invisible: a status is a word rather
+# than a number, so the census above is green on a page whose every grade is
+# wrong. `docs/product/install.md` carried exactly that on 2026-11-09. Its
+# table said `active` for six skills while `main` said `provisional` for nine
+# and `draft` for one, and `agent-approval-paths` had no row at all, so the
+# page a buyer reads was wrong in seven places with the count gate two lines
+# above it passing. Thirteen days on the grades and seven on the missing row,
+# dated by the skill seat from its own commits.
+#
+# The split that found it is the finding worth keeping, and it is why a gate
+# rather than discipline: the seat that writes `status:` in front matter may
+# not open the page that restates it, and the seat that owns the page has no
+# reason to reread front matter on a quiet morning. Neither seat is careless
+# and no habit either of them could adopt would close it, because the habit
+# would have to live in a file one of them is not allowed to open.
+#
+# What is deliberately not the remedy is generating the table. The third
+# column is a hand-written sentence about what each skill decides and it is
+# the best writing on the page; a generator would end the drift and the prose
+# together. So the two mechanical columns are checked and the sentence is left
+# alone, which is the same split the install block already uses.
+STATUS_GRADES = ("draft", "provisional", "active")
+
+# Tables are found by shape rather than by path, and that is this file's own
+# lesson rather than a preference. The hand list of two manifests above is
+# what let `.cursor-plugin/plugin.json` ship a stale count through a clean
+# pass, and a hand list of pages that grade skills would rot the same way the
+# first time a second page grows a table. A table qualifies when its header
+# carries a `Status` column and at least one row's first cell is a backticked
+# skill directory name, so the next page is covered on the day it lands.
+STATUS_HEADER = "status"
+SKILL_CELL = re.compile(r"^`([a-z0-9][a-z0-9-]*)`$")
+TABLE_RULE = re.compile(r"^\|[\s:|-]+\|?$")
+
+# The same tree the count census walks, for the same reason: these are the
+# surfaces somebody deciding whether to lean on a skill actually meets. A
+# dated table under `skills/_validation/results/` is a record of a reading and
+# is right when it is stale, and it is outside this tree rather than exempted
+# by a rule, because a judgment per file there is a separate piece of work.
+STATUS_ROOTS = COUNT_ROOTS
+
+
 # Component keys a plugin manifest may point at. A path here that does not
 # resolve is a load failure at install time, which is the one class of defect
 # this checker shares with `claude plugin validate --strict`: it is cheap to
@@ -637,6 +682,172 @@ def check_count_census(root: str, count: int, problems: list) -> dict:
     return {entry["file"]: entry for entry in surveyed}
 
 
+def skill_statuses(root: str) -> dict:
+    """The grade each skill declares in its own front matter.
+
+    Keyed by directory name and never by the declared `name`, because the two
+    disagreeing is already a problem `discovered_skills` reports and a table
+    addresses a skill by the directory a reader can open.
+    """
+    directory = os.path.join(root, SKILLS_DIR)
+    if not os.path.isdir(directory):
+        return {}
+    statuses = {}
+    for entry in sorted(os.listdir(directory)):
+        skill_file = os.path.join(directory, entry, "SKILL.md")
+        if not os.path.isfile(skill_file):
+            continue
+        with open(skill_file, encoding="utf-8") as handle:
+            statuses[entry] = frontmatter(handle.read()).get("status") or ""
+    return statuses
+
+
+def _cells(line: str) -> list:
+    """One markdown table row, as its cells, with the edge pipes dropped."""
+    stripped = line.strip()
+    if stripped.startswith("|"):
+        stripped = stripped[1:]
+    if stripped.endswith("|"):
+        stripped = stripped[:-1]
+    return [cell.strip() for cell in stripped.split("|")]
+
+
+def markdown_tables(text: str) -> list:
+    """Every pipe table in a markdown file, with the line it starts on.
+
+    Deliberately not a markdown parser. A table here is a header row, a rule
+    row of dashes, and the pipe rows that follow, which is every table in this
+    repository. The caption is the nearest preceding non-blank line and it is
+    carried because a date beside a table makes the table a record.
+    """
+    lines = text.splitlines()
+    tables = []
+    index = 0
+    while index < len(lines) - 1:
+        header, rule = lines[index], lines[index + 1]
+        if not header.strip().startswith("|") or not TABLE_RULE.match(rule.strip()):
+            index += 1
+            continue
+        rows = []
+        cursor = index + 2
+        while cursor < len(lines) and lines[cursor].strip().startswith("|"):
+            rows.append((cursor + 1, _cells(lines[cursor])))
+            cursor += 1
+        caption = ""
+        for back in range(index - 1, -1, -1):
+            if lines[back].strip():
+                caption = lines[back]
+                break
+        tables.append({
+            "line": index + 1,
+            "header": _cells(header),
+            "rows": rows,
+            "caption": caption,
+        })
+        index = cursor
+    return tables
+
+
+def status_tables(root: str, known: set) -> list:
+    """Every reader-facing table that grades skills by name.
+
+    Two conditions, and both have to hold. The header carries a `Status`
+    column, and at least one row's first cell is a backticked directory under
+    `skills/`. The first alone would catch a table of unrelated statuses; the
+    second alone would catch the install page's own table of commands.
+    """
+    found = []
+    for relative in STATUS_ROOTS:
+        target = os.path.join(root, relative)
+        paths = []
+        if os.path.isfile(target) and relative.endswith(".md"):
+            paths = [relative]
+        elif os.path.isdir(target):
+            for base, _, names in os.walk(target):
+                for name in sorted(names):
+                    if name.endswith(".md"):
+                        full = os.path.join(base, name)
+                        paths.append(os.path.relpath(full, root))
+        for candidate in sorted(set(paths)):
+            with open(os.path.join(root, candidate), encoding="utf-8") as handle:
+                text = handle.read()
+            for table in markdown_tables(text):
+                headers = [cell.lower() for cell in table["header"]]
+                if STATUS_HEADER not in headers:
+                    continue
+                graded = [
+                    (line, cells) for line, cells in table["rows"]
+                    if cells and SKILL_CELL.match(cells[0])
+                    and SKILL_CELL.match(cells[0]).group(1) in known
+                ]
+                if not graded:
+                    continue
+                table["file"] = candidate
+                table["column"] = headers.index(STATUS_HEADER)
+                table["dated"] = bool(DATE.search(table["caption"]))
+                found.append(table)
+    return found
+
+
+def check_status_tables(root: str, statuses: dict, problems: list) -> list:
+    """The gate: a restated grade has to equal the one in front matter.
+
+    Three ways a table and the library disagree, and all three were live in
+    one page on 2026-11-09, so all three are checked rather than the one that
+    happened to be noticed. A row whose grade is not the declared one, a skill
+    on disk with no row, and a row for a skill that is not on disk.
+    """
+    tables = status_tables(root, set(statuses))
+    for table in tables:
+        where = table["file"]
+        if table["dated"]:
+            continue
+        rowed = {}
+        for line, cells in table["rows"]:
+            match = SKILL_CELL.match(cells[0]) if cells else None
+            if not match or table["column"] >= len(cells):
+                continue
+            name = match.group(1)
+            grade = cells[table["column"]].strip().strip("`")
+            rowed[name] = line
+            if name not in statuses:
+                problems.append(
+                    f"{where}:{line} grades `{name}` {grade!r} and there is "
+                    f"no {SKILLS_DIR}/{name}/SKILL.md, so the row advertises "
+                    "a skill a reader cannot install."
+                )
+                continue
+            declared = statuses[name]
+            if not declared:
+                problems.append(
+                    f"{where}:{line} grades `{name}` {grade!r} and "
+                    f"{SKILLS_DIR}/{name}/SKILL.md declares no status, so "
+                    "the table is the only place the grade exists and "
+                    "nothing can confirm it."
+                )
+            elif grade != declared:
+                problems.append(
+                    f"{where}:{line} grades `{name}` {grade!r} and "
+                    f"{SKILLS_DIR}/{name}/SKILL.md says {declared!r}. The "
+                    "front matter is the field; the table restates it."
+                )
+            if declared and declared not in STATUS_GRADES:
+                problems.append(
+                    f"{SKILLS_DIR}/{name}/SKILL.md declares status "
+                    f"{declared!r}, which is not one of "
+                    f"{', '.join(STATUS_GRADES)}."
+                )
+        for name in sorted(statuses):
+            if name not in rowed:
+                problems.append(
+                    f"{where}:{table['line']} grades skills by name and has "
+                    f"no row for `{name}`, which ships from {SKILLS_DIR}/. A "
+                    "table a reader takes for the library is worse than no "
+                    "table when it is silent about a skill."
+                )
+    return tables
+
+
 def check(root: str = REPO) -> dict:
     problems: list = []
 
@@ -665,6 +876,8 @@ def check(root: str = REPO) -> dict:
     blocks = check_prose(root, lines, len(skills), problems)
     manifest_surfaces = check_manifest_counts(root, len(skills), problems)
     surveyed = check_count_census(root, len(skills), problems)
+    statuses = skill_statuses(root)
+    graded = check_status_tables(root, statuses, problems)
 
     return {
         "ok": not problems,
@@ -695,7 +908,14 @@ def check(root: str = REPO) -> dict:
                 relative for relative in COUNT_SURFACES
                 if not os.path.exists(os.path.join(root, relative))
             ),
+            # Printed for the same reason: a page that restates the grades
+            # and is not in this list is a page the gate never opened, and
+            # that is the one thing a passing run cannot otherwise tell you.
+            "status tables": sorted(
+                f"{table['file']}:{table['line']}" for table in graded
+            ),
         },
+        "statuses": statuses,
         "marketplace": marketplace_name,
         "plugin": plugin_name,
         "repository": slug,
