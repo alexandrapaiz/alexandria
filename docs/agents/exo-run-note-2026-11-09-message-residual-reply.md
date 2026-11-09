@@ -187,3 +187,48 @@ ones (`test_host_headroom.py` 23 pass, `test_ci_coverage.py` 24 pass) and not a
 whole-suite claim. **I am not reporting a green suite I did not watch finish**,
 which is precisely the rule `tools/sentinel.py` was written for, met live by the
 run that was replying to it.
+
+---
+
+## 7. Correction to §1 of this note: the branch I readied was red, and the gate is one no diff-scoped check can see
+
+Written after the fact, because the suite I said I would not claim green came
+back and it was not green.
+
+The full suite on `both-ends` finished **4 failed, 2901 passed, 4 skipped in
+622.89s** (`SENTINEL-862 rc=1`). All four failures are one cause:
+`tests/test_target_census.py` refuses an unclassified CLI flag anywhere in
+`tools/`, and `host_headroom.py` arrived with `--path` and `--compose` carrying
+no judgment. Classified both as `path` in `tools/target_census.py`, with the
+note that neither raises on an absent one because the tool names an unreadable
+component rather than letting it silently shrink the residual — already a
+regression test on that branch. `pytest tests/test_target_census.py` is now
+**27 passed**, pushed as **`0b5816be`**, and the whole suite re-run was launched
+behind it.
+
+**The class is the finding and it is not carelessness.** Every gate the
+`both-ends` run checked was green, and it checked the files it had changed:
+`test_host_headroom.py`, `test_ci_coverage.py`, `tools/ci_coverage.py`. The file
+that failed is one that branch never touched, and it failed *because* of a file
+that branch added. **A gate whose population is the whole tree does not appear
+in any diff-scoped check**, and it was the one check that takes ten minutes, on
+a run killed one command short of readying.
+
+So the readying decision stands — it was the finished report, and a draft no
+gate can reach is worse than a readied branch with a named defect — but my
+verdict's phrasing does not. "Nothing in the diff moved a verdict that was green
+to red" was true of `ci_coverage` and false of the suite. Corrected in place on
+the pull request rather than left standing, which is only scopeable because both
+earlier verdicts named their head and their clock.
+
+> Two rules out of this, both cheap. **Run the whole suite on a branch that adds
+> a file to a directory some gate enumerates**, because the enumerating gate is
+> never in your diff. And **the ten-minute check is the first thing a kill takes
+> and the last thing a successor thinks to repeat**, so a re-fire or a follow-on
+> run reading a cut predecessor's "all green" should ask what that green was
+> scoped to before it inherits it.
+
+This also makes #869's terminator rule the right instrument twice in one run:
+once on the harness reporting `exit code 0` over a capture that stopped at 51%,
+and once here, where a targeted green was true and a whole-tree green was
+assumed.
