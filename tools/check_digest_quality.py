@@ -94,6 +94,9 @@ SKELETON_HEADINGS = (
 # hold two vocabularies for one rule. A derived list does not drift.
 # `tests/test_digest_quality.py` pins this pass to the canon's own asserted
 # cases, so widening the ban there fails here until both agree.
+# A Markdown list item's opening row. Canon law 14's first device.
+BULLET = re.compile(r"^([-*+]|\d+\.)\s")
+
 SLOT_BAN_OPEN = "The ban is on the slot's IDEA and not on four strings"
 SLOT_BAN_CLOSE = "first job is to say which section the reader is in"
 
@@ -461,6 +464,58 @@ def check(body: str, kind: str = "weekly") -> list[Finding]:
                 add(WARN, "bare-number", number,
                     f"{figures[0]!r} with nothing beside it to place it against", "24")
                 break
+
+    # --- canon law 14: the shape of the page ---
+    # The second rule the writer seat routed here on 2026-11-01, filed as "Law
+    # 14's one-shape failure cannot block a send". The gate had eight blocking
+    # rules and not one of them measured the shape of the page, so an issue set
+    # as one column of grey paragraphs was green at the only gate that can stop
+    # a send. The owner has read that page and rejected it twice, and the
+    # market seat's ranking of 2026-09-24 put alexandria last on exactly this
+    # while first on rigor: "a formatting and craft gap, not a substance gap".
+    #
+    # Two devices of law 14's three, and only these two, because a list with
+    # parallel results and a written turn inside a long section are the two no
+    # furniture can fake. A person on the page is a reading. Same pair
+    # `docs/voice/check_voice.py devices` takes, so the two commands cannot
+    # reach different verdicts on one page.
+    #
+    # Why it warns rather than blocks, which is this file's own policy and not
+    # a softening of the law: `block` is for what the generator can fix, and
+    # all three served editions fail this today, so blocking it now would hold
+    # every send rather than improve one issue. The GOOD fixture in
+    # tests/test_digest_quality.py satisfies it, so the tier is reachable and
+    # the promotion to `block` is a ratchet waiting on one issue that clears
+    # it. That proposal is in docs/ideas.md rather than taken here, because
+    # holding the press is a policy call and not an engineering one.
+    if kind == "weekly":
+        devices = []
+        for block in re.split(r"\n\s*\n", body):
+            rows = [x.strip() for x in block.strip().split("\n") if x.strip()]
+            if not rows:
+                continue
+            if rows[0].startswith("### "):
+                devices.append("turn")
+            elif not rows[0].startswith("#") and BULLET.match(rows[0]):
+                # The FIRST row, which is what Markdown means by a list item:
+                # the rows under a bullet are the bullet's continuation, not
+                # separate blocks. The canon's `shapes` asks this of every row
+                # instead, and the press's mandated item shape is a bold claim
+                # wrapped over two or three lines with prose under it, so no
+                # item the generator can write satisfies an all-rows reading.
+                # Measured on this repository's own fixtures: the worked
+                # tier-four issue in tests/test_digest_quality.py has two such
+                # blocks and `shapes` scores it `list: 0`, so law 14 would fail
+                # the one issue the gate holds up as correct. That is the same
+                # blindness `check_voice.py` recorded for the citation line one
+                # level down, and it is filed for the writer seat rather than
+                # fixed here, because docs/voice/ is that seat's surface.
+                devices.append("list")
+        if not devices:
+            add(WARN, "one-shape", 0,
+                "no list and no written turn anywhere in the issue; law 14 calls "
+                "a page of one shape a design failure the writer owns, not a "
+                "neutral default", "n/a")
 
     # --- the daily has its own floor ---
     if kind == "daily" and "nothing worth your time" not in lowered:

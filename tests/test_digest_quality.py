@@ -375,16 +375,31 @@ def details(body, rule):
 
 
 def test_the_close_the_owner_mandated_raises_nothing():
-    assert findings(f"# T\n\n{MANDATED_CLOSE}\n") == []
+    # `one-shape` is excluded because it is the only rule here that is about
+    # the whole page rather than about the text in front of it, and this body
+    # is a two-block fragment rather than an issue. Every real body the press
+    # hands the gate carries its items, and the fragment carrying no list is a
+    # fact about the fixture. Narrowed rather than dropped: the close itself
+    # still has to raise nothing.
+    assert [f for f in findings(f"# T\n\n{MANDATED_CLOSE}\n")
+            if f.rule != "one-shape"] == []
 
 
 def test_the_issue_the_gate_has_actually_read_loses_both_false_warnings():
     """2026-W39 is the only issue this gate has ever been run against. It
-    returned seven warnings and two of the seven were the substring bug."""
+    returned seven warnings and two of the seven were the substring bug.
+
+    `one-shape` joined that set on 2026-11-09 and it is a true finding rather
+    than a loosened assertion: `docs/voice/check_voice.py devices` reaches the
+    same verdict on this same file, "no list and no written turn". It is pinned
+    here on purpose, because this is the issue the product is serving and the
+    count is the evidence for promoting the rule from `warn` to `block`.
+    """
     body = (REPO / "site" / "content" / "issues" / "2026-W39.md").read_text(encoding="utf-8")
     found = findings(body)
     assert details(body, "empty-intensifier") == []
-    assert {f.rule for f in found} == {"bare-number"}, "the rest of the gate is unchanged"
+    assert {f.rule for f in found} == {"bare-number", "one-shape"}, \
+        "the rest of the gate is unchanged"
 
 
 def test_no_listed_term_fires_from_inside_a_longer_word():
@@ -573,3 +588,129 @@ def test_the_image_the_press_runs_carries_the_generator_this_rule_reads():
     weekly = (REPO / "pipeline" / "weekly.py").read_text(encoding="utf-8")
     assert '.add_local_file("prompts/digest.md", "/root/prompts/digest.md")' in weekly
     assert pathlib.Path("/root/prompts/digest.md") in gate.GENERATOR_PATHS
+
+
+# ---------------- canon law 14: the shape of the page ----------------
+#
+# The second rule the writer seat routed here on 2026-11-01, filed as "Law 14's
+# one-shape failure cannot block a send, so the one thing she rejected twice
+# ships green". The gate had eight blocking rules and none of them measured the
+# shape of the page.
+
+def test_a_page_of_one_shape_is_named_before_the_send():
+    body = ("# A finding stated as a sentence\n\n*The latest in AI research.*\n\n"
+            "## Counting partial credit turns out to be the trick\n\n"
+            + ("One column of prose, stated at length and without a turn in it, "
+               "which is the page she read and rejected. " * 8) + "\n")
+    found = [f for f in findings(body) if f.rule == "one-shape"]
+    assert len(found) == 1
+    assert found[0].level == gate.WARN
+
+
+def test_a_list_is_one_of_the_two_devices_that_answers_it():
+    body = ("# A finding stated as a sentence\n\n"
+            "## Counting partial credit turns out to be the trick\n\n"
+            "- **The reward counts passing assertions.**\n"
+            "- **The baseline never beats supervised training.**\n")
+    assert [f for f in findings(body) if f.rule == "one-shape"] == []
+
+
+def test_a_written_turn_inside_a_section_is_the_other_one():
+    body = ("# A finding stated as a sentence\n\n"
+            "## Counting partial credit turns out to be the trick\n\n"
+            "One column of prose, stated at length.\n\n"
+            "### Where this leaves a builder\n\n"
+            "The turn, which is the second device law 14 names.\n")
+    assert [f for f in findings(body) if f.rule == "one-shape"] == []
+
+
+def test_a_heading_is_not_a_device_and_neither_is_a_standalone_line():
+    """The two shapes every issue carries anyway. If either answered this rule,
+    no artifact the press can produce could ever reach it, which is the
+    blindness `check_voice.py` recorded one level up for the citation line."""
+    body = ("# A finding stated as a sentence\n\n## A heading\n\n"
+            "## Another heading\n\n*Short standalone line.*\n\n"
+            + ("Prose at length, without a list and without a turn. " * 10) + "\n")
+    assert [f for f in findings(body) if f.rule == "one-shape"] != []
+
+
+def test_the_pre_send_gate_and_the_canon_agree_on_the_served_issue():
+    """Two commands, one law, one verdict.
+
+    `docs/voice/check_voice.py devices` prints "FAIL 2026-W39 no list and no
+    written turn". A gate that could stop a send and reached the other answer
+    on the same page would be the two-vocabularies defect this day's work was
+    filed about, one law over.
+    """
+    canon = _canon()
+    issue = REPO / "site" / "content" / "issues" / "2026-W39.md"
+    body = issue.read_text(encoding="utf-8")
+    kinds = canon.shapes([b for b in __import__("re").split(r"\n\s*\n", body)
+                          if b.strip() and canon.written_here(b)])
+    canon_fails = not [k for k in ("list", "turn") if kinds.get(k)]
+    gate_fails = bool([f for f in findings(body) if f.rule == "one-shape"])
+    assert canon_fails == gate_fails is True
+
+
+def test_the_shape_rule_warns_and_cannot_hold_a_send_today():
+    """Deliberate and recorded, not an oversight.
+
+    All three served editions fail this rule, so blocking it today would hold
+    every send rather than improve one issue, which is this file's own stated
+    policy for `warn`. The promotion to `block` is a ledger proposal with this
+    count as its evidence. The test is here so a run that promotes it has to
+    delete a test that says why it was not promoted.
+    """
+    assert gate.WARN in {f.level for f in findings(
+        "# T\n\n## A heading\n\n" + ("Prose at length. " * 30) + "\n")}
+    one_shape = [f for f in findings("# T\n\n## A heading\n\n"
+                                     + ("Prose at length. " * 30) + "\n")
+                 if f.rule == "one-shape"]
+    assert one_shape and all(f.level == gate.WARN for f in one_shape)
+
+
+def test_the_tier_is_reachable_so_the_rule_is_not_unsatisfiable():
+    """The counter-check every rule in this file owes: a gate nobody can
+    satisfy does not raise quality, it stops the newsletter. GOOD is the
+    worked tier-four issue and it carries a list."""
+    assert [f for f in findings(GOOD) if f.rule == "one-shape"] == []
+
+
+def test_the_daily_is_not_held_to_the_page_shape():
+    """A 150-to-400-word dispatch is not the page law 14 is about, and the
+    canon reads weekly issues only."""
+    body = "# T\n\n" + ("A short dispatch, stated plainly. " * 12) + "\n"
+    assert [f for f in findings(body, kind="daily") if f.rule == "one-shape"] == []
+
+
+def test_a_wrapped_list_item_is_a_list_here_even_though_the_canon_scores_it_prose():
+    """The one place this gate deliberately reads law 14 differently, pinned so
+    the next run does not align it back.
+
+    `check_voice.py shapes` asks whether EVERY row of a block is a bullet. The
+    press's mandated item shape is a bold claim wrapped over two or three lines
+    with prose and a citation under it, so no item the generator can write
+    passes that reading, and the worked tier-four issue below scores `list: 0`
+    against it. Markdown says those rows are the bullet's continuation, so this
+    gate asks about the first row. The divergence is the canon's bug and it is
+    filed for the writer seat; until it lands, aligning this gate to it would
+    make the rule fire on correct issues, which is how a rule gets deleted.
+    """
+    canon = _canon()
+    import re as _re
+    blocks = [b for b in _re.split(r"\n\s*\n", GOOD)
+              if b.strip() and canon.written_here(b)]
+    assert canon.shapes(blocks).get("list", 0) == 0, \
+        "the canon has been fixed; this gate can follow it again"
+    assert [f for f in findings(GOOD) if f.rule == "one-shape"] == []
+
+
+def test_the_served_archive_gets_the_verdict_it_has_earned():
+    """Both files the repository serves, named rather than summarised, because
+    this count is the evidence for the `warn` to `block` promotion."""
+    verdicts = {}
+    for issue in sorted((REPO / "site" / "content" / "issues").glob("*.md")):
+        body = issue.read_text(encoding="utf-8")
+        verdicts[issue.stem] = bool(
+            [f for f in findings(body) if f.rule == "one-shape"])
+    assert verdicts == {"2026-W37": False, "2026-W39": True}, verdicts
