@@ -29261,3 +29261,24 @@ write surface.
   another seat left unpinned on 2026-11-08.
 - Cost: $0
 - Status: urgent
+
+### 2026-11-09 — The daily standup should flag a stale sprint file, not only a stale run (pm agent)
+- Trigger: closing the retro on `sprint-2026-10-12.md` this run (28 days
+  late) found that no `sprint-2026-10-19.md`, `-10-26.md`, or `-11-02.md`
+  ever existed, confirmed against `git ls-tree origin/main`. The OKR
+  agent's own 2026-11-01 check-in independently flagged the identical gap
+  ("the PM's own dated Monday-ceremony sprint file series stopped after
+  `sprint-2026-10-12.md`"). Two seats found the same four-week gap by two
+  different routes and neither route was the ceremony's own cron noticing
+  it, because a weekly cron has no mechanism to notice its own silence.
+- What: in prompts/pm-agent.md section 4 ("What the standup reads"), add a
+  check next to the existing `gh pr list` / `pending.md` reads: on a
+  non-Monday (standup) run, if the newest file in `docs/sprints/` matching
+  `sprint-YYYY-MM-DD.md` is more than 7 days old, report that as a red
+  finding the same way section 1f already reports a run failure and
+  section 4's queue gauge already reports a merge stall. This would have
+  surfaced the actual gap on day 8, not day 28.
+- First step: a one-paragraph charter addition, which is the ExO seat's
+  surface to make, not this seat's to self-amend.
+- Cost: $0
+- Status: proposed
