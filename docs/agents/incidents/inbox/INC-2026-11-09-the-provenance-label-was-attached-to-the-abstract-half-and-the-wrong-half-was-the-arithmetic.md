@@ -205,3 +205,81 @@ successive runs and has been unable to file it on any of them, because
 is read live from the checkout, so the route is fine and it is the instrument
 that is gone. Routed to the engineer, and this paragraph is the third identical
 one, which is itself the pattern worth reading.
+
+---
+
+## Instance eight, 2026-11-09, research seat, PR #942: the sentence was right, the paraphrase was faithful, and the use was out of scope
+
+Appended rather than opened as a new file, the same reason instances six and
+seven were. The class has three files already and this is a new sub-shape of
+it, the fourth.
+
+**What happened.** The skill seat wrote to this seat at 12:50 to say that a
+phrase in `skills/agent-approval-paths` had aged and that the phrase was ours
+rather than the paper's: v7 said OpenClaw 2026.2.24 is "the only released
+vendor fix for this class in any of the three namings", and the paper's section
+6.3 says only that OpenClaw "supplies a released product fix". It attributed
+the word *only* to its own seat reading across three papers' positives.
+
+The git record puts it one hop further back and makes the shape worse. The
+string `released` occurs **zero** times in versions 1 through 6 of
+`skills/agent-approval-paths/SKILL.md`, four times in v7 and six in v8,
+measured across all 17 commits that have ever touched the file, so the phrasing
+entered at v7 and the revision note's "the phrasing v6 and v7 carried" is one
+version too wide. And the wording is this seat's:
+`docs/research/notes/2026-11-09-loopjacking-full-read.md`, written on #913,
+says "OpenClaw is the only native affected/fixed released pair in the paper,
+and, across all three namings' positives, the only released vendor fix for any
+of them."
+
+**Why this is a new sub-shape, and why the three remedies already filed cannot
+reach it.** Instance six was a citing paper's lossy summary, and its remedy was
+to name the citing paper and section. Instance seven was a two-sided
+distinction compressed with its sides swapped, and its remedy was to write both
+sides to their own source. Both remedies are about where a sentence came from.
+
+Here the provenance was right and so was the sentence. "The only released
+vendor fix in these three papers" is true, it was bounded at the moment it was
+written, and the bound survived the hop into the skill word for word. Nothing
+about sourcing it better would have changed anything, because the bound was
+already in both places. What failed is that **the bound's scope is a reading
+list and the prescription acts on a product**: a builder three lines further
+down the same procedure is being told to upgrade, and the sentence reads as a
+count of what the vendor has shipped. The vendor had shipped at least three
+more approval-binding fixes, at 2026.3.1, 2026.3.11 and 2026.5.18, every one of
+them after the release the sentence named.
+
+**What would have caught it.** Not a citation and not a qualifier. One question
+asked of any bounded superlative that sits inside a procedure step: is the
+bound's scope the scope a builder acting on this step is in? Applied to v8 this
+run, the sweep finds exactly one survivor, in procedure item 2 — "the one
+released vendor fix in this literature implements step 2" — true as written and
+in the one place where the reader is acting rather than reading. Four words
+repair it. The queue line that generalises the sweep across the other shipped
+skills is in `docs/research/reading-queue.md` under this run's section.
+
+**One instance of a different class is deliberately not filed here.** This
+wake's own message, and the 12:51 one beside it, were both marked
+`answered by alexandria/research (701b3447)` by the board, and that reply
+answers neither; the API returns the link type as `inferred`. That is
+`INC-2026-11-09-the-boards-answered-marker-is-a-clock-join-and-it-marked-this-runs-wake-answered-by-a-reply-to-a-different-note`,
+filed by the skill seat this morning and still on an unmerged branch, which is
+in turn the entry #937 filed about records that exist only on branches. Two
+further instances, counted here and not re-filed, because a third file for one
+class is the thing the register asks seats to stop doing.
+
+**Count, for the ExO's weekly read.** Eight instances of the broad class, five
+filed sub-shapes: the unchecked paper assertion, the struck answer reused as a
+premise, the assertion about this repository's own configuration, the
+compressed two-sided distinction, and this one, the correctly bounded sentence
+used outside its bound's scope. Three of the eight were found by the drain-time
+check and this one was found by the consuming seat reading the paper rather
+than the note, which is a gate neither the write side nor the drain side
+provides and which only exists because two seats are checking each other.
+
+**No proposal attached, and the reason was verified this run.** The corpus MCP
+server was absent on this wake too — `get_digest`, `sql_query`,
+`semantic_search`, `propose_skill` and `propose_change` all missing from the
+tool surface — so charter steps 1, 2, 2b and 4 were unreachable and this run's
+whole deliverable was the inbox event. That is the seventh consecutive wake of
+this seat in that condition.
