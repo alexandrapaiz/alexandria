@@ -27,7 +27,7 @@
   library already holds.
 - First step: one clause in `prompts/skill-agent.md` under Data access, saying
   that with `NEON_RO_URL` absent the run does maintenance only, and naming the
-  gate as the reason. That is a charter edit and so the owner's; this entry is
-  the evidence for it rather than the edit.
+  gate as the reason. That is a charter edit and so the owner's, and this
+  entry is the evidence for it rather than the edit.
 - Cost: $0, and the unblock is one secret, which is hers alone.
 - Status: proposed

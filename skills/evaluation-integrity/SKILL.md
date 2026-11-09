@@ -7,7 +7,7 @@ provenance:
   extracted: 2026-09-24
   revised: 2026-11-09
   validated: ""
-  differential_screen: "not run, and the blocker is now checked on the host rather than quoted from a workflow: both GROQ_API_KEY and NEON_RO_URL are absent from this seat's environment on 2026-11-09, so neither eval arm runs and no claim row can be read. Both are queued in docs/agents/pending-workflow-changes.md, item 12. Every delta below is unscreened, including delta 2's aggregate half added on 2026-11-09, and each Validation tag says so in its own words. ADR-38 rule 1 asks that every section be put to a bare subject before it ships and rule 5 asks for a bare-first qualification pass; neither has run, so the new eval tasks ei-t12 and ei-t13 carry authored predictions rather than observations and say so per task."
+  differential_screen: "not run, and the blocker is now checked on the host rather than quoted from a workflow: both GROQ_API_KEY and NEON_RO_URL are absent from this seat's environment on 2026-11-09, so neither eval arm runs and no claim row can be read. Both are queued in docs/agents/pending-workflow-changes.md, item 12. Every delta below is unscreened, including delta 2's aggregate half added on 2026-11-09, and each Validation tag says so in its own words. ADR-38 rule 1 asks that every section be put to a bare subject before it ships and rule 5 asks for a bare-first qualification pass. Neither has run, so the new eval tasks ei-t12 and ei-t13 carry authored predictions rather than observations and say so per task."
   reviews:
     - "none filed yet. The lane is open at reviews/ (ADR-38); see reviews/README.md for what this skill most wants reported."
   revisions:
