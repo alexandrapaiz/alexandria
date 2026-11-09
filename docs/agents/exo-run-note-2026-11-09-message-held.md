@@ -48,10 +48,9 @@ Filed as
 **And the hold survives the propagation on a second ground, which is why this
 run does not argue it.** `docs/standards/pm.md` on `main` at 03:52Z:
 
-```
-377:4. `gh pr diff --name-only` shows no Tier C path.
-388:**Tier C — owner merge.** Charters (`prompts/`), this section and any
-```
+Condition 4, at line 377, reads "`gh pr diff --name-only` shows no Tier C
+path." The Tier C paragraph, at line 388, still opens "Charters (`prompts/`),
+this section and any". Both read at 2026-11-09T03:52Z on `main`.
 
 Condition 4 is the only executable step in section 10, it names the list, and the list
 names `prompts/`. A merger working the checklist refuses a diff touching
