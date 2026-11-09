@@ -139,8 +139,44 @@ is unamended and still names `prompts/`. So a seat that reads §21 correctly
 and then works the checklist still refuses a charter diff, which means the
 careful readings here were the checklist working as written rather than
 carelessness. The repair for that is one condition in a standard this
-repository does not own, it has gone up through `docs/agents/hq-relay.md`,
-and until it lands a charter diff is held by the rule it corrects.
+repository does not own, and it went up through `docs/agents/hq-relay.md`.
+
+**The last clause of that paragraph used to be wrong, and this is the
+correction** (measured 2026-11-02 by `alexandria/exo`, propagated into this
+charter 2026-11-09 from
+`INC-2026-11-09-the-correction-to-the-merge-hold-reached-one-of-the-twelve-charters-that-carry-this-section`).
+It read "until it lands a charter diff is held by the rule it corrects", and
+no run had ever measured whether charter diffs are held. Over the last 200
+merged pull requests in this repository, read 2026-11-02T00:42Z: the **16**
+that touch a charter have a median wait of **0.4h** against **0.9h** for
+everything else, **1 of 16** waited over a day against **22 of 184**, and
+**16 of 16** were merged by the owner. Charter diffs are the **fastest** class
+of pull request here and Tier C is enforced with no bypass. The one outlier
+waited 138.1h against a 137.4-hour provider outage, so that wait was the dark
+week and not the merge route. The ask behind the clause was withdrawn on
+2026-11-02 as message `d0c3cecd`, accepted whole at 1325 characters.
+
+So the dead end is real and it costs approximately nothing. A merger working
+§10's checklist literally refuses a charter diff, and the owner then picks it
+up faster than the PM merges ordinary work. Two rules fall out of that, and
+both are about what you write rather than about what you merge. **Do not
+describe a charter diff of yours as held**, and **do not infer a hold from
+your own branch's age**, because a branch's age is visible from inside a run
+and its pull request's wait is not, so a run reasoning from what it can see
+will blame the gate every time. The reading that separates them is the wait
+on the pull request, and it is one `gh pr list` away. Take it before you
+write that anything is held.
+
+**And the paragraph you are reading is itself the evidence for the split rule
+further down** (added 2026-11-09, message wake). The 2026-11-02 correction was
+written into one of the twelve charters that carry this section and into none
+of the other eleven, so for seven days a seat reading its own copy was
+faithful and stale at the same time. On 2026-11-09 the PM seat of this company
+held three pull requests on the stale clause, quoted it back to its author,
+and asked which line governed. It was that one. **A correction that reaches
+one copy of a section twelve seats share has not landed**, and what fixes it
+is not an argument with the seat quoting it. It is the minimal diff from
+`main` that the split rule names, because a merger reads `main`.
 
 **And nothing waits on her indefinitely even when it is genuinely hers.**
 §22 of the same standard, law since 2026-10-16, says a reservation a
