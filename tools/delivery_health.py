@@ -267,11 +267,42 @@ PAYMENT_DEFER_GRACE_HOURS = 6
 DEPLOY_NOTIFY_COOLDOWN_HOURS = 24
 
 # How far back the surface will replay the digest looking for the commit the
-# running image was built from. Forty is generous for three apps whose file sets
-# change a few times a week, and it is a ceiling rather than a cost: the walk
-# stops at the first commit that matches, which on a normal day is the first or
-# second one it tries. Only a drifted app is ever walked at all.
-DEPLOY_HISTORY_LIMIT = 40
+# running image was built from. The walk stops at the first commit that
+# matches, which on a normal day is the first or second one it tries, and only
+# a drifted app is ever walked at all, so this is a ceiling rather than a cost.
+#
+# It was 40 and the number was wrong twice over, which cost the org the deploy
+# row for the app that prints the product
+# (INC-2026-10-27-the-deploy-surface-said-not-in-this-history-about-a-commit-forty-three-back,
+# filed by the writer seat with the repair routed here, and still live thirteen
+# days later when this run measured it again).
+#
+# Wrong for two reasons worth keeping, because both of them will come back.
+# The comment here used to read "generous for three apps whose file sets change
+# a few times a week". There are five apps now, and the file set is not the
+# unit that spends the window: the window is spent by whichever seat commits
+# most often to any file in an app's image. `weekly` mounts `prompts/digest.md`,
+# which the writer seat edits on every single run, so the press's deploy walked
+# off the end of a 40-commit window and the surface reported that it could not
+# be compared at all.
+#
+# And it degrades in the worst direction. The guard is reliable in inverse
+# proportion to how much there is to report, because the same commits that make
+# a drift worth reading are the ones that push the deployed commit out of range.
+#
+# Measured on `origin/main` on 2026-11-09, against the live `deploy_runtime`
+# rows: the deployed commit sits at walk position 238 for `weekly` and 222 for
+# `distill`, and the whole history of either app's files is the same two
+# numbers, so 400 holds every app with room rather than being tuned to today.
+# The replay caches content hashes per git object, so the cost of 400 is
+# nowhere near ten times the cost of 40: the full `weekly` walk takes 2.5s and
+# the full `distill` walk 8.5s, both of them on the non-green path only.
+#
+# A count is still a ceiling and a ceiling is still reachable, so raising this
+# is only half the repair. The other half is that `undeployed_commits` now
+# tells a truncated search apart from an exhausted history and refuses to call
+# the first one a fact about the deploy.
+DEPLOY_HISTORY_LIMIT = 400
 
 # How many commits a headline names before it starts counting instead. Three
 # fits on a line, and the rest are in the evidence block either way.
@@ -1849,8 +1880,12 @@ def undeployed_commits(repo_root: Path, app: str, recorded_sha: str | None,
     files is undeployed.
 
     Returns a dict for the evidence block. `why` is present and the rest is
-    absent whenever the answer is not trustworthy, which is a shallow clone, a
-    job that has never reported, or a digest that matches nothing in range.
+    absent whenever the answer is not trustworthy, and there are four of those:
+    a job that has never reported, a shallow clone, a search that stopped at
+    its own ceiling, and a digest that matches nothing in a history that was
+    walked to its end. Only the last of those is a fact about the deploy, and
+    the whole point of separating them is that the three others were reported
+    in the deploy's words for as long as they existed.
 
     That sentence listed the shallow clone first and the code never checked
     for one, for as long as this function has existed. A shallow clone fell
@@ -1871,7 +1906,13 @@ def undeployed_commits(repo_root: Path, app: str, recorded_sha: str | None,
     if paths is None:
         return {"why": f"{module} cannot be read at {ref} here"}
 
-    status, out = _git(repo_root, "log", f"-{limit}",
+    # One commit past the ceiling, deliberately. The walk below only ever
+    # looks at `limit` of them, and the extra row is the proof that there was
+    # more history behind the ceiling, which is the difference between "this
+    # search ran out" and "the history ran out". Asking for it here costs
+    # nothing, where asking git a second question after the walk failed costs
+    # another process on the slowest path this function has.
+    status, out = _git(repo_root, "log", f"-{limit + 1}",
                        "--format=%H%x1f%h%x1f%s%x1f%cI", ref, "--", *paths)
     if status != 0 or not out:
         return {"why": "this checkout has no history for the app's files, so "
@@ -1882,6 +1923,15 @@ def undeployed_commits(repo_root: Path, app: str, recorded_sha: str | None,
         parts = line.split("\x1f")
         if len(parts) == 4:
             commits.append(parts)
+    truncated = len(commits) > limit
+    commits = commits[:limit]
+    # Lines that arrived but parsed into nothing. Same answer as no output at
+    # all, and it is spelled out here because every branch below indexes
+    # `commits[-1]` to say how far back it looked.
+    if not commits:
+        return {"why": "this checkout returned no parsable history for the "
+                       "app's files, so the deployed commit cannot be "
+                       "recovered"}
 
     cache: dict[str, str] = {}
     ahead = []
@@ -1907,11 +1957,46 @@ def undeployed_commits(repo_root: Path, app: str, recorded_sha: str | None,
                        f"{recorded_sha}. The depth is the cause and the deploy "
                        f"has not been judged: {UNSHALLOW}",
                 "searched": len(commits), "shallow": True}
+    # The third cause, and it is the one that was missing. A walk that stopped
+    # at its own ceiling with more history behind it has established nothing
+    # about the deploy, and the sentence below this branch says it was built
+    # from unmerged code, which is a different incident with a different owner.
+    # A reader who believes that sentence stops looking, which is exactly what
+    # INC-2026-10-27-the-deploy-surface-said-not-in-this-history-about-a-commit-forty-three-back
+    # recorded: the commit was an ancestor of `origin/main` sitting in the
+    # checkout the search had just read, three positions past the ceiling.
+    #
+    # The shallow branch above is the same mistake already fixed once, for the
+    # one cause somebody thought of. Both of them are "the search was too
+    # short", and only one of them had a name until now.
+    oldest = commits[-1] if commits else None
+    if truncated:
+        return {"why": f"the running digest {recorded_sha} matches none of the "
+                       f"{len(commits)} commits this search looked at, and "
+                       f"{len(commits)} is the search's own ceiling rather "
+                       f"than the end of this app's history: there are older "
+                       f"commits to its files that were never tried. The "
+                       f"ceiling is the cause and the deploy has not been "
+                       f"judged. The oldest commit reached was "
+                       f"{oldest[1]} ({oldest[3]}); raise the limit past "
+                       f"{limit} to look further back",
+                "searched": len(commits), "truncated": True,
+                "oldest_searched": oldest[1],
+                "oldest_searched_at": oldest[3]}
+    # Only here is the deploy the cause: every commit that has ever touched
+    # this app's files was tried and none of them produced the digest, so the
+    # image really was built from code that never reached this history. The
+    # oldest commit reached is named on this path too, because the ledger entry
+    # that asked for the fork asked for it on both: a refusal that does not say
+    # how far it looked cannot be checked by the reader it is addressed to.
     return {"why": f"the running digest {recorded_sha} matches none of the "
-                   f"last {len(commits)} commits to touch this app's files, so "
-                   f"the deploy was built from code that is not in this "
-                   f"history",
-            "searched": len(commits)}
+                   f"last {len(commits)} commits to touch this app's files, "
+                   f"which is every commit this app's files have, back to "
+                   f"{oldest[1]} ({oldest[3]}), so the deploy was built from "
+                   f"code that is not in this history",
+            "searched": len(commits),
+            "oldest_searched": oldest[1],
+            "oldest_searched_at": oldest[3]}
 
 
 def drift_began(found: dict, changed_at: datetime) -> tuple[datetime, str]:
@@ -2638,10 +2723,23 @@ def judge_deploy(facts: dict | str, repo_root: Path | None = None,
                              + (f". This checkout is a shallow clone, so "
                                 f"{remedy_long}"
                                 if shallow else "")))
+            # The headline names the cause rather than only the symptom. Three
+            # causes reach here and they have three different owners: a short
+            # clone is the reader's to fix with one command, a truncated search
+            # is this tool's own ceiling, and an unplaceable digest on a walked
+            # history is the deploy's. "Cannot be dated from this checkout" was
+            # printed for all three, and for the middle one it is the one
+            # phrase that is actually false: the checkout held the commit.
+            if shallow:
+                cause = f", which is shallow: {remedy_short}"
+            elif found.get("truncated"):
+                cause = (f", because the digest replay stopped at its own "
+                         f"{found.get('searched')}-commit ceiling with older "
+                         f"commits to this app's files untried")
+            else:
+                cause = ""
             unknowns.append(
-                f"{app} (the drift cannot be dated from this checkout"
-                + (f", which is shallow: {remedy_short}" if shallow else "")
-                + ")")
+                f"{app} (the drift cannot be dated from this checkout{cause})")
             evidence[app] = here
             continue
 
