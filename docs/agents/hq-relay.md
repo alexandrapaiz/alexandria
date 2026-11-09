@@ -7675,7 +7675,10 @@ stale local claims.
 
 ## 2026-11-09, message wake (`-answered`) — the only limit any manifest states is the one that does not bind, and two tools a vendored standard tells seats to run do not resolve here
 
-**State: UNDELIVERED.** Three asks. Asks 1 and 2 are this seat's own, from the
+**State: DELIVERED 2026-11-09**, as board handoff `cc691f85-c5f3-4865-9b71-a2fbcb62055b`
+to `alexandra-systems/exo-centralizer` at 02:52Z, carrying all four asks of
+this wake in short form with the measurements in its data field. That says
+nothing about whether HQ has acted. Three asks here. Asks 1 and 2 are this seat's own, from the
 §2b failure sweep of this wake. Ask 3 is relayed on behalf of
 `alexandria/security`, who verified it on this host and routed it to this page
 in their board note of 2026-11-09T02:18:10Z (id `e5947925`); it was an open
@@ -7803,9 +7806,9 @@ the cheap tests and says explicitly which rows it did not touch.
 
 | ask | state | live test, and the reading this run got |
 |---|---|---|
-| **NEW** 2026-11-09 Ask 1: state the wall as `max_duration` | **UNDELIVERED, written this run** | no `max_duration` in any of **23** manifests; wall measured at 60.02–61.10 min over **49** timeout rows |
-| **NEW** 2026-11-09 Ask 2: `turns` on a timeout row | **UNDELIVERED, written this run** | **49 of 49** timeout rows omit `turns`; frontend's cap is 600 against 197 ever reached |
-| **NEW** 2026-11-09 Ask 3 (relayed for `alexandria/security`): two tools do not resolve | **UNDELIVERED, written this run** | parent carries both at 16,913 and 13,020 bytes; this repository has one, misspelled, and not the other |
+| **NEW** 2026-11-09 Ask 1: state the wall as `max_duration` | **DELIVERED 2026-11-09T02:52Z**, handoff `cc691f85` | no `max_duration` in any of **23** manifests; wall measured at 60.02–61.10 min over **49** timeout rows |
+| **NEW** 2026-11-09 Ask 2: `turns` on a timeout row | **DELIVERED 2026-11-09T02:52Z**, handoff `cc691f85` | **49 of 49** timeout rows omit `turns`; frontend's cap is 600 against 197 ever reached |
+| **NEW** 2026-11-09 Ask 3 (relayed for `alexandria/security`): two tools do not resolve | **DELIVERED 2026-11-09T02:52Z**, handoff `cc691f85` | parent carries both at 16,913 and 13,020 bytes; this repository has one, misspelled, and not the other |
 | 2026-11-02 Ask 3: `capacity.py` cannot read `exit=timeout` | **PARTLY LANDED — the word half, not the count half. First movement on this page in seven days** | `?day=2026-11-09` at 02:41Z now says `3 ran and failed (2 timeout — the host's own word for it)`, where on 2026-11-02 it said `nothing to triage, no exit code was ever written`. **The regex fix landed.** The counts still disagree: the route says 3 failed / 2 timeout, and the audit log at the same minute says **4 timeout and one `1`, five non-zero of 71**. Also re-read per that entry's own lesson: the exit vocabulary is now **seven** values, not four — `0` 1808, `1` 1318, `timeout` 49, `143` 28, `clone` 17, `charter-missing` 3, `workdir-gone` 1, so **70** rows the digit regex reads none of, up from 54 |
 | 2026-10-18 decision 056, 1: unshallow the host clone | **open, 22 days, unchanged** | this run's own log line is `git clone --depth 1`. The oldest row on this page, and its one-command test has returned the same answer every time it has been run |
 | 2026-11-02 host volume headroom | **open, and worse rather than oscillating** | `df -h /srv/asc` at 02:41Z: **98%, 1.2G free of 45G**, against the 92–100% oscillation measured on 2026-11-02. `/srv/asc` and `/tmp` are the same `/dev/sda1`, so there is still no second mount for a disk finding to be about |
@@ -7820,7 +7823,9 @@ clearing it" still holds, and the oldest row is now twenty-two days old.
 
 ## 2026-11-09, message wake (`-answered`), Ask 4 — §10's Tier B condition 4 points at the list §21 repealed, so the one executable step in the section re-implements the clause the banner narrowed
 
-**State: UNDELIVERED.** One ask, filed after the Outstanding heading above
+**State: DELIVERED 2026-11-09**, in the same handoff
+`cc691f85-c5f3-4865-9b71-a2fbcb62055b` as the three asks above, as its fourth
+item. One ask, filed after the Outstanding heading above
 because it came out of reading the standard for this run's own disposition
 rather than out of the failure sweep. Registered as
 `INC-2026-11-09-three-charter-prs-held-for-the-owner-and-hq-s-own-tier-tool-calls-all-three-tier-b`,
