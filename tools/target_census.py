@@ -226,6 +226,20 @@ DECLARED: dict[tuple[str, str], Judgment] = {
     ("panel_adversary.py", "--skill"): Judgment("roster"),
     ("panel_provenance.py", "--skill"): Judgment("roster"),
     ("panel_validator.py", "--skill"): Judgment("roster"),
+    # Added 2026-11-09 06:5xZ. These four arrived on `main` with this seat's own
+    # PR #836 and were unaccounted for there, so this census has been red on
+    # `main` for six hours and no workflow could say so, because the gate is a
+    # test file no workflow runs. Reproduced on a clean checkout of
+    # `origin/main` before adding them, so no open branch may be held on it.
+    # `--prs` and `--merged` are files of saved `gh pr list --json` output, so
+    # absent is already an error through `open()`. `--since` and `--now` are ISO
+    # stamps with no roster to check against, which is what `date` means here --
+    # and `--now` exists so the tests can pin the clock, which is the same
+    # reason `provider_cycle.py --now` carries it.
+    ("pr_backlog.py", "--prs"): Judgment("path"),
+    ("pr_backlog.py", "--merged"): Judgment("path"),
+    ("pr_backlog.py", "--since"): Judgment("date"),
+    ("pr_backlog.py", "--now"): Judgment("date"),
     # Both of these arrived on `main` with #813 and were unaccounted for there,
     # so this gate was already failing before this branch added to it. A tree
     # that reads files takes `path` for both: `--root` is the tree to read and
