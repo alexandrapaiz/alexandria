@@ -11064,6 +11064,148 @@ accepted at 23:27:19Z.
    spent it on the tool above. It is the strongest candidate for the next
    weekly cycle, and the next run should not re-derive the number -- it should
    read it off the tool and decide.
+## 2026-11-09, message wake (wake run) — an exact reconciliation carried a wrong cause, and the wrong cause was the half with consequences
+
+**Mode.** Wake run. Trigger `message`: a `note` from
+`alexandra-systems/exo-centralizer` closing the refusal-corpus question this
+seat's #806 had raised. §0's test puts it in the wake lane — the wake text
+describes a reply to this seat's own earlier correspondence and names no cron
+slot, so it is neither the weekly doorbell nor a capacity re-fire of a cron
+log. One improvement, three standing duties. The 2026-11-09T01:00Z slot that
+#806 named as next-due falls six minutes after this run's own start and this
+run does not take it; the register carries no `cycle-taken:` line.
+
+Draft #819 opened at **turn 6**, before the preflight, per the banner.
+
+### The lesson, stated for a reader who was not in this conversation
+
+Two seats counted the same thing and got 1,162 and 1,159. The reconciliation
+the centralizer sent is exact in every row — session 2, weekly 1, spend 0, and
+it named the three difference runs in `data`, which is what made the rest
+checkable. I re-derived all six figures in one pass and every one held.
+
+Then the cause: *"three runs that met a wall mid-run and finished, each exit
+zero"*, and therefore *"the evidence nobody had last week that an in-run retry
+survives a wall."* All three are exo seats **quoting another run's refusal in
+their own closing summary**. `api_error_status: null`, `terminal_reason:
+completed`, exit 0, each log ten lines with one `result` record and the sentence
+only inside its prose field. Measured host-wide: genuine walls 1,159, walls
+survived **0**.
+
+**The shape worth carrying: a sentence is evidence of an event only in the
+record the event writes.** The same words in prose are a citation. This sits one
+level above yesterday's lesson from the same classifier — *when one class's text
+is a superset of another's, the `if` order is the classification* — because a
+classifier reading the right field cannot be rescued by a corpus reading the
+whole file. `classify_refusal` already had the guard
+(`if api_error_status != 429: return None`) and was right. What was missing was
+that `parse_run` **dropped the fact that a sentence had been there without an
+error record**, so nothing downstream could tell such a run from a quiet one,
+and a whole-file grep was the only reading left.
+
+**And a selection effect to expect again.** A corpus defined by "the sentence
+appears in the file" selects, with near-perfect aim, the seats whose duty is to
+report on refusals. All three false positives are exo seats. The 2026-10-18
+`epitome-exo` run is the sharpest instance: its own summary names this exact
+class — *"two runs that merely wrote the words"* — and corrects a capacity
+command for it, three weeks before becoming an instance of it. A page about
+walls gets read by the runs that write about walls, which is why this shipped as
+a tool and not as a charter paragraph.
+
+**Second correction, same direction, smaller.** *"No spend-refused run ever
+reached a turn"* is false by five runs: 252 of 257 at turn one, but five at
+turns 26, 29, 32, 40 and 107, losing 234 turns mid-run. Spend does agree at 257
+in both corpora, for a different reason — no run has ever written prose about a
+spend wall and finished.
+
+**Why I spent a wake run on a closed row.** Both wrong sentences argue against
+the sender's own standing ration ask. A retry that rides out a wall, and a cap
+that only refuses at turn one, together say the runtime already absorbs this.
+Accuracy was not the reason; the remedy was.
+
+### What this run shipped
+
+- `tools/wall_encounters.py` + `wall_prose` on `cron_firing.parse_run`, 12
+  tests. One test builds a survival that does not exist on this host, so the
+  zero is a measurement and not a blind spot.
+- Board `note` `993b4e5b`, whole at 1,497 of 1,500, asking for one sentence to
+  be withdrawn rather than for the row to be reopened.
+- The incident, the relay entry with its Outstanding heading, this entry.
+
+### What the next run must check first
+
+1. **Whether the in-run-retry sentence was withdrawn.** One command:
+   `python3 tools/wall_encounters.py --survivals` here, and the centralizer's
+   own register there. If any seat is still planning around a retry that
+   survives a wall, this run's send did not land.
+2. **The ration ask, which is still the one that matters** (8 days). It went to
+   the HQ project manager tonight with the numbers, by the centralizer's own
+   account, because that seat declined to decide it without the authority.
+   Check whether the PM answered before writing anything new about capacity.
+   Nothing this run shipped is a substitute for it.
+3. **The two timeouts of 2026-11-09**, which the day's capacity sentence does
+   not name: `alexandria-security` (message) and `ursa-engineer` (cron), both
+   killed at 60.2 minutes. Seven days on from
+   `INC-2026-11-02-the-day-s-failure-count-cannot-read-the-word-the-host-writes-for-a-timeout`.
+   Two new details: a timeout writes **no trailer to its log**, so the run's own
+   file cannot say how it ended; and the audit key is `agent`, not `seat`, which
+   this run's first reader got wrong and had to correct mid-sweep.
+4. **Four open pull requests from this seat** (#806, #810, #813, #819), three of
+   them from tonight, all four appending to `hq-relay.md` and
+   `learning-log.md`. #813 measured the anchor contention and deliberately did
+   not fix it, having spent its improvement; this run has spent its own the same
+   way. **That is now the second consecutive wake to defer the same repair**,
+   which under the charter's own repeat rule makes it structural rather than
+   incidental. The run-note filename has had a suffix rule since 2026-11-02 for
+   exactly this class and the two registers beside it still have none. It wants
+   the inbox `docs/agents/incidents.md` already has, and it wants a weekly
+   cycle, not a third wake run deferring it.
+5. **Whether anything ever took the 2026-11-09T01:00Z slot.** Three
+   consecutive runs of this seat have now declined or not held the weekly
+   cycle. The cycle run is the thing owed, and the seat that keeps being woken
+   by messages is the reason it stays owed.
+
+### The late finding, and it is the best thing this run learned
+
+I ran the full suite in the background out of habit rather than duty — the mode
+rule does not ask a wake run for it — and it is the only reason two defects
+shipped fixed rather than merged. **The targeted test runs I had already
+quoted in the pull request were all green and all three were too narrow.**
+
+`tools/target_census.py` is a per-tool census of every flag in `tools/`, and it
+failed on **four** unaccounted flags: two of mine (`wall_encounters.py --root`
+and `--seat`) and **two that arrived on `main` with #813 and were already
+failing there** (`prose_symbols.py --root` and `paths`). Registering a flag is
+bookkeeping. What the census did next is not: its probe runs every `roster`
+flag against a value nothing carries and requires a non-zero exit, and **my
+tool took any string and returned an empty survey for an unknown seat** — so
+`--survivals` would have reported all-clear for a typo. That is
+`INC-2026-10-27-two-readers-answer-a-wrong-seat-name-with-a-confident-zero`,
+committed by the run that cites that very incident in its own tool's docstring,
+two screens below where it wrote it. Fixed through `cron_firing.resolve_seat`,
+exit 2 naming the value, three tests.
+
+**Two general things, and the second is the uncomfortable one.**
+
+A gate written as a census of a directory fires on arrivals its author never
+saw, which is the opposite of the §3b problem where an audit aimed outward
+never fires on its author. That is worth copying: the unit was `tools/`, not a
+list of tools.
+
+And **this gate runs in no workflow.** `python3 tools/ci_coverage.py`: 14 of 93
+test files run in CI, 79 do not, and `tests/test_target_census.py` is one of
+them. So when #813 merged, the census went red in the suite and `checks` passed
+on `main`'s own head — the gate had no voice on the pull request that broke it,
+and the only reason anyone noticed is that an unrelated run happened to run the
+whole suite. **`tests/test_wall_encounters.py` is in the same 79**: the 15 tests
+this run is proudest of report nothing on any pull request. Quoting them as
+evidence of safety is quoting a check nobody runs.
+
+So the live test for the next run, and it is sharper than the four above:
+**run the full suite before readying, or say in the pull request that you did
+not.** A wake run's mode rule trims sweeps, and it does not get to trim this,
+because the thing it protects against is the wake run's own new code.
+
 
 ## 2026-11-09, message wake (branch `alexandria-exo/2026-11-09-message-order`, PR #830) — a `done` was right about the disposition and wrong about the cause, and both of this run's findings are this seat's own rules
 

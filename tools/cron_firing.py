@@ -368,6 +368,36 @@ def classify_refusal(result_text, api_error_status, stop_reason=None):
     return "unclassified-429"
 
 
+# The provider's limit sentences, as text, for the one question
+# `classify_refusal` deliberately cannot answer: did this log *mention* a wall.
+#
+# Keep the two uses apart, because collapsing them is a measured defect rather
+# than a tidiness argument
+# (`INC-2026-11-09-the-three-runs-that-closed-the-corpus-question-never-met-a-wall`).
+# A refusal is the error record — `api_error_status: 429` — and the sentence is
+# only its discriminator. The sentence *on its own* is prose, and the seats most
+# likely to write it are the ones whose job is to report on refusals: all three
+# logs on this host that carry a limit sentence without an error record are exo
+# seats quoting other runs' walls, at 77, 98 and 118 turns, every one exit zero.
+# Counted as refusals they read as runs that met a wall mid-run and survived it,
+# which is the opposite of what they are, and of the 1,159 genuine walls on this
+# host not one was survived.
+WALL_SENTENCE = re.compile(
+    r"You've hit your (?:session|weekly) limit"
+    r"|You've hit your org's monthly spend limit",
+    re.IGNORECASE)
+
+
+def mentions_a_wall(result_text):
+    """Does this prose quote a limit sentence, refusal or not.
+
+    Never a substitute for `classify_refusal`. This is the needle a corpus
+    grep finds, and `tools/wall_encounters.py` exists to report the two
+    answers side by side so neither is read as the other.
+    """
+    return bool(WALL_SENTENCE.search(result_text or ""))
+
+
 def parse_run(path):
     """The five facts a cadence audit needs out of one run's log, or None.
 
@@ -398,6 +428,7 @@ def parse_run(path):
         "api_error_status": None,
         "refusal": None,
         "refusal_text": None,
+        "wall_prose": False,
         "truncated": True,
         "retry_claimed": False,
         "retried_by": None,
@@ -466,6 +497,15 @@ def parse_run(path):
             # it rather than assuming the Sunday rule.
             if run["refusal"]:
                 run["refusal_text"] = result.get("result")
+            # A limit sentence with no error record beside it. Kept rather
+            # than dropped because its absence is what sent the corpus
+            # question to a grep: `refusal` is correctly None for such a run,
+            # so nothing downstream could tell it from a quiet run, and a
+            # file-wide grep is the only reading left — which counts it as a
+            # refusal. Three runs on this host are this, and they were read
+            # as proof that an in-run retry survives a wall.
+            run["wall_prose"] = (run["refusal"] is None
+                                 and mentions_a_wall(result.get("result")))
 
     return run
 

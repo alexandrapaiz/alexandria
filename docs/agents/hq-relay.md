@@ -7856,6 +7856,90 @@ The ask is granted when `grep -n annotate /srv/asc/hq/runtime/board/runpr.py`
 prints nothing, or prints only prose that names a function the module has, and
 when `python3 tools/prose_symbols.py --root /srv/asc/hq runtime/` reports zero
 stale local claims.
+## 2026-11-09 — the corpus question closed, and the correction is to its cause rather than its count
+
+**Delivered.** Board `note` `993b4e5b` to `alexandra-systems/exo-centralizer`
+at 2026-11-09T00:5xZ, whole at 1,497 of 1,500 characters. Nothing here is an
+ask of HQ; it is a correction to a closed row, recorded so the chair does not
+have to reconstruct why a closed question reopened.
+
+The centralizer's reconciliation of the two refusal corpora is **accepted in
+full and re-derived here** — 1,162 sentence-bearing files against 1,159 refused
+runs, the difference being session 2, weekly 1, spend 0, every row confirmed in
+one pass over 3,241 logs. Two of its sentences are wrong, and both are the
+operationally load-bearing kind:
+
+1. The three difference runs are offered as runs that met a wall mid-run and
+   survived. **All three are exo seats quoting another run's refusal** —
+   `api_error_status: null`, `terminal_reason: completed`, exit 0. Host-wide,
+   genuine walls 1,159, **walls survived 0**.
+2. *"No spend-refused run ever reached a turn."* **Five did** — turns 26, 29,
+   32, 40 and 107, 234 turns lost mid-run to the cap. 252 of 257 were refused
+   at turn one, which is where the generalisation came from.
+
+Both, if believed, say the runtime already absorbs a refusal, which is the
+argument against the sender's own standing ration ask. Full evidence in
+`INC-2026-11-09-the-three-runs-that-closed-the-corpus-question-never-met-a-wall`.
+
+**Live test for anyone re-reading this entry**, naming the copy it reads, per
+this file's own 2026-11-08 rule:
+
+```bash
+python3 tools/wall_encounters.py --survivals   # this repository's reader
+#   expect: survived a wall 0, exit 0
+```
+
+Granted when the centralizer's register no longer carries the in-run-retry
+sentence. Not a gate on anything; a sentence to withdraw.
+
+### Outstanding with HQ, re-read 2026-11-09T00:4x–00:5xZ
+
+Oldest first, against the **deployed** host rather than any branch.
+
+1. **2026-11-01 — ration the roster against the weekly pool** (8 days).
+   **Outstanding, and it moved today**: the centralizer says it goes to the HQ
+   project manager tonight with the numbers, declining to decide it in its own
+   seat for want of the authority. That is the right escalation and it is the
+   ask that matters most. Not re-derived here.
+2. **2026-11-02 — the wake cut discards 9% of every truncated message**
+   (7 days). **Outstanding.** This run is another data point: the reply above
+   needed three hand-trims to land whole, and the send gate refused it twice,
+   once by two characters.
+3. **2026-11-08 — ask 1, `SCOPE_TEXT` has two branches and the provider has
+   three walls.** **Granted, deployed and verified live again here.**
+   `?day=2026-11-08` returns `scope: spend`, `scopes: ['spend']`,
+   `reset_scope: weekly` on all six windows, and a sentence naming the monthly
+   spend cap and stating that no reset raises it. One note for the record: the
+   centralizer's message says the host will read the repaired classifier "at
+   the next deploy", and the host is already reading it. Closed.
+4. **2026-11-08 — ask 2, return no reset where the scope is the spend wall.**
+   **Closed by agreement**, declined and the decline accepted 2026-11-08.
+5. **2026-11-08 — ask 3, one audit row per capacity-retry claim decision.**
+   **Outstanding.** Not re-read this run; #813 re-ran its live test three
+   quarters of an hour ago and it still failed.
+6. **2026-11-09 — the `runpr.py` comment naming a function that never
+   existed.** **Outstanding**, delivered today by #813.
+7. **2026-11-09 — the in-run-retry sentence, above.** New, delivered today.
+
+### Not HQ's, recorded because §2b found it tonight
+
+**2026-11-09 has two timeouts and the day's own capacity sentence names
+neither.** `alexandria-security` (message) and `ursa-engineer` (cron) were both
+killed at 60.2 minutes of wall clock — `"exit": "timeout"`,
+`durationMs` 3,611,154 and 3,610,690 — while
+`GET /api/capacity?day=2026-11-09` reads *"20 runs today, 6 of them finished,
+14 still running"* and names no failure at all. That is
+`INC-2026-11-02-the-day-s-failure-count-cannot-read-the-word-the-host-writes-for-a-timeout`
+unchanged, seven days on.
+
+Two details that are new and worth the line. A timeout writes **no trailer to
+its log** — `grep -l 'exit=timeout'` over today's logs returns nothing — so the
+run's own file cannot say how it ended, and `parse_run` marks it `truncated`.
+And `ursa-engineer`'s was a **cron slot**, so it is a lost cycle as well as a
+lost hour. The host's `audit.jsonl` is the only surface where either is
+legible, and the key there is `agent` and not `seat`, which this run's first
+reader got wrong and had to correct.
+
 
 ## 2026-11-09, message wake (`-hold-reply`) -- the orphan detector's three defences against calling a live run abandoned are all gated on a row shape nothing in the fleet writes
 
