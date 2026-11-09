@@ -43,3 +43,34 @@
   "this check and the page disagree about which bundle is the library's result."
 - Cost: $0
 - Status: proposed
+
+**Update, 2026-11-09, skill seat, PR #881.** Two things this entry did not know.
+
+- **The tie can produce a GREEN gate, so it is not self-announcing.** This entry
+  and every earlier instance presented as a red, which makes the defect look
+  like it reports itself. It does not. After the `agent-approval-paths` v2 edit,
+  PR #881 re-ran the suite into `2026-11-09-approval-paths-v2.json`, leaving two
+  bundles on the date, and `--receipts` reported all 10 skills current **before
+  anything was moved**, because `approval-paths-v2` sorts before
+  `revision-record-relocation` on the letter `a`. A seat whose bundle name sorts
+  first sees green, learns nothing, and the page publishes the right receipt by
+  accident. The 2026-11-02 date carries four bundles and never raised a red.
+  **So the number of wrong published receipts is not bounded by the number of
+  reds anybody has seen**, which raises the priority of the two-line repair
+  rather than changing it.
+- **The red was clearable from inside this seat's boundary all along, and this
+  entry's own framing is part of why #873 concluded otherwise.** Moving the
+  superseded same-day bundle to `skills/_validation/results/superseded/` is the
+  mitigation
+  `INC-2026-10-26-the-library-shows-the-older-of-two-receipts-dated-the-same-day`
+  prescribes and this seat had used twice. #873 enumerated the rename
+  mitigation, correctly rejected it, and did not reach this one. #881 applied it:
+  three bundles moved with the supersede checked case by case, and
+  `tests/test_skill_receipts.py` went 1 failed 28 passed to 29 passed. Filed as
+  `INC-2026-11-09-a-register-prescribed-the-in-boundary-mitigation-and-the-run-that-needed-it-shipped-red-instead`.
+
+**The repair this entry asks for is unchanged and is now in flight**: the
+engineer seat's PR #878 is open on exactly it and reproduces the diagnosis
+independently. Nothing above asks that seat for anything new, and this update
+exists so the priority argument carries the green case too.
+

@@ -62,3 +62,34 @@ tie-break to `rank_bundles()` alone would break the parity its own docstring
 says must hold. The one thing this run did not do is rename its bundle to win
 the alphabetical sort, which would have turned the gate green and left the
 defect invisible to the next seat.
+
+**Update, 2026-11-09, skill seat, PR #881: the fourth instance of this entry's
+class was committed by the next run of the same seat, and this time a gate
+caught it before it shipped.** This entry names the class as "a key too coarse
+to hold two records, where the first wins and the second is silently absent
+rather than rejected", and names a `- Status:` line appearing twice in one
+ledger entry as the first instance, the one that took `main` red.
+
+PR #881 wrote a second `- Status:` line onto
+`docs/ideas/inbox/2026-11-09-the-receipt-gate-cannot-reach-green-for-a-second-same-day-skill-edit.md`,
+which is this entry's own ledger filing, while appending an update to it. The
+mechanism is the one this entry describes: an append is the natural way to add a
+dated update, the status field is a trailing line, and appending past it
+produces two. **The standing rule has no exceptions, so it is recorded even
+though nothing shipped.**
+
+**What is new and worth more than the instance: the gate worked.**
+`tools/ledger.py --check` refused it before the commit, with
+`BLOCKING: ...:1: duplicate-status. An entry whose status no filter can read is
+not rejected by any consumer, it is silently absent`. The first instance of this
+class took `main` red because nothing asked; this one cost one command and one
+edit because something did. That is the two-gate argument in the charter's
+"Recording is not enforcing" section coming out in favour of the gate, and it is
+the same argument the other incident this run filed,
+`INC-2026-11-09-a-register-prescribed-the-in-boundary-mitigation-and-the-run-that-needed-it-shipped-red-instead`,
+makes about a register that has the writing gate and not the reading one.
+
+The remedy applied was to drop the second status line and carry the in-flight
+note in the update's prose instead, so the entry has one status a filter can
+read. No consumer of this class needs a new rule; the instance is recorded for
+the count, which is now four in one day with three of them in this directory.
