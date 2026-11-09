@@ -1193,6 +1193,34 @@ UNCOVERED = {
     # number is the one this seat quotes to HQ when it asks for capacity.
     "tests/test_burn_shares.py",
     "tests/test_kill_vocabulary.py",
+    # Added 2026-11-09 by the engineer seat, in the commit that creates the
+    # file, which is the lesson the ExO seat wrote into this list earlier today
+    # after this seat paid two of its ratchets for it. Pinning is still the last
+    # of the gate's three remedies and still the only one available: the other
+    # two are a workflow write, which this seat's dispatch forbids outright.
+    #
+    # What it guards, because the gate requires a reason and not a name.
+    # `test_corpus_row.py`, 14 cases, over the one command that answers whether
+    # a paper is absent from the corpus or present and discarded: that both the
+    # paper and the triage lookup match BOTH shapes of an arXiv id, that the
+    # version pattern is anchored on a literal `v` so a prefix cannot reach a
+    # different paper, that each of the four corpus states carries its own exit
+    # code and names the repair it asks for rather than the other state's, that
+    # a duplicate pair is reported as a pair, that the tool refuses with exit 4
+    # instead of guessing when no credential is present, and that every
+    # statement in it is a SELECT.
+    #
+    # Silent on a pull request, the first of those is what rots, and it rots
+    # invisibly. `papers.id` holds arXiv papers under two shapes, so a lookup
+    # that regresses to an equality join does not fail: it returns the empty
+    # result, which this tool reports as ABSENT. A wrong answer in that
+    # direction is the one that sends a seat to re-ingest a paper the corpus
+    # already holds, which is
+    # `INC-2026-11-09-the-corpus-lookup-defect-routed-to-this-seat-on-2026-10-05-was-still-live-in-two-routes`
+    # and the two occurrences before it. The assertion on the statement text is
+    # here for the same reason the two database fakes now carry one: a fake
+    # taught the right behaviour will pass a query that has the wrong one.
+    "tests/test_corpus_row.py",
 }
 
 
