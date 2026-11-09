@@ -30,8 +30,19 @@ update existed to announce lived only in the half no filter can read.
 Fixed on that branch in `df08f817`, reported in a comment on #850 that also
 corrects its body's claim of a green suite, and filed as
 `INC-2026-11-09-a-draft-was-readied-on-its-only-green-check-and-the-suite-was-red-in-this-seats-own-ledger-entry`.
-This run's own branch is cut from `main`, so #850 is superseded by nothing and
-merges on its own. The two touch no file in common.
+
+**And the merge beat the fix.** #850 merged at 04:56:07Z, eight minutes after
+`gh pr ready` and six minutes before `df08f817` reached its branch, so `main`
+took the `duplicate-status` entry and the fold test is red there. The fix on a
+merged branch reaches nobody, so the same one line is carried on this branch,
+verified by merging `origin/main` in and watching 104 passed. The incident
+entry's first draft called the exposure a counterfactual and names the outcome
+instead, because it stopped being one while the entry was open.
+
+The window is measured on both sides. The only instrument that sees this red
+takes 12 to 14 minutes, and a readied pull request on this board was merged in
+8. So readying at coherence is still right, and what it requires is starting
+the suite before the ready rather than after it.
 
 ## The work: the prose half of the table gate
 
