@@ -116,9 +116,9 @@ repository in the portfolio to make.
 
 Two notes so this lands rather than drifts. The lines
 `docs/sprints/pending.md` already holds are history and not state, 5,458 of
-them when this edit shipped on 2026-10-24 and growing by a pass. So the first
-ceremony run after this edit moves the whole file unchanged to
-`docs/sprints/pending/archive-to-<that run's own UTC date>.md` and starts the
+them when this edit shipped on 2026-10-24 and growing by a pass. So the
+migration is: move the whole file unchanged to
+`docs/sprints/pending/archive-to-<that run's own UTC date>.md` and start the
 state table empty, rather than trying to sort them. **Use your own date and
 not a date quoted here**, because the count above was 4,434 when this edit was
 first drafted on 2026-10-23 and 5,458 when it merged, which is the same drift
@@ -126,6 +126,52 @@ in the small that the whole section is about. And if this seat finds that the
 ceremony cadence is too slow to keep the state table honest, that is a cadence
 finding for the ExO seat's duty register and not a licence to reopen the
 shared anchor.
+
+**The migration is gated on the file and not on being the first run** (ExO
+edit, 2026-11-09, wake run, from board item `df7b4a84`'s own follow-through).
+This paragraph said "the first ceremony run after this edit" for sixteen days,
+and that is an ordinal rather than a condition. A run cannot observe its own
+ordinal: it can only read `main`, and the evidence that an earlier run already
+migrated lives on that run's branch until the branch merges. Ceremony pull
+requests are the one kind this seat does not self-merge, so **every ceremony
+run since has read itself as the first.** Both did the migration, in full, and
+neither has merged:
+
+| head | branch | archive it wrote | state table it started |
+| --- | --- | --- | --- |
+| `abd250f2` | `alexandria-pm/2026-11-02-ceremony` (#683) | `pending/archive-to-2026-10-26.md` | 58 lines |
+| `20ce4f12` | `alexandria-pm/2026-11-09-message-ceremony` (#863) | `pending/archive-to-2026-11-09.md` | 140 lines |
+
+`git merge-tree --write-tree` on those two heads reports
+`CONFLICT (content): docs/sprints/pending.md`, so whichever merges second
+cannot merge at all — which is the exact failure this whole section was
+written to stop, reappearing one level up in the instruction that was supposed
+to end it. Worse than the conflict is what a literal reading does to the
+loser: the step as written moves "the whole file unchanged" into an archive
+with no test of what the file is, so a ceremony run that lands after a
+successful migration would archive its predecessor's **state table** — the
+live answer to what each seat owes — and start empty again.
+
+So the step takes a precondition, and it is readable from `main` in one line:
+
+- **Read the first line of `docs/sprints/pending.md`.** If it is a dated pass
+  heading (`## Updated <date>…`), the file is still history: migrate it as
+  above. If it is a state heading (the file begins `# Pending`), the migration
+  is **already done** — do not archive, do not start empty, just maintain the
+  table. An archive directory that already holds an `archive-to-*.md` is the
+  same signal and is the cheaper check when the file is absent.
+- **A migration is a one-time act, so two of them in flight is a finding
+  rather than a race to merge.** If you are a ceremony run and your own
+  migration conflicts with another branch's, do not resolve it keep-both: a
+  state table merged keep-both is two tables. Take the newer archive, keep one
+  table, and say in the pull request which head you dropped and why.
+
+The general rule, which is worth more than this instance and belongs to any
+charter prescribing a once-only step: **gate a migration on a condition the
+next run can observe, never on its position in a sequence it cannot see.** An
+instruction keyed to "the first run after this" is correct exactly once and
+silently wrong every time after, and it fails hardest when the step is
+destructive and the evidence of its having run is held in an unmerged branch.
 
 Reconciliation is part of the job (owner's correction, 2026-09-18):
 every run, before anything else touches the tracker, read the newest
