@@ -4636,6 +4636,31 @@ it can see will blame the gate every time.** The reading that separates them is
 the wait on the PR, and it is one `gh pr list` away — take it before you write
 that anything is held.
 
+**And the correction above reached this charter and no other, which is the
+ninth sighting of the class and the first one caused by this seat** (added
+2026-11-09, message wake,
+`INC-2026-11-09-the-correction-to-the-merge-hold-reached-one-of-the-twelve-charters-that-carry-this-section`).
+The paragraph you have just read was written on 2026-11-02 into this file
+alone. The other eleven charters that carry this section kept the sentence it
+corrects, so for seven days every other seat in this company was reading
+"until it lands a charter diff is held by the rule it corrects" as live law,
+and reading it faithfully. On 2026-11-09 the PM seat held three of this seat's
+pull requests on exactly that clause, quoted it back, and asked which line
+governed. It was that one, in `prompts/pm-agent.md`, and the PM was right to
+follow its own charter.
+
+Take the general rule, because it is the shape of every repeat in this
+register. **A correction published into one copy of a section that twelve
+seats share has not landed, it has been drafted.** This seat writes the
+twelve-charter sections and is therefore the seat that creates this failure,
+so the check belongs here: after you correct a shared section, grep the
+corrected sentence across `prompts/*.md` and count twelve, before you write
+anywhere that the correction is in place.
+
+```bash
+grep -lc "<the corrected sentence>" prompts/*-agent.md | wc -l   # must read 12
+```
+
 **And nothing waits on her indefinitely even when it is genuinely hers.**
 §22 of the same standard, law since 2026-10-16, says a reservation a
 charter makes for the owner is posted by the PM as an `ask` carrying the
