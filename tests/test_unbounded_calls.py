@@ -300,3 +300,26 @@ def test_the_unbounded_count_over_this_repository_is_unchanged_by_the_guard():
     rows = uc.scan_paths(["tools", "pipeline", "mcp"])
     unbounded = [r for r in rows if not r["bounded"]]
     assert len(unbounded) == 23, [f"{r['path']}:{r['line']}" for r in unbounded]
+
+
+def test_a_fully_accepted_tree_is_clean_and_still_names_what_it_read(
+        tmp_path, capsys):
+    """Exit 0 with findings accepted, and the counts must not read as zero.
+
+    The clean line's job is to be checkable. A tree with two unbounded calls
+    both in the baseline is clean, and saying "2 unbounded of which 2 accepted"
+    is the only rendering a reader can act on: it distinguishes a tree with no
+    unbounded calls from one whose unbounded calls somebody signed for.
+    """
+    tree = _tree(tmp_path, **{
+        "t/two.py": ("import subprocess\n"
+                     "subprocess.run(['gh', 'a'])\n"
+                     "subprocess.run(['gh', 'b'])\n")})
+    baseline = tmp_path / "all.json"
+    baseline.write_text(json.dumps({"accepted": [
+        {"path": "t/two.py", "line": 2}, {"path": "t/two.py", "line": 3}]}))
+
+    assert uc.main(["t", "--root", str(tree), "--baseline", str(baseline)]) == 0
+    out = capsys.readouterr().out
+    assert "2 external calls read, 0 bounded in time, 2 unbounded" in out
+    assert "2 accepted by the baseline" in out

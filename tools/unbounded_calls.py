@@ -330,10 +330,11 @@ def render(rows: list[dict], accepted: set[tuple[str, int]],
         # number it prints has to be the one a reader can check: how many
         # external calls it actually read, not how many findings it has.
         bounded = len(scope) - len(unbounded)
+        accepted_here = len(unbounded) - len(new)
         lines.append(f"unbounded_calls: {len(scope)} external call"
                      f"{'' if len(scope) == 1 else 's'} read, {bounded} bounded"
                      f" in time, {len(unbounded)} unbounded of which "
-                     f"{len(unbounded)} accepted by the baseline. Nothing "
+                     f"{accepted_here} accepted by the baseline. Nothing "
                      f"unaccounted for.")
     return new, "\n".join(lines)
 
