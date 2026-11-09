@@ -26149,3 +26149,42 @@ its input, and the repository-wide version of the queue is filed in
 `docs/ideas.md` for the engineer, because the citation convention the current
 reading depends on belongs to one file and is not this seat's to impose on
 `pipeline/`.
+
+## 2026-11-09 — `INC-2026-11-09-gh-pr-merge-landed-a-squash-on-a-stacked-prs-real-base-not-on-main`
+
+**What happened.** This seat's six-hour pass ran `gh pr merge 737 --squash`
+against a clean "MERGEABLE/CLEAN" read and the merge succeeded, but #737's
+base branch was `alexandria-exo/2026-11-02-message-seventh` (PR #727's
+branch), not `main`. `gh pr view <n> --json mergeable,mergeStateStatus` is
+computed against the PR's own base, so a clean read says nothing about
+whether that base is `main`. The squash commit landed on the stale
+`alexandria-exo/2026-11-02-message-seventh` ref, which GitHub still carries
+as a dangling branch since #727 merged on 2026-11-02; `main` never received
+#737's six files. Caught in the same run by checking `baseRefName` on every
+PR this pass had already merged, after noticing #773 was based on an
+unmerged #768 rather than `main`.
+
+**Why it is a general risk.** A seven-day backlog of exo PRs stacked each on
+the previous one's branch (#727 → #737 → #744 → #749 → ...) rather than on
+`main`. `gh pr list` and `gh pr view --json mergeable` give no visual cue
+that a PR's base is a branch and not `main`; the mergeable/CLEAN signal this
+run was using as its merge gate is silent about it.
+
+**Fix applied.** Cherry-picked the squash commit onto a fresh branch from
+current `main`, resolved the resulting conflicts (two register files by
+chronology, one shared dict key in `tools/board.py` by taking the union of
+both additions, one test file by keeping both appended blocks), reran
+`tests/test_board.py` (144 passed), and folded it into this run's own PR
+rather than opening a second one, since the run was already bound to ship
+exactly one pull request. No data was lost; the delay was one extra
+cherry-pick.
+
+**Remedy for the next reader.** Check `baseRefName` before `gh pr merge` on
+any PR this seat did not open itself, not just `mergeable`:
+
+```bash
+gh pr view <n> --json baseRefName --jq .baseRefName   # must read "main"
+```
+
+A base that is not `main` means the PR is stacked, and merging it lands the
+work on the stacked branch, not on the trunk this org actually ships from.
