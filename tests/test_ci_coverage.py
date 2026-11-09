@@ -921,6 +921,30 @@ UNCOVERED = {
     # apply item 17 after the two payment files.
     "tests/test_branch_name_free.py",
     "tests/test_history_boundary.py",
+    # Added 2026-11-09, later the same evening, with the gate that finds an
+    # external call nobody put a clock on. Pinned for the same structural
+    # reason as every line above: the step that would run it goes in
+    # `.github/workflows/checks.yml`, which no seat's token may write. Twelfth
+    # line of
+    # `INC-2026-10-17-the-pin-list-grew-for-the-seventh-time-in-nine-days`,
+    # which counts itself there rather than opening another incident.
+    #
+    # This gate caught itself the way the two above did, and the catch is the
+    # reason the pin is worth reading. Its first version reported only the
+    # unbounded calls, so its clean path printed "0 external calls in scope",
+    # which reads identically whether it found fifty-one bounded calls or never
+    # looked at the right directory. Its own suite failed it on that before it
+    # shipped, which is the only evidence anyone should accept that a gate of
+    # this shape works.
+    #
+    # What it guards is twenty-three external calls in `tools/` with no clock,
+    # eight of them crossing the network and twenty-one with no handler at all,
+    # two of them in gates documented as sitting in front of an `&&` in a
+    # seat's ready command. An unbounded call there stalls a whole run and
+    # prints nothing while it does, and the exit the host writes for that is
+    # the same word it writes for the sixty-minute wall. Pinned, the gate
+    # exits 1 on nobody's pull request.
+    "tests/test_unbounded_calls.py",
 }
 
 
