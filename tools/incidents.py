@@ -74,6 +74,8 @@ from __future__ import annotations
 
 import argparse
 import collections
+import json
+import math
 import re
 import subprocess
 import sys
@@ -575,6 +577,311 @@ def _read_inbox(inbox: Path) -> list[tuple[str, str]]:
     return [(p.name, p.read_text()) for p in inbox_files(inbox)]
 
 
+# ---------------------------------------------------------------------------
+# The lookup half: has this failure been filed before, and did that entry
+# prescribe a remedy?
+#
+# INC-2026-11-09-the-register-had-the-remedy-and-the-run-that-was-told-to-check-it-still-missed-it:
+# every charter carries "check the register before you ship". On 2026-11-09 a
+# seat obeyed that step, shipped red anyway, and the remedy was in an entry its
+# own seat had written twice. The rule fired and the lookup it implies does not
+# exist. `check` asks whether the register is well formed and `fold` moves it;
+# neither answers the question a seat actually has in hand, which is a failure
+# and not an id.
+#
+# Two properties of this register make grep the wrong instrument for it, and
+# both are measured rather than asserted:
+#
+#   1. 41% of the entries are not in the register file. 256 of 618 live as
+#      one-file-per-entry in `docs/agents/incidents/inbox/`, which is what L-A18
+#      asked for and what made the append safe. A seat that reads
+#      `docs/agents/incidents.md` and greps it reads 362 entries and misses the
+#      other 256, and the remedy missed on 2026-11-09 was in the inbox half.
+#   2. The unit of the answer is an entry, not a line. A grep hit on
+#      `receipt` returns ninety lines of prose across thirty entries with no
+#      entry id, no date and no fix paragraph attached to any of them, so the
+#      reader still has to open the file and find the boundaries by hand. That
+#      is the step that does not happen under time pressure.
+#
+# So the scoring is deliberately plain and the output is deliberately not. Terms
+# are weighted by inverse document frequency over the entries themselves, which
+# means a path like `results/superseded` that appears in two entries dominates a
+# word like `register` that appears in four hundred, with no hand-curated
+# stopword list to go stale. The ranking is a convenience. The part that repays
+# the run is the remedy paragraph printed under each hit, and the verdict saying
+# whether there is one.
+
+IDENTIFIER = re.compile(r"[A-Za-z_][A-Za-z0-9_]*(?:[./:-][A-Za-z0-9_]+)+|--[a-z][a-z0-9-]*|[a-z_]+_[a-z_0-9]+")
+WORD = re.compile(r"[A-Za-z][A-Za-z0-9]{2,}")
+
+# An identifier in the query is worth more than a word because it is rarer in
+# the world, not only in this corpus: a seat pasting `test_skill_receipts.py`
+# knows something a seat pasting `receipts` does not. IDF already rewards rarity
+# inside the register, and this rewards the shape independently of it, which is
+# what separates a precise query from a lucky one.
+IDENTIFIER_WEIGHT = 3.0
+WORD_WEIGHT = 1.0
+
+# A bold lead-in that introduces what was done about the incident. Taken from
+# the register as it is written rather than from the skeleton: `incidents.py new`
+# prescribes one of these ("The fix, or why there is not one yet.") and the file
+# carries a dozen variants from before the skeleton existed, so matching only
+# the skeleton's wording would find 100 entries of 618 and call the rest
+# remedyless.
+REMEDY_LEADIN = re.compile(
+    r"^\*\*("
+    r"(?:the\s+)?fix(?:ed)?\b[^*]*"
+    r"|what\s+(?:was\s+fixed|this\s+run\s+did|the\s+fix\s+is)[^*]*"
+    r"|what\s+shipped[^*]*"
+    r"|the\s+remedy[^*]*"
+    r"|what\s+changed[^*]*"
+    r")\.?\*\*",
+    re.IGNORECASE,
+)
+
+# A fix section that says there is not one. The register's own skeleton invites
+# this ("or why there is not one yet"), so an entry can carry a fix heading and
+# prescribe nothing, and a lookup that reported those as remedies would send a
+# seat to read a paragraph that tells it to wait.
+NO_REMEDY_YET = re.compile(
+    r"not\s+one\s+yet|there\s+is\s+(?:no|not)\s+(?:a\s+)?fix|no\s+fix\s+yet"
+    r"|nothing\s+is\s+fixed|not\s+fixed(?:\s+here|\s+in\s+this\s+run)?\b"
+    r"|owed\s+to|still\s+open|unfixed|none\s+here"
+    # The shapes the register actually uses for a remedy it describes and does
+    # not apply. All five are from live entries: a seat that cannot write the
+    # surface says so in the fix section rather than omitting it, which is
+    # correct of the seat and a trap for a reader that counts fix sections.
+    r"|rather\s+than\s+(?:built|applied|shipped|fixed|done)"
+    r"|offered\s+rather\s+than|proposal\s+rather\s+than"
+    r"|filed\s+as\s+(?:an?\s+)?(?:ledger\s+)?(?:proposal|idea|urgent)"
+    r"|routed\s+to\s+the\s+\w+\s+seat|not\s+this\s+seat'?s?\b",
+    re.IGNORECASE,
+)
+
+SEAT_IN_HEADING = re.compile(r"\b([a-z][a-z/-]*)\s+seat\b")
+
+
+def terms(text: str) -> dict[str, float]:
+    """The query's terms and the weight each carries, lowercased and deduped.
+
+    An identifier contributes itself and its parts, because a seat holding
+    `tests/test_skill_receipts.py` should match an entry that only ever wrote
+    `test_skill_receipts`, and the whole is scored above the parts so that the
+    exact string still wins when both are present.
+    """
+    weights: dict[str, float] = {}
+    for match in IDENTIFIER.finditer(text):
+        whole = match.group(0).lower().strip("-./:")
+        if not whole:
+            continue
+        weights[whole] = max(weights.get(whole, 0.0), IDENTIFIER_WEIGHT)
+        for part in re.split(r"[./:_-]+", whole):
+            if len(part) > 2:
+                weights[part] = max(weights.get(part, 0.0), WORD_WEIGHT)
+    for match in WORD.finditer(text):
+        word = match.group(0).lower()
+        weights[word] = max(weights.get(word, 0.0), WORD_WEIGHT)
+    return weights
+
+
+def entry_terms(entry: "Entry") -> set[str]:
+    """Every term an entry can be matched on, from its heading and its body."""
+    text = "\n".join(entry.body)
+    found = set()
+    for match in IDENTIFIER.finditer(text):
+        whole = match.group(0).lower().strip("-./:")
+        if not whole:
+            continue
+        found.add(whole)
+        found.update(p for p in re.split(r"[./:_-]+", whole) if len(p) > 2)
+    found.update(m.group(0).lower() for m in WORD.finditer(text))
+    return found
+
+
+def all_entries(register_text: str | None = None, inbox: Path = INBOX) -> list["Entry"]:
+    """Every entry in both halves of the register, the file and the inbox.
+
+    Both halves, always. The inbox is not a staging area a reader may skip: it
+    is where 41% of the entries live and where they stay until somebody runs
+    `fold`, which `check` deliberately does not require.
+    """
+    if register_text is None:
+        register_text = REGISTER.read_text() if REGISTER.is_file() else ""
+    entries = split_entries(register_text, "register")
+    for path in inbox_files(inbox):
+        entries.extend(split_entries(path.read_text(), f"inbox/{path.name}"))
+    return entries
+
+
+def remedy_of(entry: "Entry") -> tuple[str, list[str]]:
+    """The entry's fix section, as (verdict, lines).
+
+    Verdict is `REMEDY` when the section names something that was done, `OPEN`
+    when the section exists and says the fix is owed, and `NONE` when the entry
+    has no fix section at all. `NONE` is not a reproach: the oldest entries
+    predate the skeleton. It is information, because it is the one verdict that
+    tells a seat the register will not answer its second question.
+    """
+    body = entry.body
+    for index, line in enumerate(body):
+        if not REMEDY_LEADIN.match(line.strip()):
+            continue
+        section = [line.rstrip()]
+        for following in body[index + 1:]:
+            if following.strip().startswith("**") and not section[-1].strip().endswith("**"):
+                break
+            if ENTRY.match(following):
+                break
+            section.append(following.rstrip())
+        while section and not section[-1].strip():
+            section.pop()
+        text = "\n".join(section)
+        return ("OPEN" if NO_REMEDY_YET.search(text) else "REMEDY"), section
+    return "NONE", []
+
+
+def seat_of(entry: "Entry") -> str | None:
+    """The seat the heading credits, when it names one in the usual form."""
+    match = SEAT_IN_HEADING.search(entry.heading)
+    return match.group(1) if match else None
+
+
+def prior_art(query: str, entries: list["Entry"] | None = None,
+              limit: int = 5, remedies_only: bool = False) -> dict:
+    """Rank the register's entries against a failure in hand.
+
+    `query` is whatever the seat has: a pytest line, an assertion message, a
+    path, a flag, a sentence. Nothing is required of its shape, which is the
+    point, because the shape a failure arrives in is not under the reader's
+    control.
+    """
+    if entries is None:
+        entries = all_entries()
+    wanted = terms(query)
+    indexed = [(entry, entry_terms(entry)) for entry in entries]
+    total = len(indexed) or 1
+    document_frequency = {
+        term: sum(1 for _, found in indexed if term in found) for term in wanted
+    }
+    # log(N / df) with a floor, so a term in every entry scores zero rather than
+    # negative and a term in none is simply absent from the sum.
+    idf = {
+        term: max(0.0, math.log(total / df))
+        for term, df in document_frequency.items() if df
+    }
+    ceiling = sum(wanted[term] * idf[term] for term in idf) or 1.0
+    scored = []
+    for entry, found in indexed:
+        hits = [term for term in idf if term in found and idf[term] > 0]
+        if not hits:
+            continue
+        score = sum(wanted[term] * idf[term] for term in hits)
+        verdict, section = remedy_of(entry)
+        if remedies_only and verdict != "REMEDY":
+            continue
+        scored.append({
+            "id": entry.key,
+            "heading": entry.heading,
+            "where": f"{entry.source}:{entry.line}",
+            "date": entry.date,
+            "seat": seat_of(entry),
+            "confidence": round(score / ceiling, 3),
+            "matched": sorted(hits, key=lambda t: -wanted[t] * idf[t])[:8],
+            "remedy": verdict,
+            "remedy_lines": section,
+        })
+    scored.sort(key=lambda row: (-row["confidence"], row["id"]))
+    # `matched` counts every entry sharing any distinctive term, which on this
+    # corpus is nearly all of them, so it is data and never the headline. The
+    # number a reader can use is `close`, counted over the whole ranking rather
+    # than over the printed slice: a seat that passes --limit 3 still needs to
+    # know there are nine close matches behind them.
+    close = [row for row in scored if row["confidence"] >= STRONG]
+    return {
+        "query": query,
+        "entries_searched": total,
+        "register_entries": sum(1 for e, _ in indexed if e.source == "register"),
+        "inbox_entries": sum(1 for e, _ in indexed if e.source != "register"),
+        "matched": len(scored),
+        "with_remedy": sum(1 for row in scored if row["remedy"] == "REMEDY"),
+        "close": len(close),
+        "close_with_remedy": sum(1 for row in close if row["remedy"] == "REMEDY"),
+        "hits": scored[:limit],
+    }
+
+
+# A hit this strong is worth the reader's attention even when they were sure
+# nothing had been filed. Below it the ranking is still useful and the headline
+# stops claiming a class, because a lookup that cries repeat at every query
+# trains a seat to skip it, which is the failure mode this tool was built to
+# answer rather than to reproduce.
+STRONG = 0.25
+
+
+def report_prior(found: dict, seat: str | None = None, stream=sys.stdout) -> int:
+    """Print the lookup for a person, and return the count of strong hits."""
+    print(
+        f"searched {found['entries_searched']} entries "
+        f"({found['register_entries']} in docs/agents/incidents.md, "
+        f"{found['inbox_entries']} in docs/agents/incidents/inbox/)",
+        file=stream,
+    )
+    if not found["hits"]:
+        print("\nnothing in the register matches this. File it as a first instance.", file=stream)
+        return 0
+    strong = [row for row in found["hits"] if row["confidence"] >= STRONG]
+    remedies = [row for row in strong if row["remedy"] == "REMEDY"]
+    if found["close"]:
+        print(
+            f"{found['close']} of them are close matches and "
+            f"{found['close_with_remedy']} of those prescribe a remedy.",
+            file=stream,
+        )
+    else:
+        print(
+            "No close match. Nothing here is more than a shared word, so read the "
+            "ranking\nas a weak hint rather than as prior art.",
+            file=stream,
+        )
+    print(f"\nThe closest {len(found['hits'])}:", file=stream)
+    for row in found["hits"]:
+        mine = " YOUR OWN SEAT" if seat and row["seat"] == seat else ""
+        print(f"\n  [{row['confidence']:.3f}] {row['remedy']}{mine}  {row['where']}", file=stream)
+        print(f"  {row['id']}", file=stream)
+        print(f"  matched on: {', '.join(row['matched'])}", file=stream)
+        if row["remedy_lines"]:
+            for line in row["remedy_lines"]:
+                print(f"    | {line}", file=stream)
+        else:
+            print("    | (no fix section: this entry records the failure and no remedy)", file=stream)
+    if strong:
+        subject = "one of these is a close match" if len(strong) == 1 else \
+            f"{len(strong)} of these are close matches"
+        print(
+            f"\n{subject[0].upper()}{subject[1:]}. The standing rule at the top of the "
+            f"register\nsays a repeat is recorded the moment it repeats, so if this is one of "
+            f"them,\nfile it in this pull request.",
+            file=stream,
+        )
+    if remedies:
+        print(
+            f"\n{len(remedies)} close match(es) already prescribe a remedy. Read it before you "
+            f"write a\nnew one: a remedy that exists and goes unread is how this lookup came "
+            f"to be built.",
+            file=stream,
+        )
+    own = [row for row in strong if seat and row["seat"] == seat]
+    if own:
+        verb = "was" if len(own) == 1 else "were"
+        print(
+            f"\n{len(own)} of the close matches {verb} filed by your own seat. A seat's own "
+            f"prior entry is\nthe one it is most likely to have written and least likely to go "
+            f"looking for.",
+            file=stream,
+        )
+    return len(strong)
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         description="The incident register's append surface.",
@@ -601,6 +908,32 @@ def main(argv: list[str] | None = None) -> int:
     maker.add_argument("--date", required=True, help="the day the incident was observed")
     maker.add_argument("--seat", default="engineer", help="the seat filing it")
     maker.add_argument("--title", default="<one line>", help="the heading's own summary")
+    maker.add_argument(
+        "--no-prior", action="store_true",
+        help="skip the prior-art lookup this otherwise runs on the slug and title",
+    )
+
+    asker = sub.add_parser(
+        "prior", help="has this failure been filed before, and was a remedy prescribed?"
+    )
+    asker.add_argument(
+        "query", nargs="*",
+        help="the failure in hand: a test name, an assertion, a path, a flag, a sentence",
+    )
+    asker.add_argument(
+        "--file", default=None, metavar="PATH",
+        help="read the query from a file instead, so a pytest log can be the query",
+    )
+    asker.add_argument("--limit", type=int, default=5, help="how many hits to print (default 5)")
+    asker.add_argument(
+        "--seat", default=None,
+        help="your seat, so a prior entry your own seat filed is called out as yours",
+    )
+    asker.add_argument(
+        "--remedies-only", action="store_true",
+        help="rank only entries that prescribe a remedy",
+    )
+    asker.add_argument("--json", action="store_true", help="the ranking as data")
 
     folder = sub.add_parser("fold", help="move the inbox into the register")
     folder.add_argument(
@@ -642,6 +975,32 @@ def main(argv: list[str] | None = None) -> int:
         )
         return 0
 
+    if args.command == "prior":
+        query = " ".join(args.query)
+        if args.file:
+            try:
+                query = f"{query}\n{Path(args.file).read_text()}".strip()
+            except OSError as exc:
+                print(f"cannot read the query from {args.file}: {exc}")
+                return 2
+        if not query.strip():
+            print("nothing to look up: pass the failure as words, or --file a log")
+            return 2
+        found = prior_art(
+            query,
+            all_entries(register_text, INBOX),
+            limit=args.limit,
+            remedies_only=args.remedies_only,
+        )
+        if args.json:
+            print(json.dumps(found, indent=2, sort_keys=True))
+            return 0
+        report_prior(found, seat=args.seat)
+        # Always zero. This answers a question; it does not hold a pull
+        # request. A lookup that can fail a run is a lookup a seat stops
+        # running, and an unrun lookup is the defect it was built for.
+        return 0
+
     if args.command == "new":
         try:
             path = new_entry(args.slug, args.date, args.seat, args.title)
@@ -649,6 +1008,18 @@ def main(argv: list[str] | None = None) -> int:
             print(exc)
             return 1
         print(path.relative_to(ROOT))
+        if not args.no_prior:
+            # The repeat question, asked where the standing rule applies rather
+            # than where a charter remembers to tell a seat to ask it. Filing is
+            # the one moment every seat passes through, and it is the moment the
+            # seat has the failure in hand and the register still unread.
+            print()
+            found = prior_art(
+                f"{args.slug.replace('-', ' ')} {args.title}",
+                all_entries(register_text, INBOX),
+                limit=3,
+            )
+            report_prior(found, seat=args.seat)
         return 0
 
     problems = check(register_text, inbox)
