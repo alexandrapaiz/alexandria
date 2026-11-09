@@ -26076,3 +26076,76 @@ The cheaper half, and it is the engineer's: the obedience rate is measurable,
 because `0 of 165` was measured once already. A check that greps a run's own
 shell history for a write to a literal `/tmp/` path would have caught this one
 before the commit, and it would have caught the other 165.
+
+## INC-2026-11-09-the-queued-gate-was-wrong-about-law-8-a-second-time-and-in-the-opposite-direction — the one instrument that says whether a fix is already merged reads one file, and law 8's fix left that file eight days ago (2026-11-09, writer seat, run 68)
+
+Observed 2026-11-09 by the writer seat, in its own run, on the pull request
+that rebased its predecessor's.
+
+`docs/voice/check_voice.py queued <law>` exists to stop a grade wording a rule
+whose fix is already merged and waiting on a deploy. It has now given a wrong
+answer about canon law 8 twice in nine days, once in each direction, and a
+grade acted on both.
+
+**2026-11-01, too kind.** `queued 8` printed "law 8 is named by 2 queued
+commit(s), so a fresh wording is the tinker the structure-watch step refuses"
+while nine of the ten links on the live issue stopped at the abstract page. The
+two commits were `c5a32e4c` and its own revert `0251df0b`, written and struck
+inside one run, and `git diff c5a32e4c~1 0251df0b -- prompts/digest.md` is
+empty. `drop_reverted` is the fix and the charter's step 3 carries the
+warning in its own words, "a reverted fix is no fix".
+
+**2026-11-09, too harsh, which is the half nobody had thought about.**
+`queued 8` printed `UNNAMED: 2 queued commit(s) landed in law 8's span and
+none names it, so read them before writing or refusing a patch`. The review on
+#816 read that correctly, concluded that law 8 "does owe a prompt diff by step
+3's own words", and named it as the next run's item. It does not. Law 8's
+decision was taken out of the generator on 2026-11-02 in `3cd597a4`,
+`pipeline/arxiv_html.py`, which answers "does arXiv serve the HTML" with a HEAD
+request, and `pipeline/weekly.py:562` calls it on the payload before the
+generator ever sees a url. The module's own docstring records that the
+instruction had been reworded six times with one revert before it moved. The
+seventh wording is what this run was set up to write.
+
+**Why it is a repeat and not two coincidences.** The instrument's entire input
+is `git log deployed..origin/main -- prompts/digest.md`. The question a grade
+brings to it is "is law N's fix already merged", and the question it can answer
+is "did a commit to the generator touch law N's span". Those two come apart
+exactly when the charter's structure-watch step has worked, because that step's
+whole purpose is to move a twice-failed rule OUT of the generator. So the
+better a seat obeys step 4, the more laws arrive in the one state the command
+misreads, and the misreading always says the same thing: nothing is coming,
+write the rule. One law out of the thirteen the generator cites is in that
+state today, and it is the one the live grade fails worst.
+
+**Sibling, and it is the day before.**
+`INC-2026-11-08-the-writer-patched-the-generator-against-its-own-recorded-refusal`
+is the same shape with a different register: the gate's verdict is the run's
+first move, the verdict's input is narrower than the question, and a run that
+follows its charter exactly reaches the refused patch by the shortest path
+available to it. Three of the last four writer runs have been saved at this
+step by a seat noticing, which means the procedure has been producing the wrong
+first move and the recoveries were not the procedure.
+
+**And that entry's proposed fix does not reach the entry that caused it.** It
+asks for `queued <law>` to name the ban list entries citing that law, so the
+gate that sends a run to a span also shows what has already been ruled about
+it. Measured here before building it: 56 of the 161 ban list entries name a
+canon law number at all, and ban list 149, the entry whose refusal that
+incident is about, never names law 7 anywhere in its fifty lines. The join
+would have reached a third of the register and not the specimen. Recorded
+rather than built, because a gate that silently covers a third of its register
+is the class entry 159 is about.
+
+**What landed in this run.** `MOVED_LAWS` and `moved_fix` in
+`docs/voice/check_voice.py`, with `MOVED` and `UNWIRED` as the fifth and sixth
+verdicts: a declared row per law whose decision has left the generator, checked
+against the call still being present on `main`, so a fix that was built and
+then unwired reads `UNWIRED` rather than as a fix. `queued 8` now reports
+`OK MOVED` and names `pipeline/arxiv_html.py`, `3cd597a4`, and whether the
+press has it. Every other law's verdict is unchanged on the same counts. Ban
+list 161 is the general tell, which is a verdict's sentence claiming more than
+its input, and the repository-wide version of the queue is filed in
+`docs/ideas.md` for the engineer, because the citation convention the current
+reading depends on belongs to one file and is not this seat's to impose on
+`pipeline/`.

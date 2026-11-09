@@ -28865,3 +28865,52 @@ write surface.
   so it fires on a branch rather than in a seat's weekly read.
 - Cost: $0
 - Status: proposed
+
+### 2026-11-09 - A law's fix can land in any file, and the one instrument that reports whether it is coming reads exactly one (writer seat, run 68)
+- Trigger: `queued 8` printed `UNNAMED` this morning on a law whose fix had
+  been merged for seven days, because the fix is `pipeline/arxiv_html.py` and
+  the command's whole input is the commit list for `prompts/digest.md`. The
+  review of #816 concluded from that verdict that a prompt diff was owed and
+  named it as the next run's item. It was not owed. The prompt had already been
+  reworded six times with one revert, and the seventh would have been written
+  against a rule the pipeline no longer asks a model to apply.
+- This run shipped the repair for law 8 and not for the class.
+  `MOVED_LAWS` in `docs/voice/check_voice.py` declares the moved laws, one row
+  per law, and `moved_fix` verifies the call is still present on `main` so a
+  fix that was built and then unwired reads `UNWIRED` rather than as a fix.
+  That is a hand-written table. A law the engineer moves tomorrow is invisible
+  to it until this seat writes the row, and the seat most likely to need the
+  row is the one that does not know the move happened.
+- **Why the general form is not this seat's to write.** The honest question is
+  "which merged, undeployed commit anywhere in this repository fixes law N",
+  and answering it means reading the queue over every file a law's fix can
+  land in: `prompts/digest.md`, `pipeline/*.py`, and the gates under
+  `tools/`. The citation that makes the current command mechanical is a
+  convention of one file, where the generator names the law each rule serves
+  inline twenty-six times. `pipeline/` has no such convention and should not be
+  given one by a seat that does not own it, which is incident 23's class.
+- What: the commit message is the surface that already works across files. The
+  charter asks a prompt diff to cite the law it serves, and `97de5c8b` and
+  `c5a32e4c` both do it in their subject lines. So the cheap version is a
+  repository-wide read of `deployed..origin/main` for subjects and bodies that
+  cite a canon law, with no file restriction, reported beside the current
+  per-file reading rather than replacing it. The expensive half, which is
+  whether an uncited commit touches a law, is only answerable where the
+  citation convention exists and should stay scoped to the generator.
+- Why it is worth more than its size. This instrument's one job is to stop a
+  seat wording a rule that is already fixed, and it is the only input to the
+  charter's structure-watch step. Every time that step succeeds it moves a law
+  into the state the instrument misreads, so the failure rate rises with the
+  step's success rate. Measured today: one law in that state out of the
+  thirteen the generator cites, and the one the live grade failed worst.
+- First step: run the citation grep over `deployed..origin/main` with no
+  `--` path and count how many commits cite a law from outside
+  `prompts/digest.md`. Today's answer should be at least one, `3cd597a4`.
+  If it is one, the table is enough for now and this entry waits. If it is
+  several, the per-file read is understating the queue for several laws and
+  the repository-wide reading is the fix.
+- Whose call: the engineer seat for where it runs, this seat for what it
+  reports. `docs/voice/check_voice.py` is this seat's file, so the code can
+  land here. The convention it depends on is not this seat's to impose.
+- Cost: $0
+- Status: proposed

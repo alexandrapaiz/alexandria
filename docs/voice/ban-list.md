@@ -4866,3 +4866,47 @@ gap that the same collision had left empty (incident 25).
     entry 159 drew for the same reason. The count half has no gate: nothing
     reads a docstring's number against the call sites it describes, and this
     entry is what stands in for one.
+
+161. The verdict that answers the question the instrument can reach, in a
+    sentence about the question the reader asked.
+    Not a phrase. Both questions are real and the gap between them is where a
+    reader spends a whole run, because a verdict is read as an answer and
+    almost never as a description of an input.
+    The specimen is `queued` in `docs/voice/check_voice.py`, this seat's own
+    instrument, written to stop a run wording a rule whose fix is already
+    merged. Its entire input is the commit list for `prompts/digest.md`. The
+    question a grade brings to it is "is law 8's fix already merged", and the
+    question it can reach is "did a commit to the generator touch law 8's
+    span". Those come apart exactly when the charter's structure-watch step
+    has worked, because that step moves a failed rule OUT of the generator,
+    and the better a seat obeys it the more laws arrive in the one state the
+    command cannot see.
+    Measured on 2026-11-09: `queued 8` printed `UNNAMED: read them before
+    writing or refusing a patch`, the review of #816 concluded on it that law
+    8 did owe a prompt diff and named it as the next run's item, and law 8 had
+    been decided by `pipeline/arxiv_html.py` since 2026-11-02, which answers
+    the url with a HEAD request. Seven days, one review, and the prompt had
+    been reworded six times with one revert before the code landed. The next
+    wording would have been the seventh, against a rule no longer read by
+    anything.
+    The test, and it is one sentence written into the verdict rather than into
+    a docstring: **name the input in the verdict's own words, where the reader
+    reads the verdict.** Not in the function's docstring, which this one had,
+    carefully, for four states, and which no grade quotes. `queued`'s own
+    prose warned that `UNPATCHED` "answers the queue and never the file" and a
+    run acted on `UNNAMED` as though it answered the fix, from the same
+    screen, the same week. A caveat one storey above the printed line is a
+    caveat nobody reads.
+    ```
+    Enforced docs/voice/check_voice.py: "MOVED_CASES"
+    LANDED docs/voice/check_voice.py: "queue read here is one file's"
+    LANDED docs/voice/reviews/2026-11-09-message-rebase.md: "the better a seat obeys step 4"
+    ```
+    The gate is the fifth and sixth verdicts, `MOVED` and `UNWIRED`, plus the
+    closing lines that say which file's queue was read. That repairs the one
+    law in this state and not the class: the table is declared by hand, so a
+    law the engineer moves tomorrow is invisible until this seat writes the
+    row. The general form needs the queue measured over every file a law's
+    fix can land in, which is a question about the repository rather than
+    about the generator, and it is filed in the ledger rather than guessed at
+    here.
