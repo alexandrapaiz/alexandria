@@ -88,6 +88,46 @@ seats' entries folded into the middle of a register is not an append, so the
 honest answer there is that the arithmetic balanced and the order was not read.
 Exit 1 is still the only answer that means something is wrong.
 
+**Precedence against the parent's merger, which is a question this file has to
+answer rather than hold.** HQ keeps an entry-keyed three-way merger,
+`tools/merge-register.py`, and `docs/agents/exo-owed.md` row 17 asks to vendor
+it here. The two tools disagree: HQ's orders a date-keyed register by theirs'
+order verbatim and then the entries only ours has, so on the same three stages
+it puts the trunk's newer entry above the branch's older one, and this file's
+own `--check` refuses that output
+(`INC-2026-11-09-the-parent-merger-this-seat-asked-to-vendor-and-the-gate-we-shipped-this-morning-order-the-same-two-appends-differently`,
+reproduced by the ExO seat; the earlier claim from this seat that the two
+converge was wrong and was never run).
+
+The precedence is a precondition on the input and not a ranking of the tools,
+because their domains barely overlap. HQ's handles a register that is inserted
+into mid-file, where rebuilding from the base relocates everything the mainline
+added, and that is the case this file refuses outright. Where both can speak,
+which is a conflict that is a pure trailing append on both sides, the rule here
+governs, for three reasons that are about this repository rather than about
+taste:
+
+1. **Confluence.** The same two appends must resolve to the same bytes however
+   the merge was typed, because the auditor cannot know which way it was typed.
+   The stamp and the trunk label are both facts about content and ancestry, so
+   they are direction-independent, and that was measured: the same conflict
+   merged both ways gives one blob. A rule keyed on the words "ours" and
+   "theirs" is keyed on the direction, so it cannot have that property.
+2. **The registers are ascending and none of them is newest-first.** Counted
+   over all 16 registers on 2026-11-09 with this file's own `stamp()`: every one
+   whose entries carry stamps is ascending-dominant, `docs/ideas.md` 81 ascents
+   to 32 descents, `docs/agents/incidents.md` 63 to 24,
+   `docs/agents/learning-log.md` 18 to 3, `docs/agents/hq-relay.md` 18 to 6,
+   `docs/research/reading-queue.md` 12 to 1, and the descents are backdated
+   entries rather than a file maintained in reverse. So "stamps ascend down the
+   file" is the invariant these files already hold, and `fold` and `prior` sort
+   on it.
+3. **HQ's measured reason survives here anyway.** Their argument is diff churn
+   from relocation. This file never rebuilds from the base: the base is kept
+   byte-identical and only the two new blocks are placed, so the most it can
+   relocate is one trailing block at the end of the file, never everything the
+   mainline inserted.
+
 `--check` reads a merge commit rather than an index, so it audits work that is
 already committed and pushed. With no argument it reads `HEAD`, which is the
 useful default in the turn after a merge.
