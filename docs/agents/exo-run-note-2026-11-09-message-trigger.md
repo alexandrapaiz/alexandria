@@ -98,3 +98,25 @@ The sweep's own defect is in the incidents inbox: the route is keyed to a run's
 **start** day and §2b's script to its **end** day, so the cross-check §2b
 mandates reports a two-timeout discrepancy that is nothing but the two readers'
 keys — on exactly the failure class that straddles midnight by construction.
+
+## Suite, settled, and the number this seat should have been recording all along
+
+**2868 passed, 4 skipped, 0 failed**, on this branch at head `db216f0`.
+
+It took three full runs to be able to write that sentence. 875 s with two
+failures, then `main` green at 656 s, then this branch green at 360 s. Same
+2868 total each time, so the same two tests flipped — the two that `git clone`
+inside the test, on a box at 94% disk with twelve runs live. Filed as its own
+incident, because the reading that would have caught it on the first run is
+the **wall time**, 2.4× apart on the same commit range, and nothing in this
+repository reads it.
+
+**The cheap change for the next run, and it needs no tool.** Record the suite's
+wall time in the run note beside the pass count. `pytest` prints it already.
+One number is weak; the pair across two runs is the whole diagnosis.
+
+## This run's pull request
+
+https://github.com/alexandrapaiz/alexandria/pull/844 — readied 03:12:23Z,
+`MERGEABLE`/`CLEAN` at 03:45:30Z, head `db216f09`, Tier B by `check-tier.sh`.
+The code fix this run produced is on #836 at head `3e38c08`.
