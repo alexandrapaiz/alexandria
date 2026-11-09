@@ -5,12 +5,21 @@ without the owner reading it, so the tests that matter are the refusals. Every
 clause is exercised both ways here, against fixtures, with no network and no
 database.
 
-Two of the clauses are deltas against the base branch rather than absolutes, and
-that decision is itself under test below, because it is the kind of decision that
+One clause is a delta against the base branch rather than an absolute, and that
+decision is itself under test below, because it is the kind of decision that
 looks like a weakening until you have the measurement. On 2026-09-30 the trigger
-test exits 1 on main with three standing failures, and all six skills carry
-mechanical ban-list findings. Absolutes would mean no revision can ever merge,
-which is the loop switched off by a detail rather than by a decision.
+test exits 1 on main with three standing failures. An absolute there would mean
+no revision can ever merge, which is the loop switched off by a detail rather
+than by a decision.
+
+The ban list used to be the second of those two, and stopped being one on
+2026-11-09. The measurement that argued for the delta was that an inherited
+finding cost a seat a run it could not afford to spend; `tools/ban_list.py
+--fix` made the mechanical half of it one command on the seat's own file, so the
+argument expired. The test that used to assert the backlog was non-empty is
+replaced below by the ratchet the amendment actually needs, and the inheritance
+test is flipped rather than deleted, because a reader coming here for the old
+behaviour should find the sentence that says it changed.
 """
 
 from __future__ import annotations
@@ -264,14 +273,38 @@ def test_controls_that_moved_are_refused(tree):
 
 # --------------------------------------------------------------- the ban list
 
-def test_the_clause_is_the_delta_because_the_library_already_carries_findings():
-    """The measurement behind the decision, asserted so it cannot rot silently."""
+# The library's remaining mechanical debt, measured 2026-11-09 by
+# `python3 tools/ban_list.py skills/*/SKILL.md`: 48 findings across 7 of the 10
+# skills, every one of them a U+2014 separator in a `papers:` list.
+#
+# This replaces the tripwire that used to sit here, which asserted the number
+# was above zero so that a clean library would turn red and tell the next reader
+# the clause could become an absolute. The clause became an absolute on
+# 2026-11-09, so the assertion the gate now needs is the mirror of that one: the
+# debt may shrink and may not grow, and it is one command from zero.
+#
+# `python3 tools/ban_list.py --fix skills/<slug>/SKILL.md` clears the whole 48,
+# measured on a copy of the tree the same day, and it is the skill seat's
+# command rather than this seat's: ADR-13 reserves `skills/` to the reviewer
+# panel and `prompts/engineer-agent.md` says so in one line. So the number here
+# goes to zero on the pull request that sweeps the library, and this comment is
+# what tells that seat to lower the ceiling in the same commit.
+LIBRARY_DEBT_CEILING = 48
+
+
+def test_the_library_debt_may_shrink_and_may_not_grow():
+    """The ratchet that replaced the clause's non-empty tripwire."""
     library = sorted((ROOT / "skills").glob("*/SKILL.md"))
     assert library
-    total = sum(len(ban_list.check(p.read_text())) for p in library)
-    assert total > 0, (
-        "if the library is clean now, this clause can become an absolute and "
-        "this test is the place that says so")
+    dirty = {p.name: len(ban_list.check(p.read_text())) for p in library}
+    total = sum(dirty.values())
+    assert total <= LIBRARY_DEBT_CEILING, (
+        f"the library carries {total} mechanical ban-list findings against a "
+        f"ceiling of {LIBRARY_DEBT_CEILING}. The ban-list clause is an "
+        "absolute, so every one of these blocks the next revision of the skill "
+        "it sits in. Repair: python3 tools/ban_list.py --fix "
+        "skills/<slug>/SKILL.md, then lower LIBRARY_DEBT_CEILING here in the "
+        f"same commit. Per file: {sorted(dirty.items())}")
 
 
 def test_a_revision_that_adds_a_tell_is_refused(tree, monkeypatch):
@@ -281,16 +314,47 @@ def test_a_revision_that_adds_a_tell_is_refused(tree, monkeypatch):
     clause = gate.ban_list_clause("x", "origin/main")
     assert clause.state == gate.FAILING
     assert any("entry 1" in r for r in clause.reasons)
+    assert any("introduced by this revision" in r for r in clause.reasons)
 
 
-def test_a_revision_that_inherits_a_tell_is_not_punished_for_it(tree,
-                                                               monkeypatch):
+def test_a_revision_that_inherits_a_tell_is_now_refused_for_it_too(tree,
+                                                                  monkeypatch):
+    """The flip. Until 2026-11-09 this asserted gate.OK and the word backlog."""
     dirty = tree.skill.read_text() + "\nThis is a very old sentence.\n"
     tree.skill.write_text(dirty + "\nOne plain new sentence.\n")
     monkeypatch.setattr(gate, "file_at", lambda ref, path: dirty)
     clause = gate.ban_list_clause("x", "origin/main")
+    assert clause.state == gate.FAILING
+    assert any("inherited from origin/main" in r for r in clause.reasons)
+    assert not any("backlog" in n for n in clause.notes)
+
+
+def test_the_clause_separates_what_was_inherited_from_what_was_added():
+    """Still measured, because it is the useful sentence even when it is not
+    the verdict."""
+    tell = {"entry": 5, "found": "very", "line": 1, "why": ""}
+    clause = gate.ban_list_verdict([tell, tell], [tell], "skills/x/SKILL.md",
+                                   "origin/main")
+    assert clause.state == gate.FAILING
+    assert any("2 occurrences of 'very', 1 of them introduced by this revision"
+               in r for r in clause.reasons)
+
+
+def test_a_clean_revision_of_a_clean_file_still_passes():
+    clause = gate.ban_list_verdict([], [], "skills/x/SKILL.md", "origin/main")
     assert clause.state == gate.OK
-    assert any("backlog" in n for n in clause.notes)
+    assert clause.reasons == []
+    assert not any("--fix" in n for n in clause.notes)
+
+
+def test_a_failing_clause_names_the_command_that_repairs_it():
+    """The craft-scan finding of 2026-11-09: a gate that names what is wrong
+    and never what to type costs its reader a module."""
+    tell = {"entry": 13, "found": "\u2014", "line": 9, "why": ""}
+    clause = gate.ban_list_verdict([tell], [tell], "skills/x/SKILL.md",
+                                   "origin/main")
+    assert any("python3 tools/ban_list.py --fix skills/x/SKILL.md" in n
+               for n in clause.notes)
 
 
 def test_the_clause_says_that_most_of_the_ban_list_needs_a_reader(tree,
@@ -323,6 +387,62 @@ def test_every_character_outside_ascii_is_caught_not_just_the_three_examples():
 
 def test_a_name_the_source_spells_that_way_can_be_allowed():
     assert ban_list.non_ascii("Klärner", allow="ä") == []
+
+
+# ------------------------------------------------- the repair, added 2026-11-09
+#
+# `--fix` is what made the clause above an absolute, so its three refusals
+# matter more than its one substitution: a repair that reached into prose would
+# be worse than the debt it cleared.
+
+CITATION = '    - "Prefix Sliding for Efficient Test-Time Scaling \u2014 arxiv.org/abs/2608.26070"\n'
+
+
+def test_the_citation_separator_becomes_the_comma_form():
+    fixed, swaps = ban_list.repair(CITATION)
+    assert swaps == 1
+    assert fixed == ('    - "Prefix Sliding for Efficient Test-Time Scaling, '
+                     'arxiv.org/abs/2608.26070"\n')
+    assert ban_list.check(fixed) == []
+
+
+def test_an_em_dash_in_a_paragraph_is_never_touched():
+    prose = "The harness is the scaffold \u2014 and the model is not.\n"
+    assert ban_list.repair(prose) == (prose, 0)
+    assert len(ban_list.check(prose)) == 1, "still a finding, just not this one's"
+
+
+def test_an_em_dash_between_two_clauses_of_a_list_item_is_never_touched():
+    item = "- the gate is a floor \u2014 and the rest needs a reader\n"
+    assert ban_list.repair(item) == (item, 0)
+
+
+def test_a_url_without_a_scheme_is_still_a_locator():
+    for head in ("https://arxiv.org/abs/1", "www.example.com/x",
+                 "arxiv.org/abs/2608.26070"):
+        line = f'- "A title \u2014 {head}"\n'
+        _, swaps = ban_list.repair(line)
+        assert swaps == 1, head
+
+
+def test_the_fix_reports_what_it_could_not_repair_and_the_caller_exits_one(tmp_path):
+    f = tmp_path / "SKILL.md"
+    f.write_text(CITATION + "\nThis will unlock a seamless tapestry.\n")
+    swaps, left, report = ban_list.fix_file(str(f))
+    assert swaps == 1
+    assert left >= 2, "entry 1 is not mechanical and must survive the repair"
+    assert any("still failing" in line for line in report)
+    assert ban_list.main(["--fix", str(f)]) == 1
+
+
+def test_the_fix_leaves_a_clean_file_alone_and_says_so(tmp_path):
+    f = tmp_path / "SKILL.md"
+    f.write_text("A plain sentence.\n")
+    swaps, left, report = ban_list.fix_file(str(f))
+    assert (swaps, left) == (0, 0)
+    assert any("nothing to fix" in line for line in report)
+    assert f.read_text() == "A plain sentence.\n"
+    assert ban_list.main(["--fix", str(f)]) == 0
 
 
 def test_the_ban_list_smoke_passes():
