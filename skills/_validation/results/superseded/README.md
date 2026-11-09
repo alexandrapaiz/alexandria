@@ -13,6 +13,25 @@ deleted, and nothing in this directory is read by a consumer:
 `tools/panel_validator.py` globs `*.json` in the parent, so a subdirectory is
 invisible to both.
 
+- `2026-11-09-lexical-2.2-approval-paths-v6.json`. Moved here by the
+  `agent-approval-paths` **v7** revision in PR #919, which edited the
+  description and so had to re-record. `../2026-11-09-lexical-2.2-approval-paths-v7.json`
+  supersedes it, and the comparison was made case by case rather than on the
+  totals: **85 cases on the v6 side and 86 on the v7 side, 0 verdicts moved**,
+  75 of 85 and reliability 0.8824 before, 76 of 86 and 0.8837 after. The one
+  added case is `ap-pos-5`, the positive for v7's new precondition clause,
+  which passes at a +0.0708 margin over the closest decoy and is not narrow.
+  **Two intermediate v7 bundles were generated and discarded rather than
+  recorded**, which is worth saying because the discarding is the point: the
+  first cost `ap-pos-4`, the case a previous run had added for a measured
+  findability gap, because a compression dropped the words it matches on; the
+  second cost `asm-neg-2`, a negative that must stay silent, because rewording
+  "what the human is shown" to "what it shows" introduced the stem `show`,
+  which matches `showing` in a prompt about a monitoring dashboard. Both were
+  found by re-running the whole suite and diffing verdicts against the v6
+  bundle rather than reading the total, which moved by only one case in each
+  direction and would have read as noise.
+
 - `2026-11-09-revision-record-relocation.json`. The survivor named in the entry
   below, moved here in its turn by the `agent-approval-paths` v2 revision in the
   same pull request (#881), which edited a `SKILL.md` and so had to re-record.

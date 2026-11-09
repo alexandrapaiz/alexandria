@@ -1,69 +1,77 @@
 {
-  "skill": "agent-approval-paths",
-  "suite_version": 1,
-  "written": "2026-11-02",
-  "author": "skill agent (ADR-22)",
-  "note": "Three positives, one per delta, two hard negatives and two confusion cases. The negatives are chosen against this skill's worst false-positive risk, which is that approval vocabulary is overwhelmingly ordinary: 'approval', 'approvals', 'approval step', 'confirm' and 'confirmation dialog' belong to release engineering and to consumer checkout UX far more often than to an agent's action loop. Both negatives therefore carry more of the description's literal vocabulary than any positive does, and they must still stay silent. The confusion cases route to the two nearest neighbours: agent-containment owns where a tool call is refused, and agent-security-measurement owns what an attack-success number proves. The trigger engine is lexical and pre-registered, so each positive is phrased in the words a user would actually bring, and the anchor names the clause of the description it is testing. Updated 2026-11-09: ap-pos-4 was added for delta 3's operator-side phrasing and is committed red, with the measurement and the reason on the case.",
-  "cases": [
-    {
-      "id": "ap-pos-1",
-      "kind": "positive",
-      "expect": "agent-approval-paths",
-      "prompt": "Our browser agent asks the user to confirm before it submits anything, and the confirmation dialog shows a one-line summary that the agent itself writes from the page. Last week a user approved a transfer because the page had relabelled the button. Is the confirmation step worth keeping, and what should the dialog actually show?",
-      "anchor": "when a confirmation dialog is populated from text the agent wrote or a fetched page controls",
-      "rationale": "Delta 1's measured case, described by a user who has not read the paper. The four-arm comparison is the whole answer and the user has built the arm that scored 72 percent against 78 percent for no gate at all, so the advice they need is not 'keep the gate' but 'change what it renders from'. The prompt names confirm, confirmation dialog, approved and the agent-written summary, which are the description's own words for this clause."
-    },
-    {
-      "id": "ap-pos-2",
-      "kind": "positive",
-      "expect": "agent-approval-paths",
-      "prompt": "Our shell-command mediator prompts on nearly everything our agent tries to run and the team has started clicking yes without reading. The plan is to cut the prompt count by adding the tools we use most to the trusted list. How should we decide what goes on that list, and what should we be tracking to know if it is working?",
-      "anchor": "when approval fatigue, prompt fatigue or over-prompting is the complaint",
-      "rationale": "Delta 2 exactly, including the remedy the user has already chosen. The measured answer is that growing the trust list is movement along a frontier rather than an escape from it, that the number to track is the uninspectable rate and not the prompt rate, and that every addition is priced as a silent-pass risk because all of the measured silent passes ran through trust-listed binaries. The prompt carries over-prompting, prompts, trusted list and the fatigue behaviour in the user's own vocabulary."
-    },
-    {
-      "id": "ap-pos-3",
-      "kind": "positive",
-      "expect": "agent-approval-paths",
-      "prompt": "We are about to ship an always-allow option so our coding agent stops asking permission for the same shell command on every run. The rule would be remembered per command prefix for the rest of the session. Is that safe to ship, and if not, what should we build instead?",
-      "anchor": "when you are about to ship a remember-this-choice, an always-allow or a persisted allow-rule to cut the number of confirmations",
-      "rationale": "Delta 3, and the one case in this suite where the skill's answer reverses the user's plan rather than refining it. The persisted per-prefix rule is the exact object whose elicitation raised permission coverage to 0.48 to 0.61 and made 9 to 18 of 25 adversarial goals reachable, and prefix scope is what the completed attacks were attributed through. The prompt says always-allow, asking permission, remembered and command prefix, which is this clause of the description almost verbatim."
-    },
-    {
-      "id": "ap-neg-1",
-      "kind": "negative",
-      "expect": null,
-      "prompt": "Our repository requires two approvals before a pull request can merge, and the release branch has a manual approval step in the deploy pipeline. Reviewers are slow, approvals pile up over the weekend and releases keep slipping. How should we restructure the approval rules and who should be able to override them?",
-      "rationale": "The hardest negative in this suite, and it is hard on purpose: it says approvals, approval step, approval rules and override, which is more of the approval vocabulary than any positive case carries. There is no agent in it, no action loop and nothing being confirmed before dispatch. It is human release engineering. **This case fails, and it fails through another skill:** harness-engineering fires at 0.0933 against a 0.05 floor, while this skill scores below the floor and never appears. So the case does its job for the file it ships with, and what it surfaces is a pre-existing library over-fire on release-engineering vocabulary, the same class as the already-failing pt-neg-1 on main. It is kept failing and reported rather than reworded into a pass, because rewording it would hide a defect that belongs to the library and not to this skill."
-    },
-    {
-      "id": "ap-neg-2",
-      "kind": "negative",
-      "expect": null,
-      "prompt": "Users abandon our checkout at the final confirm-order dialog. We want to cut the number of confirmation clicks it takes to finish a purchase and make the last confirmation screen clearer about what is being charged. What should that screen say?",
-      "rationale": "Second hard negative, on the other ordinary sense of the vocabulary. It says confirm, confirmation clicks and confirmation screen, and it is even about reducing the number of confirmations, which is delta 2's subject in words but not in substance. There is no agent, no tool call and no adversary; it is consumer checkout copy, and the decoy panel holds a product-copy skill that owns it. This case exists because the burden metric in delta 1 is literally confirmations per task, so the number this skill cares about has a near-homonym in ordinary conversion work."
-    },
-    {
-      "id": "ap-conf-1",
-      "kind": "confusion",
-      "expect": "agent-containment",
-      "prompt": "We think we took a prompt injection: text hidden in a retrieved document made our agent call a tool we do intend to allow, with an argument the user never supplied. Our defence is tool filtering per sub-agent plus a deny list of forbidden paths. Where should the check on each tool call sit instead?",
-      "rationale": "Routes to the neighbouring containment skill rather than here, and it does: agent-containment 0.3779 against agent-security-measurement 0.2064, with this skill outside the top four. The subject is the enforcement point and the authority a call is checked against, which is that skill's deltas 1 and 2, and there is no human in this loop at all. The pair is worth testing because both skills are about refusing an action before it runs and differ only in who or what does the refusing. One note for whoever reads this next: the first two phrasings of this case, which dropped the words `prompt injection` and `deny list`, both routed to agent-security-measurement instead, with containment second. The engine is lexical and pre-registered, so a case has to carry the vocabulary its target's description actually names; that sensitivity is recorded as a finding in docs/ideas.md rather than hidden by the phrasing that passes."
-    },
-    {
-      "id": "ap-conf-2",
-      "kind": "confusion",
-      "expect": "agent-security-measurement",
-      "prompt": "We added a confirmation gate in front of our agent's tool calls and attack success on our injection suite dropped from 45 percent to 8 percent. Before I present that to the security review, what does that number actually prove, and what else should I be measuring against an attacker who adapts?",
-      "rationale": "Routes to the measurement skill. The prompt deliberately opens with a confirmation gate, which is this skill's subject, but the question asked is what an attack-success delta proves and what a static suite misses, which is the measurement skill's whole content. A suite that cannot keep these apart would have this skill answering every question in which an approval gate merely appears, rather than the questions about designing one."
-    },
-    {
-      "id": "ap-pos-4",
-      "kind": "positive",
-      "expect": "agent-approval-paths",
-      "prompt": "We want to alert whenever our coding agent proposes a new persistent permission rule in the middle of a task. What false positive rate should we budget for, and on what evidence?",
-      "anchor": "delta 3's own decision rule, stated as the operator would state it: the alert on a mid-task persisted-rule proposal and the rate to budget for it",
-      "note": "ADDED 2026-11-09 failing on purpose, and REPAIRED 2026-11-09 by the next run, which is the baseline the first note asked for. Before: this prompt routed to agent-containment at 0.357 against this skill's 0.219. After a description revision: this skill 0.397, agent-containment 0.351, margin +0.046, which is narrow and is stated rather than rounded. Suite 74 of 85 and reliability 0.87 before, 75 of 85 and 0.88 after, and no other case moved in either direction, which was the risk the first note named. What the diagnosis turned out to be, and it was not a thin description. agent-containment was winning on four same-spelling different-sense matches: its `alerts fire into a queue nobody acts on` supplied `alert`, its `capacity budget` supplied `budget`, its `security rules in a system prompt` supplied `rule`, and `the proposed fix` supplied `propos`. Not one of those four is about alerting on a persisted-rule proposal, so the engine lost this case to a sense collision rather than to a gap in coverage. The lexical engine cannot see the difference, which is a ceiling on the instrument and is filed as a ledger entry rather than worked around here. The repair is a real activation condition and not a token match, which is the distinction that matters because tuning a description against a case's surface words is the trigger-test analogue of renaming a bundle to win a sort. The clause added is `or alerting on one proposed mid-task and budgeting its false-positive rate`, and the body has answered exactly that since v2: checklist item 5 and procedure items 1 and 2 prescribe handling a mid-task persist request as an alert and sizing its budget on the 3.0 percent pooled and 11.3 percent per-model bounds. The description was promising less than the skill delivers. The budget was the binding constraint the first note predicted. 149 of 150 words before, so the fix had to be a swap: four clauses gave up one word each (`human` before `confirmation`, `must be` to `is`, `agent` before `action`, `itself`) and one gave up three (`how many confirmations the design costs` to `the confirmation cost`). 150 of 150 words after, and the swap cost no passing case, which the suite was re-run to establish rather than assumed."
-    }
-  ]
+ "skill": "agent-approval-paths",
+ "suite_version": 1,
+ "written": "2026-11-02",
+ "author": "skill agent (ADR-22)",
+ "note": "Three positives, one per delta, two hard negatives and two confusion cases. The negatives are chosen against this skill's worst false-positive risk, which is that approval vocabulary is overwhelmingly ordinary: 'approval', 'approvals', 'approval step', 'confirm' and 'confirmation dialog' belong to release engineering and to consumer checkout UX far more often than to an agent's action loop. Both negatives therefore carry more of the description's literal vocabulary than any positive does, and they must still stay silent. The confusion cases route to the two nearest neighbours: agent-containment owns where a tool call is refused, and agent-security-measurement owns what an attack-success number proves. The trigger engine is lexical and pre-registered, so each positive is phrased in the words a user would actually bring, and the anchor names the clause of the description it is testing. Updated 2026-11-09: ap-pos-4 was added for delta 3's operator-side phrasing and is committed red, with the measurement and the reason on the case.",
+ "cases": [
+  {
+   "id": "ap-pos-1",
+   "kind": "positive",
+   "expect": "agent-approval-paths",
+   "prompt": "Our browser agent asks the user to confirm before it submits anything, and the confirmation dialog shows a one-line summary that the agent itself writes from the page. Last week a user approved a transfer because the page had relabelled the button. Is the confirmation step worth keeping, and what should the dialog actually show?",
+   "anchor": "when a confirmation dialog is populated from text the agent wrote or a fetched page controls",
+   "rationale": "Delta 1's measured case, described by a user who has not read the paper. The four-arm comparison is the whole answer and the user has built the arm that scored 72 percent against 78 percent for no gate at all, so the advice they need is not 'keep the gate' but 'change what it renders from'. The prompt names confirm, confirmation dialog, approved and the agent-written summary, which are the description's own words for this clause."
+  },
+  {
+   "id": "ap-pos-2",
+   "kind": "positive",
+   "expect": "agent-approval-paths",
+   "prompt": "Our shell-command mediator prompts on nearly everything our agent tries to run and the team has started clicking yes without reading. The plan is to cut the prompt count by adding the tools we use most to the trusted list. How should we decide what goes on that list, and what should we be tracking to know if it is working?",
+   "anchor": "when approval fatigue, prompt fatigue or over-prompting is the complaint",
+   "rationale": "Delta 2 exactly, including the remedy the user has already chosen. The measured answer is that growing the trust list is movement along a frontier rather than an escape from it, that the number to track is the uninspectable rate and not the prompt rate, and that every addition is priced as a silent-pass risk because all of the measured silent passes ran through trust-listed binaries. The prompt carries over-prompting, prompts, trusted list and the fatigue behaviour in the user's own vocabulary."
+  },
+  {
+   "id": "ap-pos-3",
+   "kind": "positive",
+   "expect": "agent-approval-paths",
+   "prompt": "We are about to ship an always-allow option so our coding agent stops asking permission for the same shell command on every run. The rule would be remembered per command prefix for the rest of the session. Is that safe to ship, and if not, what should we build instead?",
+   "anchor": "when you are about to ship a remember-this-choice, an always-allow or a persisted allow-rule to cut the number of confirmations",
+   "rationale": "Delta 3, and the one case in this suite where the skill's answer reverses the user's plan rather than refining it. The persisted per-prefix rule is the exact object whose elicitation raised permission coverage to 0.48 to 0.61 and made 9 to 18 of 25 adversarial goals reachable, and prefix scope is what the completed attacks were attributed through. The prompt says always-allow, asking permission, remembered and command prefix, which is this clause of the description almost verbatim."
+  },
+  {
+   "id": "ap-neg-1",
+   "kind": "negative",
+   "expect": null,
+   "prompt": "Our repository requires two approvals before a pull request can merge, and the release branch has a manual approval step in the deploy pipeline. Reviewers are slow, approvals pile up over the weekend and releases keep slipping. How should we restructure the approval rules and who should be able to override them?",
+   "rationale": "The hardest negative in this suite, and it is hard on purpose: it says approvals, approval step, approval rules and override, which is more of the approval vocabulary than any positive case carries. There is no agent in it, no action loop and nothing being confirmed before dispatch. It is human release engineering. **This case fails, and it fails through another skill:** harness-engineering fires at 0.0933 against a 0.05 floor, while this skill scores below the floor and never appears. So the case does its job for the file it ships with, and what it surfaces is a pre-existing library over-fire on release-engineering vocabulary, the same class as the already-failing pt-neg-1 on main. It is kept failing and reported rather than reworded into a pass, because rewording it would hide a defect that belongs to the library and not to this skill."
+  },
+  {
+   "id": "ap-neg-2",
+   "kind": "negative",
+   "expect": null,
+   "prompt": "Users abandon our checkout at the final confirm-order dialog. We want to cut the number of confirmation clicks it takes to finish a purchase and make the last confirmation screen clearer about what is being charged. What should that screen say?",
+   "rationale": "Second hard negative, on the other ordinary sense of the vocabulary. It says confirm, confirmation clicks and confirmation screen, and it is even about reducing the number of confirmations, which is delta 2's subject in words but not in substance. There is no agent, no tool call and no adversary; it is consumer checkout copy, and the decoy panel holds a product-copy skill that owns it. This case exists because the burden metric in delta 1 is literally confirmations per task, so the number this skill cares about has a near-homonym in ordinary conversion work."
+  },
+  {
+   "id": "ap-conf-1",
+   "kind": "confusion",
+   "expect": "agent-containment",
+   "prompt": "We think we took a prompt injection: text hidden in a retrieved document made our agent call a tool we do intend to allow, with an argument the user never supplied. Our defence is tool filtering per sub-agent plus a deny list of forbidden paths. Where should the check on each tool call sit instead?",
+   "rationale": "Routes to the neighbouring containment skill rather than here, and it does: agent-containment 0.3779 against agent-security-measurement 0.2064, with this skill outside the top four. The subject is the enforcement point and the authority a call is checked against, which is that skill's deltas 1 and 2, and there is no human in this loop at all. The pair is worth testing because both skills are about refusing an action before it runs and differ only in who or what does the refusing. One note for whoever reads this next: the first two phrasings of this case, which dropped the words `prompt injection` and `deny list`, both routed to agent-security-measurement instead, with containment second. The engine is lexical and pre-registered, so a case has to carry the vocabulary its target's description actually names; that sensitivity is recorded as a finding in docs/ideas.md rather than hidden by the phrasing that passes."
+  },
+  {
+   "id": "ap-conf-2",
+   "kind": "confusion",
+   "expect": "agent-security-measurement",
+   "prompt": "We added a confirmation gate in front of our agent's tool calls and attack success on our injection suite dropped from 45 percent to 8 percent. Before I present that to the security review, what does that number actually prove, and what else should I be measuring against an attacker who adapts?",
+   "rationale": "Routes to the measurement skill. The prompt deliberately opens with a confirmation gate, which is this skill's subject, but the question asked is what an attack-success delta proves and what a static suite misses, which is the measurement skill's whole content. A suite that cannot keep these apart would have this skill answering every question in which an approval gate merely appears, rather than the questions about designing one."
+  },
+  {
+   "id": "ap-pos-4",
+   "kind": "positive",
+   "expect": "agent-approval-paths",
+   "prompt": "We want to alert whenever our coding agent proposes a new persistent permission rule in the middle of a task. What false positive rate should we budget for, and on what evidence?",
+   "anchor": "delta 3's own decision rule, stated as the operator would state it: the alert on a mid-task persisted-rule proposal and the rate to budget for it",
+   "note": "ADDED 2026-11-09 failing on purpose, and REPAIRED 2026-11-09 by the next run, which is the baseline the first note asked for. Before: this prompt routed to agent-containment at 0.357 against this skill's 0.219. After a description revision: this skill 0.397, agent-containment 0.351, margin +0.046, which is narrow and is stated rather than rounded. Suite 74 of 85 and reliability 0.87 before, 75 of 85 and 0.88 after, and no other case moved in either direction, which was the risk the first note named. What the diagnosis turned out to be, and it was not a thin description. agent-containment was winning on four same-spelling different-sense matches: its `alerts fire into a queue nobody acts on` supplied `alert`, its `capacity budget` supplied `budget`, its `security rules in a system prompt` supplied `rule`, and `the proposed fix` supplied `propos`. Not one of those four is about alerting on a persisted-rule proposal, so the engine lost this case to a sense collision rather than to a gap in coverage. The lexical engine cannot see the difference, which is a ceiling on the instrument and is filed as a ledger entry rather than worked around here. The repair is a real activation condition and not a token match, which is the distinction that matters because tuning a description against a case's surface words is the trigger-test analogue of renaming a bundle to win a sort. The clause added is `or alerting on one proposed mid-task and budgeting its false-positive rate`, and the body has answered exactly that since v2: checklist item 5 and procedure items 1 and 2 prescribe handling a mid-task persist request as an alert and sizing its budget on the 3.0 percent pooled and 11.3 percent per-model bounds. The description was promising less than the skill delivers. The budget was the binding constraint the first note predicted. 149 of 150 words before, so the fix had to be a swap: four clauses gave up one word each (`human` before `confirmation`, `must be` to `is`, `agent` before `action`, `itself`) and one gave up three (`how many confirmations the design costs` to `the confirmation cost`). 150 of 150 words after, and the swap cost no passing case, which the suite was re-run to establish rather than assumed."
+  },
+  {
+   "id": "ap-pos-5",
+   "kind": "positive",
+   "expect": "agent-approval-paths",
+   "prompt": "Our approval dialog renders the command from the actual argv the mediator is about to run, not from the model's description, and we hash what we display and re-check that hash at dispatch. The only wrinkle is that long commands get truncated with an ellipsis in the dialog. Is that a problem?",
+   "anchor": "v7's precondition clause: the approval view collapses or truncates a longer command or argument vector, which is the condition a team reaches after already satisfying items 1 and 2",
+   "note": "ADDED 2026-11-09 by the run that shipped v7, and it is the case that justifies the new description clause rather than the clause justifying itself. Phrased the way the team in eval task ap-t9 phrases it, with the truncation offered as a UI wrinkle, because that is how this condition arrives at a reviewer and because the prompt deliberately carries the vocabulary of the two mitigations the team already has. The risk this case is written against is a false negative rather than a sense collision: a prompt whose headline facts are the two things the skill already prescribes could plausibly route to silence or to agent-containment, since nothing in it says the design is broken. Stated plainly for the next run, per charter step 7: a pass here says the skill is FOUND from a prompt in this shape and says nothing whatever about whether its answer helps, which is the measurement this skill still does not have."
+  }
+ ]
 }
