@@ -39,6 +39,7 @@ paper the link resolves to, which is the accuracy line of the same checklist.
 """
 
 import argparse
+import pathlib
 import re
 import sys
 from dataclasses import dataclass
@@ -70,6 +71,124 @@ SKELETON_HEADINGS = (
     "gaining traction", "trailblazing", "left behind", "read these yourself",
     "key takeaways", "what this means", "new and unproven", "compounding",
 )
+
+# Ban list 19, 20, the derived half, and the reason it is derived.
+#
+# `SKELETON_HEADINGS` above is a hand list and every entry in it is one of the
+# generator's INTERNAL slot names or a near-synonym. What the press actually
+# prints is the reader-facing paraphrase, and law 12's own text says the
+# paraphrase is the violation: "A paraphrase of a banned heading is the banned
+# heading." So the floor holds the one shape the generator is least likely to
+# emit and none of the shapes it does.
+#
+# The writer seat measured that on 2026-11-01 and routed the repair here,
+# because `tools/` is pipeline code and that charter may not write it
+# (docs/ideas.md, "The pre-send heading ban and the voice canon's heading ban
+# share no phrase"). The intersection of the floor and the canon's list was
+# empty. Not small. Empty. Four headings the owner has ruled on twice, the
+# second time in capitals, were serving while this gate read them clean.
+#
+# The repair is not a ninth hand entry. It is to read the phrasings out of the
+# ban itself, which is the paragraph of `prompts/digest.md` that
+# `docs/voice/check_voice.py slotwords` already reads, so the two gates cannot
+# hold two vocabularies for one rule. A derived list does not drift.
+# `tests/test_digest_quality.py` pins this pass to the canon's own asserted
+# cases, so widening the ban there fails here until both agree.
+SLOT_BAN_OPEN = "The ban is on the slot's IDEA and not on four strings"
+SLOT_BAN_CLOSE = "first job is to say which section the reader is in"
+
+# The phrasings, read out of the ban's own span. Found by its sentences rather
+# than by a line number, because a line number in a gate is a gate that lies
+# after the next edit.
+SLOT_DRESS = re.compile(r'"(what [a-z ]+)"')
+
+# Remainders that add nothing a reader could date. A banned phrasing followed
+# only by these is the banned phrasing wearing a suffix, which is how 2026-W44
+# served the reading slot's own internal name past an equality test. Kept small
+# on purpose: the moment a word here could carry the day's material, this
+# reading starts firing on the headings law 12 asks for.
+SLOT_INVARIANT = frozenset((
+    "yourself", "yourselves", "myself", "ourselves",
+    "this", "week", "today", "now", "again", "so", "far",
+    "month", "year", "issue", "edition",
+))
+
+# Where the generator is, in both places this file runs. A checkout has it
+# beside `tools/`; the Modal image drops it at `/root/prompts/digest.md`
+# (`pipeline/weekly.py`'s image list), and this file at `/root/`. Neither path
+# is a guess: both are declared in that image.
+GENERATOR_PATHS = (
+    pathlib.Path(__file__).resolve().parent.parent / "prompts" / "digest.md",
+    pathlib.Path("/root/prompts/digest.md"),
+)
+
+
+def slot_dress() -> tuple[tuple[str, ...], str]:
+    """The banned phrasings, and why the list is empty when it is.
+
+    Returns `(phrasings, complaint)`. A non-empty complaint is a finding in its
+    own right rather than a silent pass: a gate that reports zero defects
+    because it could not read its own rule is the confident zero this
+    repository keeps filing, so the caller warns and the floor still applies.
+    """
+    for path in GENERATOR_PATHS:
+        try:
+            text = path.read_text(encoding="utf-8")
+        except OSError:
+            continue
+        start, end = text.find(SLOT_BAN_OPEN), text.find(SLOT_BAN_CLOSE)
+        if start < 0 or end < 0:
+            return (), (f"{path.name}'s slot-ban paragraph is not where its own "
+                        "sentences say it is, so the derived phrasings were not read")
+        found = tuple(sorted(set(SLOT_DRESS.findall(text[start:end]))))
+        if not found:
+            return (), (f"{path.name}'s slot-ban paragraph quotes no phrasing, "
+                        "so the derived half of this rule read nothing")
+        return found, ""
+    return (), ("prompts/digest.md is not beside this file or at "
+                "/root/prompts/digest.md, so only the hand floor was applied")
+
+
+def slot_heading(heading: str, dress) -> str:
+    """Why one printed heading is the framework's own name, or the empty string.
+
+    Three readings, each of them quoted law rather than taste. They are the
+    canon's, lifted here so the verdict arrives before the send instead of in a
+    grade written afterwards.
+
+    1. The ban's own list: a heading that IS one of the phrasings, or wears one
+       as the label before a colon.
+    2. The prefix, because equality was the whole test until 2026-11-08.
+       `## What to read` was banned, and `## What to read yourself` then served
+       past the list the product had just been patched to hold. One trailing
+       word walked through, so the list is not where this can be held: the
+       phrasing plus a remainder that would be true of every issue is the
+       phrasing.
+    3. The colon. The generator says in its own words that a colon does not
+       launder the label, and 2026-W40 served that construction three times.
+       The shape is the finding and no list of phrasings can hold it, because
+       the laundered label is written fresh each time: `gaining ground` and
+       `genuinely new` are in no list anybody keeps.
+
+    What it deliberately passes is a heading that opens on `What` and then
+    makes a claim. `## What to read if you have one hour` is the generator's
+    own worked answer for that slot and has to survive this.
+    """
+    text = heading.lstrip("#").strip().strip("*_")
+    low = text.lower().rstrip(" .")
+    label = low.split(":", 1)[0].strip() if ":" in low else low
+    for phrase in dress:
+        if label == phrase:
+            return f"the ban's own phrasing, {phrase!r}"
+    for phrase in dress:
+        if label.startswith(phrase + " "):
+            rest = label[len(phrase):].strip()
+            if all(word in SLOT_INVARIANT for word in rest.split()):
+                return (f"the ban's own phrasing, {phrase!r}, plus {rest!r}, "
+                        "which is true of every issue")
+    if ":" in low and low.startswith("what "):
+        return f"a slot label laundered by a colon, {label!r}"
+    return ""
 
 # Ban list 13. Typesetter punctuation. The reader's search box does not match
 # it and neither does an agent loading the issue. 2026-W37 carried 87
@@ -217,14 +336,32 @@ def check(body: str, kind: str = "weekly") -> list[Finding]:
         findings.append(Finding(level, rule, line, detail, entry))
 
     # --- accuracy and structure ---
+    # Two readings of one rule. The floor is the hand list of the generator's
+    # internal labels; the second is derived from the ban itself and catches
+    # the reader-facing paraphrase, which is the shape that actually prints.
+    # They are reported under separate rule names because a log that cannot
+    # tell them apart cannot say which half fired, and the derived half is the
+    # one that was missing.
+    dress, unreadable = slot_dress()
+    if unreadable:
+        add(WARN, "slot-ban-unreadable", 0, unreadable, "19, 20")
     for number, line in enumerate(lines, start=1):
         if not line.startswith("#"):
             continue
         heading = line.lstrip("#").strip().strip("*_").lower()
+        floor = False
         for banned in SKELETON_HEADINGS:
             if heading == banned or heading.startswith(banned + " ") or heading.endswith(" " + banned):
                 add(BLOCK, "skeleton-heading", number,
                     f"{line.strip()!r} prints the generator's own slot label", "19, 20")
+                floor = True
+        if floor:
+            continue   # one defect, one finding; the floor already named it
+        why = slot_heading(line, dress)
+        if why:
+            add(BLOCK, "slot-heading", number,
+                f"{line.strip()!r} is {why}; write the heading from the day's "
+                "news instead", "19, 20")
 
     title = next((line for line in lines if line.startswith("# ")), "")
     if title:

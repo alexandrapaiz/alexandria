@@ -424,3 +424,152 @@ def test_an_intensifier_at_the_end_of_a_line_is_caught_now():
     to carry was standing in for a word boundary, and a line that ends on the
     word has no space after it."""
     assert details("# T\n\nThe gain is very\nlarge.\n", "empty-intensifier") == ["'very'"]
+
+
+# ---------------- ban list 19, 20: the derived heading ban ----------------
+#
+# The writer seat measured on 2026-11-01 that this gate's heading ban and the
+# voice canon's shared no phrase at all, and routed the repair here because
+# `tools/` is pipeline code its charter may not write. The tests below are the
+# half that keeps the repair true. The first one is the important one: it reads
+# the canon's own asserted cases and requires this gate to agree with every one
+# of them, so the two lists cannot drift apart again without a red test.
+
+def _canon():
+    """`docs/voice/check_voice.py`, loaded by path because `docs/` is not a package."""
+    import importlib.util
+
+    path = REPO / "docs" / "voice" / "check_voice.py"
+    spec = importlib.util.spec_from_file_location("check_voice_for_gate", path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def test_the_pre_send_gate_agrees_with_the_canon_on_every_asserted_heading():
+    """The anti-drift test, and the reason this repair is not a ninth hand entry.
+
+    `SLOT_HEADING_CASES` in the canon is the writer seat's statement of what a
+    framework heading is, maintained by the seat that owns the ban's wording.
+    This asserts the gate that can stop a send reaches the same verdict on all
+    of them. Widening the ban there turns this red until the send agrees, which
+    is the whole point: two lists maintained by two seats against one rule is
+    the drift the repair was filed about.
+    """
+    canon = _canon()
+    disagreed = []
+    for fires, heading in canon.SLOT_HEADING_CASES:
+        caught = rules(blocking(f"# T\n\n{heading}\n\nsome body text here.\n"))
+        hit = "slot-heading" in caught or "skeleton-heading" in caught
+        if hit is not fires:
+            disagreed.append(("missed" if fires else "fired on", heading))
+    assert disagreed == [], f"the send and the canon disagree: {disagreed}"
+
+
+def test_the_four_headings_that_were_serving_are_blocking_now():
+    """The measurement in the ledger entry, as a test.
+
+    Every one of these passed this gate while it was on the site. The first
+    three are canon law 12 in its plainest form, the owner's ruling given twice
+    and recorded as incident 20.
+    """
+    for heading in (
+        "## What to read",
+        "## What fell behind: the assumptions that let agents run unchecked",
+        "## What is gaining ground: recursive self-improvement with fewer guardrails",
+        "## What is genuinely new: where memory lives and who can pull the plug",
+    ):
+        assert "slot-heading" in rules(blocking(
+            f"# T\n\n{heading}\n\nsome body text here.\n")), heading
+
+
+def test_the_phrasings_are_read_out_of_the_generator_and_not_kept_here():
+    """A derived list cannot drift, so this asserts it is derived.
+
+    The phrasings must come out of `prompts/digest.md`'s own ban paragraph,
+    which is the span `check_voice.py slotwords` reads. If a future run pastes
+    them into a tuple instead, the intersection check below is what notices.
+    """
+    dress, complaint = gate.slot_dress()
+    assert complaint == "", complaint
+    assert dress, "the ban paragraph yielded no phrasings"
+    generator = (REPO / "prompts" / "digest.md").read_text(encoding="utf-8")
+    span = generator[generator.find(gate.SLOT_BAN_OPEN):
+                     generator.find(gate.SLOT_BAN_CLOSE)]
+    for phrase in dress:
+        assert f'"{phrase}"' in span, f"{phrase!r} is not quoted in the ban itself"
+
+
+def test_the_two_lists_are_still_disjoint_so_the_floor_is_doing_separate_work():
+    """Not a style assertion. The empty intersection is the finding that
+    produced this work, and it is why the hand floor is kept rather than
+    replaced: the internal names are still worth blocking even though nothing
+    prints them."""
+    dress, _ = gate.slot_dress()
+    assert set(dress).isdisjoint(set(gate.SKELETON_HEADINGS))
+    for banned in gate.SKELETON_HEADINGS:
+        assert "skeleton-heading" in rules(blocking(
+            f"# T\n\n## {banned.title()}\n\nsome body text here.\n")), banned
+
+
+def test_the_generators_own_worked_heading_for_the_read_slot_still_passes():
+    """A gate nobody can satisfy does not raise quality, it stops the
+    newsletter. These are the headings law 12 asks for and every one of them
+    has to survive the ban."""
+    for heading in (
+        "## What to read if you have one hour",
+        "## What to read when the week has been long",
+        "## Three papers for anyone wiring memory or kill switches into production",
+        "## Budget-constrained agents can now improve their own harnesses",
+    ):
+        caught = rules(blocking(f"# T\n\n{heading}\n\nsome body text here.\n"))
+        assert "slot-heading" not in caught, heading
+
+
+def test_a_good_issue_is_still_clean_under_the_new_reading():
+    assert blocking(GOOD) == []
+
+
+def test_one_heading_raises_one_finding_even_when_both_readings_could_fire():
+    """The floor and the derived reading are separate rules, so a heading that
+    matches both would otherwise be reported twice. An issue with one defect
+    has one finding."""
+    body = "# T\n\n## Read these yourself\n\nsome body text here.\n"
+    assert len([f for f in blocking(body)
+                if f.rule in ("skeleton-heading", "slot-heading")]) == 1
+
+
+def test_a_generator_it_cannot_read_warns_rather_than_passing_in_silence():
+    """The confident zero, refused. A gate reporting no defects because it
+    could not read its own rule is the class this repository keeps filing, so
+    the unreadable case is a finding and the hand floor still applies."""
+    saved = gate.GENERATOR_PATHS
+    gate.GENERATOR_PATHS = (REPO / "prompts" / "no-such-generator.md",)
+    try:
+        dress, complaint = gate.slot_dress()
+        assert dress == ()
+        assert "only the hand floor" in complaint
+        findings_ = findings("# T\n\n## What to read\n\nsome body text here.\n")
+        assert "slot-ban-unreadable" in [f.rule for f in findings_]
+        assert [f for f in findings_ if f.rule == "slot-ban-unreadable"
+                ][0].level == gate.WARN
+        # and the floor is untouched by the derived half being blind
+        assert "skeleton-heading" in rules(blocking(
+            "# T\n\n## Trailblazing\n\nsome body text here.\n"))
+    finally:
+        gate.GENERATOR_PATHS = saved
+
+
+def test_the_image_the_press_runs_carries_the_generator_this_rule_reads():
+    """The ImportError-on-the-next-cron class, as a merge-time check.
+
+    `pipeline/weekly.py` builds the press's image from a hand list of local
+    files, and this rule now reads one of them at send time. The same list is
+    why `tests/test_law8_url.py` exists. `/root/prompts/digest.md` is the
+    container path in `GENERATOR_PATHS`; if that line ever leaves the image,
+    the derived half of this ban degrades to a warning in a Modal log and this
+    test is what says so first.
+    """
+    weekly = (REPO / "pipeline" / "weekly.py").read_text(encoding="utf-8")
+    assert '.add_local_file("prompts/digest.md", "/root/prompts/digest.md")' in weekly
+    assert pathlib.Path("/root/prompts/digest.md") in gate.GENERATOR_PATHS
