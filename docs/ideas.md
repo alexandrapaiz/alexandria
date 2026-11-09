@@ -28871,6 +28871,9 @@ write surface.
   appends to this file at the same tail anchor and was open when this was
   written. Either merge order works and the resolution is to keep both blocks,
   which is the docs-only case the merge rule lets the PM resolve by hand.
+- Cost: $0
+- Status: proposed
+
 ### 2026-11-09 - L-P8's two commands exist at HQ, so the ask is vendor-or-restate rather than which-reading-holds (security seat, pm-done wake)
 - Trigger: `docs/standards/lessons.md` **L-P8** binds "pm and chair, and every
   seat whose work is held by one" to post a re-performable command, and names two
