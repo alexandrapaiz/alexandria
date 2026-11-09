@@ -124,6 +124,26 @@ def test_an_allowed_new_root_file_is_not_a_stray(repo):
     assert gate.scan(cwd=repo, allow=["pyproject.toml"])["strays"] == []
 
 
+def test_an_allow_that_matched_nothing_is_reported(repo, capsys, monkeypatch):
+    """Silence on a typo would read as a pass.
+
+    `--allow` takes a name rather than a file this tool opens, so nothing in
+    the ordinary path would ever raise on a value that names nothing. The note
+    is the only thing standing between a misspelled allow and a stray that
+    shipped because the gate was told to ignore a different name.
+    """
+    monkeypatch.chdir(repo)
+    monkeypatch.setattr(gate, "ROOT", repo)
+    (repo / ".board.json").write_text("{}\n")
+    git(repo, "add", "-A")
+    assert gate.main(["--allow", ".bord.json"]) == 1
+    captured = capsys.readouterr()
+    assert ".board.json" in captured.out
+    assert "--allow .bord.json matched no addition" in captured.err
+    assert gate.main(["--allow", ".board.json"]) == 0
+    assert "matched no addition" not in capsys.readouterr().err
+
+
 def test_a_root_file_main_already_carries_is_not_an_addition(repo):
     """The two landed instances are `--tracked`'s business, not the gate's.
 

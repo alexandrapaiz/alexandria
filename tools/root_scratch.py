@@ -174,12 +174,15 @@ def scan(staged=True, branch=True, allow=(), cwd=None):
         return {"measured": False, "reason": "no main or origin/main in this clone"}
 
     found = {}
+    root_adds = set()
     if staged:
         for path in _staged_root_adds(cwd=cwd):
+            root_adds.add(path)
             if path not in allowed:
                 found.setdefault(path, []).append("staged")
     if branch:
         for path in _branch_root_adds(ref, cwd=cwd):
+            root_adds.add(path)
             if path not in allowed:
                 found.setdefault(path, []).append("committed on this branch")
 
@@ -187,6 +190,9 @@ def scan(staged=True, branch=True, allow=(), cwd=None):
         "measured": True,
         "baseline": ref,
         "strays": [{"path": p, "where": w} for p, w in sorted(found.items())],
+        # Which `--allow` values actually suppressed something, so the caller
+        # can be told about one that did not.
+        "allowed_seen": sorted(set(allow) & root_adds),
     }
 
 
@@ -238,6 +244,15 @@ def main(argv=None):
     staged = args.staged or not args.branch
     branch = args.branch or not args.staged
     report = scan(staged=staged, branch=branch, allow=args.allow)
+
+    # An `--allow` that matched nothing is a typo or a stale invocation, and
+    # silence would read as a pass. The value is a name and not a file this
+    # tool opens, so nothing else here would ever raise on it.
+    if report.get("measured"):
+        unused = [a for a in args.allow if a not in report.get("allowed_seen", [])]
+        for name in unused:
+            print(f"note: --allow {name} matched no addition at the root",
+                  file=sys.stderr)
 
     if args.json:
         print(json.dumps(report, indent=2))

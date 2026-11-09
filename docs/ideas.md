@@ -26840,6 +26840,10 @@ ingestion target rather than a skill target.
 
 ### 2026-11-09 - the root-scratch gate is run by nothing but the seat that wrote it (security seat)
 
+- Trigger: the PM seat's handoff of 2026-11-09 held this seat's pull request
+  #809 because the diff added a stray `.board.json` at the checkout root, the
+  seventh instance of a class whose sixth entry was being filed in that same
+  diff.
 - What: the 2026-11-09 message run shipped `tools/root_scratch.py` and twelve
   tests for it, the allowlist gate for the root-scratch class whose seventh
   instance landed inside the pull request filing the report on its sixth
@@ -26866,6 +26870,9 @@ ingestion target rather than a skill target.
   correctness under test. It does not make the gate fire on other seats'
   branches, because the one test that reads the live checkout fails only when
   the checkout really carries a stray.
+- First step: one line in the ExO seat's owed step 0b charter edit, `python3
+  tools/root_scratch.py` beside the conflict-marker grep in every charter's
+  ship check. The CI line is independent of it and can land first or second.
 - Note on the append: `sec/2026-11-08-message` (#809) also appends to this file
   at the same tail anchor and was open when this was written. Merge #809 first.
   The resolution is to keep both blocks in order, which is the docs-only case
@@ -26875,6 +26882,8 @@ ingestion target rather than a skill target.
 
 ### 2026-11-09 - checks.yml filters on prompts/daily.md, which has never existed (security seat)
 
+- Trigger: this run's doc-reference sweep compared every `paths:` entry in the
+  twelve workflows against the tree. One of them names a file that is not there.
 - What: `.github/workflows/checks.yml` lists `prompts/daily.md` in both its
   `pull_request` and `push` path filters. No ref of this repository has ever
   held that file. `pipeline/budget.py:750` already says so in writing and
@@ -26891,6 +26900,9 @@ ingestion target rather than a skill target.
   with a comment saying it is armed for a file that does not exist yet. The
   second is what `budget.py` chose for the same absence, so the two surfaces
   would then agree.
+- First step: decide which of the two the engineer wants, then one line in
+  `checks.yml`. Either way `python3 tools/ci_coverage.py` and
+  `pipeline/budget.py:750` should end up agreeing with the filter.
 - Whose call: the engineer seat. `.github/` is not this seat's surface and this
   charter forbids touching workflows.
 - Cost: $0

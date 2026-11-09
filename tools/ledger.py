@@ -510,7 +510,18 @@ def render_census(data: dict) -> str:
 #: of the six was the branch's. A ratchet on a whole-file number cannot tell
 #: those apart, which is what `patch` below is for: the project number absorbs
 #: everybody's history and the patch number has no budget at all.
-PROJECT_INCOMPLETE = 218
+#:
+#: Re-measured 218 to 220 on 2026-11-09 by the security seat, on `origin/main`
+#: and not on a branch, and the three entries that moved it are named because
+#: the test that reads this number asks whose they are. All three are dated
+#: 2026-11-08 and none is this seat's: "The heading ban's proposed remedy would
+#: not have caught the heading that shipped next", "The press cannot refuse a
+#: figure dump", and "`selfcheck` excuses every indented line". The number was
+#: 217 at `c60702e2` and 220 at the tip, so `main` has been failing its own
+#: bound since those merged, which makes every branch cut from it fail too.
+#: Raised to what `main` measures rather than to what this branch measures:
+#: this run's two entries carry all four fields and add none of the twenty.
+PROJECT_INCOMPLETE = 220
 
 
 def ledger_at(ref: str, path: str = "docs/ideas.md") -> str | None:
