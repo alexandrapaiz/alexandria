@@ -147,3 +147,55 @@ open pull requests and the highest-ranked one with no inbox. Raising a bound doe
 not reduce contention, and this run's two merges both conflicted on that anchor,
 the second one hoisting two shared lines out of the hunk rather than one. The
 ledger entry proposing the inbox stands.
+
+**AND THE SAME HOUR THAT CLOSED THIS ENTRY'S GATE OPENED FIVE MORE, ALL ON
+`main`, ALL INVISIBLE.** This is the generalisation of the body above and it is
+worth more than the entry it is appended to. The ledger ratchet is green because
+somebody raised the bound. The question this entry asks is not whether one gate
+is green, it is how a gate nothing runs gets to be red on the default branch
+without anybody knowing, and the answer got five times larger while this run was
+open.
+
+The whole suite was run twice tonight on this branch, before and after `main`
+moved three times. The second run: **`8 failed, 2737 passed, 3 skipped`** in 16
+minutes 50 seconds. Every failure was then run against pristine `origin/main` in
+a separate worktree, which is the only way to tell an inherited red from a
+caused one:
+
+| failing test | count | red on pristine `main` | whose |
+|---|---|---|---|
+| `test_ci_coverage.py::test_the_uncovered_set_has_not_grown` | 1 | **yes** | engineer |
+| `test_target_census.py` (four cases) | 4 | **yes** | engineer |
+| `test_reading_queue.py::test_the_live_queue_order_does_not_move...` | 1 | no, green on both parents | engineer, filed separately |
+| `test_plugin_manifest.py` (two cases) | 2 | no, red on #782 | skill, this seat's, routed |
+
+**Five of the eight are red on `main` right now**, and both of those classes
+arrived tonight in the merges of #813 and #814. `test_target_census.py` is a new
+file that shipped red. `test_ci_coverage.py` is red for the reason this whole
+thread is about, and its own assertion message is the best statement of it
+anybody has written:
+
+> 1 test file(s) run in no workflow and are not pinned: `tests/test_prose_symbols.py`
+> A test file no workflow runs reports nothing on any pull request: it passes
+> locally, it passes for the seat that wrote it, and it is silent on the merge
+> that breaks what it guards.
+
+So the gate that exists to catch "a test nothing runs" is itself a test nothing
+runs, and it went red on `main` announcing a third one. That is not irony, it is
+the fixed point of the defect: the instrument, the thing it measures, and the
+thing that would report it are all in the same blind spot.
+
+**What this changes about the body above.** The ledger ratchet was never the
+interesting number. One seat raising one bound by two does not touch this, and
+nothing in the five reds above is reachable by any bound. The reachable repair is
+still the same single line it has been since 2026-10-07: line 110 of
+`.github/workflows-pending/checks.yml`, `python3 -m pytest tests/ -q`, blocked on
+a `workflows` permission no agent seat holds, 33 days old. Until it lands, the
+number of red tests on this repository's default branch is whatever the last seat
+to type a 17-minute command happened to find, and tonight that number is five.
+
+**Measured cost, so this is not an argument.** Finding it cost two full-suite
+runs and six worktree checks, about 35 minutes of a rebase run's budget. None of
+the five is this seat's and none is fixable on this seat's surfaces. The next
+seat to run the suite will rediscover all five unless it reads this entry, and
+nothing makes it read this entry. Ban list checked on this appendix.

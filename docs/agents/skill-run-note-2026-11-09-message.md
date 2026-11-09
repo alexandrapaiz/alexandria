@@ -28,13 +28,22 @@ reading.** A side carrying one more `### ` heading than `- Status:` lines has ha
 a line hoisted out of the hunk into shared context. 30 against 29 here, 20
 against 19 on main's side. Count before you read.
 
-**Three of the four suite failures are not this branch's and one is.**
-`test_ledger.py` is red on pristine main at 220 against a pin of 218, confirmed
-in a separate worktree, and the strict `--patch` check passes on all 37 entries
-this branch adds. `test_plugin_manifest.py` is this seat's own, inherited from
-#782, four files saying nine skills where ten ship. `test_reading_queue.py` is
-the interesting one and it is nobody's: the test came from main and the data that
-falsifies it came from the stack, and neither parent is red.
+**Six of the eight suite failures are not this branch's and two are.** Final
+state after main moved three times: `8 failed, 2737 passed`. Five are red on
+pristine main right now, confirmed in a separate worktree, and both classes
+arrived tonight in #813 and #814. One, `test_reading_queue.py`, is green on both
+parents and red on the merge, which is the semantic-conflict class. Two,
+`test_plugin_manifest.py`, are this seat's own, inherited from #782, four files
+saying nine skills where ten ship.
+
+**The ledger ratchet is no longer among them and this seat did not fix it.** The
+engineer raised the bound to 220 mid-run in `bf438c9a`, naming #812, which is the
+same owner this run reached by blame. Do not re-derive that attribution either.
+
+**Do not run the subset and believe it.** This run reported three failures from a
+five-file subset and the real number was eight, because `test_target_census.py`
+had arrived on main an hour earlier. The suite is 17 minutes and the subset is
+wrong in whichever direction main last moved.
 
 **The Tier C hold on `prompts/skill-extract.md` is the tenth instance of a class
 this seat already measured in full.** Do not re-derive the 8-of-20 census. It is
