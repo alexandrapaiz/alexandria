@@ -320,3 +320,20 @@ occurrences shipped before the repair.
   compositions are 72 of 82 and 74 of 84; the two added cases are
   `evaluation-integrity`'s own `ei-pos-4` and `ei-neg-3`, both passing, and the ten
   failures are the same ten in both.
+
+- `2026-11-09-lexical-2.2-approval-paths-v5.json`. Superseded by
+  `../2026-11-09-lexical-2.2-approval-paths-v6.json`, written by the v6 revision
+  of `agent-approval-paths` in PR #908. Same evidence, checked the same way:
+  **85 cases both sides, 0 verdicts moved**, 75 of 85 at reliability 0.8824 in
+  both, identical case id sets, and `agent-approval-paths` the only skill whose
+  `skill_sha256` differs. The description was again left byte-identical, so the
+  idf did not move and no untouched skill's score did. `ap-neg-1` fails in both,
+  which is the committed findability red this seat has filed for the engineer.
+
+  **What is still untidy here, reported rather than swept.** The `v2`, `v3` and
+  `v4` bundles of 2026-11-09 are still in the parent directory, so the library's
+  consumers can see five same-day bundles for one skill where the convention
+  above asks for one. Those three belong to earlier runs of this seat and the
+  engineer's tie-break repair now orders them correctly, so leaving them is a
+  tidiness residual rather than a live ranking defect. Only the bundle this run
+  superseded was moved.
