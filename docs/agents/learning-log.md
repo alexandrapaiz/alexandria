@@ -11861,3 +11861,163 @@ can tell you so.
 3. **Run the grading command on any new guard this seat ships.** The charter
    section added tonight names it. The cheap version is the field-null census in
    this entry: it is one `curl` and one loop, and it graded four arms at once.
+
+## 2026-11-09, message wake (branch `alexandria-exo/2026-11-09-message-inbox`, PR #824) — the finish-early remedy buys nothing, and a register measured absence against a rolling month
+
+**Mode: wake run.** §0's detector was run before anything was spent and
+returned `THE SLOT WAS SWALLOWED AND THE CYCLE IS OWED` for
+`2026-11-09T01:00:00Z`. Two events in the payload: `pr.merged` on this seat's
+#813, and a `handoff` from `alexandria/pm` warning that the relay page and the
+learning log now carry a merged entry ahead of this seat's two open pull
+requests. A standing condition rode along naming #819 a draft.
+
+Draft opened at turn 4, before the preflight, per the charter banner.
+
+### 0. The standing condition was already discharged, and confirming it cost one call
+
+The condition named #819 as an open draft with no live run behind it, read at
+00:40Z and 00:41Z. `GET /api/standing?company=alexandria&seat=exo` returns
+`{"empty": true}`. #819 was readied **by the owner at 00:40:33Z** — the same
+minute the condition was generated — and is `MERGEABLE/CLEAN` at head
+`0d5589a2` read 00:51Z. Nothing to do. The standing block's own instruction to
+confirm a condition live before spending a turn on it is the reason this is one
+paragraph instead of a wasted survey; it has now paid off twice in two days.
+
+### 1. The handoff was right, and it understated one of the two by a whole class
+
+The PM said both open pull requests append to the relay page and the learning
+log at the same anchor and need a keep-both resolution rather than a revert.
+True of #806, which is docs only: two conflicts, both pure appends at the tail,
+both sides kept in date order, nothing edited but the six marker lines. Head
+`6b088317`, `MERGEABLE/CLEAN` at 00:59Z.
+
+**#810 had four conflicts, and two of them were not that shape.**
+`tools/cron_firing.py` and `tests/test_cron_firing.py` conflicted because that
+branch and main's `ed550b7f` are **two independent fixes for the same defect**
+— the monthly spend cap being read off the weekly clause inside its own
+sentence — written hours apart by two seats, and they chose different names for
+the class: `spend-limit` on the branch, `monthly-spend` on main.
+
+Keep-both there would have shipped two names for one refusal class, which is
+the same defect one layer up. The resolution is not a judgement call either,
+because one name has consumers and the other does not:
+`tools/provider_cycle.py` reads the literal `monthly-spend` at six call sites
+and nothing anywhere reads `spend-limit`. So main's name and control flow were
+taken whole, and what the branch had measured that main's copy does not say was
+folded in: that the old chain answered `weekly-limit` for 257 of 257 and
+`unclassified-429` for none, so no surface had a row to be curious about; that
+74 of the 177 slot refusals that file exists to name were among them; the
+second real variant of the sentence, with no date on the weekly clause, which
+main's test never feeds it; and a test that pins the branch order against a
+synthesised both-walls sentence rather than against two that happen to say
+`monthly` first. 118 tests pass. Head `e75ef9b9`, `MERGEABLE/CLEAN` at 00:59Z.
+
+One thing deliberately dropped: the branch also matched `spend cap`, which no
+observed provider sentence contains. Widening a classifier on an unobserved
+string is the shape of the defect it was fixing.
+
+**The lesson is for the warning and not for the PM, whose warning was the
+reason either of these was looked at before the owner hit them.** A conflict
+notice that names the files is worth sending and this one was. But *"needs a
+keep-both resolution"* is a claim about the **shape** of a conflict, and it can
+only be made by opening it. On two branches appending to the same two
+registers, one was keep-both and the other was keep-both in half its files and
+pick-one in the other half, and the half that needed picking was the half where
+getting it wrong ships a second name for a thing that already has one. So:
+**name the files, and say which ones you opened.** A resolution prescribed for
+files nobody read is a guess wearing the authority of a warning.
+
+### 2. The item in the lane: class A closes, and on evidence from a file no charter names
+
+The duty-classes card has been the only Backlog row in this lane since
+2026-10-24. The 2026-11-01 entry left two class A rows open and handed both
+explicitly to "the next run of this seat". Both are now read and **all three
+class A rows are closed**, so the card is down to class B, the one half this
+seat may not settle for itself.
+
+Security closed on a merge: #657, the pull request the rescued slot opened, is
+`MERGED 2026-11-02T01:13:17Z`.
+
+Market did not close on its gate. Its third slot fired on time at
+`2026-11-06T11:00:10Z` and was refused at turn one — by the **monthly spend
+cap**, not the weekly limit. That matters because the re-date rule written on
+2026-11-01 says a refused slot re-dates the gate, and that rule was written
+against the weekly pool, whose character is that it ends on a boundary. A spend
+cap has no boundary. Re-dating past one is not waiting for a remedy. Market has
+fired three slots, consumed zero gates, and no refusal was its own fault.
+
+**What closed it was `audit.jsonl`:** market has two clean runs, `2026-09-24`
+exit 0 at 75 turns and `2026-09-30` exit 0 at 118 turns. The seat works. What
+has never completed is a slot of the clock the host took on 2026-10-23.
+
+### 3. The finding: the register measured absence against a rolling month
+
+The log root is pruned at **31 days**. No file under
+`/srv/asc/state/.epito/logs` is dated before `2026-10-09T06:20Z`, for any seat
+of any company, read 2026-11-09. `audit.jsonl`, in the same directory, reaches
+`2026-09-24T02:57:31Z` across 13,663 rows.
+
+`docs/agents/unowned-duties.md` carried three readings against market — *"has
+not run since 2026-10-17"*, *"0 runs and 0 pull requests"*, *"never"* — every
+one measured on the log root. The 2026-11-01 entry read market's directory,
+reported three logs and quoted two of them by date: `2026-10-05` and
+`2026-09-30`. **Those two files are gone.** The directory holds two logs today
+and neither is them. They are the runs that would have closed market's row
+eight days ago.
+
+So the entry was right when it was written, is unreproducible today, and
+nothing marked the moment it stopped being checkable. **A register that
+measures absence against a pruned source converts its own findings into claims
+nobody can falsify, silently.** The general rule, now in the charter beside the
+two sections that already tell a run to distrust an instrument's argument and
+its subject: **read its floor before you believe a `never`.** An instrument
+whose horizon is shorter than the question answers "never" and "not in the last
+month" with the same word.
+
+This is the third instance of one shape — the evidence existed, in a readable
+file on the same host, and the surface that needed it was pointed somewhere
+else. The first two are
+`INC-2026-10-24-the-receipt-we-asked-for-was-built-and-no-charter-was-pointed-at-it`
+and §2a-0's board-versus-Actions correction.
+
+### 4. The cycle: four consecutive owed slots, and the reason three runs gave is measured and wrong
+
+`2026-11-09T01:00:00Z` fired with `coalesced: true` and started no run. It was
+coalesced into **this run**, which began at `00:49:33`, eleven minutes before
+the slot.
+
+The three runs before this one each declined their cycle on the same reason: a
+long run of this seat swallows its own cadence, so finish early and leave the
+daemon empty for the slot. **Measured off `audit.jsonl` across the two hours
+before each of the two owed slots, every `run.end` row shares its timestamp to
+the second with a `run.start` row** — ten transitions, ten gaps of zero
+seconds. The queue refills the daemon instantly. Finishing early does not open
+a window at the slot; it starts the next queued message sooner and the slot is
+coalesced into that run instead.
+
+So the remedy was never available, and it was recorded three times as a
+considered choice. Two things follow. The charter's §0 now says **the run a
+slot is coalesced into is the run that owes the cycle** — it is the only run
+that exists at the slot instant and no later one will be woken for it — and a
+run that genuinely cannot take the cycle declines it on budget, in those words,
+rather than on a mechanism that buys nothing. And the structural half went back
+to HQ as a re-send of Ask 1 of 2026-11-02, this time with the ten zero-second
+gaps attached, because the first version asked without measuring and was easy
+to read as a preference.
+
+**This run did not take the cycle either**, and the honest reason is budget: it
+went to the two events it was woken for. 2026-W46's sweeps for this seat have
+not happened. The slot is recorded in the cycle register as **held** rather
+than lost, because at 01:03Z nothing had displaced it and the refinement added
+on 2026-11-02 reserves `cycle-lost:` for a slot no later `cron` run starts for
+at all. Publishing `lost` now would be the 2026-11-01 mistake in a new file: a
+verdict at the moment its subject is freshest.
+
+### 5. One red on `main`, and it is not this seat's
+
+`tests/test_ci_coverage.py::test_the_uncovered_set_has_not_grown` fails on
+`origin/main` at `fcc56889`, naming `tests/test_prose_symbols.py` as a test
+file no workflow runs. Reproduced on a clean checkout of `main` before either
+of this run's merges, so neither #806 nor #810 may be held on it. 429 of 430
+pass. Flagged, not fixed: the remedy it names is a `.github/workflows/` edit
+and this seat does not touch workflows.

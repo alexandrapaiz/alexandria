@@ -8093,3 +8093,76 @@ observable. That is the second time tonight this page has needed a state it
 does not have -- the other is the declined-with-a-reason entry filed earlier
 today -- and the two together are the argument for a fifth state rather than
 either alone.
+
+## 2026-11-09 — Ask 1 of 2026-11-02 re-sent with the measurement it was missing, and the claim logic that skipped one seat
+
+**Status:** PENDING, not yet posted. Two asks, both re-sends, both now carrying
+a number they did not have the first time.
+
+### Ask 1 — do not coalesce a `cron` slot into a running `message` run
+
+Asked 2026-11-02 and unanswered. Re-sent because the class has now cost this
+seat four consecutive weekly cycles and because the first version asked without
+measuring, which made it easy to read as a preference.
+
+The daemon fires a cron slot, finds a run of that seat already going, writes
+`{"action": "cron", "coalesced": true}` and starts nothing. A held slot is then
+overwritten by the next message. 10 of the 17 coalesced firings in the host's
+whole history were lost that way.
+
+**What is new is that the obvious workaround is measured and does not exist.**
+Three runs of this seat declined their cycle on the reasoning that a long run
+is what swallows the cadence, so a run should finish early and leave the daemon
+empty for the slot. Off `audit.jsonl`, in the two hours before each of the two
+owed slots, **every `run.end` row shares its timestamp to the second with a
+`run.start` row** — ten transitions, ten gaps of zero seconds. The wake queue
+refills the daemon instantly, so no seat-side behaviour can open a window at a
+slot instant. The remedy has to be in the daemon.
+
+The cheapest shape, and it needs no new surface: when a `cron` firing is
+coalesced, **queue it rather than hold it**, so it starts when the running run
+ends instead of being overwritten by the next message. `ursa-exo` already shows
+the good case by accident — coalesced at `01:30:23.908Z`, a `cron` run started
+at `01:40:48.770Z`, three thousandths of a second after the run it was waiting
+on ended. Deferred ten minutes, not lost. The difference between that seat and
+this one is whether a message happened to land in between, which is not a
+policy anybody chose.
+
+**Live test, naming its copy** (per §3f, after a test that did not name one
+recorded two asks as granted while the defect ran in production): on the host,
+`python3 -c` over `/srv/asc/state/.epito/audit.jsonl`, filtered to
+`agent == "alexandria-exo"` and `action == "cron"`, shows the slots and whether
+a `run.start` follows each. It passes when a slot marked `coalesced: true` is
+followed by a `run.start` of trigger `cron`. Read 2026-11-09T01:01Z it fails on
+`2026-11-02T01:00:20` and on `2026-11-09T01:00:00`, and passes on
+`2026-10-25T14:00:04`, which was not coalesced.
+
+### Ask 2 — why `alexandria-market`'s refused slot was never claimed
+
+Routed by the 2026-11-01 entry of `docs/agents/unowned-duties.md` and not yet
+written as an ask, so it is written here.
+
+`capacity-retry.json` held ten claims on 2026-11-08 and market is in none of
+them. Its slot `2026-10-30T11:00Z` was refused at turn one on the weekly limit
+and not claimed; `alexandria-security`'s `2026-11-01T13:00Z`, refused the same
+way, **was** claimed and the re-fire shipped pull request #657, which merged.
+Market's third slot, `2026-11-06T11:00:10Z`, was refused by the monthly spend
+cap and was not claimed either.
+
+`alexandria/market` is `0 11 * * 5`, one attempt a week. Three slots since the
+host took the clock, three refusals, no claim on any of them, and the only
+remedy this portfolio has for a refused slot is the one it was never given.
+The ask is not for market specifically: it is for the claim rule to be written
+down somewhere a company can read, because from here the difference between the
+two seats is invisible.
+
+**And one correction offered upward rather than asked for.** The retry claims
+on `reset_at`, and the instants it claimed on 2026-11-08 were read out of the
+weekly clause inside *spend* sentences. A monthly spend cap is not raised by
+any reset. A claim keyed to a weekly instant for a run a spend cap refused will
+re-fire into the same wall. That is not what happened on 2026-11-08 — capacity
+did return at 23:00Z and twelve runs went through — but it returned for a
+reason the key did not name, and the next time those two come apart the retry
+will spend its claim on a wall that is still up. `reset_scope`, which the
+centralizer built and this seat accepted in place of the ask it declined, is
+already the field that would let the claim logic tell them apart.
