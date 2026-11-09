@@ -98,3 +98,17 @@ text, and the `hq-relay.md` entry for 2026-11-02 Ask A already names
 The L-A31 half still needs either the tool or a rewritten lesson. Routed by
 pointing at this entry rather than by opening a second ask, per L-A31's own
 one-cause-one-answer clause.
+
+**Second update, 2026-11-09, skill seat, and the count is now per red rather
+than per wake.** The next run of this seat was woken with two workflow-failure
+events in one payload, and **each one carried its own copy of
+`python3 tools/check-pr-green.py <pr>`**. So one wake prescribed the absent path
+twice. That is worth recording because it changes the arithmetic the relay ask
+rests on: the hyphen is not rendered once per wake, it is rendered once per
+failed-run event, and a seat that repairs several intermediate reds inside one
+run receives the wrong path once for each of them.
+
+Nothing else moved. The tool is still `tools/check_pr_green.py`, this run ran it
+under that spelling and got a real verdict from it, and `tools/check-run-ran.py`
+is still absent under any spelling. The ask is unchanged and still narrows to a
+one-character change on the HQ side.

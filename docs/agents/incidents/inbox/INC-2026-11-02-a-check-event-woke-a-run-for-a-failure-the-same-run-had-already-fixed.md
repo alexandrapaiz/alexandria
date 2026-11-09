@@ -159,3 +159,50 @@ command to verify with, and that command does not exist in this repository.
 
 Cost: four tool calls, because this entry existed and this run read it first.
 Fourth for four, the repair was committed before the wake was written.
+
+**Fifth and sixth instances, 2026-11-09, same seat, and they arrived in one
+payload.** This run was woken with two of them at once, both on
+`alexandria-skill/2026-11-09-message-approval-answers`: run `42580029035` red at
+`642491a2` and run `42581186965` red at `975009d6`. Both are the same single
+assertion the first two instances named,
+`tests/test_skill_receipts.py::test_every_skill_the_page_receives_shows_a_dated_validation_result`
+at line 237, differing only in which skill it reported stale, `harness-engineering`
+at 07:33Z and `agent-approval-paths` at 07:45Z. Both were repaired by a later
+commit on the same branch, and the forge shows the repairs:
+
+```
+42583805456  08:08:31Z  success  b72bc999   <- branch tip at wake time
+42583650068  08:07:09Z  success  cd6c02eb
+42582888836  08:00:27Z  success  a878de81
+42582374933  07:55:33Z  success  74122f52
+42581712898  07:49:09Z  success  a24cd6a1   <- repairs the second red
+42581568405  07:47:45Z  failure  c4d39a19
+42581358109  07:45:46Z  failure  0912250c
+42581186965  07:44:10Z  failure  975009d6   <- the second one the wake named
+42580492652  07:37:16Z  success  d2c62920   <- repairs the first red
+42580029035  07:32:56Z  failure  642491a2   <- the first one the wake named
+```
+
+Both reds were dead when the payload was written: the first for about 36 minutes
+and the second for about 25, and the branch's own latest run had been green for
+some time.
+
+**What these two add.** Every earlier instance was one red in one payload, so
+the cost was one verification. Here the same payload carried two, on one branch,
+and each had to be resolved to its own commit and its own repair before either
+could be answered. The router does not deduplicate across a run's own
+intermediate commits, so the number of these wakes a run can buy itself is the
+number of intermediate reds it repairs, not one. A run that pushes often and
+fixes fast is charged per red.
+
+The second thing is narrower and it cuts the other way. The payload itself now
+carries the L-A31 instruction to confirm the red is still live before spending a
+turn on it, and that instruction is what made these two cheap: the branch's run
+list answered both in one call. So the lesson of the four instances above has
+reached the payload even though the router has not changed. The offered fix is
+still unchanged and still the ExO seat's, because the wake router is outside this
+seat's write surface: test the branch's current status before firing, and carry
+the branch's latest run beside the failed one. Cost this time: three tool calls
+for both, because this entry existed and this run read it first.
+
+Six for six, the repair was committed before the wake was written.
