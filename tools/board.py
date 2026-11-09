@@ -511,10 +511,25 @@ def answered_note(message, by_id=None):
 
     The server half is HQ's `runtime/board/api.py` and goes through the relay.
     This half is the reader, which is what this repository owns.
+
+    `by_id` must carry the answering replies, and they are not in an inbox.
+    `read_messages` sends `to_seat`, so the bus never returns a letter
+    addressed to anybody else, and an answering reply is by definition
+    addressed to the seat that sent the message being marked. The first
+    version of this function was handed the inbox's own buckets and its
+    verification branch was therefore dead on every real message: every claim
+    read "unverified" and the two that could have been contradicted were not.
+    `answering_replies` below is what makes it live, and `by_id` of None is
+    reported as "not checked" rather than as "unverified", because those are
+    different states and this whole class is about not merging them.
     """
     marked = message.get("answered_by") or {}
     if not marked:
         return None
+    if by_id is None:
+        return (f"answered by {marked.get('by') or '?'} "
+                f"({str(marked.get('message') or '?')[:8]}) PER THE SERVER, "
+                f"not checked: the answering reply was not read")
     reply_id = marked.get("message")
     who = marked.get("by") or "?"
     reply = (by_id or {}).get(reply_id)
@@ -528,6 +543,39 @@ def answered_note(message, by_id=None):
                 f"you skip this")
     return (f"answered by {who} ({short}) PER THE SERVER, unverified: that "
             f"reply does not say which message it answers")
+
+
+def answering_replies(messages, since_hours, limit=500, env=None, opener=None):
+    """The replies named by any `answered_by` in `messages`, by id.
+
+    One extra read of the bus, unfiltered by addressee, because the thing to
+    be checked is never in the caller's own inbox. Returns `None` rather than
+    an empty dict when the read fails, so the caller says "not checked"
+    instead of "unverified": a failed call is this tool saying nothing, and an
+    empty result is it saying nothing was found. The two are the same bytes and
+    they are not the same answer.
+
+    Skipped entirely when nothing in `messages` is marked, so a seat with a
+    clean inbox pays for no second call.
+    """
+    wanted = {(m.get("answered_by") or {}).get("message")
+              for m in messages if m.get("answered_by")}
+    wanted.discard(None)
+    if not wanted:
+        return {}
+    try:
+        answer = api(
+            "/api/messages?" + urllib.parse.urlencode(
+                {"since_hours": since_hours, "limit": limit}),
+            env=env, opener=opener,
+        )
+    except BoardError as exc:
+        print(f"board: could not read the answering replies ({exc}), so every "
+              f"answered_by below is reported unchecked rather than guessed",
+              file=sys.stderr)
+        return None
+    return {m.get("id"): m for m in (answer.get("messages") or [])
+            if m.get("id") in wanted}
 
 
 def render_inbox(buckets, seat, company, show_broadcast=False, width=100,
@@ -1249,10 +1297,11 @@ def cmd_inbox(args):
             indent=2, sort_keys=True,
         ))
     else:
-        # Every message in the window, including the ones in `theirs`, because
-        # an answering reply is usually addressed to somebody other than the
-        # reader of this inbox.
-        by_id = {m.get("id"): m for group in buckets.values() for m in group}
+        # The answering replies come from a second, unfiltered read, because
+        # `read_messages` sends `to_seat` and an answering reply is addressed
+        # to somebody else by definition. Its own docstring already said the
+        # bus returns no other seat's mail.
+        by_id = answering_replies(messages, args.since_hours)
         print(render_inbox(
             buckets, seat, company, show_broadcast=args.broadcast,
             truncated=truncated, by_id=by_id,

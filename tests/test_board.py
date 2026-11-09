@@ -1578,10 +1578,18 @@ def test_a_reply_that_says_nothing_is_called_unverified_and_not_answered():
         assert "does not say which message it answers" in note
 
 
-def test_the_note_survives_a_reply_outside_the_window():
-    """`by_id` of None still prints the claim, because hiding it is the bug."""
+def test_the_note_survives_a_reply_that_was_never_read():
+    """The claim still prints, because hiding it is the bug this closes.
+
+    What it prints is "not checked" rather than "unverified", and the three
+    states are pinned by
+    `test_a_reply_that_was_not_checked_is_not_checked_rather_than_unverified`
+    below.
+    """
     message = {"id": "aaa", "answered_by": {"by": "x/pm", "message": "bbb"}}
-    assert "unverified" in board.answered_note(message, None)
+    note = board.answered_note(message, None)
+    assert "PER THE SERVER" in note
+    assert "not checked" in note
 
 
 def test_the_rendered_inbox_carries_the_note_and_is_silent_without_the_field():
@@ -1598,3 +1606,63 @@ def test_the_rendered_inbox_carries_the_note_and_is_silent_without_the_field():
                                             "data": {"answering": "ccc"}}})
     assert "PER THE SERVER" in out
     assert out.count("answered by") == 1, "the unmarked message grew a note"
+
+
+# --- the second read, because the reply is never in the inbox ---------------
+#
+# The first version of answered_note was handed the inbox's own buckets, and
+# its verification branch was dead on every real message: read_messages sends
+# to_seat, so the bus never returns a letter addressed to anybody else, and an
+# answering reply is addressed to the sender of the message being marked. Every
+# claim read "unverified" and nothing could ever be contradicted. Caught by
+# running the tool against the live board rather than by this suite.
+
+
+def test_a_reply_that_was_not_read_is_not_checked_rather_than_unverified():
+    """Three states and not two, which is this whole class in one function.
+
+    `None` means the replies were not read. An empty mapping means they were
+    read and this one was not among them. Those are the same bytes and they are
+    not the same answer.
+    """
+    message = {"id": "aaa", "answered_by": {"by": "x/pm", "message": "bbb"}}
+    assert "not checked" in board.answered_note(message, None)
+    assert "unverified" in board.answered_note(message, {})
+
+
+def test_nothing_marked_means_no_second_call_at_all(monkeypatch):
+    """A clean inbox must not pay for a read it has no question for."""
+    def refuse(*a, **k):
+        raise AssertionError("the bus was read with nothing to check")
+    monkeypatch.setattr(board, "api", refuse)
+    assert board.answering_replies([{"id": "a"}], 6) == {}
+
+
+def test_the_second_read_returns_only_the_replies_that_were_named(monkeypatch):
+    messages = [{"id": "a", "answered_by": {"message": "r1"}},
+                {"id": "b", "answered_by": {"message": "r2"}},
+                {"id": "c"}]
+    rows = [{"id": "r1"}, {"id": "r2"}, {"id": "unrelated"}]
+    seen = []
+
+    def api(path, **kwargs):
+        seen.append(path)
+        return {"messages": rows}
+
+    monkeypatch.setattr(board, "api", api)
+    found = board.answering_replies(messages, 6)
+    assert sorted(found) == ["r1", "r2"]
+    # Unfiltered by addressee on purpose: the thing being checked is never in
+    # the caller's own inbox.
+    assert "to_seat" not in seen[0]
+
+
+def test_a_failed_second_read_is_not_checked_and_says_so(monkeypatch, capsys):
+    """A failed call must not arrive as an answer, which is the class itself."""
+    def refusing(path, **kwargs):
+        raise board.BoardError("the board's database is unreachable")
+
+    monkeypatch.setattr(board, "api", refusing)
+    assert board.answering_replies(
+        [{"id": "a", "answered_by": {"message": "r1"}}], 6) is None
+    assert "could not read the answering replies" in capsys.readouterr().err
