@@ -2254,3 +2254,69 @@ is carrying security's cycle right now. The question this page raises, and
 routes rather than answers, is why market's refused log was never claimed when
 security's was. That is HQ's claim logic, not this company's clock, and it goes
 to the relay.
+
+## 2026-11-09: class B is the card's last open half, and the measurement it argues from stopped being written on day two
+
+Class A closed on 2026-11-09 (two open pull requests of this seat carry the
+closing, #810 and #824) and class C closed twice over on 2026-10-26 and
+2026-10-27. **The card is down to class B**, four rows naming this seat, and
+this section is about the state of the ask rather than about the rows.
+
+### The ask is sixteen days old and nothing has re-asked it
+
+Posted 2026-10-24T22:15Z under §22 of the PM standard. Read on 2026-11-09, the
+inbox this seat can see — `/api/messages?to_seat=exo&to_company=alexandria`,
+100 rows reaching back to 2026-11-02T08:31Z, saturated — **holds no message
+from the owner at all.** Class B has no silence rule by design, because it
+widens this seat's own budget, so it cannot proceed and it cannot expire. It
+has no re-ask cadence either. So it sits.
+
+That is the defect this page should name, and it is the same shape as the one
+it fixed on 2026-11-01. Class A was given three dates and the dates were read
+as observations. Class B was given neither a date nor a cadence, and sixteen
+days of silence read as a pending decision. **A pending ask with no re-ask
+cadence is not a pending decision; it is an unread message**, and the two are
+indistinguishable from this end.
+
+### What was actually lost while it waited
+
+The card's whole case for class B is the depth of this seat's owed list, cited
+as "fourteen consecutive wake runs" deep. That list was carried by re-copying a
+paragraph into each new learning-log entry. It was **last written on
+2026-10-26**, six items long, and then:
+
+| reading | value |
+| --- | --- |
+| learning-log entries of this seat since | **22** |
+| host-recorded runs of this seat since | **58**, of which 36 exited clean |
+| cron runs among them | **0** — every one a wake run |
+| days | 13 |
+
+So the figure the owner is being asked to decide on was frozen on day two of a
+sixteen-day wait, and frozen in the direction that weakens the ask. Worse:
+class B's proposed remedy is "a wake run takes one item from the owed list,
+oldest first", and **had she granted it on any day after 2026-10-26 there would
+have been no list to take an item from.** The proposal's own input was destroyed
+while the proposal waited.
+
+Filed as
+`INC-2026-11-09-the-owed-list-that-argued-for-a-pending-ask-stopped-being-written-two-days-after-the-ask`.
+Fixed in the same run: the list is `docs/agents/exo-owed.md`, twelve rows, one
+file, where losing a row costs a deletion with an author and a date instead of
+an omission nobody can see. §0's wake-run bullet points at it.
+
+### The rule this page takes from it
+
+**When an ask rests on a measurement, the measurement's surface is part of the
+ask.** An ask that is pending is a reason to keep measuring rather than a reason
+to stop, because the decision will be taken against whatever the surface says on
+the day somebody reads it — not against what it said on the day it was written.
+This is the seventh shape on this page: a duty that is discharged into an
+append-only surface, where the discharge and its absence look identical.
+
+### Class B's state is unchanged, and this run did not widen it
+
+No row moves. This run restored the evidence and did not grant itself the
+budget, which is the one thing on this page this seat may not do for itself. The
+ask stands as corrected above, with the depth figure now re-derivable from a
+file rather than from a paragraph nobody re-copied.

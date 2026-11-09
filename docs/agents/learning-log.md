@@ -10861,3 +10861,159 @@ written down, and never applied.
    2026-11-08T23:27:33Z, `pr_url` #808. Not a refusal. §2b's own note says the
    day's failure count cannot read the word the host writes for a timeout, so
    this one is visible only in the exits.
+
+## 2026-11-09, message wake (branch `alexandria-exo/2026-11-09-message-lane`, PR #836) — the lane's two stalled items were stalled by the queue, and the list that argued for one of them had stopped being written
+
+**Mode: wake run.** Trigger `message`. The wake said PR #830 had merged and
+asked for the next item in this seat's lane on the board. It names no cron slot
+and no `week.started` wording, so §0's doorbell branch does not apply and the
+re-fire branch does not either. So: the event's work, the §2b failure sweep, the
+§3f **Outstanding with HQ** heading, the §6 entry, and **one** improvement.
+**Skipped and named because the rule requires it:** the register-gate sweep, the
+unowned-duty hunt, the public-claim sweep, the queue re-verification, the
+owner-as-seat audit, the §5b repository sweep.
+
+**Ship-first: branch at turn 4, push and draft at turn 6**, from the wake text
+and the charter banner alone, before §0 was read. The branch name the dispatch
+gave was taken, along with four suffixes of the same day; `git branch -r` showed
+none of them because the clone ships with a `main`-only refspec, and the push
+was refused as a non-fast-forward. Widening the refspec first would have cost
+nothing. **`git ls-remote --heads origin '<prefix>*'` answers the question the
+local branch list cannot**, and it is the right preflight for a seat whose
+dispatch prompt says "append a short suffix if it exists."
+
+### What this run took, and the lane had exactly one open item
+
+The board's `exo` lane holds one Backlog row, the duty-classes card. Class A
+closed on 2026-11-09 in two open pull requests of this seat, class C closed
+twice in October, so **the card is down to class B** — four rows naming this
+seat, with the owner since 2026-10-24T22:15Z, and the one half this seat may not
+settle for itself because it widens its own budget.
+
+So the taken item is class B's *state*, which turned out to be two findings.
+
+### 1. The list class B argues from stopped being written two days after the ask
+
+Class B's whole case is the depth of this seat's owed list, cited on the card as
+"fourteen consecutive wake runs" deep. The list was carried by re-copying a
+paragraph into each new entry of this file. **It was last written on 2026-10-26,
+six items long.** Since then: **22 entries of this seat, 58 host-recorded runs,
+36 of them clean, every one a wake run, thirteen days.** Eight of those runs took
+a board lane item and three have run notes titled "the lane item". Nothing
+noticed.
+
+The mechanism is the keeper, and it is about the medium rather than anybody's
+care. **A list that survives only by being re-copied has exactly one failure
+mode and it is silent:** an entry that omits it is indistinguishable from an
+entry written on a day when nothing was owed. No diff shows a deletion, because
+nothing was deleted. No check can fire, because there is no declared place for
+the row to be missing from. It survived 21 entries on diligence and died on the
+22nd without a trace.
+
+The sharper half is about the remedy. Class B proposes that "a wake run takes
+one item from the owed list, oldest first." **Had the owner granted it on any
+day after 2026-10-26, there would have been no list to take an item from.** A
+proposal waiting on a decision had its own input destroyed while it waited.
+
+Fixed: `docs/agents/exo-owed.md`, twelve rows restored from the list's last two
+writings, in one file where losing a row costs a deletion with an author and a
+date. Every row is marked `unverified` with the date it was last *confirmed*
+owed, because thirteen days passed in which some may have been discharged and
+this page's own rule since 2026-11-01 is that **a date is not an observation**.
+This run's one improvement is the §0 pointer at it.
+
+Filed as
+`INC-2026-11-09-the-owed-list-that-argued-for-a-pending-ask-stopped-being-written-two-days-after-the-ask`.
+The rule to carry: **when an ask rests on a measurement, the measurement's
+surface is part of the ask.** Pending is a reason to keep measuring, because the
+decision gets taken against whatever the surface says the day it is read.
+
+### 2. The queue is served newest-first by construction, and it is why both of this seat's stalled items are stalled
+
+`tools/pr_backlog.py --fetch --age-hours 48 --since 2026-11-08T23:00:00Z`, new
+in this run with 15 tests:
+
+| reading | value |
+| --- | --- |
+| open pull requests | 63 |
+| open longer than 48 h | **40** |
+| oldest | **#483, 365 h — fifteen days** |
+| merges since the 2026-11-08T23:00Z reset | 13 |
+| of those, from the 40 | **2** |
+| of the 40, draft or hold-labelled | **0** |
+
+None of the forty is held; they are unlooked-at. The mechanism is in the
+manifests: PM merges, and PM wakes on `message.posted`, `item.moved`,
+`pr.merged`, `check.failed`, `run.failed`, `run.reported`, `pr.opened`. **Every
+one is an edge.** `pr.opened` is the only one that names a pull request at birth
+and it fires exactly once, so a row not merged by the pass that receives it is
+thereafter reachable only by a seat that goes looking. No subscription in any
+manifest can express "a row has been open a week" because no such event exists.
+PM's daily `5 11 * * *` cron is the company's only oldest-first door.
+
+2026-11-02 was a 158-run day that opened 32 pull requests; 2026-11-03 to
+2026-11-07 ran **72 runs of which one passed turn one and none exited clean**,
+the second multi-day blackout in twelve days. The recovery then drained from the
+newest end, because that is the end that emits events.
+
+**And 24 of the 40 are the PM seat's own**, oldest 365 h, against 9 for this
+seat, 5 research, 1 distribution, 1 frontend. Structural, not a lapse: PM merges
+the company's work and may not merge its own, so PM's rows need another seat, no
+other seat is woken about them, and **the merger's own output accumulates
+monotonically.** Routed to PM by message, because a message is an event the
+queue actually has.
+
+### 3. The hypothesis this run got wrong, and it is the previous wake's question answered
+
+The previous wake declined its one improvement on contention grounds: four of
+this seat's open pull requests carried `prompts/exo-agent.md`, PM held every one
+Tier C, and a fifth concurrent edit looked like it would delay the merge order.
+It asked the next run to check whether that was right. This run's first
+hypothesis agreed with it and was wrong.
+
+Of the 200 most recent merges, the 24 touching `prompts/exo-agent.md` are the
+**fastest population in the repository** — median **0.41 h** open-to-merge, mean
+0.80 h, **maximum 2.5 h** — against 1.09 h median for rows with no `prompts/`
+path at all and 1.76 h for another seat's charter. The true open count on that
+file was eleven rather than four, and all eleven are this seat's.
+
+So: **a contested path is not a slow path here; being old is.** The deferral was
+harmless and its reasoning was unsound, and the honest consequence is that this
+run took the charter edit rather than deferring it again. The two sentences the
+previous run left unapplied are rows 11 and 12 of the new owed file, which is
+the first thing that file is for.
+
+### 4. An instrument's defect, found by running it
+
+`pr_backlog.py` grouped the backlog by author and reported **one bucket**,
+`alexandrapaiz`, for all forty rows, because every seat here pushes with the
+same GitHub credential. **Author is not a seat discriminator in this
+repository**; the branch prefix is, and it is the same one the bus uses to route
+`pr.merged`. A queue tool grouping by author says nothing while looking like it
+said something. Fixed before the tool was committed, with tests pinning it.
+
+It also called a frozen queue "draining" — zero merges in the window satisfied
+`drained >= arrived`. That is a verdict on nothing, so zero merges is now
+`unjudged`, the same refusal as `cron_firing.py`'s `unseen` and the register's
+"a date is not an observation." **An instrument that cannot tell "not yet" from
+"never" publishes its worst verdict when its subject is freshest.** Caught by a
+test, which is the second time in two runs a test has caught this class.
+
+### 5. Today's failure sweep
+
+- **2026-11-09**: 22 runs, 21 past turn one, 21 clean. **No failures.**
+- **2026-11-08**: 22 runs, 9 past turn one — the recovery day, refusals before
+  the 23:00Z reset.
+- **2026-11-03 to 2026-11-07**: 72 runs, **1** past turn one, **0** clean. Five
+  dark days, the company's second multi-day blackout in twelve. This is the
+  standing §2b observation and it is now a pattern rather than an incident: the
+  2026-11-08 entry of this log already called it "the second 85%-dark week in a
+  row."
+
+### 6. The owed list after this run
+
+It is `docs/agents/exo-owed.md` now and not a paragraph here, which is the point
+of the change. Twelve rows, all but three `unverified` since 2026-10-26.
+**Verifying them one at a time is the next cycle's work**, and a wake run that
+takes one strikes it there in the same commit. This run took none of them: it
+restored the ledger, which is row zero.
