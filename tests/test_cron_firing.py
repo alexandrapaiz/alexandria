@@ -17,7 +17,9 @@ first one broken cries wolf every week until somebody switches it off.
 """
 
 import json
+import os
 import sys
+import time
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -1733,3 +1735,117 @@ def test_a_clean_run_is_not_turned_into_a_refusal_by_the_new_branch(tmp_path):
     path = write_log(tmp_path, "alexandria-engineer", "2026-11-02T13-06-03-756Z",
                      "cron", completed(), exit_code=0, turns=25)
     assert cf.parse_run(path)["refusal"] is None
+
+
+# --- the company probe's bound, added 2026-11-09 by the security seat --------
+#
+# Three tests, each with a control, against the one call in this file that
+# leaves the process. Each failure shape is driven by a real `git` on a real
+# `PATH` rather than a mock, because what is under test is an exit code and a
+# hang crossing a process boundary, and a mock cannot be wrong about those in
+# the way the real thing is.
+
+
+def _shim(tmp_path, name, script):
+    """A directory holding one executable, for putting at the head of PATH."""
+    d = tmp_path / f"bin-{name}"
+    d.mkdir(exist_ok=True)
+    (d / "git").write_text(script)
+    (d / "git").chmod(0o755)
+    return d
+
+
+def test_the_company_probe_is_bounded_and_a_hang_is_not_an_answer(
+        tmp_path, monkeypatch, capsys):
+    """A hanging git returns None in bounded time rather than stalling.
+
+    The control is the same call with a git that answers: it must still return
+    the company, or this test would pass against a probe that never runs.
+    """
+    monkeypatch.delenv("ASC_COMPANY", raising=False)
+    monkeypatch.delenv("GITHUB_REPOSITORY", raising=False)
+
+    answers = _shim(tmp_path, "answers",
+                    "#!/bin/sh\necho https://github.com/alexandrapaiz/ursa\n")
+    monkeypatch.setenv("PATH", f"{answers}:{os.environ['PATH']}")
+    assert cf.company_here(timeout=2) == "ursa"          # the control
+
+    hangs = _shim(tmp_path, "hangs", "#!/bin/sh\nsleep 600\n")
+    monkeypatch.setenv("PATH", f"{hangs}:{os.environ['PATH']}")
+    started = time.monotonic()
+    assert cf.company_here(timeout=2) is None
+    assert time.monotonic() - started < 30, "the probe waited past its bound"
+    assert "did not answer within 2s" in capsys.readouterr().err
+
+
+def test_a_missing_git_binary_is_a_skipped_tie_break_and_not_a_traceback(
+        tmp_path, monkeypatch, capsys):
+    """No git on PATH used to raise FileNotFoundError out of a tie-break."""
+    monkeypatch.delenv("ASC_COMPANY", raising=False)
+    monkeypatch.delenv("GITHUB_REPOSITORY", raising=False)
+
+    answers = _shim(tmp_path, "answers2",
+                    "#!/bin/sh\necho https://github.com/alexandrapaiz/ursa.git\n")
+    monkeypatch.setenv("PATH", f"{answers}:{os.environ['PATH']}")
+    assert cf.company_here(timeout=5) == "ursa"          # the control, .git stripped
+
+    empty = tmp_path / "bin-empty"
+    empty.mkdir()
+    monkeypatch.setenv("PATH", str(empty))
+    assert cf.company_here(timeout=5) is None
+    assert "could not run git" in capsys.readouterr().err
+
+
+def test_a_failed_probe_is_not_the_answer_that_there_is_no_company(
+        tmp_path, monkeypatch):
+    """The conflation this fix exists to refuse.
+
+    `proc.stdout if returncode == 0 else ""` made every way the probe can fail
+    arrive as a company named "", which a caller reads as a fact about the
+    world. Each failing shape now answers None, and the control still answers
+    a name.
+    """
+    monkeypatch.delenv("ASC_COMPANY", raising=False)
+    monkeypatch.delenv("GITHUB_REPOSITORY", raising=False)
+
+    answers = _shim(tmp_path, "answers3",
+                    "#!/bin/sh\necho https://github.com/alexandrapaiz/atelier\n")
+    monkeypatch.setenv("PATH", f"{answers}:{os.environ['PATH']}")
+    assert cf.company_here(timeout=5) == "atelier"       # the control
+
+    for script, why in [
+        ("#!/bin/sh\nexit 1\n", "git exits non-zero"),
+        ("#!/bin/sh\nexit 128\n", "not a git repository"),
+        ("#!/bin/sh\necho\n", "git exits clean and prints nothing"),
+        ("#!/bin/sh\necho '   '\n", "git prints only whitespace"),
+    ]:
+        d = _shim(tmp_path, f"fail-{abs(hash(script))}", script)
+        monkeypatch.setenv("PATH", f"{d}:{os.environ['PATH']}")
+        assert cf.company_here(timeout=5) is None, why
+
+
+def test_an_unanswerable_tie_break_raises_the_collision_it_cannot_settle(
+        tmp_path, monkeypatch):
+    """`resolve_seat` reads None rather than formatting it into a prefix.
+
+    Two companies carry a seat named `exo` here, so the bare name needs the
+    tie-break. With the probe answering, the checkout's company wins. With the
+    probe unable to look, the collision raises, which is the same observable
+    outcome the old empty string produced and the first one that says why.
+    """
+    monkeypatch.delenv("ASC_COMPANY", raising=False)
+    monkeypatch.delenv("GITHUB_REPOSITORY", raising=False)
+    for name in ("alexandria-exo", "ursa-exo"):
+        (tmp_path / name).mkdir()
+
+    answers = _shim(tmp_path, "answers4",
+                    "#!/bin/sh\necho https://github.com/alexandrapaiz/ursa\n")
+    monkeypatch.setenv("PATH", f"{answers}:{os.environ['PATH']}")
+    assert cf.resolve_seat("exo", root=str(tmp_path)) == "ursa-exo"   # the control
+
+    empty = tmp_path / "bin-empty-4"
+    empty.mkdir()
+    monkeypatch.setenv("PATH", str(empty))
+    with pytest.raises(cf.SeatNotFound) as caught:
+        cf.resolve_seat("exo", root=str(tmp_path))
+    assert "2 companies" in str(caught.value)
