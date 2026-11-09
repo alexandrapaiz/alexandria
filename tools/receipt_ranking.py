@@ -67,11 +67,64 @@ import json
 import os
 import sys
 
-#: An engine whose policy was not pre-registered is a measurement of the
-#: engine. The gate and the page both read this field; the panel used to infer
-#: it from the filename.
 def pre_registered(bundle: dict) -> bool:
+    """True only when the bundle says so. Used for ordering, where an
+    undeclared bundle ranking below a declared one is the right default."""
     return bool((bundle.get("policy") or {}).get("pre_registered"))
+
+
+def declared_experimental(bundle: dict) -> bool:
+    """True only when the bundle's own policy says it is not pre-registered.
+
+    This is not `not pre_registered(bundle)`, and the difference is the whole
+    reason the function exists. A bundle carrying no `policy` block at all has
+    said nothing about its engine, and treating that silence as a declaration
+    is how an absence becomes a report. The filename heuristic this replaced
+    had the same property by accident and in the harmless direction: a bundle
+    with no policy has no `experiment` in its name either, so the panel
+    accepted it, and a stricter reading would have dropped every receipt in
+    tests/test_panel_validator.py's own fixtures and reported `no trigger-test
+    receipt names this skill` for a tree full of them.
+
+    Ursa/exo's note of 2026-11-09 names the parent class, four instances across
+    two companies in one night: a negated absence published as a finding. This
+    function was the fifth until its own suite caught it.
+    """
+    policy = bundle.get("policy")
+    if not isinstance(policy, dict) or "pre_registered" not in policy:
+        return False
+    return not policy["pre_registered"]
+
+
+#: Engine markers in a bundle's filename. Imprecise on purpose and kept on
+#: purpose, explained in `not_evidence_about_the_library` below.
+EXPERIMENTAL_NAME_MARKERS = ("experiment", "retired")
+
+
+def not_evidence_about_the_library(bundle: dict) -> bool:
+    """Whether a bundle is a measurement of an engine rather than a verdict on
+    the library. `tools/panel_validator.py`'s policy, which is stricter than
+    the gate's: the gate ranks such a run below a pre-registered one and will
+    still show it when it is all there is, while the panel refuses it outright.
+
+    A union of two tests, and the union is the point. The policy block is the
+    authority when a bundle has one, and the filename is all there is when it
+    does not. Replacing the name check with the policy check looked like
+    tightening a heuristic and was really swapping one blind spot for another:
+    the name cannot see a field, so the panel accepted
+    `2026-09-30-decoys-v1-lexical-3.json` and
+    `2026-09-30-decoys-v2-lexical-3.json`, whose own policy declares them
+    experimental; and the field is absent from every bundle in
+    tests/test_panel_validator.py, so reading it alone made a lexical/3 run
+    named `-experiment` count as the library's newest receipt.
+
+    Each test on its own was wrong in the direction the other covers, which is
+    why both are here rather than one replacing the other.
+    """
+    if declared_experimental(bundle):
+        return True
+    name = source_name(bundle).lower()
+    return any(marker in name for marker in EXPERIMENTAL_NAME_MARKERS)
 
 
 def source_name(bundle: dict) -> str:
@@ -157,12 +210,21 @@ def load(results_dir: str | os.PathLike) -> list[dict]:
 
 
 def suite_for(bundle: dict, slug: str) -> dict | None:
-    """The row in this bundle that scores one skill, or None. A suite with no
-    cases in it scores nothing, so it does not count as a receipt."""
+    """The row in this bundle that scores one skill, or None.
+
+    A suite that measured nothing is not a receipt, and the two producers of
+    these bundles count what they measured in two different fields: the trigger
+    test writes `total`, and a suite row carrying only a `cases` list is just
+    as much a measurement. Requiring `total` alone made every receipt in the
+    panel's own fixtures invisible, which is the second reason this module
+    shipped with its suite red before it shipped green.
+    """
     for suite in bundle.get("suites") or []:
         if not isinstance(suite, dict):
             continue
-        if suite.get("skill") == slug and suite.get("total"):
+        if suite.get("skill") != slug:
+            continue
+        if suite.get("total") or suite.get("cases"):
             return suite
     return None
 
@@ -177,20 +239,23 @@ def newest_for(bundles: list[dict], slug: str,
     will still show it when it is all there is, while the panel refuses to
     treat it as evidence about the library at all. That difference is a
     judgment the panel is entitled to, so it stays a parameter here rather than
-    being flattened into one answer. What is no longer a difference is how the
+    being flattened into one answer, and the test it applies is
+    `not_evidence_about_the_library`. What is no longer a difference is how the
     two of them order the bundles they do accept.
     """
+    def refused(b: dict) -> bool:
+        return pre_registered_only and not_evidence_about_the_library(b)
+
     ranked = rank(bundles)
     for bundle in ranked:
-        if pre_registered_only and not pre_registered(bundle):
+        if refused(bundle):
             continue
         suite = suite_for(bundle, slug)
         if suite is None:
             continue
         equals = [
             b for b in tied_with(bundle, ranked)
-            if suite_for(b, slug) is not None
-            and (not pre_registered_only or pre_registered(b))
+            if suite_for(b, slug) is not None and not refused(b)
         ]
         return bundle, suite, equals
     return None
@@ -200,8 +265,10 @@ def newest_for(bundles: list[dict], slug: str,
 
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
-    ap.add_argument("--results", default="skills/_validation/results")
-    ap.add_argument("--skills", default="skills")
+    ap.add_argument("--results", default="skills/_validation/results",
+                    help="the directory of recorded trigger-test bundles")
+    ap.add_argument("--skills", default="skills",
+                    help="the library whose receipts are being resolved")
     ap.add_argument("--check", action="store_true",
                     help="exit 1 if a tie decides any skill's receipt")
     args = ap.parse_args(argv)

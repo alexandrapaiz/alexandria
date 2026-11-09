@@ -213,11 +213,15 @@ def trigger_receipt(skills_dir: pathlib.Path, slug: str) -> dict | None:
     The policy this file is entitled to keeps its own name: a receipt from an
     engine the library does not run is not evidence about the library, so an
     experimental run is refused outright here rather than merely ranked below.
-    What changed is that the refusal reads `policy.pre_registered` instead of
-    looking for `experiment` or `retired` in the filename. The old test let two
+    What changed is that the refusal reads `policy.pre_registered` **as well
+    as** the filename, rather than the filename alone. The old test let two
     bundles through that their own policy declares experimental,
     `2026-09-30-decoys-v1-lexical-3.json` and `2026-09-30-decoys-v2-lexical-3.json`,
-    because a heuristic over names cannot see a field.
+    because a heuristic over names cannot see a field. Swapping one test for
+    the other rather than taking both would only have moved the blind spot:
+    nothing in this file's own fixtures declares a policy at all, so the field
+    alone let a lexical/3 run count as the library's newest receipt. The
+    reasoning is in `receipt_ranking.not_evidence_about_the_library`.
 
     `tied` names the bundles that rank equal to the one chosen, so a caller can
     tell a receipt that was the newest from a receipt that was the
