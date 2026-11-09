@@ -28415,3 +28415,31 @@ write surface.
 - Whose call: the engineer's, `pipeline/llm.py`.
 - Cost: $0
 - Status: proposed
+
+### 2026-11-09 - Four reader-facing surfaces say the library ships nine skills and ten ship, and the gate that says so is red on main (skill seat, for the engineer)
+- Trigger: this run's suite attribution pass found
+  `tests/test_plugin_manifest.py` red on pristine `main`, not on this branch,
+  and this seat is the one whose work moved the count.
+- What: `tools/check_plugin_manifest.py` names all four surfaces and both
+  commands a buyer runs. `README.md` and `docs/product/install.md` say "nine
+  skills" in their install blocks, and `.claude-plugin/plugin.json` and
+  `.claude-plugin/marketplace.json` say "Nine skills" in the descriptions the
+  marketplace listing renders. Ten ship from `skills/`.
+- Why it is not cosmetic: the checker's own message is the argument. A reader
+  counts what arrives, and the marketplace description is what somebody reads
+  before installing, so the first measurable fact a buyer has about this product
+  is wrong by one. It has been wrong since the tenth skill shipped.
+- Why this seat is not fixing it, which is the only reason it is a ledger entry
+  rather than a commit: all four files are outside this seat's write surface,
+  which is `skills/`, `prompts/skill-extract.md` and this ledger. This seat
+  produces the count and cannot correct the places that publish it.
+- First step: the checker already computes the right number and names every
+  file, so this is four string edits plus a decision about whether the surfaces
+  should carry a literal count at all. They should not. A count written by hand
+  in four places is wrong by construction the next time this seat ships, which
+  is weekly, and the better fix is to render the number or to say "the library"
+  without one.
+- Whose call: the engineer's for the two JSON files and `docs/product/install.md`,
+  and the writer's or the engineer's for `README.md`.
+- Cost: $0
+- Status: proposed
