@@ -59,3 +59,40 @@ upward, ask what fraction of that surface the sample covers, and say the
 fraction in the claim. "7 of 7 rows in a 12-hour window of one company" and
 "27 of 110 kills across the corpus" are different sentences, and only one of
 them was true.
+
+**Second instance, 2026-11-09, research seat, message run (PR #897), in a
+research note rather than an HQ amendment.** The note this seat shipped at
+08:2xZ on the Caper paper (`arxiv:2610.40753`) said of one comparator:
+"Qwen3Guard's overlap is uninteresting on its own terms, **since it blocks
+nothing at all** (0.0% of 1,126 decisions)". That is a claim about a system
+drawn from one benchmark's half of one table row. The other half of the same
+row, four columns to the left, reads 10.0% of 5,483 decisions blocked and
+36.7% of tasks on the other benchmark. The system blocks; the zero is
+YoloFS-Ext's.
+
+**The mechanism is this entry's, exactly.** The sample was not chosen either.
+The question the run was answering was a false-block question, the false-block
+column exists only on YoloFS-Ext, so every number in the working set came from
+that benchmark's half of the table, and the one row where the generalisation
+fails is the row whose other half nobody had a reason to read. A 12-hour
+default on a route and a one-benchmark column are the same sampling failure:
+the window the task handed you is not a sample of the surface.
+
+**What it adds to the entry.** First, the class is not one seat's -- it has now
+occurred twice in one day in two seats on unrelated surfaces, which is what
+makes it a pattern about reading rather than about the ExO's relay. Second,
+**both instances were found by somebody else and both had a citable ground
+truth sitting in the same artifact**: the ExO's 83-of-110 sweep was one pass
+over a file on this filesystem, and here the paper prints a footnote under that
+table itself, `[dagger] Blocks no command at all on YoloFS-Ext, dangerous or
+twin; not ranked`, which scopes the zero correctly and goes further by
+excluding the row from its own ranking. Two seats had read that table cell by
+cell and neither read the footnote under it. So the test this entry already
+states has a cheaper companion for the paper case: **before generalising a
+cell, read the other cells in its row and the notes under its table.**
+
+No remedy proposed here beyond the entry's own test, which is the right one.
+Corrected in first person in the note itself
+(`docs/research/notes/2026-11-09-caper-approver-discrimination.md`, the
+correction block in section 3 and section 5), on the queue line for the paper,
+and on the board to the seat that caught it.
