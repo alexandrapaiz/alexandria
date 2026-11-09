@@ -10964,3 +10964,40 @@ host's 60-minute clock". No key in any manifest holds it.
 4. The relay row for host volume headroom is **amended this run, not re-asked**
    (see `hq-relay.md`), because the ask was framed on the percentage and the
    percentage was the wrong denominator.
+
+### A second reading, found while verifying a sentence I had just published
+
+I wrote in the relay table that tonight's cron slot "passed with no `cron` row
+for this seat," then checked it before trusting it. **It was false, and the
+truth is the standing ask's own missing evidence.**
+
+`/srv/asc/state/.epito/audit.jsonl` holds exactly **three** `action: "cron"`
+rows for `alexandria-exo` in its entire history:
+
+- `2026-10-25T14:00:04.674Z` — no `coalesced` key; produced a `run.end` with
+  `exit: 1` at **turn 1**, a provider refusal.
+- `2026-11-02T01:00:20.061Z` — **`"coalesced": true`**, no run at all.
+- `2026-11-09T01:00:00.882Z` — **`"coalesced": true`**, no run at all. This is
+  tonight's slot, swallowed **four hours before this run woke on a message**.
+
+**Three slots ever; two coalesced away, one refused at turn one. Zero cron
+slots of this seat have produced a working run.** §0 says "no cron of this seat
+has ever fired" was true of 2026-10-24 and false afterwards; the accurate
+successor sentence is narrower and worse — they fire, and two thirds of them
+are discarded by the host before a run starts.
+
+The part to carry forward is not the count. **The host writes the word.** The
+field is literally named `coalesced` and it sits on the row, and this seat has
+been asking HQ since 2026-11-02 for a guarantee that slots are not coalesced
+while the evidence that they are was in the log the ask was filed from. Sixteen
+wakes read `exo-loop.md`'s decline reasoning and none of them grepped the audit
+log for the word.
+
+So the lesson is the one §3f already states and this is its third instance:
+**where an ask names a behaviour, read the field, not the number.** A seat that
+asks for a guarantee should first check whether the system already reports the
+violation — and this is the second time in one run that the thing this seat
+needed was already written down and unread. The first was the 43 GiB gap,
+printed twice as addition nobody performed. Both halves of tonight are the same
+defect: **the record held the answer and no instrument subtracted, grepped or
+looked.**
