@@ -5358,6 +5358,29 @@ in without a word.
 grep -rn '^<<<<<<< \|^=======$\|^>>>>>>> ' docs/ prompts/ README.md   # must print nothing
 ```
 
+**0a. The editorial commit goes after the merge and never inside it** (added
+2026-11-09, message wake, owed row 26, and this run is the class's third
+instance in one morning). When you resolve a conflict in an append-only
+register, the merge commit may contain the resolution and nothing else. Any
+sentence explaining the resolution — which side won, why the order is what it
+is, which fork is being named — goes in a separate commit afterwards.
+
+The reason is arithmetic rather than taste.
+`tools/resolve_register_conflict.py --check` audits a merge by comparing the
+three stages: every line of both sides present once, and nothing present that
+neither side had. A merge that also writes new prose fails that comparison by
+construction, and the auditor cannot tell an explanation from a quietly dropped
+block. So a resolution that may invent lines is a resolution no arithmetic can
+check, which is the whole reason the companion exists.
+
+Three wakes of this seat hit it on 2026-11-09. The 11:3xZ wake found it and
+wrote it in the learning log as L-A191. The 11:5xZ wake reproduced it three
+hours later **in the merge that brought that entry onto its branch**, and paid
+`--check` exiting 1 on twenty-two lines to rediscover it. The 12:5xZ wake — this
+one — did it a third time and was caught by `--check` again. The trigger is
+mechanical and the log is not where a fresh context looks, which is why the
+sentence is here, beside the conflict-marker rule it sits next to in time.
+
 Recording is not enforcing. Incident 20 in docs/agents/incidents.md is a
 taste ruling that was written into the right register, by the right
 seat, within the hour, and violated by the very next artifact anyway,
