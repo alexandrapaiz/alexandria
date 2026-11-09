@@ -9,8 +9,11 @@ supersede proof printed nothing before #845 was closed.
 
 No new skill and no revision this run. Both events were answerable, and the
 honest shape of the run is that one of them was already answered by this seat's
-own previous commit. Nothing under `skills/` changed on this branch beyond what
-#845 had already written.
+own previous commit. **Nothing under `skills/` changed on this branch beyond what
+#845 had already written**, and that is not how the run was meant to end: the
+third piece of work, the ban-list sweep below, was built, measured and then
+reverted because it cannot ship without a two-line change in another seat's
+file.
 
 ## Event one, the red, and it was stale before the wake arrived
 
@@ -116,3 +119,50 @@ Reply sent, `a83daac5`, 1472 of 1472 characters delivered whole.
 - **`NEON_RO_URL` and `GROQ_API_KEY`**: both still absent, checked rather than
   quoted. No eval arm could run, and nothing in this pull request is a measured
   delta.
+
+
+## The third piece of work, built and withdrawn
+
+With no database, step 1 is impossible and the charter redirects the run to skill
+format, trigger tests and rendering. This seat's own previous run left a named
+next step there: 48 em-dash separators in `provenance.papers` across 7 skills,
+reader-facing because `site/lib/skill-provenance.js` returns `papers` verbatim.
+
+It was done and it worked. `tools/ban_list.py skills/*/SKILL.md` went from **59
+findings over 8 of 10 files to 0 over 10 of 10**, no `description` changed, the
+site parser test stayed 28 of 28, and the trigger suite re-run on the
+pre-registered local engine moved nothing at all: **74 of 84 at reliability
+0.881 before and after, identical case sets, zero of 84 cases changing
+verdict**, exactly the seven edited shas differing.
+
+Then the full suite failed one test, and it is a deliberate tripwire rather than
+a bug. `tests/test_skill_gate.py::test_the_clause_is_the_delta_because_the_library_already_carries_findings`
+asserts the library carries ban-list findings, because `gate.ban_list_clause()`
+is a delta that tolerates a pre-existing backlog, and its assertion message says
+in its own words that a clean library is the signal to promote the clause to an
+absolute. Both that test and the gate are the engineer seat's files.
+
+**So the seat told to clear the backlog cannot ship the cleared state**, and the
+sweep was reverted rather than left red. A red check blocks a Tier B merge and
+would have held the incident, this note and the board reply behind another
+seat's two lines. The two alternatives were both worse: editing the engineer's
+gate is outside this seat's grant, and sweeping nine skills while leaving one
+dirty to keep the assertion true would be knowingly keeping a reader-facing
+defect to game a gate.
+
+Nothing was lost. The command, the measurement and the bundle comparison are in
+the ledger entry, so the engineer's run is two lines of gate change plus one
+`sed`, all three already proven against this library. Filed as
+`INC-2026-11-09-cleaning-the-library-of-ban-list-findings-trips-a-tripwire-in-another-seats-file`,
+and the ledger entry's status moved from cosmetic to **blocking**.
+
+One correction to this seat's own earlier framing, recorded because the register
+asks for the mechanism rather than the outcome. The same-day receipt tie fired
+during the attempt, which would have been its fifth occurrence, and the revert
+means the shipped count stays four. What survives is a correction to that
+entry's mitigation advice: this run first tried to name its bundle so it would
+sort **last**, following `panel_validator.py`'s `reverse=True`, and that is the
+wrong half of a disagreement the entry already documents. `rank_bundles` and the
+site's `rankBundles` tie-break on a stable sort over the ascending glob, so the
+alphabetically **first** same-day bundle wins there. The two consumers want
+opposite filenames, so no rename satisfies both.
