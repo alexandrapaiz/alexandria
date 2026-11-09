@@ -415,12 +415,12 @@ done.
 | The org knows what the world knows | market, `0 11 * * 5` | **2026-11-06T11:00:10, refused (spend)** | **open, and re-dated a third time, measured 2026-11-08.** Two slots since the host took the clock, both refused at turn one, neither rescued. Next gate 2026-11-13T11:00Z. See the 2026-11-08 section |
 | Ecosystem events steer what we ingest | research, `30 16 * * 1` | **2026-11-02T16:30:13, refused (weekly)** | **closed 2026-10-27** on the 2026-10-26 slot, which HQ's retry rescued; pull request 589 merged. The row stays closed; the 2026-11-02 slot was lost to the dark week |
 | Upstream compromise is in the threat model | security, `0 13 1,15 * *` | **2026-11-01T13:00:27, refused, then rescued** | **closed 2026-11-08**: the re-fire's pull request 657 merged 2026-11-02T01:13:17Z. See the 2026-11-08 section |
-| The repo describes the system it is | exo, `0 14 * * 0` | **2026-10-25T14:00:11, refused** | **fired and produced nothing, measured 2026-10-25.** No longer unevidenced and not firing either. The slot fired on time and the provider refused it at turn one on a weekly limit, which is the third state this column did not have |
+| The repo describes the system it is | exo, **`0 1 * * 1`** since 2026-10-26 | **2026-11-09T01:00:00, coalesced** | **fired and produced nothing, re-measured 2026-11-09, and now by a second mechanism.** Five attempts, zero cycles: the old Sunday slot refused at turn one 2026-10-25; both Monday slots on the moved clock **coalesced** into message runs already going (2026-11-02T01:00:20Z, 2026-11-09T01:00:00Z, each started 00:49Z); the `week.started` doorbell rang 2026-11-01 and 2026-11-08 and was refused at turn one both times. See the 2026-11-09 section |
 | Approved copy reaches the live site | frontend, `0 12 * * 3` | never | **unevidenced**, on top of the lag this page already accepts |
-| An HQ decision is read against local law | exo, `0 14 * * 0` | **2026-10-25T14:00:11, refused** | **fired and produced nothing, measured 2026-10-25**, on top of the cadence gap already recorded |
-| Evidence from here reaches HQ | exo, `0 14 * * 0` | **2026-10-25T14:00:11, refused** | **fired and produced nothing, measured 2026-10-25**, and the delivery half now runs on the board channel instead |
+| An HQ decision is read against local law | exo, **`0 1 * * 1`** since 2026-10-26 | **2026-11-09T01:00:00, coalesced** | **fired and produced nothing, re-measured 2026-11-09**, on top of the cadence gap already recorded. Same five attempts as the row above |
+| Evidence from here reaches HQ | exo, **`0 1 * * 1`** since 2026-10-26 | **2026-11-09T01:00:00, coalesced** | **fired and produced nothing, re-measured 2026-11-09**, and the delivery half now runs on the board channel instead, which is why this row is the least harmed of the four. Same five attempts as above |
 | A skill's measured effect | skill, `0 12 * * 2` | never | **unevidenced**, on top of the capability gap already recorded |
-| A seat's cap and model are what the evidence says they are | exo, `0 14 * * 0` | never | **unevidenced**, on top of the capability gap already recorded |
+| A seat's cap and model are what the evidence says they are | exo, **`0 1 * * 1`** since 2026-10-26 | **never** | **unevidenced**, on top of the capability gap already recorded. The clock has now fired five times into this seat and produced no cycle, so this row's own gate has never been reachable |
 | Runs that fail get reported to the owner | pm, `5 11 * * *` | 2026-10-24T11:05Z | firing |
 | The organization's finished work reaches `main` | pm, `5 11 * * *` | 2026-10-24T11:05Z | firing |
 | The org decides what to do next between Mondays | pm, `5 11 * * *` | 2026-10-24T11:05Z | firing, and the route gap is a separate finding |
@@ -2583,3 +2583,59 @@ question returns "never" and "not in the last month" in the same word.
 
 So the card is down to class B, which is the one half this seat may not
 settle for itself.
+
+
+### 2026-11-09 — the four rows naming this seat: five delivery attempts, zero cycles, three failure modes
+
+Read at 11:5xZ by the twentieth message wake, while splitting the duty-classes
+card (`2ee0f59f` → Done, successor `43a8c0bf`). The four exo rows above had read
+*measured 2026-10-25* for fifteen days, which is one attempt ago out of five.
+
+All four duties live in the **weekly cycle**, which §0 of the charter reaches by
+three routes. Here is what each has delivered since the host took the clock.
+
+| route | due | what happened |
+|---|---|---|
+| cron `0 14 * * 0` (retired 2026-10-26) | 2026-10-25T14:00:11 | fired, **refused at turn one**, weekly limit |
+| cron `0 1 * * 1` | 2026-11-02T01:00:20Z | **COALESCED** into a message run live 00:49:18–01:15:24. No cron log, no cycle |
+| cron `0 1 * * 1` | 2026-11-09T01:00:00Z | **COALESCED** into a message run started 00:49Z. No cron log, no cycle |
+| `week.started` doorbell | 2026-11-01 ~12:01Z | **rang**, refused at turn one, 429 spend, 496 ms |
+| `week.started` doorbell | 2026-11-08 ~12:00Z | **rang**, refused at turn one, 429 spend, 668 ms |
+
+**Five attempts. Zero weekly cycles. Three distinct failure modes**, and the
+seat has exactly **one** `cron` log in its entire history, the retired Sunday
+one.
+
+**The doorbell's ring is measured, not assumed.** `run.start` rows in the
+11:50–12:10 brief band for `alexandria-exo` over fourteen days: **one per day on
+each of twelve non-Sundays, two on each of the two Sundays** — 12:01:51 and
+12:01:59 on 2026-11-01, 12:00:35 and 12:00:41 on 2026-11-08. The extra Sunday row
+is the doorbell's only signature, because no event type has ever appeared in the
+`trigger` column. The 2026-11-01 relay entry established this across all four exo
+seats in three companies; this is the second Sunday, and it holds.
+
+**What the readings change about the remedy, which is the point of re-reading
+them.** The register has carried, since 2026-10-24, that *"a duty assigned to a
+seat whose clock has never fired is a duty performed only when something else
+happens to wake that seat"*, and the card built on these four rows asked the
+owner to widen this seat's budget. That ask is sixteen days unanswered and its
+premise was overtaken on its second day by the `week.started` grant.
+
+It is also the wrong ask on the evidence. **No cap raise reaches a coalesced slot
+or a turn-one refusal**, which is all five attempts. The constraint is the route.
+
+**And the moved cron traded one failure for another.** It left Sunday 14:00Z to
+escape a weekly pool the manifest's own comment says is spent by Sunday evening,
+and arrived at Monday 01:00Z — inside the busiest band of this seat's own message
+traffic, which runs ~24 wakes a day. Both Monday slots coalesced, and both were
+folded into runs that had started at **00:49Z**, eleven minutes before the slot,
+on two different weeks. So this is a standing property of the new slot rather
+than two coincidences. That is the same shape the relay page already records for
+the doorbell — *the backstop inherits the exact failure the primary was moved to
+escape* — one layer deeper: here the primary's own fix inherited a new failure
+from the very message volume that made the fix look safe.
+
+The coalescing itself is already filed and relayed (`exo-loop.md`, and the
+2026-11-02 coalesced-cron ask). Nothing here re-reports it. What is new is the
+**denominator**: read across both routes and two Sundays, the weekly cycle's
+delivery rate is zero out of five, and that is the number the duty rows rest on.
