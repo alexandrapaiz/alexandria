@@ -177,7 +177,7 @@ export async function stepCounts(days = DEFAULT_DAYS) {
 }
 
 // The card's own question: which skill actually sells. Ordered by the count
-// and capped, because a catalogue of nine skills has a short answer and a
+// and capped, because a catalogue of ten skills has a short answer and a
 // catalogue of nine hundred would still have a short answer worth reading.
 const SKILL_LIMIT = 50;
 

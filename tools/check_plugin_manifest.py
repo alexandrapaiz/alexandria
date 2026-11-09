@@ -124,6 +124,13 @@ COUNT_SUFFIXES = (".md", ".js", ".jsx", ".ts", ".tsx")
 # skills have no section validated" is one dated reading and the second
 # sentence inherits the date from the first.
 #
+# A count of a SUBSET needs no new rule, and the rule it already has is the
+# better sentence. `docs/product/install.md` said a grade was "carried by two
+# skills today", which the census reads as a claim about the library and
+# cannot tell from one about a grade. Written with its denominator, "nine of
+# the ten skills today", the phrase the census matches is "ten skills" and it
+# passes, and the reader is told the share rather than left to work it out.
+#
 # What is deliberately not exempt is a date further down the same paragraph.
 # `docs/product/install.md` had exactly that shape when this gate was
 # written: a paragraph whose last sentence says "filed as of 2026-10-18" and

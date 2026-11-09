@@ -58,14 +58,14 @@ its research sharpens and retired with an explanation when it is overturned,
 so the version you loaded last month may not be the one that holds today.
 Check the version before you rely on it.
 
-The nine skill files are in the public repository,
+The ten skill files are in the public repository,
 github.com/alexandrapaiz/alexandria, under skills/. In a Claude Code session:
 
     /plugin marketplace add alexandrapaiz/alexandria
     /plugin install alexandria-skills@alexandria
 
-That installs nine skills, and none of them loads until a session needs it.
-The repository carries a Cursor plugin manifest for the same nine.
+That installs ten skills, and none of them loads until a session needs it.
+The repository carries a Cursor plugin manifest for the same ten.
 
 On the site, the catalogue, the versions and the sources are public, and the
 skill bodies render for a paid reader. The claim graph and the routines are

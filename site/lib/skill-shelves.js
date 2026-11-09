@@ -1,6 +1,6 @@
 // The shelves the skill library is organised on.
 //
-// The library holds nine skills today and is built to hold fifty, so the page
+// The library holds ten skills today and is built to hold fifty, so the page
 // is organised by shelf rather than by a flat list that would be unreadable
 // long before it got there. The shelves are not invented here: they are the
 // gold layer named in docs/vision.md section 2 (context engineering, harness
