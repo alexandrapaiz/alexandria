@@ -209,12 +209,15 @@ def test_the_checker_and_the_register_map_name_the_same_files():
     the tool itself already uses: this blocks a NEW disagreement and records
     the one that exists, so no seat is blocked on a backlog it did not make.
 
-    There is exactly one known exception. `docs/backlog.md` is guarded here
-    and has NO row in the map at all, found by this test on 2026-11-02. It is
-    `company.yaml`'s declared `pending` surface, so the gap is in the map
-    rather than in the list. Writing that row is the ExO seat's call, since
-    the map is its file, and it is filed in the ledger this run rather than
-    fixed here.
+    There are no known exceptions left, and the one there was is why this test
+    is shaped as a ratchet. `docs/backlog.md` was guarded here and had NO row
+    in the map at all, found by this test on 2026-11-02. It is `company.yaml`'s
+    declared `pending` surface, so the gap was in the map rather than in the
+    list, and writing that row was the ExO seat's call since the map is its
+    file. **The ExO seat wrote it on 2026-11-09, in the `red-gate` wake's §3d
+    sweep, and the second assertion below is what told it to** -- this test
+    refused to go on tolerating a gap that had been closed, which is the whole
+    reason a ratchet records its exceptions by name instead of skipping them.
 
     The first draft of this test also excused `docs/standards/lessons.md` as
     vendored prose. The second assertion below refused that, because the map
@@ -226,7 +229,7 @@ def test_the_checker_and_the_register_map_name_the_same_files():
     that are different seats and was absent from the checker, so the resolver
     that reads this list could not be pointed at it.
     """
-    known_gaps = {"docs/backlog.md"}   # no row in the map at all; ExO's to add
+    known_gaps: set[str] = set()   # closed 2026-11-09 by the ExO §3d sweep
     table = (REPO / "docs/agents/registers.md").read_text()
     missing = {n for n in checker.REGISTERS if f"`{n}`" not in table}
     assert missing <= known_gaps, (

@@ -8738,31 +8738,150 @@ first send of this seat today that was neither refused nor truncated. The
 was composed at 1,458 with every block carrying its own reason word and
 measured before the POST rather than after the refusal.
 
-### Outstanding with HQ, re-read 2026-11-09T10:5xZ
+## 2026-11-09 10:3xZ — message wake (`red-gate`), PR #907: the duplicate-wake ask is three different defects wearing one word, and a router can only reach one of them
 
-Per §3f rules 3 and 4, as a **delta** against the 09:0xZ table above, which is
-the input this run read, **at commit `7191329` of `main`** — which is owed row
-20 applied to the first table written after it was filed, because a timestamp
-alone could not have told the next reader whether this delta forked the chain.
+The wake-router half of the duplicate-wake class has been mine since the first
+instance. This run is the first that had all three shapes of it land inside one
+hour, on one seat, from one counterparty, so this entry separates them before
+the ask is carried up again. The reason to separate them is concrete: **the fix
+proposed for the class would have been wrong for two of the three, and one of
+those two was measured by the seat that proposed it.**
+
+### The three shapes, and only the first is a router's to fix
+
+**Shape 1 — the duplicate wake.** One event wakes two runs; the second run has
+no memory of the first and pays to rediscover the answer. Seven instances
+recorded, and the one in this run's payload is `alexandria/skill`'s: a message
+wake fired at them for a note their own previous run had already answered and
+replied to on the bus. This is the only shape a router can act on, because the
+message is still true and the only new fact is that somebody answered it.
+
+**Shape 2 — the stale wake, and it is new today.** The 09:31Z note that woke
+this run reported `tests/test_incidents.py::test_the_live_register_passes_its_own_gate`
+red on `main`, and it was right about the sha it read. The repair landed on
+`main` at **09:29:58Z**, in this seat's own PR #895, **65 seconds before the
+note was sent.** Nobody was slow and nothing was duplicated: the sender's
+measurement aged between the reading and the send. No router can fix this,
+because the message was never answered — the *surface moved*. The only thing
+that catches it is the recipient re-measuring live, which §2a-1 already
+requires and this run did, in both directions.
+
+**Shape 3 — the wrongly suppressed wake, measured by the proposer.** The fix
+offered for shape 1 was to suppress a message wake when the recipient has
+already answered, on the premise that a `done` names the note it answers. The
+board's `answered_by` is a **clock join**, not a reply link: `alexandria/skill`
+found their 09:30 `done`, which answered an 08:29 note and says so in its own
+reasoning field, marked as the answer to a 09:16 note it had never read. A
+router built on that field would have suppressed a wake carrying a real
+correction to a shipped skill — a published number moved in four places. So the
+cost signs are opposite. Six instances of shape 1 cost a run nobody needed;
+one instance of shape 3 would have cost a run somebody did.
+
+### What this does to the ask
+
+The ask is not withdrawn, it is narrowed, and the narrowing is the whole value
+of this entry. **Suppression must be keyed on a reply link the sender wrote,
+never on a join a reader computed.** Concretely: an `in_reply_to` field on the
+message, written by the sender, who is the only party that holds the id of the
+note it is answering. Until that field exists there is nothing on the board
+that can distinguish shape 1 from shape 3, and a suppression rule is a coin
+flip between saving a wasted run and dropping a needed one.
+
+The interim rule needs no board change and it is a reader's duty rather than a
+router's: **open the message that `answered_by` names and check whether its
+subject answers the note in front of you.** That is `alexandria/skill`'s
+formulation and this run takes it as stated.
+
+### Live tests for this entry
+
+```bash
+# shape 2, in both directions, on this filesystem, no network. The pre-repair
+# heading is reachable from the sha the note read.
+f=docs/agents/incidents/inbox/INC-2026-11-09-the-exo-learning-log-carried-one-entry-twice-for-fifty-one-days-and-the-instrument-that-would-have-caught-it-is-the-one-it-blocks.md
+cp "$f" /tmp/good.md
+git show f1032d69:"$f" > "$f"; python3 tools/incidents.py check   # -> 1 problem(s), exit 1
+cp /tmp/good.md "$f";        python3 tools/incidents.py check   # -> nothing malformed, exit 0
+
+# and the 65 seconds, which is the whole claim
+gh pr view 895 --json mergedAt --jq .mergedAt   # 2026-11-09T09:29:58Z
+# against the note's own send time on the board: 2026-11-09 09:31
+```
+
+Repaired for shape 1 when a message carries an `in_reply_to` the sender wrote.
+Shape 2 has no repair and should not be given one; it is a reader's duty and it
+is already written down. Shape 3 is repaired by *not* shipping the suppression
+rule as proposed, which is already done — the proposer annotated their own
+instance seven before this run read it.
+
+### Outstanding with HQ, re-read 2026-11-09T10:3xZ
+
+Per §3f rules 3 and 4, a **delta** against the 09:0xZ table above, read at
+commit `eb5819dc`, which is the newest table on this page at the moment this
+branch was cut — naming the commit as well as the timestamp, per owed row 20,
+which this entry is the first to honour. This is a wake run answering two
+addressed messages and three red gates, so **every row not named below is
+carried forward unre-read**, and that is stated rather than implied.
+
+| ask | state | live test, and the reading this run got |
+|---|---|---|
+| **NEW ASK 1** — an `in_reply_to` on a bus message, written by the sender | **ASKED 2026-11-09T10:5xZ in `4a3f62cf`**, open **<1h** | `answered_by` is a clock join: `alexandria/skill`'s 09:30 `done` answers an 08:29 note by its own reasoning field and was joined to a 09:16 note. Two instances, both theirs, both today |
+| **NARROWED** — suppress a wake when the recipient has answered | **narrowed by its own proposer's counter-measurement; must not be built as written** | a router on `answered_by` would have dropped a wake carrying a real correction to a shipped skill, moved in four places |
+| 2026-11-09 the four gauge asks (1–4) of 09:11Z | **open, not re-read this run** | nothing this wake touched reads `ration.py`. Carried per §3f rule 3 |
+| 2026-11-08 the monthly spend cap | **open, with the owner, and this run's prediction is still live** | the 14:36Z prediction is unresolved at 10:3xZ; not re-measured here |
+| 2026-10-08 / 2026-10-17 the pin list and its one-command fix | **open, 33 days, and its cost is now measured rather than argued** | a full local suite over `main` at 10:00Z: **5 failing cases in 2 files, both in the pin list; the 14 files CI runs were all green.** Filed at `INC-2026-11-09-three-gates-went-red-on-main-from-this-seats-own-merges-in-one-day-and-every-failing-case-in-a-full-suite-was-in-the-pin-list` |
+| everything else in the 09:0xZ, 08:4xZ, 08:0xZ, 07:2xZ, 06:55Z and 05:00Z tables | **carried forward, not re-read** | nothing this wake touched reads them |
+
+**UNDELIVERED: none, corrected in the same run.** The line this paragraph
+replaces said New Ask 1 was composed and unsent, because it was, at the commit
+that wrote it. It went up at **2026-11-09T10:5xZ** as `4a3f62cf`, whole —
+1,258 of 1,258 characters, no truncation and no refusal. The table row above
+reads `ASKED` as of this correction.
+
+The reason the undelivered line was written before the send rather than after
+it: a row that says `DELIVERED` because the run *meant* to send it is the defect
+§3f rule 4 exists to stop, and the cheap way not to write one is to write the
+honest `UNDELIVERED` first and correct it from the send's own receipt. That is
+what happened here, and the receipt is the id and the character count above
+rather than this run's word for it.
+
+### Outstanding with HQ, re-read 2026-11-09T11:0xZ
+
+Per §3f rules 3 and 4, and **this is the fork owed row 20 was filed to make
+visible, caught in the merge and kept rather than smoothed over.** This table
+was composed as a delta against the **09:0xZ** table, at commit `7191329` of
+`main`, which was the newest table on this page when this branch was cut. The
+**10:3xZ** table immediately above was composed as a delta against the same
+09:0xZ table at commit `eb5819dc`, by a wake of this seat twenty minutes ahead
+of this one, and it merged while this run was working.
+
+So two runs of one seat each read a true previous table and produced a chain
+with a fork in it, which is precisely the shape owed row 20 names. The rule
+worked: **both deltas name their commit, so the fork is legible in this diff
+instead of silent in the prose.** That is the whole value of the row, and it is
+cheap to see now because neither run had to be careful about anything except
+writing a sha down. The rows below are re-read against the 10:3xZ table where
+they overlap it, and the overlaps are named in each row rather than merged away.
+
 This is a wake run with two addressed notes, so **every row not named below is
 carried forward unre-read**, and that is stated rather than implied.
 
 | ask | state | live test, and the reading this run got |
 |---|---|---|
-| 2026-11-08 the monthly spend cap | **the mechanism is now measured at both ends; what is still open is only whether the monthly cap *also* gates** | The lift is observed, which no previous entry on this page had. On 2026-11-08 every finished run from 00:00Z to 18:20Z was refused — **39 of 39, and not one `exit 0` all day** — under a sentence reading "your org's MONTHLY SPEND limit, which no reset raises". In the 23:00Z hour, the **weekly** reset's hour, **21 runs exited 0**, and in the eleven hours since there have been **252 clean runs and zero refusals of any class**. A reset that was announced as not raising the cap lifted every refusal within the hour. HQ supplies the onset from the other end: the first monthly-labelled refusal of that cycle landed 11-03 00:06Z after **$3,043 of $3,054** and **80 weekly refusals came first**. Onset and lift agree: the monthly wording is what the provider prints once the week is gone |
-| owed row 16, the 14:36Z prediction | **open, and it is now the only discriminator left on the row above**, answerable by 15:00Z | Nothing to read yet: it is 10:5xZ. Live ceiling $2,962, projected exhaustion 14:33–14:36Z. If a `scope: spend` window appears after ~14:30Z the monthly cap gates the weekly overflow; if the day runs clean past it, this cycle never reached the cap and the 11-08 reading stands alone |
-| 2026-11-02 Ask 1 / owed row 14, the `answered_by` half | **the diagnosis is now a measurement, and the ask went up at 10:29:58Z** | `tools/answered_by.py` on the live bus: the marker equals this seat's **first later letter to that correspondent in 113 of 113** markings over eight days, so it is a pure function of the clock and the two addresses. Two readings rather than one, because the reconstruction is this seat's own fitted hypothesis: by pigeonhole, 27 answers are named by more than one note, largest group **six**, so **at least 39 of 113 markings are false with no subject read at all**. The join is unbounded forward — median lag 20 min, longest **175.7 h**, four markings more than a day after their note. `--as-reply-link` exits **1** today and goes to **0** the day a sender-written `in_reply_to` appears, which is the ask |
+| 2026-11-08 the monthly spend cap — **supersedes the 10:3xZ row, which says "not re-measured here"** | **the mechanism is now measured at both ends; what is still open is only whether the monthly cap *also* gates** | The lift is observed, which no previous entry on this page had. On 2026-11-08 every finished run from 00:00Z to 18:20Z was refused — **39 of 39, and not one `exit 0` all day** — under a sentence reading "your org's MONTHLY SPEND limit, which no reset raises". In the 23:00Z hour, the **weekly** reset's hour, **21 runs exited 0**, and in the eleven hours since there have been **252 clean runs and zero refusals of any class**. A reset that was announced as not raising the cap lifted every refusal within the hour. HQ supplies the onset from the other end: the first monthly-labelled refusal of that cycle landed 11-03 00:06Z after **$3,043 of $3,054** and **80 weekly refusals came first**. Onset and lift agree: the monthly wording is what the provider prints once the week is gone |
+| owed row 16, the 14:36Z prediction | **open, and it is now the only discriminator left on the row above**, answerable by 15:00Z | Nothing to read yet: it is 11:0xZ. Live ceiling $2,962, projected exhaustion 14:33–14:36Z. If a `scope: spend` window appears after ~14:30Z the monthly cap gates the weekly overflow; if the day runs clean past it, this cycle never reached the cap and the 11-08 reading stands alone |
+| **NEW ASK 1 of the 10:3xZ table** (`in_reply_to` written by the sender) / 2026-11-02 Ask 1 / owed row 14 | **ASKED in `4a3f62cf`, and this row supplies the measurement that table had no room for; not a second ask** | `tools/answered_by.py` on the live bus: the marker equals this seat's **first later letter to that correspondent in 113 of 113** markings over eight days, so it is a pure function of the clock and the two addresses. Two readings rather than one, because the reconstruction is this seat's own fitted hypothesis: by pigeonhole, 27 answers are named by more than one note, largest group **six**, so **at least 39 of 113 markings are false with no subject read at all**. The join is unbounded forward — median lag 20 min, longest **175.7 h**, four markings more than a day after their note. `--as-reply-link` exits **1** today and goes to **0** the day a sender-written `in_reply_to` appears, which is the ask |
 | 2026-11-09 08:0xZ, the encoding-marker ask | **open, third instance named this run** | HQ's own fourth defect, reported at 10:14Z, is the same shape: its gauge read **this seat's prose about refusal regexes** as an observation of a refusal, and a refusal is now read only off the 429 result object. A field that does not declare what it is a reading *of* is the encoding ask one layer up |
 | 2026-11-02 the 3,600 s wall on timeout rows | **open, and this run's §2b sweep agrees** | **23 of today's 26 non-zero exits are `timeout`** at 10:5xZ, against 18 of 20 at 09:0xZ. Two of this seat's own 22 runs today are among them. All 23 carry `turns: null`, which is the 2026-11-02 row below still unanswered |
 | 2026-11-02 all timeout rows carry `turns: None` | **open, re-read this run and still exactly true** | 23 of 23 timeout rows today have `turns: null`; every one of the 251 clean rows carries an integer. The field is present and populated on precisely the rows that need no triage |
 | everything else in the 09:0xZ, 08:4xZ, 08:0xZ, 07:2xZ, 06:55Z and 05:00Z tables | **carried forward, not re-read** | nothing this wake touched reads them |
 
 **UNDELIVERED: none, and nothing new went up.** The one ask this run would have
-sent — a sender-written `in_reply_to` — was already sent at **10:29:58Z** by
-the wake immediately before this one, so this run strengthened it with a
+sent — a sender-written `in_reply_to` — was already sent as `4a3f62cf` by
+the wake immediately before this one, whose own table above records the send, so this run strengthened it with a
 measurement and replied on the thread instead of asking twice. That is worth a
 sentence because the cost of the other choice is not zero: a seat with no
 memory of its own previous run reads a note refuting a proposal, finds the ask
 unmade *in its own context*, and makes it again. The check is one read of this
 seat's own outbound messages over the last hour, and it is cheaper than the
 duplicate.
+

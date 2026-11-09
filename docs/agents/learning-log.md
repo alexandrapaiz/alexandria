@@ -12625,7 +12625,161 @@ every question with the old era's data and looks identical to a working one.
    limits and not one, and a run note that reports either without naming which
    limit it means is the defect this entry's first lesson is about.
 
-## 2026-11-09, wake run (message, `answered-by`): a field that is recomputable from the clock cannot be read as a claim about meaning, and the lift of a refusal is the measurement the onset cannot give
+---
+
+## 2026-11-09 10:5xZ — message wake (`red-gate`), branch `alexandria-exo/2026-11-09-message-red-gate`, PR #907: three gates red from my own merges, and a note that was stale sixty-five seconds before it was sent
+
+### What woke this run, and what I took
+
+Four payload items: two merge notices for my own #895 and #890, a `done` from
+`alexandria/engineer`, and a routed note from `alexandria/skill` naming two red
+gates of mine on `main` plus a wake-router half still owed. I took the note's
+three items and the engineer's handed-back merge debt, in that order, and left
+the board's one backlog card alone — three live reds on the trunk outrank a
+backlog item, and the note asked me to read the inbox and act.
+
+### 1. The gate count was two and it was three, and the third had been red ten hours
+
+The note named the coverage ratchet and a malformed register heading. While
+confirming them I ran `tools/target_census.py --check` and found it exiting 1 on
+**seven** `(file, flag)` pairs, every one from a tool of mine: `pr_backlog.py`
+(00:26), `kill_vocabulary.py` (08:13), `burn_shares.py` (09:06). Red on the
+trunk for ten hours, named by nobody.
+
+**The lesson, and it is about how a red is discovered rather than about the
+flags.** All three of today's reds were found by a seat running a gate **by
+hand**, and two of the three were found by somebody other than the seat that
+broke them. There is no instrument in this repository that answers "what is red
+on `main` right now". So the answer arrives as whichever gate somebody happened
+to run, which means the count is always a lower bound. **When a note tells you
+main is red in N, read N as "at least N" and spend one command widening it** —
+the whole suite, not the gate you were pointed at. That one command found the
+third today and cost 16 minutes of background time I was spending anyway.
+
+### 2. "Manual" was the wrong word, and the right word changes the remedy
+
+The note's diagnosis: *"the pin step is manual and nothing asked the second run,
+so a pin covers the files in front of it and nothing after."* True, and one
+level short. A manual step is one a run could have taken and did not. **No run
+of mine was ever offered these gates.** They are in no workflow, so the pull
+request reports green; and a fresh context cannot know which of a hundred test
+files is a live-tree gate.
+
+I put a number on it rather than arguing it, which is the thing I would want my
+next run to do. A full local suite over `main`'s content: **5 failing cases in 2
+files, both in the pin list; the 14 files CI runs were all green.** 86 of 100
+test files run in no workflow. So on a day when the trunk went red three times,
+the red lived entirely inside the 86 and CI was green for all of it. That turns
+a 33-day-old owner ask from a preference into a priced one, and the price is
+now on the relay page's outstanding table.
+
+### 3. The heading was already green, by sixty-five seconds
+
+The third red was repaired on `main` at **09:29:58Z** by my own #895. The note
+reporting it was sent at **09:31**. Nobody was slow and nothing was duplicated:
+the sender's measurement aged between the reading and the send.
+
+I verified it in **both** directions rather than trusting the note or the trunk:
+restored the pre-repair heading in place, reproduced `1 problem(s)` and the red
+test, restored the repaired one, got `nothing malformed` and 51 green. Their
+diagnosis was exactly right about the sha they read.
+
+**This is the lesson with the longest reach in the entry.** The duplicate-wake
+class has seven instances and a proposed fix — suppress a wake when the
+recipient has already answered. Today produced three *different* defects wearing
+that one word:
+
+1. **Duplicate wake.** One event wakes two runs. The message is still true. The
+   only shape a router can act on.
+2. **Stale wake.** The message was true when composed and false when delivered.
+   Nothing was answered; the surface moved. **No router reaches this**, and only
+   the reader re-measuring live catches it. This is the new one and it is mine.
+3. **Wrongly suppressed wake.** `alexandria/skill` measured this on their own
+   messages and it refutes their own proposal: the board's `answered_by` is a
+   **clock join**, so a router built on it would have dropped a wake carrying a
+   real correction to a shipped skill.
+
+The cost signs are opposite. Six of shape 1 cost runs nobody needed; one of
+shape 3 would have cost a run somebody did. So the ask is narrowed, not
+withdrawn: **suppression must key on a reply link the sender wrote — an
+`in_reply_to` — never on a join a reader computed.** Sent as `4a3f62cf`, whole.
+
+### 4. A reserved number is a claim held in prose
+
+The engineer's `done` handed back two trunk merges. I ran the first: #879 is
+merged with the trunk and reads `MERGEABLE`/`CLEAN`. Its one conflict was
+`docs/agents/exo-owed.md`, where both sides had allocated row 16 — the third
+collision on that file.
+
+The vendored resolver **refuses** it, with the right reason: the file is not
+append-only, because its status column is edited in place, so two-appends is the
+wrong model. Its `--check` then confirmed the four registers it does cover were
+balanced, every line of both sides present once.
+
+Then the part worth carrying. An earlier run of this seat saw this coming, left
+row 16 **unallocated** for the unmerged branch, took 17, and wrote a paragraph
+explaining the hole. A later wake of the same seat took 16 anyway, and was not
+careless: **a gap in a numbered column is unreadable as a reservation to a fresh
+context.** A reserved number is a claim held in prose, and a claim no instrument
+can read is not held. Filed as owed row 22 — key the duties on slugs, like the
+incident register, where there is no next number to take.
+
+And `docs/agents/exo-owed.md` was in **no** register table at all, so §3d's
+register-gate sweep had never reached this seat's own duty register. Added, with
+its gate column reading GAP.
+
+I probed the second merge, found the resolver pays on one file of three and the
+other two need judgement on a week-old branch, and aborted rather than
+half-resolving at the end of a run. That is said rather than hidden.
+
+### 5. The harness's exit code was 0 over a suite that printed five failures
+
+The full suite was started with the harness's own background mode precisely so
+no hand-rolled pipe could eat the status. The completion notification said
+`exit code 0`; the output file's own last summary line said `5 failed, 3002
+passed`. Both zeros are the harness's and pytest contradicts them.
+
+Seventh instance of the exit-code class and the first with **no remedy inside
+the command** — there was no pipe to harden. So the rule that survives every
+instance: **read the tool's own last line, not its exit code.** Had I believed
+the 0, I would have reported a green suite over the red trunk I was woken for.
+
+### §2b, the failure sweep
+
+Not run this wake. Four reds and two addressed messages consumed the budget, and
+three wakes of this seat have swept it in the last two hours; re-taking a
+measurement another run took thirty minutes ago is the spend §3f rule 3 tells
+this seat not to make. Stated rather than implied.
+
+### What the next run must check first
+
+1. **`python3 -m pytest -q`, whole, before believing any claim about what is red
+   on `main`.** Not the gate a note points at. Three of today's four reds were
+   invisible to CI and one was invisible to everybody.
+2. **Owed row 16's 14:36Z prediction.** It has an answer by 15:00Z today and
+   either reading closes a two-round disagreement with HQ about whether the
+   monthly cap gates the weekly overflow.
+3. **Whether `4a3f62cf` was answered**, and if `in_reply_to` ships, that the
+   suppression rule built on it keys on the sender's field and not on
+   `answered_by`. If it keys on `answered_by`, say so loudly: that is shape 3.
+4. **#879 is clean now and will not stay clean.** It carries a charter diff held
+   at Tier C with the owner. If it is still open, re-merge the trunk before
+   doing anything else with it.
+5. **Owed row 22, the slug keying.** It is the cheapest of the open rows and it
+   stops a collision this seat has now paid for three times.
+
+---
+
+## 2026-11-09 11:0xZ — wake run (message, `answered-by`), PR #914: a field that is recomputable from the clock cannot be read as a claim about meaning, and the lift of a refusal is the measurement the onset cannot give
+
+**This entry sits after the `red-gate` one above and did not have it.** That run
+is a wake of this seat twenty minutes ahead of this one, and it merged while
+this one was working, which is why its three-shape separation of the
+duplicate-wake class and this entry's measurement of the marker arrive as two
+entries rather than one. The two agree and neither read the other: that run
+separated the class a router can reach from the two it cannot, and this run
+measured the field the router would have keyed on. Read together, shape 3 of
+that entry is the thing `tools/answered_by.py` now refuses in one command.
 
 Two notes woke this run. The skill seat reported a second instance of this
 seat's `answered_by` diagnosis — and reported it against **its own seat's
