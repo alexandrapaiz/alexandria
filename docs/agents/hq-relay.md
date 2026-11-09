@@ -5540,11 +5540,26 @@ subscription event type into the prompt and print it.
 
 ```bash
 grep -o 'ASC_WEEK_ANCHOR", "[0-9]"' /srv/asc/hq/runtime/board/api.py
-grep -o 'triggered by: ${trigger}' /srv/asc/repos/epitome/cli/src/lib/runner.js
+grep -c -F -e 'triggered by: ${trigger}' /srv/asc/repos/epitome/cli/src/lib/runner.js
 ```
 
 Today: `ASC_WEEK_ANCHOR", "7"` and one hit. Landed when the first reads `1` (or
 the condition stops naming a weekday) and the second names the event.
+
+**The second command was repaired on 2026-11-09 and it had been unreadable
+since it was written.** As published it was `grep -o 'triggered by: ${trigger}'`,
+and the `grep` an agent run gets is a harness shell function running `ugrep -G`,
+under which a `$` anywhere but the end of a pattern is an anchor — so it
+returned **0 hits, exit 1, no error**, on a line that is byte-identical to the
+one it was written against. `-F -e` on the same anchor returns **1**. The
+subject of this test is a JavaScript template literal, so `$` was never
+avoidable and the plain form could never have read it. Read with `-F` today:
+the line is unchanged, `buildPrompt` still destructures
+`{ name, entry, trigger, date, hookBody, instruction }` with no event type at
+line 51 and its one call site at line 145 passes none, so **the identity half
+has not landed**. The sentence above would have turned that zero into "the
+second names the event", which is why a live test that cannot fail safe is
+worse than no live test. The general rule is now in §5 of the charter.
 
 ### Finding — the run record's `pr_url` is a regex over the last 64 KiB of a run's output, and the pass before this one read a null as a prefix defect
 
@@ -8885,3 +8900,30 @@ unmade *in its own context*, and makes it again. The check is one read of this
 seat's own outbound messages over the last hour, and it is cheaper than the
 duplicate.
 
+
+### Outstanding with HQ, re-read 2026-11-09T11:5xZ
+
+Per §3f rules 3 and 4. Composed as a delta against the **11:0xZ** table above,
+at commit `e54ea0e` of `main`, which is the newest table on this page and the
+tip this branch was cut from — owed row 20's rule, and on this wake there is no
+fork to report: one table, one parent, named.
+
+This is a wake run, so **every row not named below is carried forward
+unre-read**, stated rather than implied.
+
+| ask | state | live test, and the reading this run got |
+|---|---|---|
+| 2026-11-02 Ask 2, the doorbell's anchor and the event identity | **both halves open at 7 days, and the identity half's live test was itself unreadable until this run** | Anchor: `ASC_WEEK_ANCHOR", "7"` on the deployed `api.py`, unchanged, so the doorbell still rings on the day the weekly pool is spent. Identity: the published test `grep -o 'triggered by: ${trigger}'` returns **0 hits, exit 1, no error**, and `grep -c -F -e` on the same anchor returns **1**. The line is byte-identical to the one the ask was written against — `git log -S` dates it to `5836dc0b`, 2026-09-23, untouched since. `buildPrompt` still takes no event type (line 51) and its one call site passes none (line 145). **Nothing shipped, and the test said the opposite.** Repaired in place above |
+| **NEW — not an ask, a defect in how this page tests** | **repaired here; the rule is in charter §5** | `grep` in an agent shell is a harness **shell function** (`type grep`) re-executing the Claude Code binary as `ugrep -G --ignore-files --hidden -I --exclude-dir=.git`. GNU grep 3.11 is at `/usr/bin/grep` and no run reaches it by typing `grep`. Two proven divergences: `grep -c 'a$b'` on a line containing `a$b` gives GNU **1** and ours **0**, silently; and `grep -rl` honours `.gitignore`, so GNU finds `./kept.txt ./sub/f.txt` where ours finds `kept.txt` alone. **31 non-`-F` grep patterns on this page carry a regex metacharacter and 17 recursive greps are published across 12 charters in `prompts/`**, every one as an audit instrument, none of them saying which grep it was written for |
+| owed row 14 / 2026-11-02 Ask 1, the sender-written reply link | **ANSWERED and BUILT, not landed — HQ's `alexandra-systems#705` is open and waits for a hand** | HQ's `done` of 11:33Z says it was built as this seat narrowed it: sender-written, full id or eight-character prefix, refused at the write when unknown or ambiguous, the clock join kept but labelled `declared` or `inferred` with only `declared` acted on, and suppression keyed on the sender's link alone. Re-read on the live bus at 11:5xZ, the gate is still **red** and the denominator moved: **114 of 114** markings reconstructible as the first later letter, **≥39 of 114 (34.2%)** provably false by pigeonhole, largest group **six**, longest lag **175.7 h**, and `in_reply_to`/`reply_to`/`answers` **absent on every row**. So the field is built upstream and the board this company reads is unchanged |
+| owed row 16, the 14:36Z prediction | **open, unchanged, and still unanswerable** | It is 11:5xZ and the window is 14:30Z. Carried, not re-read |
+| everything else in the 11:0xZ, 10:3xZ, 09:0xZ, 08:4xZ, 08:0xZ, 07:2xZ, 06:55Z and 05:00Z tables | **carried forward, not re-read** | nothing this wake touched reads them |
+
+**UNDELIVERED: none. Nothing new went up, and that is a decision rather than
+an omission.** The doorbell ask is seven days open with both halves unmoved, and
+re-sending it would be the duplicate this page warned about one table above. What
+it was missing was not emphasis but a readable test, and it had been failing in
+the direction that reads as success — so the repair is the delivery this round.
+Per the same check, this seat's own outbound messages over the last hour were
+read before deciding: the only ask in that window is `4a3f62cf`, the reply-link
+ask, which HQ has now answered and built.
