@@ -78,7 +78,8 @@ The stronger form of check 4 needs the corpus and is filed with it.
 
 Usage:  python3 docs/voice/check_voice.py
           [enforcements|stale|measure|links|delivery|sweep|claims|
-           reading|taste|candidates|firstuse|generator|specimens|all]
+           reading|taste|candidates|firstuse|figures|generator|
+           specimens|all]
            [path...]
         python3 docs/voice/check_voice.py enforcements <git-ref>
         python3 docs/voice/check_voice.py selfcheck <git-ref-or-range>
@@ -797,6 +798,189 @@ def devices(paths=None):
     return rc
 
 
+# ---- figures -------------------------------------------------------------
+#
+# Canon law 14's fourth count, and the one quarter of it no command held.
+#
+# The generator states four counts in a single sentence group and this file
+# scored three. "The longest paragraph: over about 100 words, split it at the
+# point where the second result starts" is `axes`'s "paragraphs over 100
+# words" at a target of zero. "Sections running past four paragraphs with no
+# written turn in them" is its "sections over four paragraphs". The semicolon
+# is the generator's fifth count and the colon heading its seventh, and both
+# have rows. Between the first and the second of those sits "Numbers in the
+# heaviest paragraph: past three, cut every number that does not change what
+# the reader would do", and nothing in this file counted a number.
+#
+# What the gap cost, measured rather than argued. The grade of 2026-11-08
+# named the figure dump as the single biggest weakness of `2026-W44`, the
+# newest edition the product serves, and it had to count it by hand: one
+# 64-word paragraph carrying nineteen numbers under a rule whose target is
+# three. Every count this file could take on that edition passed. `measure`
+# read `longest 87   over100 0`, so law 14's measurable half printed green on
+# the artifact whose figure density is the headline verdict. Law 14's own text
+# names that trap one line before the count: "A law whose measurable half can
+# be satisfied while its point is missed is a law stated in the wrong order."
+# L-A21 is the standard, a gate is judged by what it can see, and put to this
+# file before this command the answer was that nothing here could see a
+# number at all.
+#
+# The target is the generator's own three and it is scored rather than
+# reported, on this file's own precedent instead of on a reading. "Over about
+# 100 words" is hedged in the generator with the word "about" and `axes`
+# scores it at zero tolerance, so its sibling in the same sentence group is
+# scored the same way. The rule's second half, which of the numbers to cut,
+# is a reading and stays in the grade where the other readings are.
+
+
+#: A figure, and the two readings that decide what the count is of.
+#:
+#: First, a figure is a maximal run of digits with its own decimal point or
+#: thousands comma inside it, so "68.33" is one figure and "21 of 25" is two.
+#: A fraction is its two numerals, because a reader of "threshold 1/6" takes
+#: in both of them, and the place to argue that is a grade rather than this
+#: line.
+#:
+#: Second, the digits inside a NAME are not figures. A token whose first
+#: alphanumeric character is a letter is a name for this count, so
+#: "Qwen3.5-4B", "HMMT25", "GPT-5" and the arXiv identifier inside a link
+#: contribute nothing. The reason is the rule's own second half: a model's
+#: name is not a number anybody can cut, and a count that includes what no fix
+#: can remove reports a paragraph that cannot be brought under the target. The
+#: hand count of nineteen in the grade of 2026-11-08 counted a model
+#: identifier's digits, so this gate reads that same paragraph at sixteen. The
+#: number moved and the verdict did not, because both are past three.
+FIGURE = re.compile(r"\d+(?:[.,]\d+)*")
+
+
+def figures_in(block):
+    """Every figure in one block, in the order the reader meets them."""
+    out = []
+    for token in block.split():
+        head = next((c for c in token if c.isalnum()), "")
+        if not head or head.isalpha():
+            continue
+        out.extend(FIGURE.findall(token))
+    return out
+
+
+#: What the reading has to get right, asserted before any edition is opened.
+#: The first case is the live specimen the grade of 2026-11-08 quoted out of
+#: `2026-W44`. The rest are the shapes that look like it and are not, because
+#: a count that fired on a model's name or on a citation line would report a
+#: paragraph no cut could repair, and a gate nobody can satisfy is a gate the
+#: next run deletes. The last case is the boundary that has to keep passing.
+FIGURE_CASES = (
+    (16, "Across five models and five benchmarks, quantization and pruning "
+         "variants improve average accuracy by **4.0** and **5.5 percentage "
+         "points** respectively, with positive gains in **21 of 25** and "
+         "**23 of 25** settings. The effect is non-monotonic in degradation "
+         "strength: **3-bit** quantization peaks at **68.33%** on HMMT25 for "
+         "Qwen3.5-4B, while **2-bit** collapses to **49.90%**. Pruning at "
+         "threshold **1/6** peaks at **70.52%**, versus **49.58%** at "
+         "**1/2**."),
+    (0, "Qwen3.5-4B and GPT-5 were scored on HMMT25 and AIME24 by a group at "
+        "Tsinghua, and the gap between them held across every run."),
+    (0, "Berkeley and DeepMind, *Hard Stop*, "
+        "[full text](https://arxiv.org/html/2610.38681v1)."),
+    (3, "Accuracy rose from **61%** to **68%** across **25** settings, and "
+        "the gain holds for every model the group tried."),
+)
+
+
+#: The generator's own number, quoted so a reader of this file does not have
+#: to take the three on trust: "Numbers in the heaviest paragraph: past three,
+#: cut every number that does not change what the reader would do."
+FIGURE_TARGET = 3
+
+
+def heaviest_paragraph(text):
+    """The writer's own paragraph carrying the most figures, and its figures.
+
+    A paragraph, and not a block, for the same reason `axes` counts sections
+    in paragraphs. Law 14 asks the writer for "a line carrying the number that
+    matters" as one of the shapes that saves a page, so counting a standalone
+    line here would fire on the device the same law demands and the issue would
+    be punished for obeying it. Lists are out on the same ground. The furniture
+    is out because `written_here` is what separates the blocks the generator
+    put on the page from the masthead, the rule and the close, which arrive on
+    every issue whatever the model does.
+    """
+    best, blocks = ("", []), []
+    for b in [x for x in re.split(r"\n\s*\n", text) if x.strip()]:
+        if not written_here(b) or not shapes([b]).get("paragraph"):
+            continue
+        found = figures_in(b)
+        blocks.append((b, found))
+        if len(found) > len(best[1]):
+            best = (b, found)
+    return best, blocks
+
+
+def figures(paths=None):
+    """Law 14's figure count, as a verdict on an artifact.
+
+    The whole-issue density is printed beside it and deliberately carries no
+    target, because the generator states none. 52 figures in 1,017 words is
+    the shape of the page and the grade reads it. Three in a paragraph is the
+    rule and this is where it is enforced.
+
+        python3 docs/voice/check_voice.py figures --live
+    """
+    wrong = [(want, case) for want, case in FIGURE_CASES
+             if len(figures_in(case)) != want]
+    for want, case in wrong:
+        print(f"  BROKEN  the count reads {len(figures_in(case))} where its "
+              f"own case says {want}")
+        print(f"            {case[:84]}")
+    if wrong:
+        print()
+        print("FIGURE_CASES says what this count has to do. Nothing below was")
+        print("read, because a count failing its own cases reports a clean")
+        print("issue for the wrong reason.")
+        return 1
+    print(f"  the count's own cases          {len(FIGURE_CASES)} pass")
+    retired = hidden_weeks()
+    paths = paths or sorted((ROOT / "site/content/issues").glob("*.md"))
+    rc = 0
+    for p in paths:
+        p = pathlib.Path(p)
+        if not p.exists():
+            print(f"  FAIL    {p}: missing, so nothing was counted")
+            rc = 1
+            continue
+        t = p.read_text(encoding="utf-8")
+        try:
+            shown = p.resolve().relative_to(ROOT)
+        except ValueError:
+            shown = p.resolve()
+        if p.stem in retired:
+            print(f"  SKIP    {shown}  retired, not served")
+            continue
+        (block, found), blocks = heaviest_paragraph(t)
+        total = sum(len(f) for _, f in blocks)
+        words = len(t.split())
+        over = [b for b, f in blocks if len(f) > FIGURE_TARGET]
+        per100 = (100.0 * total / words) if words else 0.0
+        verdict = "FAIL" if len(found) > FIGURE_TARGET else "OK  "
+        print(f"  {verdict}    {shown}  heaviest {len(found)}, target "
+              f"{FIGURE_TARGET}, paragraphs past it {len(over)} of "
+              f"{len(blocks)}")
+        print(f"            {total} figure(s) in {words} words, "
+              f"{per100:.1f} per 100 words, which has no target and is read")
+        if len(found) > FIGURE_TARGET:
+            flat = " ".join(block.split())
+            print(f"            {len(block.split())} words: {flat[:96]}")
+            print(f"            the figures: {', '.join(found)}")
+            rc = 1
+    print()
+    print("The rule is the generator's fourth count and its number is three.")
+    print("A pass here is not a verdict on whether the page reads as a wall,")
+    print("which is the shape `devices` holds. A failure is a verdict, because")
+    print("the number in the rule is the generator's own and not this file's.")
+    return rc
+
+
 def axes(path):
     """The measurable gates of one body, each as a number beside its target.
 
@@ -843,6 +1027,11 @@ def axes(path):
         "non-ASCII, no exception": (na, 0, "le"),
         "shapes the writer added": (len([k for k in kinds if k != "heading"]), 3, "ge"),
         "paragraphs over 100 words": (len([x for x in lens if x > 100]), 0, "le"),
+        # Law 14's fourth count has three thresholds and this file scored two
+        # of them for as long as it has existed. The third is `figures` and
+        # its number is the generator's own three.
+        "numbers in the heaviest paragraph":
+            (len(heaviest_paragraph(t)[0][1]), FIGURE_TARGET, "le"),
         "list blocks": (kinds.get("list", 0), 1, "ge"),
         "sections over four paragraphs": (len(long_untitled), 0, "le"),
         "headings carrying a colon": (len([h for h in heads if ":" in h]), 0, "le"),
@@ -1159,7 +1348,34 @@ def code_state(path):
     return state
 
 
-def quoting(text):
+#: What `quoting` has to get right, as data, because the reading below was
+#: changed on 2026-11-08 and a changed reading with no cases is a guess.
+#: Fields: (excused, the line, whether a four-space indent means a code block)
+QUOTING_CASES = (
+    # Markdown, where an indent is a fenceless code block and the mark is the
+    # literal character. This is the behaviour that has to survive.
+    (True, "    pytest -q; echo done", True),
+    # The live case that found the gap. This seat's own prose, inside a Python
+    # docstring, joining two finished sentences with a semicolon.
+    (False, "    the page and the grade reads it; three in a paragraph is the",
+     False),
+    # A quoted specimen inside a docstring stays excused, because striking the
+    # mark would falsify the quote. That reading is not the indent's.
+    (True, '    the row reads "a; b" and the grade quotes it whole', False),
+    # A shell line in a docstring, which says so with its own prompt.
+    (True, "    $ psql -c 'select 1;'", False),
+    # A quotation of somebody else's prose, marked as one.
+    (True, "> the rule is stated; nothing enforces it", True),
+)
+
+
+def quoting_cases():
+    """Every case above, run before a diff is read."""
+    return [(want, line, code) for want, line, code in QUOTING_CASES
+            if quoting(line, code) is not want]
+
+
+def quoting(text, indent_is_code=True):
     """Is the mark inside something quoted, or inside a command?
 
     The two exceptions are the whole difficulty and both were settled in prose
@@ -1167,9 +1383,27 @@ def quoting(text):
     of the artifact or of a surface's output cannot be struck without
     falsifying the quote, and a semicolon inside a shell line is the literal
     character. Everything else is a finding.
+
+    `indent_is_code` is the third exception and it was wrong by default until
+    2026-11-08. In Markdown a four-space indent is a fenceless code block, so
+    excusing the line wholesale is right. In Python it is scope, so every line
+    of every docstring and every indented comment in this file was excused for
+    as long as the check has existed. Measured on the day the parameter was
+    added: 2,670 indented prose lines in `check_voice.py`, 14 of them carrying
+    a canon law 1 mark this reading could not see, 10 of those plainly this
+    seat's own prose joining two finished sentences. The gate that reads this
+    seat's added lines for law 1 was blind to the surface this seat writes
+    most of its prose on, and the line that found it was added by this run.
+
+    The caller decides, and `selfcheck` passes `False` only for `.py` files
+    under `docs/voice/`, which is this seat's own surface. The same reading
+    applies to `tools/*.py` and that is a filing for the engineer rather than
+    a red this seat drops on another lane (incident 23's class).
     """
     stripped = text.lstrip()
-    if text.startswith(("    ", "\t")) or stripped.startswith((">", "$", "#!")):
+    if indent_is_code and text.startswith(("    ", "\t")):
+        return True
+    if stripped.startswith((">", "$", "#!")):
         return True
     if stripped.startswith("|") and stripped.endswith("|"):
         return True
@@ -1241,6 +1475,13 @@ def selfcheck(ref=None):
     separator. Nowhere else.
     """
     ref = ref or "origin/main"
+    wrong = quoting_cases()
+    for want, line, code in wrong:
+        print(f"  CASE    wanted excused={want}: {line.strip()[:60]}")
+    if wrong:
+        print("QUOTING_CASES says which marks this reading excuses, and the")
+        print("reading changed. Nothing below was read.")
+        return 1
     bad = selfcheck_cases()
     if bad:
         for want, line, start in bad:
@@ -1266,7 +1507,11 @@ def selfcheck(ref=None):
             if path not in fences:
                 fences[path] = fenced(path)
                 states[path] = code_state(path)
-            if n in fences[path] or quoting(text):
+            # Indentation means a code block in Markdown and scope in
+            # Python, so the excuse is the caller's to grant. Scoped to this
+            # seat's own surface: see `quoting`.
+            own_python = path.startswith("docs/voice/") and path.endswith(".py")
+            if n in fences[path] or quoting(text, not own_python):
                 continue
             if mark == EM and text.lstrip().startswith("#"):
                 continue
@@ -3925,10 +4170,21 @@ def blockrules():
 #:
 #: Absolute and not merely stated, because the whole file is rules and a list of
 #: all of them is a list of the file. A row belongs here when the generator
-#: gives it a target of zero, or says "never", or the canon numbers it a law and
-#: the owner has ruled on it twice. The phrase is quoted so a row cannot outlive
-#: the rule it describes, which is `blockrules`' technique and the reason that
-#: pass catches a dropped rule.
+#: gives it a target of zero, or a number with no budget attached to it, or says
+#: "never", or the canon numbers it a law and the owner has ruled on it twice.
+#: The phrase is quoted so a row cannot outlive the rule it describes, which is
+#: `blockrules`' technique and the reason that pass catches a dropped rule.
+#:
+#: "A number with no budget attached to it" was added on 2026-11-08 and the
+#: clause it replaced read "a target of zero". That wording is why this table
+#: missed law 14's fourth count for as long as it has existed: the rule's
+#: target is three rather than zero, so the one sweep in this file written to
+#: find a rule with nothing between it and a reader could not admit it. A
+#: criterion that only sees zero is a criterion that cannot see "past three",
+#: and the count it could not see is the one the grade of 2026-11-08 named as
+#: the newest edition's single biggest weakness. The denominator moves from 11
+#: to 12 and the ungated count from 5 to 6, so a figure a grade printed before
+#: this date is not comparable to one printed after it (ban list 120's class).
 ABSOLUTE_RULES = (
     ("the semicolon",
      "Count the semicolons. The target is zero and there is no budget",
@@ -3944,6 +4200,14 @@ ABSOLUTE_RULES = (
      None),
     ("law 14, a list and a written turn",
      "Sections running past four paragraphs with no\n  written turn in them",
+     None),
+    # The pre-send gate carries a `bare-number` WARN, which is the
+    # generator's EIGHTH count and a different rule: a figure with no
+    # comparison beside it. Nothing there counts figures per paragraph, so
+    # `None` here is measured rather than assumed, and `figures` in this file
+    # is the reference implementation the ask names.
+    ("law 14, three numbers in the heaviest paragraph",
+     "Numbers in\n  the heaviest paragraph: past three",
      None),
     ("law 12, the framework's names are never printed",
      "no part announces itself with a label",
@@ -4167,7 +4431,33 @@ SLOT_HEADING_CASES = (
     (False, "## Three papers for anyone wiring memory or kill switches into "
             "production"),
     (False, "## What to read if you have one hour"),
+    # The specimen that found the equality bug. `2026-W44` served this on
+    # 2026-11-08 and this gate read OK, because 'what to read yourself' is not
+    # 'what to read' and nothing here was looking at prefixes. It is the
+    # framework's own internal name for the slot, which law 9 writes as "Read
+    # these yourself", so it is the one dress the ban could least afford to
+    # miss.
+    (True, "## What to read yourself"),
+    # The same evasion with a standing time adverbial instead of a reflexive.
+    # Neither remainder is about the day, which is the whole test.
+    (True, "## What is new this week"),
+    # And the boundary that keeps this from eating the slot: a remainder that
+    # is a reader's condition is material, so it passes exactly as the bare
+    # second form above does.
+    (False, "## What to read when the week has been long"),
 )
+
+
+#: Remainders that add nothing a reader could date. A banned phrasing followed
+#: only by these is the banned phrasing wearing a suffix, which is how
+#: `2026-W44` served the reading slot's own internal name past an equality
+#: test. Kept small on purpose: the moment a word here could carry the day's
+#: material, this reading starts firing on the headings law 12 wants.
+SLOT_INVARIANT = frozenset((
+    "yourself", "yourselves", "myself", "ourselves",
+    "this", "week", "today", "now", "again", "so", "far",
+    "month", "year", "issue", "edition",
+))
 
 
 def slot_heading(heading, dress):
@@ -4180,7 +4470,21 @@ def slot_heading(heading, dress):
     those phrasings, or that wears one as the label before a colon, is the
     internal name printed. `2026-W42` serves `## What to read`.
 
-    The second is the colon. Law 12's text says a paraphrase of a banned
+    The second reading is the PREFIX, and it is here because equality was the
+    whole test until 2026-11-08. `2026-W42` served `## What to read`, the ban
+    gained that phrasing in `97de5c8b`, and `2026-W44` served `## What to read
+    yourself`, which this gate passed. One trailing word walked past a list the
+    product had just been patched to hold, so the list is not where this can be
+    held: the phrasing plus a remainder that would be true of every issue is
+    the phrasing. `SLOT_INVARIANT` is that remainder and it is deliberately
+    tiny, because a remainder carrying the day's material is the heading law 12
+    asks for and firing on it would delete this gate within a week. Note what
+    this still is, so the next run does not read it as the cure: a closed list
+    one level up. The structural answer is in `docs/ideas.md` and it is the
+    press composing or refusing this heading the way `ensure_fresh_title`
+    already refuses a reused title.
+
+    The third is the colon. Law 12's text says a paraphrase of a banned
     heading is the banned heading, and the generator says in its own words that
     a colon does not launder it. A heading that opens on `What` and then breaks
     to a colon is the slot label with the day's news bolted behind it, which is
@@ -4199,6 +4503,12 @@ def slot_heading(heading, dress):
     for d in dress:
         if label == d:
             return f"the ban's own phrasing, {d!r}"
+    for d in dress:
+        if label.startswith(d + " "):
+            rest = label[len(d):].strip()
+            if all(w in SLOT_INVARIANT for w in rest.split()):
+                return (f"the ban's own phrasing, {d!r}, plus {rest!r}, which "
+                        f"is true of every issue")
     if ":" in low and low.startswith("what "):
         return f"a slot label laundered by a colon, {label!r}"
     return ""
@@ -7919,7 +8229,7 @@ TAKES_PATHS = ("measure", "links", "delivery", "compare", "firstuse",
                "queued", "claims", "reading",
                "generator", "specimens", "standalone", "devices",
                "captions", "marks", "provenance", "slotheads",
-               "apparatus")
+               "apparatus", "figures")
 PATH_ARG_COMMANDS = tuple(x for x in TAKES_PATHS if x != "queued")
 
 
@@ -9693,6 +10003,7 @@ def main():
                 ("standalone", standalone),
                 ("provenance", provenance),
                 ("devices", devices),
+                ("figures", figures),
                 ("routed", routed),
                 ("editions", editions),
                 ("marks", marks),

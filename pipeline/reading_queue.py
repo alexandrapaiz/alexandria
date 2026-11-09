@@ -208,22 +208,59 @@ def pending(text: str, limit: int | None = MAX_PER_RUN,
     line unblocks a skill and the next one footnotes one.
 
     `sourced` absent means no grouping, which is the old behaviour exactly.
+
+    ## Why classification comes before deduplication (2026-11-02)
+
+    This function used to deduplicate first and classify the survivor, and the
+    survivor was whichever line came first in the file. So the group a paper
+    landed in was decided by line position rather than by who was waiting on
+    it, and line position in this file is decided by whichever merge landed
+    last. Two merges of identical content, ordered differently, gave different
+    reading orders: the research seat measured three priority members at
+    positions one, two and three one way, and zero members at eighty-eight,
+    eighty-nine and ninety the other.
+
+    The file has two writers today and a third was being proposed, which is a
+    third way for a line to land on top. Rather than make every writer preserve
+    an order nothing declares, the two steps are reversed here, which removes
+    the dependence instead of managing it.
+
+    So: every unchecked line is classified, and a paper is blocked when ANY
+    line asking for it is a blocked skill's request. That is the reading the
+    group was always for, because one fetch serves every line, and the fetch
+    unblocks the blocked asker whether its line is first or last. The line kept
+    is the earliest of the ones that decided the group, so the asker reported
+    is the asker the priority is owed to.
     """
-    seen: set[str] = set()
+    def is_blocked(item: Item) -> bool:
+        # Three kinds of line are one kind here: a line nobody signed, a line a
+        # seat or the chair signed, and a line a skill that already cites claims
+        # signed. None of them is a skill that cannot cite a claim, which is the
+        # only thing the group is for.
+        return bool(sourced is not None and item.asking_skill
+                    and item.asking_skill not in sourced)
+
+    lines: dict[str, list[Item]] = {}
+    for item in parse(text):
+        if item.checked:
+            continue
+        lines.setdefault(item.paper_id, []).append(item)
+
     blocked: list[Item] = []
     rest: list[Item] = []
-    for item in parse(text):
-        if item.checked or item.paper_id in seen:
-            continue
-        seen.add(item.paper_id)
-        # Three kinds of line wait their turn here, and they are one kind to this
-        # branch: a line nobody signed, a line a seat or the chair signed, and a
-        # line a skill that already cites claims signed. None of them is a skill
-        # that cannot cite a claim, which is the only thing the group is for.
-        if sourced is not None and item.asking_skill and item.asking_skill not in sourced:
-            blocked.append(item)
+    for group in lines.values():
+        deciding = [item for item in group if is_blocked(item)]
+        if deciding:
+            blocked.append(min(deciding, key=lambda i: i.line_no))
         else:
-            rest.append(item)
+            rest.append(min(group, key=lambda i: i.line_no))
+
+    # Oldest line first within each group, from the kept line rather than from
+    # the order the ids happened to be met in. Both of these are already sorted
+    # when no id repeats; the sort is what makes the output a function of the
+    # file's content and not of its line order.
+    blocked.sort(key=lambda i: i.line_no)
+    rest.sort(key=lambda i: i.line_no)
     out = blocked + rest
     return out[:limit] if limit else out
 

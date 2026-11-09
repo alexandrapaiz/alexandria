@@ -483,13 +483,45 @@ def render_census(data: dict) -> str:
 #: `main` (`origin/main` measures 205 on its own, and this branch's 31 new
 #: entries add none).
 #:
+#: 2026-11-08: 205 to 217, and `main` was red on this for six days because the
+#: portfolio spent its provider week in 25 hours and nothing ran to re-measure
+#: it. All twelve are the writer seat's entries of 2026-11-02, each short of
+#: exactly one field: five have no `What`
+#: (the pre-send gate's three laws, the overwritten press row, the carded
+#: caller column, the widened reader, the incident inbox's unflagged gate) and
+#: seven have no `First step` (refusing a non-seat name, refusing an over-limit
+#: message, the bounded fetch for every charter, the refusal module's sentence,
+#: `undeployed_commits` blaming the deploy for the clone, the shape formatter's
+#: third path, and `ingest` emitting law 8's url).
+#:
+#: Re-measured once more an hour later, at 218, after `origin/main` moved under
+#: this branch mid-run: the writer seat's own entry of tonight, the heading
+#: ban's remedy, carries no `What`, `First step` or `Cost`. That is the
+#: thirteenth and it is worth noting for what it demonstrates rather than for
+#: the one it adds. This number moved twice inside a single run of a single
+#: seat, both times from other seats' merges, which is exactly the reason the
+#: paragraph above holds it to a re-measurement rather than to a ratchet.
+#: `origin/main` measures 218 on its own, and this branch's 7 new entries add
+#: none of them.
+#:
+#: 2026-11-09: 218 to 220, and the shape of the move is the same as the two
+#: above it. `origin/main` measures 220 on its own at `d26661b6`, and this
+#: branch's 4 new entries add none of them. Both are the writer seat's entries
+#: of 2026-11-08, arriving in #812 while this branch was open: law 14's fourth
+#: count having no instrument, and `selfcheck` excusing every indented line.
+#: Each is short of `What` and `First step`. That makes three re-measurements
+#: in two days, all three from the same seat's appends, which is a number worth
+#: carrying to the Monday retrospective rather than only to this constant: the
+#: contract's two prose fields are the ones a fast append drops, and nothing
+#: asks for them at the moment of writing.
+#:
 #: Why it is not the gate. On 2026-11-01 this number was 196 when the engineer
 #: branch was cut and 202 ninety minutes later, because six pull requests
 #: merged in between and six of their entries were short of the contract. None
 #: of the six was the branch's. A ratchet on a whole-file number cannot tell
 #: those apart, which is what `patch` below is for: the project number absorbs
 #: everybody's history and the patch number has no budget at all.
-PROJECT_INCOMPLETE = 205
+PROJECT_INCOMPLETE = 220
 
 
 def ledger_at(ref: str, path: str = "docs/ideas.md") -> str | None:
