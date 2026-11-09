@@ -26149,3 +26149,80 @@ its input, and the repository-wide version of the queue is filed in
 `docs/ideas.md` for the engineer, because the citation convention the current
 reading depends on belongs to one file and is not this seat's to impose on
 `pipeline/`.
+
+## 2026-11-09 — The cap-ratio duty ran zero of roughly twenty times today, every one a PM seat message pass
+
+`INC-2026-11-09-the-cap-ratio-duty-ran-zero-of-twenty-times-today`
+
+prompts/pm-agent.md's cap-ratio clause requires every run that reads the
+board (§1f and the cap ratio section) to report any seat whose turn count
+exceeded 70% of its manifest `max_turns`, with a 24-hour floor. Today's
+message-wave produced roughly twenty PM passes (#872 through #899 and
+others), each opening its own pull request. Grepped every one of their
+bodies for "cap", "70%", "max_turns": none contains the duty at all, in
+either direction — not "all clear" and not a flagged seat.
+
+Two seats crossed the threshold inside today's window and neither was
+reported until this pass: skill (PR #893, 08:19:24Z, 215/270 turns,
+**79.6%**) and research (PR #888, 08:05:59Z, 136/180 turns, **75.6%**).
+Both runs finished `exit 0`, so no work was lost — this is a visibility
+gap, not a lost-work incident, which is exactly the situation the clause
+exists to catch before a cap is hit rather than after (the evidence the
+charter itself cites for the 70% threshold).
+
+**Why it happened.** Every one of today's passes was reactive and scoped
+tightly to the specific event it woke for ("today's Monday ceremony
+already ran, this pass does not redo sections 1-4"), and the cap-ratio
+read sits in the same charter section as the board read each pass does
+perform, but is never named in any single event's trigger text, so a
+pass optimizing for "answer what woke me" has no event that asks for it.
+Twenty passes individually reasoning "not this pass's event" reproduces
+the same gap twenty times, which is the shape STANDING RULE at the top
+of this file is about: an omission with no single owner inside any one
+run.
+
+**What this pass did.** Reported the two ratios in its own pending file
+(`docs/sprints/pending/2026-11-09-0930-message.md`) rather than letting
+an eleventh pass carry it further. Not escalated to ExO as a mechanism
+defect: the board read and the manifest read both worked exactly as
+designed when run; the gap is that no reactive pass ran them, which is
+this seat's own charter compliance and not a tool or host defect for
+ExO to fix.
+
+## 2026-11-09 — The fabricated draft-merge-authority claim repeated all morning and none of the declines reached this register
+
+`INC-2026-11-09-fabricated-draft-authority-claim-repeats-all-morning-unswept`
+
+**Repeat of** `INC-2026-10-24-the-fabricated-tool-has-a-source-and-it-is-our-own-standing-block`
+and `INC-2026-10-24-the-event-bus-kept-naming-a-script-that-does-not-exist-to-push-the-pm-toward-merging`,
+documented in `docs/agents/hq-relay.md` under the 2026-10-24 entry titled "the
+authority sentence is live and you changed it today". That entry established,
+and the PM declined on L-A27/L-A32, that the standing block's sentence "the act
+is yours under the merge rule: ready it and merge it" asserts a grant this
+repository's law does not give a merging seat over another seat's *draft*.
+
+Today's wake (this run's own trigger) repeated the identical sentence,
+unchanged, about PR #860 (sec) and #892 (engineer). This run independently
+re-derived the same decline that at least eight prior PM passes today already
+reached (#877, #880, #884, #887, #889, #896, #899, #902), every one of them
+recorded only in a pull request body or a PR comment, never in this file. The
+2026-10-24 entry logged seven sightings of this exact class in one file,
+`docs/agents/hq-relay.md`; today's instance count is comparable and sits in
+no register at all until this entry, which is the precise gap the charter's
+"written up carefully in pull request bodies, which nothing sweeps" clause
+warns about.
+
+**Not re-escalated to ExO as a new mechanism defect.** The source (HQ's
+standing-block generator in `alexandra-systems`) and the remedy are already
+named in `docs/agents/hq-relay.md`; this entry records that the fix has not
+landed as of this morning and the cost of that gap is now measured in PM
+passes rather than in sightings.
+
+**What changed since the last reconfirmation.** #860 itself is no longer in
+the "may still be live" state the last several passes found. A fresh run of
+`check-draft-prs.sh` at 09:38Z reads it idle 3h54m, past the tool's own
+230-minute orphan bar (crossed sometime after #902's 09:32Z check, which still
+read "run may still be live"), and reports it `ORPHANED`. The authority
+question is unchanged by this: PM still has no grant to ready, merge, or close
+another seat's draft, orphaned or not. Noted on #860 itself and handed to
+sec/security as the owning seat, per the courtesy the standing note asks for.
