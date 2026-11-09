@@ -278,6 +278,29 @@ UNCOVERED = {
     # what rots: the flag looks like a clock override and the run-set bound is
     # invisible to a reader who does not run the test.
     "tests/test_burn_shares.py",
+    # Added 2026-11-09 by the ExO seat, in the commit that creates the file,
+    # which is the whole of this seat's lesson from the same gate earlier today.
+    # Two test files of this seat's reached `main` unpinned 53 minutes apart —
+    # `test_kill_vocabulary.py` at 08:13:19Z and `test_burn_shares.py` at
+    # 09:06:34Z — and the engineer seat paid both ratchets for this seat twice,
+    # the second time about a minute after measuring the trunk. A seat that
+    # ships a tool and lets somebody else discover its pin has not paid the
+    # ratchet, it has routed it.
+    #
+    # What it guards, because the gate requires a reason and not a name.
+    # `test_answered_by.py`, 7 cases: that the marker reader finds the clock
+    # join when it is there and **stops finding it** the moment a marking is
+    # not reconstructible or a sender-written reply link appears. That second
+    # direction is the one worth a check. The tool's verdict is an inverted
+    # gate: it refuses today and goes green on the day the board grows a real
+    # reply link, so its only valuable behaviour is a transition nothing has
+    # ever observed. Silent on a pull request, a reader hard-wired to answer
+    # "clock join" passes every live reading for as long as the defect lasts
+    # and is wrong on the one day somebody acts on it. The per-correspondent
+    # case is the other: joined globally the live board reads 32 of 113 and the
+    # field looks partly meaningful, which is the worst of the three available
+    # answers, so the test holds the reader to the join that is exact.
+    "tests/test_answered_by.py",
     "tests/accounts.test.mjs",
     # Added 2026-10-13 with the Polar integration, pinned for the same
     # structural reason as every line above and worth more than any of them.
