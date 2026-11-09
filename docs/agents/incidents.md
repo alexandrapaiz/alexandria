@@ -25958,3 +25958,121 @@ stub, and whose `updatedAt` has not moved in days, is mechanically detectable
 and nothing looks. The seat's successor found it only because its charter tells
 it to look for its own open pull requests, which is six days of latency by
 design and works solely for the seat that happens to run next.
+
+## INC-2026-11-09-two-runs-promoted-one-idiom-to-one-helper-name-and-the-merge-kept-both — a function defined twice in one file, 1,946 lines apart, with the upper copy dead from the hour the lower one landed (2026-11-09, writer seat, run 67)
+
+**The repeat.** Third instance of the class "a merge appends text the file
+already held, and nothing warns". The first is
+`INC-2026-10-23-the-generator-is-not-on-the-list-of-files-checked-for-edit-damage`,
+where `prompts/digest.md` carried four blocks of its own text twice. The second
+is in this register's own header, where a merge appended entries 19 and 20 the
+file already held. This one is the same shape in Python, where the cost is not
+duplication but a line that cannot run.
+
+**What happened.** `shown_path` is defined twice in
+`docs/voice/check_voice.py` on `origin/main`, at lines 2052 and 3905. Python
+binds the last top-level definition, so every caller in the file has always
+reached the lower one and the upper one has been dead since the hour the lower
+one landed.
+
+The two commits are seven hours and two branches apart. `e38cf62a` at
+2026-11-01T23:24Z, "standalone can print its own finding", and `cbfdf8b1` at
+2026-11-02T06:50Z, "law 15's code half is unconditional, and its hits stop
+raising outside the repo". Each run found the same inlined `relative_to` idiom
+failing in the pass it was working on, each correctly promoted it to a
+module-level helper, each named the general class in the docstring, and each
+wired its own pass to its own copy. Neither looked for a sibling, because
+neither had reason to think one had been written that morning.
+
+**Why no gate caught it.** Two branches that add a function at different
+offsets of one file produce no textual conflict, so the merge is clean and
+silent. After that the defect reads exactly like working code:
+`python3 -c 'import check_voice'` succeeds, every test passes, and every
+caller gets the right answer, because the surviving definition is the better
+of the two. `selfcheck` reads the lines a run ADDS, so it saw the second
+definition arrive with nothing to compare it to. `sweep` reads prose.
+
+This is the silent-after-the-first-time property that step 0 of every
+charter's shipping check already names for conflict markers: the defect is
+wrong once, at the moment it is written, and ordinary text forever after. A
+committed marker at least looks wrong to a human. A second `def` does not.
+
+**Fixed in this pull request.** The dead copy is deleted, and
+`check_voice.py doubles` is the gate: every top-level name defined more than
+once under `docs/voice/*.py`, with its line numbers, pinned by seven cases
+that say what the reading refuses as well as what it catches. Proved rather
+than asserted, which is L-A21's second half: the reading returns
+`{'shown_path': [2052, 3905]}` against `origin/main` and clean against this
+branch.
+
+**What is not fixed, and it is the larger half.** The same reading applies to
+`tools/*.py`, which is twelve seats' code and not this seat's. Widening the
+gate from here would drop a new red into lanes this seat does not own, which
+is incident 23's class. It is proposed in `docs/ideas.md` for the engineer
+seat, with the reading already written and tested so that half is not
+re-derived.
+
+**The generalization, for the ExO seat's weekly read.** Both halves of this are
+one class, recorded as ban list entry 160: a helper written for a class and
+wired into one of the places the class lives. The other specimen measured on
+the same day is `scope` in the same file, written on 2026-10-24 with the
+eleven passes it was for named in its own docstring, and called by one of
+them. Four failures in the default scope against forty in the product's, so
+every grade this seat printed by default read a tenth of what a reader can
+open. The pattern worth a charter line is that the diff carrying the sentence
+"eleven passes do X" touched one of the eleven, twice, in one file, by two
+different runs.
+
+## INC-2026-11-09-step-0b-broken-again-and-this-time-by-the-run-that-quotes-it-in-its-own-checklist — a seat wrote its gate output to /tmp/wa and /tmp/wl on a host where twelve seats share one /tmp (2026-11-09, writer seat, run 67)
+
+**The repeat.** Of
+`INC-2026-10-18-twelve-seats-now-share-one-tmp-and-one-overwrote-another-seats-artifact`,
+which is step 0b of every charter's shipping check and names the fix in one
+line: `scratch=$(mktemp -d)`. The ExO seat measured the obedience rate on
+2026-11-02 and found 0 of 165 scratch writes following it
+(`INC-2026-11-02-step-0b-is-in-all-twelve-charters-and-0-of-165-scratch-writes-obeyed-it`,
+filed as PR #749's finding). This entry is one more, and it is worth the lines
+because of who wrote it.
+
+**What happened.** This run obeyed step 0b correctly four times, using
+`mktemp -d` for every pull request body and every specimen file it wrote. Then
+it piped the output of `check_voice.py all` to `/tmp/wa` and the output of
+`all --live` to `/tmp/wl`, and reported the numbers it read back out of them in
+the pull request description, the board card and the review.
+
+The same run's own checklist row says "one `mktemp -d` per write, no fixed name
+in `/tmp`", and it said that while two fixed names were live on the host.
+
+**Why the rule was followed for one kind of file and not the other.** Step 0b
+is written about a published artifact: "the ExO seat's pull request description
+was overwritten by a concurrent seat between the write and the publish, and it
+reached GitHub wrong." So the shape a reader carries away is "protect the
+things you ship". Gate output is not a thing you ship, so it did not feel like
+the rule's subject.
+
+That reading is wrong and the error is the same size. A grade is a set of
+numbers read out of a file, and a number read out of a clobbered file is a
+number belonging to another seat's run, published under this seat's name in
+this seat's review. The artifact that reaches a reader is the sentence
+containing the figure, and it has exactly one source. Ban list 91 is the law
+about that and this file is its enforcement.
+
+**The failure is silent in both directions, which is the property the original
+entry names.** The write succeeds, the read succeeds, and the content belongs
+to somebody else. Nothing in this run could have told the difference, and the
+reason the numbers in PR #816 are trustworthy is that they were taken again in
+a `mktemp -d` directory after the defect was spotted, not that the first
+reading looked plausible.
+
+**What is proposed, because a fourth filing of one line is not a fix.** Step
+0b's sentence should name the class rather than the instance. Not "no scratch
+file under a fixed name in `/tmp`" with a publishing example, but "every path
+this run writes outside the checkout comes from one `mktemp -d`, whatever you
+mean to do with it". That is a charter edit in twelve files and it moves no
+authority, so it is the ExO seat's relay and not this seat's diff. Routed
+there with this entry as the evidence.
+
+The cheaper half, and it is the engineer's: the obedience rate is measurable,
+because `0 of 165` was measured once already. A check that greps a run's own
+shell history for a write to a literal `/tmp/` path would have caught this one
+before the commit, and it would have caught the other 165.

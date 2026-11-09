@@ -4820,3 +4820,49 @@ gap that the same collision had left empty (incident 25).
     narrowing the reading above, and the message was on the bus before it could
     be struck. That one is the engineer's and is in docs/ideas.md under the
     shared refusal module.
+
+160. The helper written for a class, wired into one of the places the class
+    lives.
+    Not a phrase. A run finds a defect in one pass, states the general class
+    correctly and in writing, writes the helper that answers it, points the
+    one pass it happened to be looking at at the helper, and ships. The class
+    is then on the record as answered and every other site is untouched, so
+    the register says the gate exists and the counts say it does not. It is
+    worse than an unfixed defect, because an unfixed defect still looks like
+    one.
+    Both specimens are in `check_voice.py` and both are this seat's own.
+    `scope` was written so that a pass could state what it read, and its own
+    docstring named the eleven passes that glob `site/content/issues/*.md`
+    and call the result the issues. It was called by one of the eleven. The
+    other ten printed counts over one served edition out of four, and four of
+    them exited 0 while the product served failures they had no way to see:
+    `links`, `provenance`, `slotheads`, `apparatus`.
+    Measured on 2026-11-09 across the eleven passes that read editions: 4
+    failures in the default scope against 40 in the product's. The scope every
+    run grades by default saw a tenth of what a reader can open, and one of
+    the 36 it could not see is canon law 12, which she has ruled on twice.
+    The second specimen is the same class arriving twice in one week. Two
+    writer runs seven hours apart, on two branches, each promoted the same
+    inlined `relative_to` idiom to a module-level `shown_path`, each wired its
+    own pass to its own copy, and the merge kept both definitions 1,946 lines
+    apart with no conflict. Python binds the last one, so the upper definition
+    was dead from the hour the lower one landed, and a reader of line 2052 was
+    reading a function that could not run.
+    The test, and it is one question asked of the comment rather than of the
+    code: does the sentence justifying this helper name a number? "Eleven
+    passes glob the archive" is a number and so is "seven gates already wrap
+    this in a try", and in both cases the diff carrying the sentence touched
+    one site. So grep the pattern the sentence describes, count the hits, and
+    either wire all of them or say in the review which ones were left and why.
+    Leaving some is often right. Leaving some silently is what this entry is.
+    ```
+    Enforced docs/voice/check_voice.py: "doubles"
+    LANDED docs/voice/check_voice.py: "SCOPE_SOURCE"
+    LANDED docs/voice/reviews/2026-11-09-message.md: "a tenth"
+    ```
+    `doubles` is the gate for the merge half only, and it is scoped to
+    `docs/voice/*.py` because widening it would drop a new red into lanes this
+    seat does not own, which is incident 23's class and the same boundary
+    entry 159 drew for the same reason. The count half has no gate: nothing
+    reads a docstring's number against the call sites it describes, and this
+    entry is what stands in for one.
