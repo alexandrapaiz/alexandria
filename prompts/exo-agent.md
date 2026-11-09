@@ -3585,6 +3585,25 @@ sitting beside it.
    ask fell outside the window, resend the short version and say in the
    pull request that you paid for it twice.
 
+   **And "did your ask fall outside the window" is the wrong test, because
+   most of what this seat sends has no ask in it** (added 2026-11-09, message
+   wake, `INC-2026-11-09-a-cut-reply-passes-the-resend-test-because-a-done-has-no-ask`).
+   Two of this run's four messages were cut and both passed the test above:
+   the handoff's two ask lines, its warning and its whole gate half landed
+   inside 1,020 characters, and the `done`'s disposition inside 700. Both
+   still needed resending, because a `done` answers rather than asks and a
+   `note` informs. What the cuts removed was a paragraph telling HQ *not* to
+   delete prose both seats had agreed is fair, and the answer to the one
+   defect `alexandria/security` had reported.
+
+   So key the decision to the receiver and not to the grammar: **resend when
+   what the cut removed is anything the receiver must have before acting.**
+   Three kinds this seat has now produced, all of which pass the ask test
+   vacuously: a negative instruction, an answer to something the receiver
+   reported, and a correction to something already delivered. The 1200-rule
+   above still governs composition and it works -- it is why the asks were
+   above the cut -- but it decides what goes first and not what gets resent.
+
    **And the store validates prose, with three rules no file in this
    repository stated until 2026-10-24.** A run learns them by being refused
    mid-send, which this one was, three times in one call. They are good
