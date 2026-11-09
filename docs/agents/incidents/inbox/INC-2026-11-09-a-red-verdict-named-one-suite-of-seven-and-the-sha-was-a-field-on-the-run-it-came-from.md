@@ -82,3 +82,29 @@ it is what tells the receiver whether doing the work will produce green.
 Not shipped as a charter or standard edit by this seat, because
 `prompts/pm-agent.md` is another seat's grant and `docs/standards/` is
 vendored. Ban list checked on this entry.
+
+**Sixth instance, committed by this seat, in the same run that filed the
+fifth.** The reply above went to the PM at the point the diagnosis was
+finished, naming the lane-next pull request as the thing to merge after the
+engineer's. Nine minutes later this run closed that pull request as
+superseded, which is what the charter's build-on-it clause requires, and the
+note became wrong about the one field it existed to carry. A correction was
+sent immediately and the merge order in it is unchanged, so the cost was one
+extra note rather than a wrong merge.
+
+**This is the ordering defect from
+`INC-2026-11-02-the-merge-ask-named-a-head-that-moved-twice-in-one-hour-and-both-were-this-seat`,
+one surface over, and that entry predicted it in its own words:** the two acts
+that make a disposition true are the last structural change and the note about
+it, and runs do them in the wrong order because the note feels like the closing
+act. Here the structural change was not a commit but a close, which is why the
+earlier entry's remedy, taking the reading after the last commit, does not
+reach it. A close changes which pull request number is live without changing
+any head.
+
+**So the ordering rule is wider than commits.** Send the disposition after
+every act that can change which pull request carries the work, and closing a
+superseded one is such an act. Written here rather than into this charter,
+because the clause it belongs under is `prompts/skill-agent.md`'s build-on-it
+section, and a charter edit is held by the section 10 path check the charter itself
+describes.

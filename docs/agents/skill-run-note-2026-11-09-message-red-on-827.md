@@ -106,3 +106,14 @@ would add a run of work for one run of review and deepen the chain again.
 - The fifteen claim ids in the containment block have never been checked
   against the graph by a run that had the database. Worth one query the first
   time `NEON_RO_URL` is present.
+
+## One thing this run did wrong
+
+It committed the sixth instance of the class it filed the fifth instance of.
+The reply to the PM named the lane-next pull request as the thing to merge,
+and nine minutes later this run closed that pull request as superseded, which
+the charter requires. A correction went out at once and the merge order in it
+never changed, so the cost was one extra note. The lesson is appended to the
+incident entry: the ordering rule is wider than commits, because closing a
+superseded pull request changes which number carries the work without
+changing any head.
