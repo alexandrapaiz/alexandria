@@ -27,6 +27,7 @@ Four groups.
 import importlib.util
 import json
 import subprocess
+import sys
 from pathlib import Path
 
 import pytest
@@ -463,3 +464,50 @@ def test_nothing_in_this_tool_takes_a_pre_flight_disk_reading():
     source = (ROOT / "tools" / "check_pr_green.py").read_text()
     for stale in ("shutil.disk_usage", "statvfs", '"df"', "'df'"):
         assert stale not in source, stale
+
+
+# A suite killed by a signal is the third shape of one distinction this module
+# already makes twice: a timeout is unmeasured because slow is not broken, a
+# full volume is unmeasured because the host is not the branch, and a signal is
+# unmeasured for the same reason. On this host twelve seats run as one unix
+# user and some of them call `pkill`, so a seat's suite being killed by
+# somebody else's cleanup is ordinary. Measured instance:
+# this seat's own run on 2026-11-09 read `red` on a suite SIGTERMed at 494s.
+
+
+def test_a_suite_killed_by_a_signal_is_unmeasured_rather_than_red(repo):
+    """A merger handed red for this would hunt a failure that does not exist."""
+    branch(repo, "a", {"app.py": "def main():\n    return 2\n"})
+
+    def signalled(worktree, command, timeout):
+        return {"ran": False, "seconds": 494.4,
+                "reason": "the suites were killed by SIGTERM after 494.4s",
+                "tail": ["........ [ 69%]"]}
+
+    report = cpg.preview("main", "a", ["true"], 60, repo=repo, runner=signalled)
+    assert report["state"] == cpg.UNMEASURED
+    assert report["state"] != cpg.RED
+    assert "SIGTERM" in report["reason"]
+
+
+def test_run_suite_itself_classifies_a_signal_death_at_the_write(tmp_path):
+    """Not the caller's job to notice, the same way the full volume is not."""
+    script = tmp_path / "dies.py"
+    script.write_text(
+        "import os, signal, sys\n"
+        "print('........ [ 69%]', flush=True)\n"
+        "os.kill(os.getpid(), signal.SIGTERM)\n"
+    )
+    result = cpg.run_suite(tmp_path, [sys.executable, str(script)], 60)
+    assert result["ran"] is False, result
+    assert "SIGTERM" in result["reason"], result["reason"]
+    assert "494" not in result["reason"], "the seconds should be this run's own"
+
+
+def test_an_ordinary_nonzero_exit_is_still_red_and_not_unmeasured(tmp_path):
+    """The repair must not launder a real failure into "could not look"."""
+    script = tmp_path / "fails.py"
+    script.write_text("print('1 failed, 2585 passed')\nraise SystemExit(1)\n")
+    result = cpg.run_suite(tmp_path, [sys.executable, str(script)], 60)
+    assert result["ran"] is True
+    assert result["returncode"] == 1

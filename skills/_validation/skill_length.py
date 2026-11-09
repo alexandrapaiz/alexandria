@@ -33,6 +33,24 @@ the cap should be, because changing rule 4 is a charter edit and this seat does
 not make those. What it removes is the ability to pass the rule without
 knowing.
 
+**And it splits the count in two, added 2026-11-09, because the first run that
+read this instrument's output found the interesting half was not the prose.**
+Rule 4 counts "including frontmatter" and the frontmatter is where ADR-37 puts
+the revision record, one narrative entry per maintenance run, growing forever by
+design. On the day the split was added, `harness-engineering`, the gold specimen
+this library's whole quality bar was measured on, read 104 rendered lines of
+body against 123 of frontmatter: its metadata was larger than its advice and
+larger than the entire cap. Its five `provenance.revisions` entries were 8,651
+of the file's 17,602 characters, and three of those entries record, in their own
+words, cutting reader-facing advice to make room for a revision entry.
+
+So the two halves are reported apart, because the remedy differs. A long body is
+prose a seat can cut. A long frontmatter is a record the law requires, and
+cutting advice to pay for it is the gate doing harm rather than work. The
+smallest frontmatter in the library plus the shortest body already exceed 120,
+which means a cap on the sum cannot be met by any skill the format contract
+permits, and `--check` says so in its own output.
+
     python3 skills/_validation/skill_length.py              # the table
     python3 skills/_validation/skill_length.py --check      # exit 1 on a regression
     python3 skills/_validation/skill_length.py --since-retrofit
@@ -57,14 +75,33 @@ def rendered_lines(text: str, columns: int = COLUMNS) -> int:
     return sum(max(1, -(-len(line) // columns)) for line in text.splitlines())
 
 
+def split_frontmatter(text: str) -> tuple[str, str]:
+    """The YAML block and the body, by the second `---` line.
+
+    Rule 4 counts the frontmatter and that is the half nobody was looking at,
+    so every measurement here reports the two separately. `tools/` has its own
+    splitter; this one is deliberately standalone, because an instrument that
+    cannot run without importing the code it audits is harder to trust.
+    """
+    lines = text.splitlines(keepends=True)
+    fences = [i for i, line in enumerate(lines) if line.rstrip("\n") == "---"]
+    if len(fences) < 2:
+        return "", text
+    end = fences[1]
+    return "".join(lines[:end + 1]), "".join(lines[end + 1:])
+
+
 def measure(text: str) -> dict:
     lines = text.splitlines()
+    front, body = split_frontmatter(text)
     return {
         "wc_l": len(lines),
         "words": len(text.split()),
         "chars": len(text),
         "longest": max((len(line) for line in lines), default=0),
         "rendered": rendered_lines(text),
+        "front_rendered": rendered_lines(front),
+        "body_rendered": rendered_lines(body),
     }
 
 
@@ -84,7 +121,11 @@ def retrofit_commit(path: pathlib.Path) -> str | None:
 
 
 def at_commit(rev: str, path: pathlib.Path) -> str | None:
-    rel = path.relative_to(SKILLS.parent)
+    # `resolve()` first: every caller inside this file passes an absolute path
+    # from `skill_files()`, and the first caller from outside it passed a
+    # relative one and got ValueError out of `relative_to` instead of a
+    # measurement (2026-11-09).
+    rel = path.resolve().relative_to(SKILLS.parent)
     out = subprocess.run(["git", "show", f"{rev}:{rel}"],
                          capture_output=True, text=True)
     return out.stdout if out.returncode == 0 else None
@@ -92,13 +133,18 @@ def at_commit(rev: str, path: pathlib.Path) -> str | None:
 
 def table() -> None:
     print(f"{'skill':36s} {'wc -l':>6s} {'words':>6s} {'longest':>8s} "
-          f"{'rendered':>9s}  rule 4")
+          f"{'front':>6s} {'body':>5s} {'rendered':>9s}  rule 4")
     for path in skill_files():
         m = measure(path.read_text())
         verdict = "ok" if m["rendered"] <= RENDERED_CAP else \
                   f"over by {m['rendered'] - RENDERED_CAP}"
         print(f"{path.parent.name:36s} {m['wc_l']:6d} {m['words']:6d} "
-              f"{m['longest']:8d} {m['rendered']:9d}  {verdict}")
+              f"{m['longest']:8d} {m['front_rendered']:6d} "
+              f"{m['body_rendered']:5d} {m['rendered']:9d}  {verdict}")
+    print(f"\n`front` and `body` are the two halves of `rendered`. They are "
+          f"reported apart because the\nremedies are different: a long body is "
+          f"prose a seat can cut, and a long frontmatter is\nprovenance ADR-37 "
+          f"requires to grow on every maintenance run.")
 
 
 def since_retrofit() -> None:
@@ -125,22 +171,42 @@ def since_retrofit() -> None:
 
 
 def check() -> int:
-    findings = []
+    findings, body_only_pass = [], 0
     for path in skill_files():
         m = measure(path.read_text())
+        if m["body_rendered"] <= RENDERED_CAP:
+            body_only_pass += 1
         if m["rendered"] > RENDERED_CAP:
+            half = ("the frontmatter alone is over the whole cap"
+                    if m["front_rendered"] > RENDERED_CAP else
+                    "the body alone is over the whole cap"
+                    if m["body_rendered"] > RENDERED_CAP else
+                    "neither half is over the cap alone and the sum is")
             findings.append(
                 f"finding: {path.parent.name}: {m['wc_l']} lines to `wc -l` and "
                 f"{m['rendered']} rendered at {COLUMNS} columns, against rule 4's "
-                f"cap of {RENDERED_CAP}. Longest single line {m['longest']} chars.")
+                f"cap of {RENDERED_CAP}. Frontmatter {m['front_rendered']}, body "
+                f"{m['body_rendered']}, so {half}. Longest single line "
+                f"{m['longest']} chars.")
     for line in findings:
         print(line)
-    print(f"\n{len(skill_files()) - len(findings)} of {len(skill_files())} "
-          f"skills are under {RENDERED_CAP} rendered lines at {COLUMNS} columns")
+    total = len(skill_files())
+    print(f"\n{total - len(findings)} of {total} skills are under "
+          f"{RENDERED_CAP} rendered lines at {COLUMNS} columns, and "
+          f"{body_only_pass} of {total} are under it on the body alone")
     if findings:
         print("rule 4 is measured in `wc -l`, under which every one of these "
               "passes. This exit code is the unit rule 4 meant, not the unit "
               "it names, and changing the rule is the owner's.")
+        print(f"\nThe cap read as rendered lines including frontmatter is not "
+              f"reachable today, which is\nthe measurement this seat owes the "
+              f"owner alongside the unit question. The smallest\nfrontmatter in "
+              f"the library is {min(measure(p.read_text())['front_rendered'] for p in skill_files())} "
+              f"rendered lines and the shortest body is "
+              f"{min(measure(p.read_text())['body_rendered'] for p in skill_files())},"
+              f"\nso the shortest skill the format contract permits is already "
+              f"over {RENDERED_CAP}. Any cap on\nthe sum is therefore a cap on "
+              f"the provenance block first and on the advice second.")
     return 1 if findings else 0
 
 

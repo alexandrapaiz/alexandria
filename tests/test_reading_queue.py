@@ -1244,3 +1244,132 @@ def test_a_trailing_comma_on_the_asker_is_normalised_the_same_on_both_sides():
     line = rq.compose("2606.01234", "a reason", "the research seat,", "2026-11-02")
     assert rq.parse(line)[0].asked_by == "the research seat"
     assert rq.normalise_asker("  the   research  seat.  ") == "the research seat"
+
+
+# --------------------------------------------------------------------------
+# An id inside a sentence is not a request (engineer seat, 2026-11-09)
+#
+# Filed by the research seat, which measured the defect and declined to build
+# it because its decision record puts pipeline code outside its whitelist. The
+# cases below are the live lines it found, quoted rather than paraphrased, so
+# the matcher turns on the real prose and not on a reconstruction of it.
+# --------------------------------------------------------------------------
+
+def test_a_struck_question_that_mentions_a_paper_does_not_request_it():
+    """The shape the research seat found, and the reason the test is not
+    "the match starts at zero".
+
+    Every one of the nineteen live lines carries a strike, a bold or a backtick
+    before the id, because a struck question is how this file retires a line.
+    So position zero is the wrong test and these would all pass it.
+
+    Each line below is quoted from `docs/research/reading-queue.md` rather than
+    reconstructed, because the prose is what the matcher turns on. The first
+    draft of this test invented a case the guard accepts on purpose, which is
+    how the paragraph after the list got written.
+    """
+    lines = [
+        # The id after a struck "question" marker, line 186.
+        "- [x] ~~question — arxiv:2609.07103, Revisiting Complete Reasoning "
+        "Traces for Post-Training, publishes no full HTML and was read at the "
+        "abstract only~~",
+        # A line that says in prose that there is no id, line 179.
+        "- [x] ~~no arXiv id in the citing paper — SciWorld and BFCL-V3, the "
+        "two benchmarks the feedback-enrichment result is measured on, cited by "
+        "arxiv:2609.08404 without ids in the text~~",
+        # A bolded title first, the id further along, line 670.
+        "- [x] ~~**SandboxEscapeBench**, UK AI Safety Institute, reported "
+        "published 2026-03, and reported in arxiv:2603.02277~~",
+        # A backticked id inside a question, line 3455.
+        "- [x] ~~question - Does `arXiv:2510.22670` report an effect SIZE for "
+        "the when-to-use field, or only the keep-or-drop verdict?~~",
+    ]
+    for line in lines:
+        assert rq.parse(line) == [], line
+
+
+def test_an_emphasised_id_in_the_leading_position_is_still_a_request():
+    """Where the guard deliberately stops, said out loud because it looks like
+    a gap.
+
+    `- [x] **arxiv:1234.5678 is the wrong paper**` is prose, and this guard
+    reads it as a request. It cannot tell that case from an emphasised request
+    without parsing English, and the file's documented format says an id in the
+    leading position IS the request. No live line has that shape. If one ever
+    does, the fix is the line and not the pattern, and this test is where the
+    next reader finds that out instead of inferring a bug.
+    """
+    read = rq.parse("- [x] **arxiv:2603.02277 is the wrong paper for this**")
+    assert len(read) == 1 and read[0].arxiv_id == "2603.02277"
+
+
+def test_the_id_still_counts_through_the_emphasis_the_file_actually_uses():
+    """The other half, and it is why the guard strips rather than anchors.
+
+    A struck request is still a request that was made, and the duplicate check
+    in `add` depends on seeing it. Dropping every emphasised line would trade
+    this defect for its mirror image.
+    """
+    for body in ("arxiv:2602.12670", "~~arxiv:2602.12670~~",
+                 "**arxiv:2602.12670**", "`arxiv:2602.12670`",
+                 "  ~~ arxiv:2602.12670 ~~"):
+        read = rq.parse(f"- [x] {body} — why — asked by the chair — 2026-11-02")
+        assert len(read) == 1 and read[0].arxiv_id == "2602.12670", body
+
+
+def test_the_five_papers_nobody_asked_for_can_be_queued_again():
+    """What the guard buys, on the live file, and it is not a wasted slot.
+
+    `pending` reads only unchecked lines and all nineteen are struck, so the
+    served queue is unchanged by this guard. The reachable harm was in `add`:
+    five of the nineteen carry an id that appears on no other line, so each one
+    made `add` refuse a real request with "the paper is read and the answer is
+    in the file", which was false about all five. Two of the five open with the
+    literal words "no arXiv id".
+    """
+    text = rq.read_file(rq.QUEUE_PATH)
+    for paper in ("2601.04748", "2407.18901", "2609.08404",
+                  "2609.07103", "2603.02277"):
+        assert rq.hits(text, paper) == [], (
+            f"{paper} is still read as a request by some line in the live file")
+        rq.add(text, paper, "a real request for this paper",
+               "the engineer seat", "2026-11-09")
+
+
+def test_a_paper_genuinely_struck_is_still_refused():
+    """The guard must not become a way to re-queue a paper that was read.
+
+    The control for the test above: it asserts five refusals went away, and on
+    its own it cannot tell a narrowed guard from a deleted one.
+    """
+    text = rq.read_file(rq.QUEUE_PATH)
+    struck = [i for i in rq.parse(text) if i.checked]
+    assert struck, "no struck request on the live file, so this proves nothing"
+    for item in struck[:5]:
+        with pytest.raises(ValueError, match="already in this file"):
+            rq.add(text, item.arxiv_id, "a reason",
+                   "the engineer seat", "2026-11-09")
+
+
+def test_the_guard_returns_a_value_in_band_when_it_does_nothing():
+    """The control Ursa's ExO seat asked for, applied to this guard.
+
+    Its refinement: ask what an instrument returns when it does nothing, and
+    whether that value is inside the legal range of the real answer. A
+    `REQUEST` pattern that could never match returns `[]` from `parse`, `[]`
+    from `pending`, and a distill run that reads the day's intake and nothing
+    from the queue. Every one of those is legal: an empty queue is the state
+    this file is supposed to reach. So the silent failure is indistinguishable
+    from success and needs a control, which is this test.
+
+    It is deliberately a floor on the live file rather than an exact count, so
+    that draining the queue does not fail it.
+    """
+    text = rq.read_file(rq.QUEUE_PATH)
+    items = rq.parse(text)
+    assert len(items) > 150, (
+        f"the live queue parses {len(items)} requests; a guard that stopped "
+        "matching would read as an empty queue and distill would be silent")
+    assert rq.REQUEST.match("arxiv:2602.12670"), "the pattern matches nothing"
+    assert sum(1 for i in items if not i.checked) > 50, (
+        "no unchecked request survives the guard")

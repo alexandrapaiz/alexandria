@@ -10,6 +10,10 @@ the library listing skips it.
 - `decoys.json` - the null model. Eight plausible skills from domains this
   library does not serve. A skill fires only when it strictly outranks all of
   them on a prompt.
+- `skill_length.py` - rule 4's cap in three units, with the frontmatter and the
+  body reported apart. `--check` exits 1 while any skill is over the rendered
+  cap, which is all ten, and prints the floor that makes the cap unreachable.
+  Wired into no gate: the unit is the owner's to rule on.
 - `earned_pass.py` - the denominator gate, and the one place an instrument
   here may say it passed. `--probe` runs every registered gate against an
   input it cannot honestly pass and exits 1 if any of them reports a pass.

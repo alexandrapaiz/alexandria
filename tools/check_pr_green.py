@@ -79,6 +79,7 @@ import json
 import os
 import shlex
 import shutil
+import signal
 import subprocess
 import sys
 import tempfile
@@ -286,6 +287,27 @@ def run_suite(worktree: Path, command: list[str], timeout: int) -> dict:
                 "reason": ("the shared volume filled while the suites ran, so "
                            "this is a fact about the host and not about the "
                            "merge. Re-run when there is room"),
+                "tail": lines[-TAIL_LINES:]}
+    if done.returncode < 0:
+        # Killed by a signal, which `subprocess` reports as the negated signal
+        # number. The suite said nothing about the merge, so this is the third
+        # shape of the distinction this file already makes twice above: a
+        # timeout is `unmeasured` because slow is not broken, a full volume is
+        # `unmeasured` because the host is not the branch, and a signal is
+        # `unmeasured` for exactly the same reason.
+        #
+        # Not hypothetical. On 2026-11-09 this seat's own run read `red` on a
+        # suite SIGTERMed at 494 seconds, and on this host twelve seats run as
+        # one unix user and some of them call `pkill`, so a seat's suite being
+        # killed by somebody else's cleanup is an ordinary event rather than an
+        # edge case. A merger handed `red` for it would send a branch to look
+        # for a failure that does not exist.
+        name = signal.Signals(-done.returncode).name if -done.returncode in \
+            {s.value for s in signal.Signals} else f"signal {-done.returncode}"
+        return {"ran": False, "seconds": round(time.monotonic() - started, 1),
+                "reason": (f"the suites were killed by {name} after "
+                           f"{round(time.monotonic() - started, 1)}s, so they said "
+                           f"nothing about the merge. Re-run"),
                 "tail": lines[-TAIL_LINES:]}
     return {"ran": True, "returncode": done.returncode,
             "seconds": round(time.monotonic() - started, 1),

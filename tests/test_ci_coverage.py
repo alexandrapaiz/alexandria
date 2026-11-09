@@ -225,6 +225,59 @@ UNCOVERED = {
     # And the second file this run added, caught by this gate the same way
     # and pinned for the same reason: no seat can add it to a workflow.
     "tests/test_voice_enforcements.py",
+    # Added 2026-11-09 09:3xZ by the engineer seat, and like the two above it
+    # is not this run's file. It reached `main` in the ExO seat's #886, merged
+    # at 6b63a3fa, and has been unpinned and uncovered since. Reproduced on a
+    # clean checkout of `origin/main` before pinning, so this is not a defect
+    # of the branch that carries the fix. Pinning is still the last of the
+    # gate's three remedies and still the only one available, because the other
+    # two are a workflow write that no seat's dispatch permits.
+    #
+    # What it guards, because the gate requires a reason and not a name.
+    # `test_kill_vocabulary.py`, 13 cases: that the audit log's `exit` field is
+    # tallied **split at the runtime boundary** of 2026-10-17 rather than over
+    # its whole history, since the field changed encoding there and carries no
+    # marker saying so, and that the standards are checked against the surfaces
+    # in both directions. The second direction is the one that had never been
+    # checked: a standard naming a code no surface writes is a rule watching a
+    # dead value, and a wake that never fires looks exactly like a fleet with
+    # no kills. Silent on a pull request, the era split is what rots first,
+    # because the next seat to touch the tally has no red to tell it that a
+    # whole-history count returns the union of two vocabularies.
+    "tests/test_kill_vocabulary.py",
+    # Added 2026-11-09 by the engineer seat, and unlike the three above this
+    # one IS this run's file, so it is pinned in the commit that creates it
+    # rather than discovered later by somebody else's red.
+    #
+    # What it guards, because the gate requires a reason and not a name.
+    # `test_merge_register.py`, 8 cases, over the copy of HQ's register merger
+    # vendored here the same day: that the vendored header still carries a
+    # checkable blob sha and source commit, that its usage line names a path
+    # that exists in this repository, that a hash line inside a fenced block is
+    # not read as an entry start, that two sides appending different entries
+    # both survive with nothing blended, that a duplicate entry on either side
+    # is refused with nothing written, and that the four `--heading` patterns
+    # the header documents each find a floor of real entries in the real file.
+    # Silent on a pull request, the last of those is what rots first: a pattern
+    # that stopped matching does not fail, it merges a one-entry document and
+    # exits 0, so the register it was pointed at is rebuilt as a single block.
+    "tests/test_merge_register.py",
+    # Added 2026-11-09 by the engineer seat, and the fourth file pinned here
+    # today that is not this run's. It reached `main` in #895 about a minute
+    # after the sha this run first measured the trunk at, which is why an
+    # earlier reading of this gate said five red and the skill seat's later
+    # one said six. A pin covers the files in front of it and nothing else.
+    #
+    # What it guards, because the gate requires a reason and not a name.
+    # `test_burn_shares.py`, 10 cases: that the burn split reads a cycle at an
+    # instant, bounding the RUN SET by `--now` and not only the clock, which is
+    # the property HQ's `tools/ration.py` is missing, so a read at hour 10 of a
+    # past cycle divides that whole cycle's spend by ten hours; and that a
+    # ramp-up week the fleet never filled is excluded from the baseline rather
+    # than reported as growth. Silent on a pull request, the first of those is
+    # what rots: the flag looks like a clock override and the run-set bound is
+    # invisible to a reader who does not run the test.
+    "tests/test_burn_shares.py",
     "tests/accounts.test.mjs",
     # Added 2026-10-13 with the Polar integration, pinned for the same
     # structural reason as every line above and worth more than any of them.
@@ -886,6 +939,29 @@ UNCOVERED = {
     # nothing earlier, and the test that catches that is in this file.
     # Counted at the same standing finding as the two lines above.
     "tests/test_law8_url.py",
+    # Added 2026-11-09 with `tools/sentinel.py`, pinned for the one
+    # structural reason every line above is pinned: the step that would run it
+    # goes in `.github/workflows/checks.yml`, which no seat's token may write,
+    # and `docs/sprints/sprint-2026-10-12.md` tells this seat in its own words
+    # not to attempt it again. Counted at the same standing finding,
+    # `INC-2026-10-17-the-pin-list-grew-for-the-seventh-time-in-nine-days`.
+    #
+    # What it guards is the only check in this repository that treats the
+    # absence of a line as a finding. Four of its seven codes cannot be
+    # printed by the process that did the work, which is the whole argument
+    # for the file: a run killed at teardown leaves no verdict, and every
+    # other remedy in the register for that class prescribes `pipefail` or a
+    # redirect against a defect that was never a pipe. Silent on a pull
+    # request, a regression here reads as a passing check over work that
+    # never finished, which is the failure the gate is named after.
+    #
+    # Deliberately inserted at this anchor rather than at the tail of the set
+    # or above the `test_prose_symbols.py` block. #864 takes the second and
+    # #862 takes the first, in the same hour, and two sets appended at one
+    # anchor conflict on the second merge however correct both lines are,
+    # which is incident 6's class. More than thirty lines of comment sit
+    # between the three hunks, so all three apply in any order.
+    "tests/test_sentinel.py",
     # Added 2026-11-08 with `tools/provider_cycle.py`, pinned for the same
     # structural reason as every line above: the step that would run it goes
     # in `.github/workflows/checks.yml`, which no seat's token may write.

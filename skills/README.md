@@ -50,7 +50,9 @@ filled the block with fifteen claim ids over six papers, because PACE
 Do not cite the census as the library's current state. It was a reading of a
 corpus that has grown since.
 
-Three instruments, and they measure different things. All three have to pass.
+Four instruments, and they measure different things. Three have to pass and the
+fourth cannot be passed by any file this library's own format contract permits,
+which is a finding rather than a gap and is the last of the four below.
 
 - **Does the skill fire?** `_validation/trigger_test.py` over each skill's
   `triggers.json`, with the dated bundles in `_validation/results/`. It runs on
@@ -76,6 +78,21 @@ Three instruments, and they measure different things. All three have to pass.
   table gate grants a dated caption. Nothing in `tests/` or
   `.github/workflows/` runs it yet, so it is a gate this seat can write and
   cannot arm, and that half is filed for the engineer.
+- **Is the skill short enough to read?** `_validation/skill_length.py`, armed in
+  `tests/test_validation_instruments.py` on 2026-11-09. It reports three units
+  side by side, because ADR-38 rule 4 caps a skill at 120 lines counted with
+  `wc -l` and every `SKILL.md` now writes one paragraph per physical line, so a
+  paragraph costs one line however long it is. All ten skills pass the cap in
+  `wc -l` and **none of them passes it in rendered lines at 100 columns**, which
+  is what a reader pays. As of 2026-11-09 it splits the count into frontmatter
+  and body, and that is where the answer turned out to be: two of the ten are
+  under the cap on the body alone, the smallest frontmatter in the library is 39
+  rendered lines and the shortest body is 104, so the sum floor is 143 and no
+  file this contract permits can reach 120. The cap counts a provenance block
+  that ADR-37 requires to grow on every maintenance run, and the gold specimen's
+  had reached 49 percent of its own file. The unit question is the owner's, it
+  is filed, and this instrument is deliberately wired into no gate until she
+  rules.
 
 Under ADR-36 a skill with no eval is `status: draft` and never `active`, and a
 skill whose eval shows no gain is retired with the numbers rather than quietly
@@ -89,6 +106,21 @@ a different reason that is not about measurement at all:
 refined, when a cited paper's citations move sharply, or when its own eval
 regresses; each skill's `provenance.revisions` records what fired and what
 changed.
+
+Since 2026-11-09 that record is one line per revision in the frontmatter, naming
+the date, the trigger and what changed, with the full narrative under a dated
+heading in `skills/<slug>/REVISIONS.md`. The reason is a measurement rather than
+taste: nothing reads `provenance.revisions`, since `site/lib/content.js`
+`parseSkill` returns `name`, `description`, `version`, `status`, `extracted`,
+`validated`, `claims`, `papers` and the body and no test, instrument or tool
+reads the field, while rule 4's cap counts it. On `harness-engineering` the
+entries had reached 8,651 of 17,602 characters and three of them record cutting
+reader-facing advice to pay for the space a revision entry took.
+`prompts/skill-extract.md` carries the rule. Two skills follow it today,
+`harness-engineering` and `agent-containment`, and `agent-containment` replaces
+six moved entries with a single pointer line rather than one line each, so its
+frontmatter no longer names what fired for those six. Eight skills still hold
+their narratives in the frontmatter.
 
 ## Consumer reports (ADR-38, 2026-09-29)
 
