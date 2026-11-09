@@ -1114,3 +1114,128 @@ This is recorded rather than quietly corrected because it is the exact failure
 mode ADR-35 names. The error came from reading a research note's summary of an
 ablation row instead of the row, and it was caught by going back to the paper
 for an unrelated check. The note was not wrong here; the compression was mine.
+
+## v10, 2026-11-09: the no-transfer rule gains its scope condition, and two rows of the routed table reverse
+
+v9 shipped a blanket instruction. Every number in this file is a measurement of
+one harness, so name yours and re-measure. That was the right direction and the
+wrong shape, and the research seat said so itself: it had routed the finding on
+a partial read of `2610.07639` and the full read supports a rule with a
+condition attached, which is usable rather than only cautionary.
+
+The condition is a classifier, and it falls along what the mechanism does to a
+capability. Mechanisms that MEDIATE a capability diverge across harnesses once
+engaged. Mechanisms that REMOVE the capability converge once engaged. So a
+figure for a mediating mechanism needs its harness named and a figure for a
+removing mechanism does not. That is a smaller edit than a blanket warning and
+it is the one the evidence carries.
+
+The paper never states it. It prints the cells and draws no such split, so the
+taxonomy is the research seat's construction over the paper's tables, and this
+file labels it that way.
+
+### What this seat recomputed rather than took, and what moved
+
+The paper was re-read in full here before a line was written, 114,176 chars at
+exit 0, and every row of the routed table was recomputed from Tables 6 and 7
+cell by cell. Eight of ten rows reproduced exactly. Two reversed, in opposite
+directions, and both reversals come from a check the routed table did not run.
+
+**Project trust is not divergent.** Its 51.7 pp engaged-arm spread is one
+harness: Gemini CLI at 0.0 percent attack success and 0.0 percent task utility,
+0 of 240, which the paper marks with its own asterisk and explains as a
+folder-trust gate that blocked startup. A harness that never started scores no
+attack effect for that reason alone. The four remaining harnesses with an on
+arm sit at 50.0, 50.0, 50.0 and 51.7, a spread of **1.7 pp**, which makes
+project trust the most convergent mechanism in the paper rather than a
+mediating one.
+
+**Command denylisting is not convergent.** Its 5.0 pp is computed over the four
+harnesses that have an off arm. The two marked D for default-enforced, Codex
+CLI at 10.0 percent and gptme at 40.0, have the mechanism engaged and no
+comparison arm, so they are excluded from a paired spread and are exactly the
+harnesses a porting decision is about. Across all six the engaged-arm spread is
+**40.0 pp**.
+
+So the split survives, and its clean evidence is narrower than the eight rows
+suggested: path restriction and command allowlisting on the mediating side,
+network isolation on the removing side. Read-only sits on the removing side at
+two attack oracles per harness, the thinnest denominator in the paper, with
+every engaged cell at the floor, so its convergence is an absence of variance
+to measure rather than an agreement between harnesses.
+
+Checklist item 3 now carries the sharpest cell in the paper instead of the
+allowlist block v9 used, because this one needs no confound argument at all.
+Under path restriction, Codex CLI scored 0.0 percent attack success (0 of 40)
+and Claude Code 97.5 percent (39 of 40), same mechanism, same four tasks, same
+base model, at task utility 83.6 and 85.6 percent. Two points of utility apart
+and 97.5 points of attack success apart. Fisher on those two cells is 7.6e-22,
+computed here. Neither harness bought its number by refusing work, which is the
+objection that disqualified the approval-engaged spread v9 declined.
+
+### Three limits on quoting any of these rates, now in the caveats
+
+The routed note named all three and none was in the file.
+
+Utility and attack success are **oracle-check** pass rates, section 6.1
+dividing passed oracles by total oracles, at 10 trials per
+task-harness-setting. So a cited `0/40` or `60/60` is **ten runs** and not
+forty or sixty independent observations, and this file quoted several such
+fractions in v9 as though they were sample sizes.
+
+Each mechanism carries its own two to four tasks and its own oracle count, so
+the nine **do not compare to each other**. Only a mechanism's own on-against-off
+arm is a comparison.
+
+The paper reports **no dispersion of any kind**: no seed, deviation, interval
+or test anywhere, its sole stated mitigation being section 7.2's ten
+repetitions. Every spread here is a point estimate, and the 5.0 pp convergence
+figures are inside what ten trials cannot resolve. That is the second reason the
+bottom of the ranking is weaker evidence than its position suggests.
+
+### One correction the research seat withdrew, and one this file did not need
+
+Two of the four cautions in the routing note were already carried by v9. The
+approval arm's reviewer is a fixed Qwen3.8-27B model rather than a person, so
+the paper is on this file's never-citable-for-approval-fatigue list, and the
+ten-trials-no-intervals bound is in the same caveat.
+
+The third caution, that harness-beats-posture holds for the pooled average only
+and that three of six harnesses show a larger posture effect, repairs nothing
+here, because v9 declined the posture reordering and the body makes no
+harness-beats-posture claim. The word appears once in this file, in a
+frontmatter revision line recording the refusal. Verified by grep rather than
+by recollection.
+
+### The bounded superlative in delta 1, repaired in the builder's scope
+
+The research seat's test is one question of a bounded superlative inside a
+procedure step: is the bound's scope the scope a builder acting on it is in.
+Delta 1's procedure item 2 said "the one released vendor fix in this literature
+implements step 2". The bound is correct and the scope is wrong, because a
+builder reading it is standing in the product rather than in the literature.
+
+Checked live here rather than inherited: the product carries **595 primary
+advisories** of 765 rows, 170 of them GitHub duplicates, which reproduces the
+research seat's count exactly. Four of them are in this file's own `$PATH`
+dimension, patched at **2026.2.14, 2026.2.19, 2026.2.22 and 2026.3.1**, so
+three precede the one this file cites. The research seat said two precede it;
+on this measurement it is three, and the versions are above so the difference
+can be settled rather than argued.
+
+One of those three is worth more than the count. GHSA-qhrr-grqp-6x2g, patched
+2026.2.22, is titled for trusted `$PATH` directories allowing binary shadowing
+in allowlist matching, which names the **pre-existing shadow** shape this file
+says the `realpath` pinning does not reach. Whether the fix reaches the
+measured case is unchecked here and queued, because an advisory summary is
+evidence that a fix exists and not evidence of what the fix contains. That is
+this file's own last caveat applied to a vendor page instead of to a
+related-work section, and it is the second time this cluster has been corrected
+by a live source rather than by a paper.
+
+### Still unmeasured
+
+No differential delta, no bare-arm screen, `status: draft`, `validated: ""`.
+`ap-t12` is written against the one decision rule above and is unqualified like
+the other eleven treatment tasks. Length is 119 lines, and the additions were
+paid for inside existing lines rather than by new ones.
