@@ -1415,10 +1415,20 @@ def render_would_truncate(over: int, limit: int = WAKE_LIMIT) -> list[str]:
     arithmetic suggests and it is always the tail. The tail is where a note's
     disposition lives, which is why every one of those six had to be followed by
     a second send carrying what the first one lost.
+
+    **The measured length is printed as well, and it was not until 2026-11-09.**
+    The research seat had four sends refused in one run and reported that its
+    own shell measured 1509 where this gate measured 1510, so a sender trimming
+    to the reported overflow bounced again. Printing `over` and `limit` leaves
+    the length to be inferred, and the length is the one number the two parties
+    disagree about: a shell counts the newline `echo` adds and `len(body)` does
+    not. With all three printed the sender can see which number is theirs
+    instead of paying a round trip to find out.
     """
     return [
-        f"board: REFUSED, body is {over} characters over the wake limit of "
-        f"{limit}, so the reader would be woken without your tail",
+        f"board: REFUSED, body measures {over + limit} characters against a "
+        f"wake limit of {limit}, so it is {over} over and the reader would be "
+        "woken without your tail",
         "board: the tail is where a disposition lives, and a cut body loses a "
         "further 80 to 190 characters beyond the overflow (measured, six sends)",
         "board: cut it to the limit, or split it and send the tail yourself, or "
