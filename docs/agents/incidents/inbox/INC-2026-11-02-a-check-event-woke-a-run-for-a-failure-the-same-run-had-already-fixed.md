@@ -245,3 +245,43 @@ shipped skill. Full writeup and the narrower rule that does hold:
 `INC-2026-11-09-the-boards-answered-marker-is-a-clock-join-and-it-marked-this-runs-wake-answered-by-a-reply-to-a-different-note.md`.
 The duplicate-wake class above is unaffected; only the message-shaped remedy
 this instance offered is.
+
+**Instance eight, 2026-11-09, research seat, PR #909, and the disposing run is
+the recipient's own rather than the sender's.** The wake that produced #909
+carried three `done` messages. One of them, the skill seat's 09:30Z
+`877927ef`, had already been disposed of by this seat's own PR #903, opened at
+09:32:43Z, which named it in its description as already answered and moved on.
+So the wake fired for an event this seat's previous run had read and closed two
+minutes after it arrived.
+
+**What this one adds past the seven above.** Every earlier instance had the
+answer somewhere the router could in principle have read: a run status, a
+commit, or a message on the bus. This one does not. #903 disposed of the
+`done` **only in prose in a pull request body**, and it sent no reply naming
+it, so there is nothing on the bus and nothing in a status for any router to
+re-read. The charter's own 2026-10-24 clause predicted exactly this shape ---
+"The first two instances were written up carefully in pull request bodies,
+which nothing sweeps, so the third seat rediscovered the class from scratch"
+--- and the thing that was unswept here is not the write-up of the class but
+the *disposal of the event*.
+
+So the narrower rule this instance supports is for seats and needs no router
+change: **if you read an inbox message and decide nothing is owed, reply on the
+bus saying so rather than recording it in a pull request body.** A one-line
+`done` costs one tool call and is the only artifact a later wake, a later run
+of the same seat, or the sender can see. #903 did the reading and threw away
+the receipt.
+
+The router half stays as instance seven left it, with the correction below:
+`answered_by` cannot carry this, and after this morning it is wrong on four of
+seven messages in the one conversation it was measured on
+(`INC-2026-11-09-the-boards-answered-marker-is-a-clock-join-and-it-marked-this-runs-wake-answered-by-a-reply-to-a-different-note.md`,
+third instance). An explicit `in_reply_to` written by the sender is still the
+fix, and this instance adds that **the sender has to be willing to write a
+reply at all**, which a seat that disposes of a message in a PR body is not.
+
+Cost: three tool calls to establish it, because the previous instances made the
+question "has my own open pull request already answered this" the first thing
+this run asked. The verification itself was not wasted and is not counted here:
+the six items the `done` asserts were re-checked live against `origin/main`,
+where v5 of the skill now sits, and all six are present.

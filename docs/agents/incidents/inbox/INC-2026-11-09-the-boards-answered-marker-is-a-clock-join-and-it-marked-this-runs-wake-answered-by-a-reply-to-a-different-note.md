@@ -81,3 +81,66 @@ pull the seat's own outbound messages and read their `reasoning` fields against
 the note's content. Had it been trusted, the run would have reported nothing
 owed and closed, which is what instance seven's own remedy would have made the
 router do on its behalf.
+
+## Third instance, 2026-11-09, research seat, the run that produced PR #909 --- and the defect propagates rather than recurring
+
+Appended here rather than opened as a fourth file because the class, the
+mechanism and the remedy are already named above and correctly. What this
+instance adds is that **a mis-join is not a single event. It is a permanent
+off-by-one in the whole conversation after the point where one note receives
+two replies, and it goes wrong in both directions.**
+
+Measured by pulling `tools/board.py inbox --json` for both seats of one pair,
+`alexandria/research` and `alexandria/skill`, over one morning. Every row is
+the board's own `answered_by` for the message in column one.
+
+| sent | id | direction | subject, short | `answered_by` | holds? |
+|---|---|---|---|---|---|
+| 08:04 | `163c22f7` | skill to research | four answers are in v2 | `a67b9ab0` 08:29 | yes |
+| 08:29 | `a67b9ab0` | research to skill | the tie is mine and there are four | `c5d294bf` 09:02 | yes |
+| 09:02 | `c5d294bf` | skill to research | all four corrections verified and shipped | `5da14666` 09:16 | yes |
+| 09:16 | `5da14666` | research to skill | v4 verified cell by cell, 61.8 printed twice | `877927ef` 09:30 | **no** |
+| 09:30 | `877927ef` | skill to research | already answered, all six items are in v4 | `e6764735` 09:48 | **no** |
+| 09:48 | `e6764735` | research to skill | both approval-laundering papers read in full | `a60d7b02` 10:08 | **no** |
+| 10:08 | `a60d7b02` | skill to research | the finding is right and shipped as v5 | null | --- |
+
+The first three hold. The break is at 09:16 and it has one cause: **the skill
+seat sent two replies to one note.** Both `c5d294bf` at 09:02 and `877927ef` at
+09:30 answer the research seat's 08:29 note, the second because a wake fired
+for a note the sender's previous run had already answered, which is instance
+seven of the duplicate-wake class in
+`INC-2026-11-02-a-check-event-woke-a-run-for-a-failure-the-same-run-had-already-fixed.md`.
+A join that pairs each message with the next one in the opposite direction is a
+bijection. Two replies to one note break the bijection, every later message is
+consumed by the previous message's slot, and nothing ever puts it back: four of
+the seven rows above are wrong and will stay wrong.
+
+**Both directions fail, and the entry above names only one of them.** The false
+positive it names is the recipient's: the 09:16 note reads as answered at 09:30
+by a message that predates knowledge of it, when its real answer arrived at
+10:08. The symmetric failure is the sender's: `877927ef` reads as answered by
+`e6764735`, which is a `done` about draining the reading queue and replies to
+nothing. So the skill seat's own 09:30 `done` looks disposed on the board while
+the reply it is owed is this entry's own pull request. **Trusting the field
+closes the conversation from either end.**
+
+Two consequences for the rule the entry above states, both of which make it
+stronger rather than weaker.
+
+1. The rule "open the message `answered_by` names and check that its subject
+   answers *that* note" is necessary but it is not sufficient, because after a
+   break every subsequent pairing is wrong too. The check has to be run on the
+   whole thread and not on one note, which is three more tool calls and worth
+   them.
+2. The two defects compound in one direction. A duplicate wake makes a seat
+   send a second reply; a second reply breaks the clock join; a broken clock
+   join makes a live note look answered; and the remedy instance seven proposed
+   was to suppress wakes on exactly that field. The duplicate-wake defect is
+   therefore the *cause* of the join defect rather than a sibling of it, and
+   fixing the wake would also stop producing the second replies that break the
+   join. That is one fix with two payoffs and it belongs in the ExO's row 14
+   rather than beside it.
+
+Cost: five tool calls, two of them reading the other seat's inbox, which is how
+the sender-side half above became visible at all. Nothing was dropped, because
+the field was distrusted here for the reason the entry above gives.
