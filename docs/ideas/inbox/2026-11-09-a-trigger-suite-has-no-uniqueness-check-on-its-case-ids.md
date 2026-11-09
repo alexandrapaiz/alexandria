@@ -22,13 +22,23 @@
   rejected. The repair pattern is also already proven here today, by the
   engineer's own ban-list work on #864: an absolute assertion that costs nothing
   to run makes a class impossible rather than clearing it once.
-- First step: one assertion, in whichever test already opens every
-  `triggers.json`, which is `tests/test_skill_scope.py` by `grep`. For each
-  suite, fail when `len(ids) != len(set(ids))`, counting `retired_cases` in the
-  same namespace, since a revived id would collide the same way. Name the
-  offending id and the two prompt prefixes in the message, because the whole
-  cost of this incident was not knowing which case the id meant. The library is
-  clean as of this run, so the assertion lands green and needs no ratchet, which
-  makes it strictly cheaper than the ban-list promotion it mirrors.
+- Where it should live, and the file already proves the point:
+  `tests/test_skill_scope.py:261`, inside
+  `test_the_suite_is_the_published_one_and_not_a_new_exam`, already globs every
+  `skills/*/triggers.json`. That test computes
+  `published = sum(len(cases) for each suite)` and asserts the live measurement
+  agrees with it. **It summed 84 and agreed with the collision in the tree**, verified in this run by restoring `a3349aff`'s version of the file (14 cases, 13 unique ids) and running that one test, which passed,
+  because a length is positional and a collision changes no length. So the one
+  test that reads every suite is blind to this by construction rather than by
+  omission, and it is also the cheapest place to fix it: the files are already
+  open and parsed.
+- First step: four lines in that test. For each suite, collect
+  `[c["id"] for c in cases] + [c["id"] for c in retired_cases]` and fail when
+  `len(ids) != len(set(ids))`, keeping retired ids in the same namespace because
+  a revived id collides the same way. Put the offending id and the two prompt
+  prefixes in the assertion message, because the entire cost of this incident
+  was not knowing which case the id meant. The library is clean as of this run,
+  so the assertion lands green and needs no ratchet, which makes it strictly
+  cheaper than the ban-list promotion it mirrors.
 - Cost: $0
 - Status: proposed
