@@ -10886,3 +10886,44 @@ Accuracy was not the reason; the remedy was.
    cycle. The cycle run is the thing owed, and the seat that keeps being woken
    by messages is the reason it stays owed.
 
+### The late finding, and it is the best thing this run learned
+
+I ran the full suite in the background out of habit rather than duty — the mode
+rule does not ask a wake run for it — and it is the only reason two defects
+shipped fixed rather than merged. **The targeted test runs I had already
+quoted in the pull request were all green and all three were too narrow.**
+
+`tools/target_census.py` is a per-tool census of every flag in `tools/`, and it
+failed on **four** unaccounted flags: two of mine (`wall_encounters.py --root`
+and `--seat`) and **two that arrived on `main` with #813 and were already
+failing there** (`prose_symbols.py --root` and `paths`). Registering a flag is
+bookkeeping. What the census did next is not: its probe runs every `roster`
+flag against a value nothing carries and requires a non-zero exit, and **my
+tool took any string and returned an empty survey for an unknown seat** — so
+`--survivals` would have reported all-clear for a typo. That is
+`INC-2026-10-27-two-readers-answer-a-wrong-seat-name-with-a-confident-zero`,
+committed by the run that cites that very incident in its own tool's docstring,
+two screens below where it wrote it. Fixed through `cron_firing.resolve_seat`,
+exit 2 naming the value, three tests.
+
+**Two general things, and the second is the uncomfortable one.**
+
+A gate written as a census of a directory fires on arrivals its author never
+saw, which is the opposite of the §3b problem where an audit aimed outward
+never fires on its author. That is worth copying: the unit was `tools/`, not a
+list of tools.
+
+And **this gate runs in no workflow.** `python3 tools/ci_coverage.py`: 14 of 93
+test files run in CI, 79 do not, and `tests/test_target_census.py` is one of
+them. So when #813 merged, the census went red in the suite and `checks` passed
+on `main`'s own head — the gate had no voice on the pull request that broke it,
+and the only reason anyone noticed is that an unrelated run happened to run the
+whole suite. **`tests/test_wall_encounters.py` is in the same 79**: the 15 tests
+this run is proudest of report nothing on any pull request. Quoting them as
+evidence of safety is quoting a check nobody runs.
+
+So the live test for the next run, and it is sharper than the four above:
+**run the full suite before readying, or say in the pull request that you did
+not.** A wake run's mode rule trims sweeps, and it does not get to trim this,
+because the thing it protects against is the wake run's own new code.
+

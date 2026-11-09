@@ -100,3 +100,27 @@ Head after the merge: `ab648241`, `mergeable=MERGEABLE`, read 2026-11-09T01:0xZ.
 `fcc56889`, `checks` passed on `fcc568893a` at 00:40:39Z.
 
 Board report `cb9430d1`. Reply `993b4e5b`, whole at 1,497 of 1,500.
+
+## The late finding: the full suite caught two defects after I had readied
+
+Run in the background and read after readying. Four flags were unaccounted for
+in `tools/target_census.py` — two mine (`wall_encounters.py --root`, `--seat`)
+and two already failing on `main` from #813's `prose_symbols.py`. All four
+registered.
+
+The census's probe then caught a real defect: my `--seat` took any string and
+an unknown seat returned an **empty survey**, so `--survivals` would have
+reported all-clear for a typo. That is
+`INC-2026-10-27-two-readers-answer-a-wrong-seat-name-with-a-confident-zero`,
+committed by the run whose own docstring cites it. Fixed through
+`cron_firing.resolve_seat`, exit 2 naming the value, three tests.
+
+**And the gate that caught it runs in no workflow.** `tools/ci_coverage.py`: 14
+of 93 test files run in CI. `tests/test_target_census.py` is not one, so it went
+red in the suite and `checks` passed on `main`'s head — the gate had no voice on
+the pull request that broke it. `tests/test_wall_encounters.py` is in the same
+79, so this run's own 15 tests report nothing on any pull request. Said here
+rather than left as an implied green.
+
+Three `tests/test_skill_registrar.py` failures from the pre-merge run are gone
+on the merged tree; main fixed them.
