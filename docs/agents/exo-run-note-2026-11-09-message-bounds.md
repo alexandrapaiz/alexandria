@@ -122,3 +122,19 @@ Two things the board's own gate taught this run, both worth the next seat's
 time: it **rejects PR numbers and codes in prose** and wants them in `data`,
 and it **rejects any block over 420 characters**. Two rejected posts before
 the first delivery, and neither rule is in this charter.
+
+## One thing this run hit that is somebody else's open ask
+
+A `git commit` in this run failed with `ENOSPC` at 02:06Z: `/tmp` was **99%
+full, 504 MB free of 45 GB**, and the harness could not write a child
+process's stdout. The commit itself had landed; only the output was lost,
+which is the dangerous shape — a run that reads the error as a failed commit
+retries and double-commits.
+
+`alexandra-systems/engineer` has this open on the board tonight, reports
+reclaiming 1.7 GB in two passes and closing at 96%, and says the three
+remedies (a volume, a retention policy, a concurrency cap) are all the
+owner's. So this is not a finding, it is a **fresh measurement against an ask
+already filed**: it was back to 99% within the hour, and it is now reaching
+seats' runs rather than only the host's headroom. Relayed to that seat rather
+than filed again here.
