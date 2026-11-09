@@ -1,0 +1,257 @@
+"""The gate that finds an external call nobody put a clock on.
+
+Every test here carries a control, because the whole point of the tool is that
+a negative result must be a fact about the tree and not a fact about the
+instrument. A test that only asserts "nothing found" passes equally well
+against a scanner that never looked.
+"""
+
+import json
+import subprocess
+import sys
+from pathlib import Path
+
+import pytest
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
+from tools import unbounded_calls as uc  # noqa: E402
+
+
+# --- the predicate ----------------------------------------------------------
+
+def test_a_bounded_call_is_clean_and_the_same_call_unbounded_is_not():
+    bounded = "import subprocess\nsubprocess.run(['gh', 'pr', 'list'], timeout=30)\n"
+    seen = uc.scan_source(bounded, "x.py")
+    assert [r["bounded"] for r in seen] == [True]
+
+    unbounded = "import subprocess\nsubprocess.run(['gh', 'pr', 'list'])\n"
+    rows = uc.scan_source(unbounded, "x.py")
+    assert len(rows) == 1
+    assert rows[0]["bounded"] is False
+    assert rows[0]["line"] == 2
+    assert rows[0]["call"] == "subprocess.run"
+    assert rows[0]["binary"] == "gh"
+    assert rows[0]["reach"] == "network"
+
+
+@pytest.mark.parametrize("starter", sorted(uc.SUBPROCESS_STARTERS))
+def test_every_way_of_starting_a_process_is_read(starter):
+    """A gate that knows `run` and not `Popen` is quiet about half the tree."""
+    src = f"import subprocess\nsubprocess.{starter}(['gh', 'pr', 'list'])\n"
+    assert len(uc.scan_source(src, "x.py")) == 1
+    src_ok = (f"import subprocess\n"
+              f"subprocess.{starter}(['gh', 'pr', 'list'], timeout=5)\n")
+    assert [r["bounded"] for r in uc.scan_source(src_ok, "x.py")] == [True]
+
+
+def test_urlopen_is_read_and_a_bounded_one_is_not_reported():
+    src = ("import urllib.request\n"
+           "urllib.request.urlopen(req)\n")
+    rows = uc.scan_source(src, "x.py")
+    assert [r["reach"] for r in rows] == ["network"]
+    ok = ("import urllib.request\n"
+          "urllib.request.urlopen(req, timeout=10)\n")
+    assert [r["bounded"] for r in uc.scan_source(ok, "x.py")] == [True]
+
+
+# --- reach, which is three answers and not two ------------------------------
+
+@pytest.mark.parametrize("argv,reach", [
+    ("['gh', 'pr', 'list']", "network"),
+    ("['curl', '-s', 'https://example.test']", "network"),
+    ("['git', 'fetch', 'origin']", "network"),
+    ("['git', 'ls-remote', '--heads', 'origin']", "network"),
+    ("['git', 'rev-parse', '--abbrev-ref', 'HEAD']", "local"),
+    ("['git', 'diff', '--no-color']", "local"),
+    ("['git', 'remote', 'get-url', 'origin']", "local"),
+    ("['grep', '-rn', 'x']", "local"),
+    ("argv", "unknown"),
+    ("['git', *args]", "unknown"),
+    ("['git', '-C', root, 'status']", "unknown"),
+])
+def test_reach_is_read_off_the_argv_and_is_unknown_when_it_cannot_be(argv, reach):
+    """`unknown` is a third answer on purpose.
+
+    Collapsing an unreadable argv into `local` is the conflation this entire
+    class is about, one layer up: the instrument's inability to look, written
+    down as a fact about the call.
+    """
+    src = f"import subprocess\nsubprocess.run({argv})\n"
+    rows = uc.scan_source(src, "x.py")
+    assert len(rows) == 1
+    assert rows[0]["reach"] == reach
+
+
+def test_network_only_keeps_the_calls_it_could_not_read():
+    """A filter that drops `unknown` would be quieter than the truth."""
+    rows = [
+        {"path": "a.py", "line": 1, "reach": "network", "call": "subprocess.run",
+         "binary": "gh", "bounded": False, "handlers": []},
+        {"path": "b.py", "line": 2, "reach": "unknown", "call": "subprocess.run",
+         "binary": "unreadable", "bounded": False, "handlers": []},
+        {"path": "c.py", "line": 3, "reach": "local", "call": "subprocess.run",
+         "binary": "grep", "bounded": False, "handlers": []},
+    ]
+    kept, _ = uc.render(rows, set(), network_only=True)
+    assert [r["path"] for r in kept] == ["a.py", "b.py"]
+    all_three, _ = uc.render(rows, set(), network_only=False)
+    assert len(all_three) == 3
+
+
+# --- a handler is the other half, and is reported rather than accepted ------
+
+def test_a_handler_without_a_bound_is_still_a_finding_and_says_so():
+    """The two halves are separate and a tool that conflates them is the bug.
+
+    `skill_registrar.py` is the real case: both of its git calls are handled
+    for `OSError` and `CalledProcessError`, and neither has a clock. A handler
+    catches a refusal; it does not end a hang.
+    """
+    src = ("import subprocess\n"
+           "try:\n"
+           "    subprocess.run(['gh', 'pr', 'list'])\n"
+           "except OSError:\n"
+           "    pass\n")
+    rows = uc.scan_source(src, "x.py")
+    assert len(rows) == 1
+    assert rows[0]["handlers"] == ["OSError"]
+    _, prose = uc.render(rows, set(), network_only=False)
+    assert "handled (OSError) but not bounded" in prose
+
+
+def test_a_bare_except_is_named_as_bare():
+    src = ("import subprocess\n"
+           "try:\n"
+           "    subprocess.run(['gh', 'x'])\n"
+           "except:\n"
+           "    pass\n")
+    assert uc.scan_source(src, "x.py")[0]["handlers"] == ["bare"]
+
+
+# --- refusing to answer, which is never an answer of clean ------------------
+
+def test_a_file_that_does_not_parse_is_a_refusal_rather_than_a_clean_file():
+    with pytest.raises(uc.CannotLook):
+        uc.scan_source("def broken(:\n", "x.py")
+
+
+def test_a_missing_path_is_a_refusal(tmp_path):
+    with pytest.raises(uc.CannotLook):
+        uc.scan_paths(["no-such-directory"], root=tmp_path)
+
+
+def test_a_malformed_baseline_is_a_refusal_and_never_an_empty_set(tmp_path):
+    """An unreadable baseline read as "nothing accepted" is a wall of noise."""
+    good = tmp_path / "good.json"
+    good.write_text(json.dumps({"accepted": [{"path": "a.py", "line": 7}]}))
+    assert uc.load_baseline(good) == {("a.py", 7)}          # the control
+
+    for bad in ["{not json", json.dumps([]), json.dumps({"accepted": "all"}),
+                json.dumps({"accepted": [{"path": "a.py"}]})]:
+        rough = tmp_path / "bad.json"
+        rough.write_text(bad)
+        with pytest.raises(uc.CannotLook):
+            uc.load_baseline(rough)
+
+    assert uc.load_baseline(None) == set()
+
+
+# --- the exit codes, driven through main ------------------------------------
+
+def _tree(tmp_path, **files):
+    for name, body in files.items():
+        target = tmp_path / name
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(body)
+    return tmp_path
+
+
+def test_exit_zero_on_a_clean_tree_and_one_on_a_finding(tmp_path, capsys):
+    clean = _tree(tmp_path / "clean", **{
+        "t/ok.py": "import subprocess\nsubprocess.run(['gh', 'x'], timeout=5)\n"})
+    assert uc.main(["t", "--root", str(clean)]) == 0
+    assert "1 external call read, 1 bounded in time" in capsys.readouterr().out
+
+    dirty = _tree(tmp_path / "dirty", **{
+        "t/bad.py": "import subprocess\nsubprocess.run(['gh', 'x'])\n"})
+    assert uc.main(["t", "--root", str(dirty)]) == 1
+    assert "t/bad.py:2" in capsys.readouterr().out
+
+
+def test_the_clean_path_prints_a_line_because_silence_would_be_permission(
+        tmp_path, capsys):
+    """The gate this seat shipped on 2026-11-09 broke on exactly this.
+
+    A gate whose quiet means permission cannot be quiet, because a reader
+    cannot tell "I looked and found nothing" from "I did not run".
+    """
+    clean = _tree(tmp_path, **{
+        "t/ok.py": "import subprocess\nsubprocess.run(['gh', 'x'], timeout=5)\n"})
+    assert uc.main(["t", "--root", str(clean)]) == 0
+    out = capsys.readouterr().out.strip()
+    assert out, "the clean path printed nothing at all"
+    assert "1 external call read, 1 bounded in time" in out, out
+
+
+def test_exit_two_when_the_question_could_not_be_asked(tmp_path, capsys):
+    broken = _tree(tmp_path, **{"t/broken.py": "def f(:\n"})
+    assert uc.main(["t", "--root", str(broken)]) == 2
+    err = capsys.readouterr().err
+    assert "not an answer of clean" in err
+
+
+def test_a_baseline_entry_silences_one_line_and_not_its_neighbour(
+        tmp_path, capsys):
+    tree = _tree(tmp_path, **{
+        "t/two.py": ("import subprocess\n"
+                     "subprocess.run(['gh', 'a'])\n"
+                     "subprocess.run(['gh', 'b'])\n")})
+    assert uc.main(["t", "--root", str(tree)]) == 1   # the control, both found
+    assert capsys.readouterr().out.count("t/two.py") == 2
+
+    baseline = tmp_path / "base.json"
+    baseline.write_text(json.dumps({"accepted": [{"path": "t/two.py", "line": 2}]}))
+    assert uc.main(["t", "--root", str(tree),
+                    "--baseline", str(baseline)]) == 1
+    out = capsys.readouterr().out
+    assert "t/two.py:3" in out and "t/two.py:2" not in out
+
+
+def test_the_json_render_and_the_prose_render_agree(tmp_path, capsys):
+    tree = _tree(tmp_path, **{
+        "t/x.py": "import subprocess\nsubprocess.run(['gh', 'a'])\n"})
+    uc.main(["t", "--root", str(tree), "--json"])
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["calls_read"] == 1
+    assert payload["unbounded"] == 1
+    assert payload["findings"][0]["path"] == "t/x.py"
+    assert uc.main(["t", "--root", str(tree)]) == 1
+
+
+def test_skipped_directories_are_not_scanned(tmp_path, capsys):
+    tree = _tree(tmp_path, **{
+        "t/node_modules/x.py": "import subprocess\nsubprocess.run(['gh', 'a'])\n",
+        "t/real.py": "import subprocess\nsubprocess.run(['gh', 'b'])\n"})
+    assert uc.main(["t", "--root", str(tree)]) == 1
+    out = capsys.readouterr().out
+    assert "t/real.py" in out
+    assert "node_modules" not in out
+
+
+# --- the tool run as a process, which is how a ready command runs it --------
+
+def test_the_tool_runs_as_a_command_and_bounds_its_own_run(tmp_path):
+    """Driven through a real interpreter, with a real clock over it.
+
+    This scanner opens no sockets and starts no processes, so it has no call of
+    its own to bound. The thing worth asserting is that it finishes, because a
+    gate in front of an `&&` that does not finish is worse than no gate.
+    """
+    done = subprocess.run(
+        [sys.executable, "tools/unbounded_calls.py", "tools", "pipeline", "mcp"],
+        cwd=str(Path(__file__).resolve().parent.parent),
+        capture_output=True, text=True, timeout=120,
+    )
+    assert done.returncode in (0, 1), done.stderr
+    assert "unbounded external call" in done.stdout or "in scope" in done.stdout
