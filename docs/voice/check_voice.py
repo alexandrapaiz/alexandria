@@ -2733,10 +2733,27 @@ def candidates(ref=None):
 # ---- deadlines --------------------------------------------------------
 
 #: The heading of the register's second table, the questions no wording can
-#: answer. A deadline only ever lands in that table: the surface rows above it
-#: wait on a seat's diff and nothing about them expires, while a question waits
-#: on her and the company standard puts a clock on that wait.
+#: answer.
+#:
+#: **The note here used to say a deadline only ever lands in this table, and
+#: that the surface rows above it wait on a seat's diff so nothing about them
+#: expires.** The second half is false and it was the load-bearing half. A row
+#: in the open table leaves it two ways, which the register says in its own
+#: words: she rules on it, or the frontend seat sets it. The frontend seat sets
+#: APPROVED copy, so a candidate she has never ruled on cannot be waiting on
+#: that seat's diff. It is waiting on her, which makes it a reservation section
+#: 22 covers, which means it is owed an ask with a clock.
+#:
+#: So this check read the one table whose rows had all been asked, and
+#: `unasked` was a code it could produce and never would. It printed green on
+#: 2026-11-09 over thirteen rows with no ask and no clock between them, the
+#: oldest forty-four days old, four of which are red in `reading` right now.
+#: `OPEN` is the other table and it is read below.
 QUESTIONS = "## Questions awaiting her word"
+
+#: The heading of the register's first table, the candidates nobody has ruled
+#: on. `open_rows` already reads it keyed by surface, for a different question.
+OPEN = "## Open"
 
 #: A clock a command can read. One fixed form, minute precision, UTC, because
 #: the alternative is the prose run 58 wrote, "at about 20:44 UTC on
@@ -2753,6 +2770,19 @@ SILENCE = re.compile(r"silence rule|proceeds as (?:recommended|asked)", re.I)
 #: row can carry back to the message. A row with an ask has a clock whether or
 #: not it prints the hour. A row with neither has never had one started.
 ASKED = re.compile(r"\bask[a-z]*\s+`?([0-9a-f]{8})", re.I)
+
+#: A row that names the board handoff it was routed to the PM on. Section 22
+#: gives the posting of an ask to the PM, so a writer run cannot move an open
+#: candidate to `asked` by itself: the furthest it can get is routed, with the
+#: handoff id as the trail. That is a real state and not a near-miss of
+#: `unasked`, so the two are told apart and only one of them is this seat's
+#: failure.
+ROUTED = re.compile(r"handoff\s+`?([0-9a-f]{8})", re.I)
+
+#: The date an open row was drafted on, which is the third cell. Age is the
+#: whole finding on these rows: a candidate nobody has ruled on is not wrong
+#: at a week and is a different thing entirely at six.
+DRAFTED = re.compile(r"(\d{4}-\d{2}-\d{2})")
 
 #: What `deadline_findings` must say, pinned against a fixed clock so a case
 #: here means the same thing on every day this file is run. The rows are the
@@ -2841,6 +2871,64 @@ def question_rows():
     return rows
 
 
+def drafted_rows():
+    """The register's OPEN table, as (surface, drafted cell, whole line).
+
+    `open_rows` reads the same table keyed by surface, because the question it
+    answers is whether a surface has already been written for. This one keeps
+    the row intact, because the question here is how long it has been waiting
+    and whether anybody started a clock on it.
+    """
+    if not AWAITING.exists():
+        return []
+    text = AWAITING.read_text()
+    start = text.find(OPEN)
+    if start < 0:
+        return []
+    end = text.find("\n## ", start + 1)
+    rows = []
+    for line in text[start:end if end > 0 else len(text)].split("\n"):
+        cells = [c.strip() for c in line.split("|")]
+        if len(cells) < 5 or set(cells[1]) <= set("- ") or cells[1] == "Surface":
+            continue
+        rows.append((cells[1], cells[3], line))
+    return rows
+
+
+def open_findings(row, now):
+    """One open candidate's clock problems, as codes.
+
+    Two codes and the difference between them is which seat owes the next move.
+
+    `unasked` is a candidate with no ask, no clock and no handoff: nothing has
+    ever been started on it, and starting it is this seat's to do, so it is
+    this seat's failure.
+
+    `routed` is a candidate this seat has handed to the PM and the PM has not
+    yet posted. Section 22 gives the posting to that seat, so the row is owed
+    rather than neglected, and printing it as a failure of the run that already
+    did its part would train the next run to ignore the gate.
+
+    A row naming an ask is in the state the questions table is in, and
+    `deadline_findings` is the check for that. It is not re-run here.
+    """
+    if ASKED.search(row):
+        return ()
+    if ROUTED.search(row):
+        return ("routed",)
+    return ("unasked",)
+
+
+def row_age(drafted, now):
+    """Days since an open row's drafted cell, or None when it carries no date."""
+    found = DRAFTED.search(drafted)
+    if not found:
+        return None
+    when = datetime.datetime.fromisoformat(found.group(1)).replace(
+        tzinfo=datetime.timezone.utc)
+    return (now - when).days
+
+
 def deadline_findings(row, now):
     """One row's clock problems, as codes, read against a given moment.
 
@@ -2886,6 +2974,65 @@ def deadline_findings(row, now):
         if when <= now:
             out.append("expired")
     return tuple(out)
+
+
+#: What `open_findings` must say. The rows are the register's own open table,
+#: trimmed to the cells that carry the reading. The third cell is the drafted
+#: date and the fourth is the liveness note, which is where a row records the
+#: handoff it was routed on.
+OPEN_CASES = (
+    # The live shape of 2026-11-09, thirteen times over: a candidate, a date,
+    # a note saying the bad line is still serving, and no clock anywhere.
+    (("unasked",), "| `site/app/page.jsx:44`, the metric line | "
+     "`home-metric-line-2026-09-26.md` | 2026-09-26, run 15 | Yes, "
+     "forty-four days, confirmed by `check_voice.py reading` |"),
+    (("unasked",), "| `site/app/mission/page.jsx`, third paragraph | "
+     "`claim-repairs-2026-10-18.md` | 2026-10-18, run 40 | Yes. Three "
+     "unheld claims in one sentence |"),
+    # Routed and not yet posted. The PM owes the ask, so the row is not this
+    # seat's failure and must not print as one.
+    (("routed",), "| `site/app/page.jsx:44`, the metric line | "
+     "`home-metric-line-2026-09-26.md` | 2026-09-26, run 15 | Yes. Routed to "
+     "the PM 2026-11-09 as board handoff `9574b0d1` |"),
+    # Posted. This is the questions table's state and `deadline_findings` is
+    # the check for it, so there is nothing for this one to say.
+    ((), "| `site/app/page.jsx:44`, the metric line | "
+     "`home-metric-line-2026-09-26.md` | 2026-09-26, run 15 | Yes. Posted as "
+     "ask `2cfc0df6`, deadline 2026-11-30T00:32Z under the silence rule |"),
+    # An ask beats a handoff in the same row: the handoff is the trail the ask
+    # arrived by, and reading the row as merely routed would hide a live clock.
+    ((), "| `site/app/page.jsx:44`, the metric line | "
+     "`home-metric-line-2026-09-26.md` | 2026-09-26, run 15 | Yes. Routed as "
+     "board handoff `9574b0d1`, posted as ask `2cfc0df6` |"),
+)
+
+#: What `row_age` must say, against `CASE_NOW`.
+AGE_CASES = (
+    ("2026-09-26, run 15", 33),
+    ("2026-10-18, run 40", 11),
+    ("2026-10-28, run 58", 1),
+    ("run 15, no date at all", None),
+)
+
+
+def open_cases():
+    """Every open-table case above, run before the register is opened."""
+    bad = [(want, row) for want, row in OPEN_CASES
+           if open_findings(row, CASE_NOW) != want]
+    print(f"OPEN_CASES                                 "
+          f"{len(OPEN_CASES) - len(bad)} of {len(OPEN_CASES)}")
+    for want, row in bad:
+        print(f"  FAIL    wanted {want or 'nothing'}, got "
+              f"{open_findings(row, CASE_NOW) or 'nothing'}")
+        print(f"            {row[:96]}")
+    aged = [(cell, want) for cell, want in AGE_CASES
+            if row_age(cell, CASE_NOW) != want]
+    print(f"AGE_CASES                                  "
+          f"{len(AGE_CASES) - len(aged)} of {len(AGE_CASES)}")
+    for cell, want in aged:
+        print(f"  FAIL    wanted {want}, got {row_age(cell, CASE_NOW)}"
+              f" for {cell!r}")
+    return 1 if bad or aged else 0
 
 
 def deadline_cases():
@@ -2938,6 +3085,7 @@ def deadlines():
     This reports that the hour has passed and leaves the ruling where it lives.
     """
     rc = deadline_cases()
+    rc |= open_cases()
     print()
     rows = question_rows()
     now = datetime.datetime.now(datetime.timezone.utc)
@@ -2976,11 +3124,60 @@ def deadlines():
     if rc == 0:
         print("  every row names its ask, every clock is readable, and none "
               "of them has run out")
+
+    # The open table, which this check could not see until 2026-11-09. Read
+    # second because a question is the sharper wait, and read at all because
+    # the premise that excused it -- these rows wait on a seat's diff -- is
+    # false for every row she has not ruled on.
+    print()
+    drafted = drafted_rows()
+    owed = [(s, d, r) for s, d, r in drafted
+            if open_findings(r, now) == ("unasked",)]
+    routed = [(s, d, r) for s, d, r in drafted
+              if open_findings(r, now) == ("routed",)]
+    ages = [a for a in (row_age(d, now) for _, d, _ in drafted)
+            if a is not None]
+    print(f"open candidates nobody has ruled on         {len(drafted)}")
+    print(f"  routed to the PM, awaiting the ask        {len(routed)}")
+    print(f"  no ask, no clock, never routed            {len(owed)}")
+    print(f"  oldest, in days                          "
+          f"{max(ages) if ages else 'no dated row'}")
+    # One line per row and the reason once. The first draft of this printed
+    # three lines of standing explanation under each of thirteen rows, which
+    # buries the one thing that differs between them, and the one thing that
+    # differs is the age.
+    for surface, cell, _ in owed:
+        rc = 1
+        age = row_age(cell, now)
+        print(f"  FAIL    {age if age is not None else '?':>3} days  "
+              f"{surface[:68]}")
+    for surface, cell, _ in routed:
+        age = row_age(cell, now)
+        print(f"  OWED    {age if age is not None else '?':>3} days  "
+              f"{surface[:68]}")
+    if owed:
+        print("          no ask and no clock on any row above. Section 22 "
+              "covers every reservation a charter")
+        print("          makes except money, accounts, secrets and a seat's "
+              "own authority, so each one is owed")
+        print("          an ask from the PM. Route them, and write the "
+              "handoff id into the row")
+    if routed:
+        print("          routed, and the ask is the PM's to post under "
+              "section 22. Not this seat's to fix")
+    if drafted and not owed and not routed:
+        print("  every open candidate carries an ask")
+
     print()
     print("A reservation for the owner that proceeds on her silence is the one")
     print("row in this register whose answer arrives without anybody acting,")
     print("so it is the one row that has to be read by a command rather than")
     print("by whoever happens to open the file.")
+    print()
+    print("And a candidate she has never ruled on is one of those, which this")
+    print("check denied for fourteen days. The frontend seat sets APPROVED")
+    print("copy, so an unruled draft is not waiting on a diff. It waits on")
+    print("her, with no clock, which is the wait this standard abolished.")
     return rc
 
 
