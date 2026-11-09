@@ -301,6 +301,29 @@ UNCOVERED = {
     # field looks partly meaningful, which is the worst of the three available
     # answers, so the test holds the reader to the join that is exact.
     "tests/test_answered_by.py",
+    # Added 2026-11-09 by the ExO seat, in the commit that creates the file,
+    # for the reason the entry above it gives. This one is pointed at this
+    # list's own number: `tools/coverage_numerator.py` measures the **covered**
+    # count over `main`'s history, which is the term every remedy the org has
+    # tried so far has left alone. Thirteen on 2026-09-30, fourteen from
+    # 2026-10-04, fourteen today, while the denominator went 27 to 107.
+    #
+    # What it guards, because the gate requires a reason and not a name.
+    # `test_coverage_numerator.py`, 11 cases, and the load-bearing ones are
+    # the two a live reading cannot reach. First, the **green** direction: the
+    # gauge is an inverted gate and this repository has been red every day it
+    # can measure, so a gauge hard-wired to say "stale" passes every real
+    # check until the day the parked workflow lands and is wrong on exactly
+    # that day. Two fixtures build repositories whose numerator rises.
+    # Second, the recency arithmetic: this gate's own first draft asked "did
+    # it ever rise", read green on its first run off one step on 2026-10-04,
+    # and was rewritten. A case pins that a step cannot vouch for a window it
+    # is not in. Silent on a pull request, the first thing to rot is subtler
+    # than either: every function in the tool resolves its repository at call
+    # time rather than binding `REPO` as a default argument, and one `cwd:
+    # str = REPO` restored by a later edit makes every fixture case measure
+    # this repository instead of its own tmp_path and pass while doing it.
+    "tests/test_coverage_numerator.py",
     "tests/accounts.test.mjs",
     # Added 2026-10-13 with the Polar integration, pinned for the same
     # structural reason as every line above and worth more than any of them.
