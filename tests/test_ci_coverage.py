@@ -905,6 +905,24 @@ UNCOVERED = {
     # them regression tests on the one word that separated the real defect from
     # fifty-two fair mentions.
     "tests/test_prose_symbols.py",
+    # Added 2026-11-09 with the instrument-discovery gate, and pinned for the
+    # one structural reason every line above is pinned: the step that would run
+    # it goes in `.github/workflows/checks.yml`, no seat's token may write that
+    # file (`docs/agents/pending-workflow-changes.md`), and
+    # `docs/sprints/sprint-2026-10-12.md` tells this seat in its own words not
+    # to attempt it again.
+    # `INC-2026-10-17-the-pin-list-grew-for-the-seventh-time-in-nine-days` is
+    # already that finding, so this entry counts itself there.
+    #
+    # What it guards is the thing this list is about, one level down. Seven
+    # programs under `skills/_validation/` have an exit status for their whole
+    # interface and no chain anywhere runs six of them, so they have been
+    # asserting into a terminal nobody stands in. This file is the chain, and
+    # pinned it reaches the suite every seat runs by hand and the staged
+    # replacement, which is how the skill seat's branch found the tripwire that
+    # produced this pull request. It does not reach a live pull request, and
+    # saying that plainly is the point of this list existing.
+    "tests/test_validation_instruments.py",
 }
 
 

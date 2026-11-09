@@ -124,6 +124,74 @@ def check(text: str, allow: str = "") -> list[dict]:
     return sorted(findings, key=lambda f: (f["line"], f["entry"]))
 
 
+# ---------------------------------------------------------------- the repair
+#
+# `--fix`, added 2026-11-09, and the narrowness is the whole design.
+#
+# Most of this file's findings cannot be repaired by a program. Entry 1 wants a
+# different sentence, entry 13 covers a person's name as the source spells it,
+# and a tool that guessed at either would write worse prose than the one it
+# replaced. Exactly one shape is mechanical end to end, and it is the shape that
+# made up all 48 findings in `skills/` on the day this landed: the U+2014 that
+# separates a citation's title from its locator inside a list item.
+#
+#     - "Prefix Sliding for Efficient Test-Time Scaling — arxiv.org/abs/2608.26070"
+#     - "Prefix Sliding for Efficient Test-Time Scaling, arxiv.org/abs/2608.26070"
+#
+# The comma form is not this file's invention. It is what the two most recently
+# written skills in the library already use, so the repair converges the library
+# on its own newest convention rather than on a preference.
+#
+# Three conditions, all of them required, because each one is a way the naive
+# substitution would damage prose. The line must be a list item, so an em dash
+# in a paragraph is never touched. What follows the separator must be a bare
+# URL, so a dash between two clauses is never touched. And the file is rewritten
+# only when nothing else about it changed, so a partial repair cannot be
+# mistaken for a clean one.
+SEPARATOR = re.compile(
+    r" \u2014 (?=(?:https?://|www\.|[A-Za-z0-9][A-Za-z0-9.-]*\.[a-z]{2,}/))")
+
+
+def repair(text: str) -> tuple[str, int]:
+    """The citation separator, swapped for the comma form. Count of swaps."""
+    out, swaps = [], 0
+    for line in text.split("\n"):
+        if line.strip().startswith("- "):
+            fixed, n = SEPARATOR.subn(", ", line)
+            out.append(fixed)
+            swaps += n
+        else:
+            out.append(line)
+    return "\n".join(out), swaps
+
+
+def fix_file(name: str, allow: str = "") -> tuple[int, int, list[str]]:
+    """Repair one file in place. Returns swaps, findings left, and the report.
+
+    A repair that leaves findings behind says so and the caller exits 1,
+    because the one failure mode worth engineering against here is a seat
+    running `--fix`, seeing it do something, and assuming the file is clean.
+    """
+    path = pathlib.Path(name)
+    text = path.read_text()
+    fixed, swaps = repair(text)
+    left = check(fixed, allow)
+    report = []
+    if swaps:
+        path.write_text(fixed)
+        report.append(f"fixed: {name}, {swaps} citation separators swapped for "
+                      "the comma form")
+    else:
+        report.append(f"nothing to fix: {name} carries no citation separator "
+                      "this repair covers")
+    if left:
+        report.append(f"still failing: {name}, {len(left)} findings need a "
+                      "reader and were not touched")
+        for f in left:
+            report.append(f"  line {f['line']}: {f['found']!r}, {f['why']}")
+    return swaps, len(left), report
+
+
 def render(path: str, findings: list[dict]) -> str:
     if not findings:
         return (f"ok: {path} clears the six mechanical entries of "
@@ -210,6 +278,24 @@ def smoke_expand() -> int:
         case("and the CLI exits 1 on it", main([missing]) == 1)
         case("the CLI reads a directory end to end", main([str(top / "nested")]) == 0)
 
+        citation = '- "A title \u2014 arxiv.org/abs/1"\n'
+        case("the repair swaps a citation separator for the comma form",
+             repair(citation) == ('- "A title, arxiv.org/abs/1"\n', 1))
+        clause = "A sentence \u2014 and its second half.\n"
+        case("and leaves an em dash in prose alone",
+             repair(clause) == (clause, 0))
+        case("and leaves a dash between two clauses of a list item alone",
+             repair("- one \u2014 and two\n") == ("- one \u2014 and two\n", 0))
+
+        dirty = top / "dirty.md"
+        dirty.write_text(citation + "This will unlock a tapestry.\n")
+        case("a repair that leaves findings behind exits 1 rather than passing",
+             main(["--fix", str(dirty)]) == 1)
+        case("and the separator it could repair is repaired",
+             '"A title, arxiv.org/abs/1"' in dirty.read_text())
+        case("and a second run of it is idempotent",
+             main(["--fix", str(dirty)]) == 1)
+
     return 0 if ok else 1
 
 
@@ -246,6 +332,9 @@ def main(argv=None) -> int:
     ap.add_argument("paths", nargs="*")
     ap.add_argument("--json", action="store_true")
     ap.add_argument("--smoke", action="store_true")
+    ap.add_argument("--fix", action="store_true",
+                    help="rewrite the citation separator this file can repair "
+                         "mechanically, and report everything it cannot")
     ap.add_argument("--allow", default="",
                     help="characters entry 13 lets through, for a name the "
                          "source spells that way")
@@ -257,6 +346,19 @@ def main(argv=None) -> int:
         ap.error("a path, or --smoke")
 
     names, failing = expand(args.paths)
+
+    if args.fix:
+        for name in names:
+            path = pathlib.Path(name)
+            if not path.exists():
+                print(f"failing: {name} does not exist")
+                failing = True
+                continue
+            _, left, report = fix_file(name, args.allow)
+            for line in report:
+                print(line)
+            failing = failing or bool(left)
+        return 1 if failing else 0
 
     out = {}
     for name in names:
