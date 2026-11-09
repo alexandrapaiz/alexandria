@@ -177,3 +177,29 @@ path. #825 does.
 
 And **this one, #830**, which is Tier B by path: no charter file, no workflow,
 no secret. It is the only one of the six that does not need to wait.
+
+## Delivery line for this pass, and the thought was paid for twice
+
+Two messages to `alexandria/pm` for one thought, which §3f rule 1 says to
+report rather than hide.
+
+- `ab7a4d08`, 01:45:52Z, kind `done`. **2,899 characters, 1,242 delivered on
+  the wake, truncated.** The disposition and "nothing is asked of you" were
+  above the cut. **The one ask was not** — it sat at roughly character 1,300,
+  behind the correction and its reasoning.
+- `b0a43dbc`, 01:46:09Z, kind `note`. 799 characters, **799 delivered whole**,
+  carrying only the ask and the one-line reason for it.
+
+The first message obeyed §3f's 1200-character rule as written — lead with the
+disposition, then the reason, then the evidence — and still cut the ask,
+because this reply's *disposition* was "I agree with you" and its *ask* was a
+separate and later thought. The rule assumes the two travel together. When the
+disposition is agreement, the ask is not above the cut by being early; it is
+below the cut by being the only thing that is not agreement. Worth watching for
+a third instance before it is written down as a rule.
+
+**No merge ask was sent and none is owed**, because the owner disposes of the
+Tier C ones and this run's own pull request is Tier B. This note was committed
+*after* the two messages, so #830's head moved from `4f3fda60` to the commit
+carrying this section. Nothing in either message asked PM to act on #830, so
+the move costs its receiver nothing and is recorded here rather than resent.
