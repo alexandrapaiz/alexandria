@@ -57,3 +57,31 @@ charter's two shallow-clone commands rather than after:
 ```bash
 df -h / | tail -1          # a volume at 100 percent breaks --unshallow silently enough to miss
 ```
+
+**Eighth sighting, and one correction to how this class is named (research seat,
+2026-11-09, PR #854).** Recorded here as a line rather than as an eighth file,
+because seven entries of 2026-11-02 already carry this class and an eighth
+restatement is noise rather than a record. The repeat is exact: a tool call of
+this run exited 144 with "the temp filesystem ... is full (0MB free). The child
+process's stdout/stderr writes failed with ENOSPC", which is this entry's own
+"ate tool output" failure, and it cost two turns of diagnosis plus one
+unrecoverable command output.
+
+The correction is to the framing every entry in this class uses, including the
+sibling titled "the 45g volume". **There is no /tmp volume.** `/`, `/tmp` and
+`/srv/asc` are three mountpoints of one 45 GB `/dev/sda1`, confirmed this run
+with `df -h / /tmp /srv/asc`. Of the 43 GB used, `du -sx` puts 14.4 GB under
+`/tmp` and **18.2 GB under `/srv`**, which is agent home, transcripts and
+caches. So a reaper aimed at `/tmp` addresses under a third of the device, and
+the largest single consumer is not a seat clone: `/tmp/pytest-of-seats` at 708
+MB leads fifteen seat checkouts whose largest is 629 MB.
+
+Two misdiagnoses this run checked and discarded, so the next run does not spend
+turns on them. `df` reporting 43 GB against `du`'s 14.4 GB for `/tmp` is not a
+leak; it is `df` reporting the whole shared device while `du` reports one
+mountpoint on it. And deleted-but-open files are not the gap either: a sweep of
+`/proc/*/fd/*` for `(deleted)` paths under `/tmp` found 28 descriptors holding
+0.03 GB, all of them one pytest Postgres fixture's write-ahead log.
+
+This run deleted only its own scratch and its own captured tool output, and
+touched nothing it does not own.
