@@ -198,6 +198,18 @@ a branch that does not exist.
   request which mode you ran and therefore what you did not do. At most
   **one** improvement, not three.
 
+  **And read `docs/agents/exo-owed.md`, which is where the skipped work goes**
+  (added 2026-11-09, message wake,
+  `INC-2026-11-09-the-owed-list-that-argued-for-a-pending-ask-stopped-being-written-two-days-after-the-ask`).
+  The four sweeps this bullet tells you to skip generate work, and for two days
+  in October that work was carried by re-copying a paragraph into each new
+  learning-log entry. It was last written on 2026-10-26, six items long, and
+  then **22 entries and 58 runs of this seat went by without it**, because an
+  entry that omits a re-copied list is indistinguishable from an entry written
+  on a quiet day. It is a file now, where losing a row costs a deletion with an
+  author and a date. Read it, and if you take a row, strike it there in the same
+  commit that does the work.
+
 **And "seven days without a cron" is a count of absences, so it cannot tell
 a skipped cycle from a clock that was never switched on** (added 2026-10-24,
 `INC-2026-10-24-the-company-seats-had-no-clock-for-seven-days-after-the-clock-moved`).
@@ -3428,6 +3440,61 @@ the charter is the gate and their file is only the record.
 The owner repeating herself is the detector of last resort. When it
 fires, the entry goes in the incident register and the gap it exposes
 goes in registers.md the same run.
+
+
+### Run the class over your own code before you report it (added 2026-11-09, message wake, asked for by `alexandria/security` because that seat may not edit charters)
+
+Every sweep above is aimed at another seat's surface, and §3d's last
+paragraph says so in as many words: file the check as a charter edit here
+rather than editing their file. That instruction is correct and it has a
+blind side, which the security seat measured rather than argued.
+
+**All four sightings of one defect class were found by a seat auditing code
+it did not write.** Not one was found by its author. The class itself is
+narrow — three separate decisions about the same entity, with the entity's
+*kind* never read, so a symlink or a worktree satisfies all three — but the
+distribution of who found it is not narrow at all. On 2026-11-09 this seat
+reported it in another seat's tools. That seat fixed it, then ran the class
+over the two tools **it** owns and found **six** more instances, all
+reproduced before it touched them, in a gate whose own docstring says it
+sits in front of an `&&` in a ready command.
+
+The mechanism, in that seat's words, and it is the part worth keeping:
+**another author's intent is not available to stand in for their bound,
+while your own arrives first and the bound reads as its restatement.**
+Reading a stranger's code you have only the bound, so you read it
+literally and the missing dimension shows. Reading your own you have the
+intent you wrote it from, the bound arrives as a paraphrase of that intent,
+and a literal read never happens. This is not carelessness and no amount of
+care fixes it, because the two readings are not available to the same reader
+at the same time.
+
+§0 of this file already records the general shape from the other end — *an
+audit written to be aimed outward will not fire on its author unless some
+sentence tells it to* — about this charter's own title. This is that
+sentence, for code.
+
+**So: a sighting in another seat's code is never the only instance. Before
+you report a class outward, run it over the artifacts this seat owns, in the
+same run, and report both halves together.** The outward half is a finding
+about them; the inward half is the only evidence that the finding is a class
+rather than an anecdote. A run that reports only the outward half has
+published half a measurement and kept the expensive half unmeasured.
+
+Two practical notes. The inward pass is cheap, because by the time you can
+state the class you already have the predicate: the four sightings each took
+one `grep` over this seat's `tools/` and `prompts/`. And run it before the
+report goes out, not after, because a report that lands first makes the
+inward half read as a concession rather than as the same measurement — which
+is the reason this entry exists at all and not an aesthetic preference.
+
+Provenance: `alexandria/security`, message `b28bf387` of 2026-11-09T02:42Z,
+reporting six defects in `tools/root_scratch.py` and
+`tools/resolve_register_conflict.py` (tests 13→22 and 15→20) as the fourth
+sighting; the outward half is this seat's PR #833. That seat asked for this
+line by name and cannot write it itself, which is §3d's rule arriving in the
+one direction §3d did not cover: a check that belongs in *this* seat's
+charter, filed by the seat that found it.
 
 ## 3e. The owner-as-seat audit (owner's order, 2026-09-21, incident 25)
 

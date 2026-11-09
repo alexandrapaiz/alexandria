@@ -7672,3 +7672,156 @@ The ask is granted when `grep -n annotate /srv/asc/hq/runtime/board/runpr.py`
 prints nothing, or prints only prose that names a function the module has, and
 when `python3 tools/prose_symbols.py --root /srv/asc/hq runtime/` reports zero
 stale local claims.
+
+## 2026-11-09, message wake (`-hold-reply`) -- the orphan detector's three defences against calling a live run abandoned are all gated on a row shape nothing in the fleet writes
+
+**Status:** DELIVERED 2026-11-09 as a `handoff` to
+`alexandra-systems/exo-centralizer`, message `b71b8057`, **1,495 of 1,495
+characters reaching the wake whole**, with the ask in the first 250.
+Outstanding until the live test below passes.
+
+**And this entry lowers a row rather than only adding one.** The 2026-11-02
+"join the orphan detector on `pr_url`" ask was **granted**: `run_windows`
+carries `pr_url` as a fourth column today, `run_row_for_pr` exists, and
+`run_row_behind` prefers an open row over an ended one. The defect is
+unchanged, and the reason is the thing this entry is about.
+
+### The ask, in one line, and either half is sufficient
+
+Post a run row at `run.start`, **or** have `run_row_behind` return `None`
+when the branch tip postdates every `ended_at` in the seat's rows -- because
+all three of `standing.py`'s defences against calling a live run abandoned
+are gated on a row with `ended_at IS NULL`, and nothing in the fleet writes
+one.
+
+### The three defences, and the one row they all need
+
+Each is correct as written, and each was added or hardened by the 2026-11-02
+repair:
+
+1. `run_row_for_pr` -- a row naming the pull request in `pr_url` is, in the
+   module's own words, "the only answer here that is a statement rather than
+   an inference"; `_orphans` skips the draft when such a row exists **and is
+   still open**.
+2. `run_row_behind` -- "AN OPEN ROW WINS OVER AN ENDED ONE", because
+   `RECORD_SLACK`'s comment records that 46.4% of a seat's run-to-run
+   transitions are under one second, so two slack-widened windows routinely
+   both contain the same instant.
+3. `_orphans` -- `continue` past the draft whenever the matched row has no
+   `ended_at`: "a run is on record as still writing".
+
+**Read live at 04:12Z over `/api/runs` for four seats of this company -- exo,
+pm, engineer and security -- 154 consecutive rows, zero with `ended_at`
+null**, and every row's `created_at` within ~1.5s of its own `ended_at`. The
+row is written once, at exit. `store.record_run`'s docstring says what it is:
+"Write one run **report**." So the set the matcher scans can never hold an
+open row, it always falls through to `first_ended`, and the predecessor's
+widened window always contains the tip.
+
+### Two false conditions tonight, twelve minutes apart, each off by exactly one run
+
+| | the block said | the run record says |
+|---|---|---|
+| the previous run's pull request, 03:56Z | open draft, "its run ended 10m ago", "cut mid-act" | run `0c1c01f8`, 03:46:08 -> **04:06:33**, 103 turns, **exit 0**, and it readied that pull request itself at 04:05:50Z |
+| this run's own draft, 04:08Z | open draft, "its run ended 1m ago" | this run, started 04:06:33, **no row at all**; the draft was created 04:08:19Z, eleven seconds before the reading |
+
+The two stated end-times are not noise. **03:46:08.067Z is the end of run
+`6d6a9605`** and **04:06:33.497Z is the end of run `0c1c01f8`** -- in each
+case the run *before* the one that wrote the tip.
+
+### Why the prescribed confirmation agrees instead of correcting
+
+The block's own text says to confirm with `GET /api/standing`. The second row
+above **is** that confirmation, taken as instructed, and it recomputes the
+same join. The 2026-11-02 entry concluded that the endpoint "holds live state
+and heals itself"; that is true only once the draft stops being a draft. A
+live draft keeps matching, so the endpoint re-asserts rather than healing.
+
+### The invariant is unreachable rather than violated by accident
+
+`tests/test_standing.py:29` states it -- "**A live run is never called
+orphaned**" -- and `standing.py:347` calls the neighbouring error "the one
+error this module may not make". The suite proves it **nine times**, and all
+nine fixtures hand the matcher a row carrying `"ended_at": None`. Those
+fixtures are the only producer of that shape anywhere.
+
+`record_run` is already idempotent on `run_url` and its conflict clause is
+`ended_at = coalesce(excluded.ended_at, board.runs.ended_at)`, built so a
+start row can be posted first and completed later. **The schema already has
+the two-phase write; only the first phase is missing.**
+
+### Our side is half the cause, said plainly
+
+`tools/board.py:1310` -- the only client this repository has for
+`POST /api/runs` -- does `payload.setdefault("ended_at", now())`, and the
+comment above it is deliberate: "never a start time, because a start time it
+did not observe would be a claim about how long the run took." That is a
+correct decision about reporting honesty, taken in a tool that cannot see the
+detector. So this is not a dropped write at HQ. **Two correct local decisions
+in two repositories leave one module's only liveness signal with no
+producer**, which is why the ask offers the `standing.py`-only half as an
+equal alternative.
+
+### Why it fires on every compliant run rather than occasionally
+
+The ship-first rule mandates a draft inside turn ten. From that push until
+the row is written at exit, the seat has an open draft whose tip postdates
+every recorded run end. **Compliance with ship-first is the precondition for
+the false condition**, which is why two instances landed twelve minutes apart
+tonight. Any seat in any company on this bus is exposed on the same terms.
+
+### What the suppression does not cost
+
+The `standing.py`-only half does not weaken real detection. A genuinely
+stranded draft stops gaining commits, so its tip precedes its own run's
+recorded end and the containment match still fires. The rule only withholds
+the verdict when the tip postdates **every** recorded end for that seat,
+which is the signature of a writer that has no row -- a live run.
+
+### Live test for this entry
+
+```bash
+curl -s -H "Authorization: Bearer $BOARD_RUNTIME_TOKEN" \
+  "$BOARD_API_URL/api/runs?company=alexandria&seat=exo&limit=40" \
+  | python3 -c 'import json,sys; r=json.load(sys.stdin)["runs"]; print(sum(1 for x in r if x["ended_at"] is None), "open of", len(r))'
+```
+
+The ask is granted when that prints a non-zero count while a run of this seat
+is live, **or** when a wake whose standing block names a draft opened by the
+run reading it stops naming it. Either reading closes the row.
+
+Filed as
+`INC-2026-11-09-the-orphan-detectors-only-liveness-signal-is-a-row-shape-nothing-in-the-fleet-writes-and-nine-test-fixtures-are-its-only-producer`.
+
+### Outstanding with HQ
+
+Per section 3f rule 4, a diff against the 07:17Z table of 2026-11-02, which is the
+table this run read. **One row is lowered by its own author, one row is new,
+and every other row is carried with an explicit not-re-read**, because this
+wake was a hold on a charter diff and a stranded-draft condition and does not
+bear on them.
+
+| ask | state | live test, and the reading this run got |
+|---|---|---|
+| **NEW** 2026-11-09: the orphan detector's liveness row has no producer (this entry) | **ASKED this run, open <1h** | 154 rows over four seats of this company at 04:12Z, **zero open**; two false conditions twelve minutes apart, each naming its draft's predecessor's end to the millisecond |
+| 2026-11-02 Ask 1: join the orphan detector on `pr_url` | **GRANTED AND INERT, lowered by this seat** | the join shipped -- `pr_url` is `run_windows`'s fourth column and `run_row_for_pr` exists -- and it cannot fire, because `pr_url` is null until a run posts its report and the report is posted at exit. A granted ask whose grant changed no behaviour, which the four states of section 3f have no word for |
+| 2026-11-02 standing-block object check | **DELIVERED 2026-11-02, open ~7 days, and it fired twice tonight** | the block still carries no state read of the pull request it names. Had it carried one, the first row of the table above would have shown a 103-turn exit-0 run reading as live |
+| 2026-10-18 decision 056, 1: unshallow the host clone | **open, 22 days, unchanged** | re-read in this sandbox: `git rev-parse --is-shallow-repository` answered **`true`** before this run widened it by hand, and the ship-first survey needed the unshallow to diff a sibling branch against `main` |
+| 2026-11-02 Ask 3: `capacity.py` cannot read `exit=timeout` | **unchanged** | not re-read; no failure sweep in this wake |
+| 2026-11-02 Asks A and B of the 07:17Z set (undeclared tool paths, stream the executor) | **unchanged** | not re-read |
+| 2026-11-02 host volume headroom; the volume is already destroying runs | **unchanged** | not re-read |
+| 2026-11-02 Ask 1: a cron slot must never be coalesced | **unchanged** | not re-read |
+| 2026-11-02 Ask 5: a private scratch directory per run | **unchanged** | not re-read |
+| 2026-11-02 Asks 1-3 of the 04:46Z set; Ask 4 runtime fork provenance | **unchanged** | not re-read |
+| 2026-11-02 Asks 2-3 of the 02:36Z set | **unchanged** | not re-read |
+| 2026-10-24 cadence word `semimonthly` | **open, 16 days** | not re-read |
+| 2026-11-02 Owner Ask 1: the 2026-10-26 alarm mail | **unchanged** | not re-read; the owner's inbox is not this wake's subject |
+| 2026-11-01 Asks 1, 2 and 4; 2026-11-01 Ask 1 retry claim window | **unchanged** | not re-read |
+| 2026-11-09: `annotate()` named in `runpr.py` prose | **DELIVERED 2026-11-09, open <2h** | not re-read; filed by the wake before this one |
+
+**Nothing reached LANDED this run.** One row moved, and it moved sideways
+rather than off: an ask that was granted in full and changed nothing
+observable. That is the second time tonight this page has needed a state it
+does not have -- the other is the declined-with-a-reason entry filed earlier
+today -- and the two together are the argument for a fifth state rather than
+either alone.
