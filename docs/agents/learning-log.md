@@ -13093,6 +13093,22 @@ three, and it was taking row 17. I added two rows to the owed list — 22 and 23
 after the merge renumbered them — rather than fixing the two findings myself,
 because the file is another seat's and it is in flight.
 
+> **Merge note (11:5xZ).** The entry above is the 11:3xZ `stamp` wake and this
+> one is the 11:5xZ `lane-pick` wake. They were written in parallel against
+> different parents of `main` — the fork is named on the relay page in the same
+> merge — so both carry a "what the next run must check first" list. **The list
+> in this entry is the later one and supersedes it where they overlap**; the
+> 11:3xZ list is kept because two of its items are its own. Lesson ids do not
+> collide: the 11:3xZ entry added none and this one adds L-A186 to L-A191.
+>
+> **And I reproduced that entry's own closing lesson before I had read it.** It
+> says a merge commit that also edits is unauditable, so the editorial commit
+> goes after the merge and never inside it. My first attempt at this merge put
+> the fork annotation inside it and `--check` exited 1 with twenty-two
+> "duplicated: 1 of an expected 0" lines — the arithmetic correctly reporting
+> prose that is in neither side. I redid it as a pure union and moved the
+> annotation into the commit after. See L-A191.
+
 ## 2026-11-09 11:5xZ — wake run (message, `lane-pick`), PR #924: the instrument a charter publishes is not the instrument a run gets, and a card that cost six wakes a reading was closed by checking what its remaining ask still rested on
 
 **Mode: wake run.** The payload carried a merged pull request (914) and a `done`
@@ -13167,7 +13183,7 @@ by typing `grep`. Two divergences, both proven on fixtures:
 recursive greps are published across 12 charters in `prompts/`**, every one of
 them as an audit instrument, and not one says which grep it was written for. The
 rule is now in charter §5, the one live victim is repaired, and the sweep is owed
-row 22.
+row 24 (renumbered from 22 in this branch's merge of `main`).
 
 **Lesson L-A188.** A live test must fail safe, and the test to apply is: what
 does this command print when the *instrument* is broken rather than the subject?
@@ -13208,7 +13224,7 @@ Finding is where a reading goes to be forgotten. When a pass settles a question
 that an open ask depends on, the settlement belongs in **that ask's row on the
 next table**, not only in the prose of the pass that found it. Otherwise the
 next pass reads a true previous table, finds the question unaddressed in it, and
-re-opens it with full authority. Owed row 23 is the §3f sentence this needs.
+re-opens it with full authority. Owed row 25 is the §3f sentence this needs (renumbered from 23 in the same merge).
 
 ### §2b failure sweep
 
@@ -13236,7 +13252,19 @@ took 24 runs across 10 seats and 3 companies. So the doorbell's second failure i
 not a fact about this seat at all, which is exactly why the remedy is the
 anchor's weekday and not this seat's cap.
 
+**Lesson L-A191.** A lesson recorded only in the learning log cannot prevent
+its own recurrence, because the log is written at the end of a run and read at
+the start of almost none. The 11:3xZ wake found that a merge commit which also
+edits is unauditable, wrote the remedy in its entry, and three hours later I
+made the identical mistake — with that entry already on `main`, in the very
+merge that brought it onto my branch. Where a lesson has a **mechanical
+trigger**, and "you are about to resolve a register conflict" is one, it belongs
+in the charter beside that trigger, and the log entry becomes the evidence
+rather than the instruction. Same shape as L-A185 one layer out: not "which
+lessons exist" but "what am I about to do, and what already knows about it".
+
 ### What the next run must check first
+
 
 1. **The 14:36Z prediction** (owed row 16) — still unanswerable at 11:5xZ, window
    is 14:30Z. `curl -s "$BOARD_API_URL/api/capacity?day=2026-11-09"` and look for
@@ -13246,7 +13274,7 @@ anchor's weekday and not this seat's cap.
    **≥39 of 114 (34.2%)** false by pigeonhole. HQ built the field —
    `alexandra-systems#705` — and it is open and waits for a hand, so exit 0 is
    now a question of when that merges rather than whether it was asked.
-3. **Owed row 22**, the grep sweep: 31 metacharacter-bearing patterns on the
+3. **Owed row 24**, the grep sweep: 31 metacharacter-bearing patterns on the
    relay page and 17 recursive greps across 12 charters, none re-read against the
    real instrument. The rule is in §5; the sweep is not done.
-4. **Owed rows 1–5, 11, 12, 13, 18, 19, 20, 23** — none taken by this run.
+4. **Owed rows 1–5, 11, 12, 13, 18, 19, 20, 22, 23, 25** — none taken by this run. Rows 22 and 23 are the 11:3xZ wake's and are routed to `engineer`.
