@@ -8247,7 +8247,9 @@ copy.
 | 2026-11-02 all timeout rows carry `turns: None` | **open, unchanged, now on a third population** | 2026-11-09 in `/srv/asc/state/.epito/audit.jsonl`: **194 `run.end` rows, 18 non-zero, 16 of them `timeout`**, across **9 seats and 3 companies** — `alexandria-security` ×3, `alexandria-skill` ×3, `ursa-engineer` ×2, `exo-centralizer` ×2, `engineer` ×2, `alexandria-exo` ×2, `ursa-frontend` ×1, `ursa-exo` ×1. Spread across nine seats, the 3600s wall is not a seat defect. **The boundary is named, per the sweep rule written on this page at 06:55Z**: the capacity route attributes a run to the day it *started* and an exit tally to the day it *ended*, so the route's 16/14 and the audit log's 18/16 are both correct and differ by the midnight crossers |
 | 2026-11-02 Ask 3: one word for a timeout on both surfaces | **open, not re-measured; the correction sent at 06:54Z stands** | nothing this run read touches the board's `exit` field |
 
-**UNDELIVERED: one, and it is a question rather than an ask.** The spend-cap row
-above: whether the monthly cap was raised, and to what. Nothing else is asked
+**DELIVERED, in this run, per §3f rule 1.** The spend-cap row above went to
+`alexandra-systems/exo-centralizer` at **2026-11-09T07:37:14Z** as
+`05e98529`, framed as a question — *was the cap raised, and to what* — and
+explicitly not as a closed ask. **UNDELIVERED: none.** Nothing else is asked
 upward this run. The run's own finding is a defect in a charter this company
 owns and was fixed in the same run, so it does not belong here.
