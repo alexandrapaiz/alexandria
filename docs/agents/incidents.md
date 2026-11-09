@@ -25844,3 +25844,76 @@ shipped here.
 
 Ban list checked on this entry.
 
+
+## INC-2026-11-08-the-writer-patched-the-generator-against-its-own-recorded-refusal
+
+Observed 2026-11-08 by the writer seat, in its own run, on its own branch.
+
+The run graded `2026-W44`, found law 7 failing twice on "The grade: one group,
+one training run, no external replication.", read the generator's span for law
+7 as `check_voice.py queued` instructs, found a real and narrow gap (the bullet
+names the semicolon as the mark that commits the failure and the artifact used
+the colon), and committed the patch as `32923396`. Ban list 149, in this seat's
+own custody, had already found that exact gap from `2026-W42` and refused that
+exact repair in bold: "No prompt diff is attached and that is the entry's own
+argument." Run 51 had drafted and reverted the same patch inside one run. The
+patch was reverted as `67446c02` once the entry was read.
+
+Why it is a repeat and not a first: this is incident 20's class, which is that
+recording a rule is not enforcing it, arriving inside the one loop built to
+prevent it. The charter's step 3 and the `queued` gate both point a run at the
+law's span in `prompts/digest.md`. Nothing between those instructions and the
+commit opens the ban list entry that governs that span, so a run that follows
+its charter exactly reaches the refused patch by the shortest path available to
+it. Four runs have been praised in this charter for "correctly doing something
+else" at this step, which means the step has been producing the wrong first
+move for some time and the recoveries were the seats, not the procedure.
+
+The cheap fix, and it is not this seat's to make alone: `queued <law>` already
+reads the law's anchors out of the generator to decide which commits touch its
+span. The same anchors could name the ban list entries that cite that law, so
+the gate that tells a run a law is UNPATCHED also tells it which register entry
+already ruled on the patch. Filed as prose here rather than in `docs/ideas.md`
+because `check_voice.py` is this seat's own file and the next run can do it.
+
+## INC-2026-11-08-canon-law-twelve-reached-readers-in-three-consecutive-editions
+
+Observed 2026-11-08 by the writer seat, grading `2026-W44` live.
+
+Three of the four editions the product serves print a framework name as a
+heading: `2026-W40` three times, `2026-W42` once as `## What to read`, and
+`2026-W44` as `## What to read yourself`. This is the one ruling the owner has
+given twice, already recorded as incident 20, and it has now shipped to readers
+in three consecutive sends.
+
+The span is longer than three. `INC-2026-09-24-prohibition-supplies-the-string`
+recorded this reaching subscribers "for the third time" on 2026-09-24, with the
+rule in five places and a gate asking the right question already running, and
+it is the incident behind L-A23 in the company standard.
+
+The repeat is not the heading. It is that the gate written to catch it reported
+`OK` on the newest one. `slotheads` matched the ban's phrasings with `==`, and
+the phrase had been added to the ban eight days earlier for the bare form, so
+the list was correct, derived, in step, and blind. Recorded as ban list 157 and
+corrected in the gate this run, and the structural ask is in `docs/ideas.md`
+under this date.
+
+## INC-2026-11-08-a-writer-run-died-after-shipping-its-draft-and-nothing-swept-it
+
+Observed 2026-11-08 by the writer seat, finding its own predecessor open.
+
+PR #798 was opened 2026-11-02T09:38:25Z with `createdAt` equal to `updatedAt`
+and a four-line WIP stub as its only content, so that run died in the turn
+after it shipped its draft pull request and graded nothing. It then sat open
+for six days. The org rule it was obeying is the right one and this is not an
+argument against it: a run that dies with a draft open has delivered more than
+a run that dies with nothing pushed.
+
+The repeat is the sweeping, not the dying. This is the class of
+`INC-2026-10-24-one-event-wakes-two-runs-and-the-second-pays-a-whole-run-to-find-out`,
+whose own lesson was that findings written carefully into pull request bodies
+are swept by nothing. A draft pull request whose only commit is its opening
+stub, and whose `updatedAt` has not moved in days, is mechanically detectable
+and nothing looks. The seat's successor found it only because its charter tells
+it to look for its own open pull requests, which is six days of latency by
+design and works solely for the seat that happens to run next.
