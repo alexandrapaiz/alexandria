@@ -227,11 +227,27 @@ def test_the_excuse_is_narrow_enough_to_still_be_a_gate():
     )
 
 
+# A bare day or a full ISO-8601 stamp, and nothing else. The stamp half was
+# added 2026-11-09 for alexandria/skill: this assertion was what refused a
+# timestamped `generated`, and a timestamp is what stops two bundles of one day
+# ranking equal and letting a filename decide which result the page publishes.
+# Still anchored, because the point of the assertion is that a receipt's date
+# is a date and not free prose, and `formatDate` renders anything it cannot
+# parse by handing it to the reader verbatim.
+RECEIPT_DATE = re.compile(
+    r"\d{4}-\d{2}-\d{2}"                        # the calendar day, always
+    r"(?:[T ][\d:.]+(?:Z|[+-]\d{2}:?\d{2})?)?"   # optionally the time within it
+)
+
+
 def test_every_skill_the_page_receives_shows_a_dated_validation_result():
     for s in _list_skills():
         v = s["validation"]
         assert v, f"{s['name']}: no validation result reached the page"
-        assert re.fullmatch(r"\d{4}-\d{2}-\d{2}", v["date"]), s["name"]
+        assert RECEIPT_DATE.fullmatch(v["date"]), (
+            f"{s['name']}: `generated` is {v['date']!r}, which is neither a "
+            "calendar day nor an ISO-8601 stamp, so the page will print it raw"
+        )
         assert v["engine"], s["name"]
         assert v["total"] > 0, s["name"]
         assert v["current"] is True, (
@@ -830,3 +846,201 @@ def test_no_live_quarantine_entry_is_inside_its_warning_window():
     assert registrar.quarantine_entry(
         "plain", quarantine={"plain": "a reason"}, expires="2026-12-01") == (
         "a reason", "2026-12-01")
+
+
+# --------------------------------------------------------------- the ranking
+#
+# Two implementations of one rule, and until 2026-11-09 nothing executed them
+# against the same input. rank_bundles() in skills/_validation/trigger_test.py
+# and rankBundles() in site/lib/skill-provenance.js each said in a comment that
+# they were the other's rule, and for two bundles recorded on one bare date
+# neither of them had a key left: the winner was whichever the caller listed
+# first. That was `sorted(glob())` on the gate's side and `readdirSync` on the
+# page's, which Node does not promise to sort. So the receipt the page
+# published and the receipt the gate checked were decided by two different
+# accidents that happened to agree on this filesystem.
+#
+# alexandria/skill found it from the other end on #873: `--receipts` said to
+# clear a stale receipt by re-running, the re-run wrote the same bare date as
+# the bundle it replaced, and it lost the tie on filename, so the prescribed
+# remedy could not clear the thing it was prescribed for.
+#
+# These are the assertions that make the parity real instead of asserted in a
+# comment.
+#
+# The first version of them passed on the pre-fix code, and the reason is worth
+# keeping because it is the defect's own shape. Both sorts are stable, Python's
+# by implementation and JavaScript's by specification since ES2019, so handing
+# both rankers one list makes them agree on a tie whether or not either has a
+# key left to break it. They agree by preserving the input, which is not
+# agreeing on a rule.
+#
+# So the fixture reaches the two sides in opposite orders, which is what
+# production does: `sorted(glob())` enumerates for the gate and `readdirSync`
+# for the page, and nothing promises those are the same order. Under a declared
+# third key both sides must land on the same answer anyway. Under stability
+# alone they cannot, and that is what makes these fail on the code they were
+# written against.
+
+_RANKING_FIXTURE = [
+    # (sourceFile, generated, pre_registered)
+    ("2026-11-09-zzz-rerun.json", "2026-11-09T06:12:03Z", True),
+    ("2026-11-09-aaa-earlier.json", "2026-11-09", True),
+    ("2026-11-09-mmm-experiment.json", "2026-11-09", False),
+    ("2026-09-30-decoys-v1.json", "2026-09-30", True),
+    ("2026-09-30-lexical-2.1.json", "2026-09-30", True),
+    ("2026-09-30-bbb-middle.json", "2026-09-30", True),
+    ("2026-10-13-only-one.json", "2026-10-13", True),
+]
+
+# Ordered so that every group of equally-ranked bundles arrives in reverse of
+# the order the declared key wants. A stable sort that has run out of keys
+# returns this list unchanged, so returning the expected order is only possible
+# by comparing the basename.
+_RANKING_INPUT = [_RANKING_FIXTURE[i] for i in (4, 3, 5, 6, 1, 2, 0)]
+
+_RANKING_EXPECTED = [
+    "2026-11-09-zzz-rerun.json",       # a stamp beats a bare day of the same day
+    "2026-11-09-aaa-earlier.json",     # then the bare day, pre-registered
+    "2026-11-09-mmm-experiment.json",  # then the experiment on that day
+    "2026-10-13-only-one.json",
+    "2026-09-30-bbb-middle.json",      # three equal bundles, basename ascending
+    "2026-09-30-decoys-v1.json",
+    "2026-09-30-lexical-2.1.json",
+]
+
+
+def _rank_in_python(rows):
+    sys.path.insert(0, str(REPO / "skills" / "_validation"))
+    import trigger_test as tt            # noqa: E402
+
+    bundles = [
+        {"generated": gen, "policy": {"pre_registered": pre}, "_path":
+         f"skills/_validation/results/{name}"}
+        for name, gen, pre in rows
+    ]
+    import os.path
+    return [os.path.basename(b["_path"]) for b in tt.rank_bundles(bundles)]
+
+
+def _rank_in_node(rows):
+    bundles = [
+        {"generated": gen, "policy": {"pre_registered": pre}, "sourceFile": name}
+        for name, gen, pre in rows
+    ]
+    script = (
+        'const m = await import("./lib/skill-provenance.js");'
+        f"const input = {json.dumps(bundles)};"
+        "process.stdout.write(JSON.stringify("
+        "m.rankBundles(input).map((b) => b.sourceFile)));"
+    )
+    proc = subprocess.run(
+        [node(), "--input-type=module", "-e", script],
+        cwd=SITE,
+        capture_output=True,
+        text=True,
+    )
+    assert proc.returncode == 0, proc.stdout + proc.stderr
+    return json.loads(proc.stdout)
+
+
+def test_the_input_order_cannot_supply_the_answer():
+    """The guard on the two tests below, because they are only worth having
+    while the fixture still defeats a stable sort. An edit that tidied
+    _RANKING_INPUT into the expected order would leave both of them passing and
+    testing nothing, which is how the first version of this file went green
+    against the code it was written to catch."""
+    names = [name for name, _gen, _pre in _RANKING_INPUT]
+    assert names != _RANKING_EXPECTED, (
+        "the fixture now arrives in the order the answer wants, so a ranker "
+        "with no tie-break at all would pass. Reverse the tied groups."
+    )
+    assert names[::-1] != _RANKING_EXPECTED
+
+
+def test_both_rankers_order_one_fixture_identically_from_opposite_inputs():
+    """The parity the two comments claim, executed rather than claimed.
+
+    Opposite input orders on purpose. The gate enumerates with
+    `sorted(glob())` and the page with `readdirSync`, and the defect was that
+    each side's answer to a tie came from its own enumeration rather than from
+    a shared rule.
+    """
+    in_python = _rank_in_python(_RANKING_INPUT)
+    in_node = _rank_in_node(_RANKING_INPUT[::-1])
+    assert in_python == in_node, (
+        "the gate and the page disagree about which bundle is the library's "
+        f"result.\n  trigger_test.py: {in_python}\n  the page:        {in_node}"
+    )
+    assert in_python == _RANKING_EXPECTED, in_python
+
+
+def test_a_rerun_with_a_stamp_beats_the_bare_day_it_supersedes():
+    """The property that makes `--receipts`' own prescription followable.
+
+    Without it the remedy the failure message prints cannot clear the failure,
+    which is how this was found.
+    """
+    rows = [
+        ("2026-11-09-aaa-earlier.json", "2026-11-09", True),
+        ("2026-11-09-zzz-rerun.json", "2026-11-09T06:12:03Z", True),
+    ]
+    # both input orders, because a stamp has to win on the stamp and not on
+    # where the caller happened to list it
+    for order in (rows, rows[::-1]):
+        assert _rank_in_python(order)[0] == "2026-11-09-zzz-rerun.json"
+        assert _rank_in_node(order)[0] == "2026-11-09-zzz-rerun.json"
+
+
+def test_a_tie_on_a_bare_day_is_reported_rather_than_resolved_in_silence():
+    """A tie the page would publish as "the newest result" is a failure.
+
+    Not because the tie-break is wrong, but because there is no fact to get
+    right: nothing in a bare-dated bundle says which of them ran later, so the
+    page would be stating a coin flip as a measurement.
+    """
+    sys.path.insert(0, str(REPO / "skills" / "_validation"))
+    import trigger_test as tt            # noqa: E402
+
+    def bundle(name, gen, skill="a"):
+        return {
+            "generated": gen,
+            "policy": {"pre_registered": True},
+            "_path": f"results/{name}",
+            "suites": [{"skill": skill, "passed": 1, "total": 1,
+                        "skill_sha256": "aaaa"}],
+        }
+
+    tied = [bundle("aaa.json", "2026-11-09"), bundle("zzz.json", "2026-11-09")]
+    receipt = tt.latest_receipt(tied, "a")
+    assert receipt["path"] == "results/aaa.json"
+    assert receipt["tied"] == ["results/zzz.json"], receipt["tied"]
+
+    # one stamped, and the tie is gone rather than merely re-broken
+    untied = [bundle("aaa.json", "2026-11-09"),
+              bundle("zzz.json", "2026-11-09T06:12:03Z")]
+    receipt = tt.latest_receipt(untied, "a")
+    assert receipt["path"] == "results/zzz.json"
+    assert receipt["tied"] == []
+
+    # a bundle tied on the keys but not scoring this skill decides nothing
+    other = [bundle("aaa.json", "2026-11-09"),
+             bundle("zzz.json", "2026-11-09", skill="b")]
+    assert tt.latest_receipt(other, "a")["tied"] == []
+
+
+def test_the_library_as_it_stands_publishes_no_receipt_chosen_by_filename():
+    """The gate on the real tree, through the page's own reader.
+
+    `--receipts` asserts this on the gate's side. This is the same question
+    asked of what the page actually received, because the two readers are
+    separate code and the whole defect was that they were only claimed to be
+    one rule.
+    """
+    for s in _list_skills():
+        assert s["validation"]["tiedWithFiles"] == [], (
+            f"{s['name']}: the page calls {s['validation']['date']} the newest "
+            f"result, but these bundles rank equal to the one it chose: "
+            f"{s['validation']['tiedWithFiles']}. Give the newer one a full "
+            "ISO-8601 `generated` stamp."
+        )
