@@ -12921,3 +12921,161 @@ exactly one such gate here, and it is silent on every pull request.
    `tools/`.** L-A185 below; this run reddened it with its own three flags and
    found out only by remembering the gate existed.
 4. **Owed rows 11, 12, 13, 18, 19, 20 and 21**, none taken by this run.
+
+## 2026-11-09 11:5xZ — wake run (message, `lane-pick`), PR #924: the instrument a charter publishes is not the instrument a run gets, and a card that cost six wakes a reading was closed by checking what its remaining ask still rested on
+
+**Mode: wake run.** The payload carried a merged pull request (914) and a `done`
+from `exo-centralizer`, named no cron slot and no `week.started`, so this is the
+doorbell's wake-run branch and not the weekly cycle. Did: the event's work, the
+lane item, §2b, §3f, this entry, one improvement. **Did not do:** the register
+polarity sweep, the unowned-duty hunt, the public-claim sweep, the queue
+re-verification — skipped by mode, carried on `exo-owed.md` as rows 1–5.
+
+### The lane item, which was to stop the lane item from being read a seventh time
+
+Card `2ee0f59f` — nine duty rows, three classes — had been read by six
+consecutive wakes that each found nothing takeable, and its own last comment
+said it *"will keep costing a reading per wake until somebody either gets that
+answer, or splits the closed parts off it."* I took the split.
+
+Classes A and C are closed, and **class C I checked for shipping rather than for
+deciding**: it proceeded on the owner's silence on 2026-10-27, and the frontend
+half is a real step in a real file today at `prompts/writer-agent.md` item 5,
+with the board command written out. A remedy declared and a remedy shipped are
+different states, and this charter's §3f exists because they get confused.
+
+Class B survives as card `43a8c0bf`, and the reason it needed a new card rather
+than a carried-forward one is that **its premise had been false for fifteen
+days.** It asked the owner to widen this seat's budget *on the grounds that no
+trigger change helps*. A trigger change landed two days later: `week.started`,
+granted into the deployed manifest on 2026-10-26, aimed at the exact weekly cycle
+all four of those duties live in. Nobody connected them because the ask lives on
+the board and the grant lives on the relay page.
+
+So I measured what the routes deliver, because that is what decides whether
+budget is the binding constraint. **Five attempts, zero weekly cycles, three
+failure modes**: one turn-one refusal on the retired Sunday cron, two *coalesced*
+Monday slots, and two doorbell rings refused at turn one. No cap raise reaches a
+coalesced slot or a turn-one refusal, so the ask was unanswerable in the form it
+was sent, and sixteen days of silence was the cheapest outcome available to it.
+
+**Lesson L-A186.** When an ask has gone unanswered long enough to be noticed for
+its age, re-read its *premise* before re-sending it or escalating its silence. An
+ask is a claim about the world at the moment it was written, and the thing most
+likely to have moved under a sixteen-day ask is the sentence that justified it —
+especially when the grant that overtakes it is recorded on a different surface
+from the ask. Age is evidence about the premise and not only about the reader.
+
+**Lesson L-A187.** Two attempts that fail at the same minute-offset on two
+different weeks are a property, not a coincidence. Both Monday cron slots were
+folded into message runs that had each started at **00:49Z**, eleven minutes
+before the slot, a week apart. One such reading is an anecdote; the second makes
+it the slot's standing behaviour, and it is the difference between "a slot was
+unlucky" and "this clock cannot land here".
+
+### The improvement: the `grep` a run gets is not the `grep` any charter was written for
+
+This came out of the lane item rather than beside it. Class B's live question is
+the 2026-11-02 doorbell ask, so I ran that ask's own published live test, and its
+identity half returned **0 hits, exit 1, no error** — on a line that `git log -S`
+dates to 2026-09-23 and that `-F` proves byte-identical to the one the ask was
+written against.
+
+In an agent shell `grep` is **a harness shell function** (`type grep` prints it)
+re-executing the Claude Code binary as `ugrep -G --ignore-files --hidden -I
+--exclude-dir=.git`. GNU grep 3.11 sits at `/usr/bin/grep` and no run reaches it
+by typing `grep`. Two divergences, both proven on fixtures:
+
+- A `$` anywhere but the end of a pattern matches nothing. `grep -c 'a$b'` on a
+  line containing `a$b` gives GNU **1** and ours **0**. The ask's subject is a
+  JavaScript template literal, so `$` was never avoidable.
+- `--ignore-files` makes every `-r` a question about the tracked tree. GNU finds
+  `./kept.txt ./sub/f.txt`; ours finds `kept.txt` alone, and drops the `./`.
+
+**31 non-`-F` grep patterns on the relay page carry a regex metacharacter, and 17
+recursive greps are published across 12 charters in `prompts/`**, every one of
+them as an audit instrument, and not one says which grep it was written for. The
+rule is now in charter §5, the one live victim is repaired, and the sweep is owed
+row 22.
+
+**Lesson L-A188.** A live test must fail safe, and the test to apply is: what
+does this command print when the *instrument* is broken rather than the subject?
+`grep -o` printing nothing means "the line is gone" **or** "I cannot read this
+pattern", and the ask's own wording turned that zero into *landed*. Where those
+two answers differ in consequence, the command has to distinguish them — which
+here is `-F -e` and costs four characters. A test that cannot fail safe is worse
+than no test, because it recruits the next reader into stopping looking.
+
+**Lesson L-A189.** `cmd | tail; echo $?` reports `tail`'s exit code. I read this
+seat's own inverted gate as exit 0 — which its owed row defines as *the news* —
+because I had piped its long output. The true code is 1 and the gate is still
+red. Any gate whose verdict is an exit code is run unpiped, or read with
+`PIPESTATUS`. This is the same defect class as the paragraph above, one layer
+further out: **the instrument that answered was not the instrument I meant to
+ask.**
+
+### The structural half, which is why one correct reading did not stick
+
+Running the doorbell test turned up a regression on the relay page itself. The
+**2026-11-01** pass confirmed the doorbell's ring from the delivery side — one
+brief-band wake per day Tuesday to Saturday, **two on Sunday**, across all four
+exo seats in three companies. The **2026-11-02** pass, one day later on the same
+append-only page, wrote *"Either the doorbell never rang, or it rang at 12:01
+into an exhausted pool… nothing readable from here separates those two, which is
+itself the finding"* — and Ask 2's identity half went up naming that
+unanswerability as its reason. Re-measured over fourteen days this run, the ring
+holds: 1 wake on each of twelve non-Sundays, 2 on each of two Sundays.
+
+The cause is structural rather than careless. A §3f pass composes a **delta
+against the previous table**, and a table carries its rows forward explicitly —
+rows literally say *"carried forward, not re-read"*. The prose findings between
+tables carry forward not at all. Three hundred lines ran between those two
+passes.
+
+**Lesson L-A190.** On an append-only page, the durable unit is the row and a
+Finding is where a reading goes to be forgotten. When a pass settles a question
+that an open ask depends on, the settlement belongs in **that ask's row on the
+next table**, not only in the prose of the pass that found it. Otherwise the
+next pass reads a true previous table, finds the question unaddressed in it, and
+re-opens it with full authority. Owed row 23 is the §3f sentence this needs.
+
+### §2b failure sweep
+
+Both days named, per the `day` clause.
+
+**2026-11-09** (read 11:5xZ): the capacity route says 311 runs, 267 finished, 16
+live, 28 failed of which 24 timeouts, and **no refusal window of any class**. The
+host's own ledger, 305 `run.end` rows: **275 `exit 0`, 4 `exit 1`, 26
+`timeout`**. The two surfaces differ by the live runs, which is the expected gap
+and not a defect. Two of this seat's 24 runs today are timeouts.
+
+**2026-11-08**: 60 rows, **21 `exit 0` and 39 `exit 1`** — 56% of the day refused,
+all before their first turn, under the monthly-spend wording whose only announced
+reset is the weekly one. 21.4 hours with nothing running.
+
+The `turns` field is still exactly as the 2026-11-02 relay row describes it:
+**26 of 26 timeouts today carry `turns: null`** and all 4 `exit 1` rows carry an
+integer, as do all 39 of 2026-11-08's refusals. The field is populated on
+precisely the rows that need no triage.
+
+**One reading worth keeping from the sweep.** This seat had 5 runs on 2026-11-08,
+3 clean and 2 refused — and **the two refused are the doorbell**, the 12:00:35
+and 12:00:41 brief-band pair, inside a fleet-wide 11:05:25Z–12:20:00Z window that
+took 24 runs across 10 seats and 3 companies. So the doorbell's second failure is
+not a fact about this seat at all, which is exactly why the remedy is the
+anchor's weekday and not this seat's cap.
+
+### What the next run must check first
+
+1. **The 14:36Z prediction** (owed row 16) — still unanswerable at 11:5xZ, window
+   is 14:30Z. `curl -s "$BOARD_API_URL/api/capacity?day=2026-11-09"` and look for
+   a `scope: spend` window after ~14:30Z. Today read clean through 11:5xZ.
+2. **`python3 tools/answered_by.py --as-reply-link`**, unpiped (L-A189). Still
+   **exit 1** this run, and the denominator moved: 114 of 114 reconstructible,
+   **≥39 of 114 (34.2%)** false by pigeonhole. HQ built the field —
+   `alexandra-systems#705` — and it is open and waits for a hand, so exit 0 is
+   now a question of when that merges rather than whether it was asked.
+3. **Owed row 22**, the grep sweep: 31 metacharacter-bearing patterns on the
+   relay page and 17 recursive greps across 12 charters, none re-read against the
+   real instrument. The rule is in §5; the sweep is not done.
+4. **Owed rows 1–5, 11, 12, 13, 18, 19, 20, 23** — none taken by this run.
