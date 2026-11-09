@@ -140,18 +140,22 @@ def test_the_seat_filter_reads_one_directory(tmp_path):
 
 # --- the three limits are three things -----------------------------------
 
-# The two spend variants are quoted from `/srv/asc/state/.epito/logs` rather
-# than paraphrased, because the bug they catch lives in a subordinate clause:
-# both of them say "your weekly limit resets", so any reader that tests for
-# the word `weekly` before the word `spend` calls them the weekly wall. All
-# 257 spend refusals on that host take one of these two forms.
-SPEND_SENTENCES = [
-    ("You've hit your org's monthly spend limit · ask your admin to raise it "
-     "at claude.ai/admin-settings/usage · your weekly limit resets "
-     "Nov 8, 11pm (UTC)"),
-    ("You've hit your org's monthly spend limit · ask your admin to raise it "
-     "at claude.ai/admin-settings/usage · your weekly limit resets 11pm (UTC)"),
-]
+#: The monthly sentence exactly as the host's archive carries it, 257 times
+#: across 2026-11-03 to 2026-11-08. Copied rather than paraphrased, because
+#: the defect it pins lives in its closing clause: it says "your weekly limit
+#: resets", so any reader that tests for the word `weekly` before the word
+#: `monthly` calls the spend cap the weekly wall.
+MONTHLY_SPEND = (
+    "You've hit your org's monthly spend limit · ask your admin to raise it "
+    "at claude.ai/admin-settings/usage · your weekly limit resets "
+    "Nov 8, 11pm (UTC)")
+
+#: The second real form of the same sentence, with no date on the weekly
+#: clause. Between them the two account for all 257; a fix verified against
+#: the dated one alone is verified against part of the population.
+MONTHLY_SPEND_NO_DATE = (
+    "You've hit your org's monthly spend limit · ask your admin to raise it "
+    "at claude.ai/admin-settings/usage · your weekly limit resets 11pm (UTC)")
 
 
 @pytest.mark.parametrize("sentence,expected", [
@@ -159,48 +163,72 @@ SPEND_SENTENCES = [
     ("You've hit your 5-hour limit · resets 4am", "session-limit"),
     ("Your session limit was reached", "session-limit"),
     ("Overloaded", "unclassified-429"),
-    (SPEND_SENTENCES[0], "spend-limit"),
-    (SPEND_SENTENCES[1], "spend-limit"),
+    (MONTHLY_SPEND, "monthly-spend"),
+    (MONTHLY_SPEND_NO_DATE, "monthly-spend"),
 ])
 def test_the_refusal_sentence_is_the_only_discriminator(sentence, expected):
     assert cf.classify_refusal(sentence, 429) == expected
 
 
-@pytest.mark.parametrize("sentence", SPEND_SENTENCES)
-def test_the_spend_wall_is_not_read_off_its_weekly_clause(sentence):
-    """The regression that held the portfolio shut for six days.
+def test_the_monthly_cap_is_not_the_weekly_pool_though_it_names_it():
+    """The sentence that refused the portfolio for six days names two limits.
 
-    This file said the provider had two limits until 2026-11-08. The spend
-    sentence contains `your weekly limit resets`, so `"weekly" in text`
-    matched it and `classify_refusal` returned `weekly-limit` for 257 of 257
-    spend refusals — a confident wrong answer, never `unclassified-429`.
-    Seventy-four of those were cron slots, which is 74 of the 177 slot
-    refusals this module exists to name.
+    `monthly-spend` has to be tested before `weekly-limit`, because the
+    monthly sentence closes by announcing when the weekly limit resets, and a
+    substring test for `weekly` matches that clause. Every one of the 257
+    refusals from 2026-11-03 to 2026-11-08 was filed as the weekly pool
+    running out.
 
-    The assertion that matters is the second one. A weekly wall names its own
-    reset and a spend cap has none, so the word `weekly` tells the next reader
-    to wait for a boundary that will not help.
+    The two have different remedies and that is why the misfiling cost
+    something. A weekly pool is rationed by moving slots and lowering burn. A
+    monthly spend cap is raised by the owner in the org's admin settings, and
+    no amount of rescheduling touches it.
     """
-    assert cf.classify_refusal(sentence, 429) == "spend-limit"
-    assert cf.classify_refusal(sentence, 429) != "weekly-limit"
+    assert cf.classify_refusal(MONTHLY_SPEND, 429) == "monthly-spend"
+    assert "weekly" in MONTHLY_SPEND.lower(), (
+        "if the provider drops the weekly clause this test stops pinning "
+        "anything, and the ordering above would no longer be load-bearing")
 
 
-def test_the_spend_test_runs_before_the_weekly_test():
-    """Order, not vocabulary, is the fix — so pin the order itself.
+def test_the_monthly_sentence_survives_a_round_trip_through_a_log(tmp_path):
+    """The classifier and the reader agree, and the sentence itself is kept.
 
-    A sentence naming both walls has to resolve to the narrower one. Adding
-    `spend-limit` *after* the weekly branch would leave every test above
-    passing on the two real variants only by accident of their wording.
+    `refusal_text` exists because a weekly refusal announces its own reset
+    instant, which is the only authoritative statement of where the provider
+    cycle's boundary falls. `tools/provider_cycle.py` reads it rather than
+    assuming the Sunday rule.
+    """
+    write_log(tmp_path, "alexandria-engineer", "2026-11-04T11-06-25-000Z",
+              "cron", refused(MONTHLY_SPEND), exit_code=1, turns=1)
+    run, = cf.read_runs(tmp_path)
+    assert run["refusal"] == "monthly-spend"
+    assert run["refusal_text"] == MONTHLY_SPEND
+
+
+def test_a_run_that_was_not_refused_keeps_no_refusal_text(tmp_path):
+    write_log(tmp_path, "alexandria-engineer", "2026-11-04T11-06-25-000Z",
+              "cron", completed(), exit_code=0, pr="x/pull/1", turns=9)
+    run, = cf.read_runs(tmp_path)
+    assert run["refusal"] is None
+    assert run["refusal_text"] is None
+def test_the_monthly_test_runs_before_the_weekly_test():
+    """Order, not vocabulary, is the fix -- so pin the order itself.
+
+    Both real variants above happen to say `monthly` before `weekly`, so a
+    chain with the branches in the wrong order still passes every test that
+    only feeds it those two. This sentence is synthesised rather than quoted
+    for exactly that reason: it names both walls and the narrower one has to
+    win on the rule and not on the word order.
     """
     both = "hit your org's monthly spend limit, and your weekly limit resets"
-    assert cf.classify_refusal(both, 429) == "spend-limit"
+    assert cf.classify_refusal(both, 429) == "monthly-spend"
 
 
 def test_a_weekly_refusal_is_still_weekly_after_the_third_class_arrived():
-    """The other direction: the fix must not drag weekly rows into spend.
+    """The other direction: the fix must not drag weekly rows into monthly.
 
     All three real weekly variants, quoted from the same host. 487 refusals
-    take one of these forms and none of them says `spend`.
+    take one of these forms and none of them says `monthly` or `spend`.
     """
     for sentence in ("You've hit your weekly limit · resets Nov 1, 11pm (UTC)",
                      "You've hit your weekly limit · resets 11pm (UTC)",
@@ -257,7 +285,7 @@ def test_the_three_limits_reach_the_verdict_as_three_words(tmp_path):
     the function's return value.
     """
     write_log(tmp_path, "alexandria-market", "2026-11-06T11-00-10-855Z",
-              "cron", refused(SPEND_SENTENCES[0]), exit_code=1, turns=1)
+              "cron", refused(MONTHLY_SPEND), exit_code=1, turns=1)
     write_log(tmp_path, "alexandria-engineer", "2026-11-06T12-06-00-000Z",
               "cron", refused("You've hit your weekly limit · resets 11pm (UTC)"),
               exit_code=1, turns=1)
@@ -267,7 +295,7 @@ def test_the_three_limits_reach_the_verdict_as_three_words(tmp_path):
     result = cf.judge(cf.read_runs(tmp_path), "2026-11-06",
                       now="2026-11-06T23:00:00Z")
     assert sorted(f["why"] for f in result["lost"]) == [
-        "session-limit", "spend-limit", "weekly-limit"]
+        "monthly-spend", "session-limit", "weekly-limit"]
 
 
 # --- the three states ----------------------------------------------------

@@ -107,11 +107,11 @@ one answers three.
 
 `lost`
     The slot fired and the run reached no pull request. The reason is carried
-    with it: `spend-limit`, `weekly-limit` and `session-limit` are the
+    with it: `monthly-spend`, `weekly-limit` and `session-limit` are the
     provider's three refusals, which arrive as the same `429` and are told
-    apart only by the sentence in the result — see `classify_refusal`, where
-    the order of the tests is load-bearing and `spend-limit` was missing until
-    2026-11-08 — `api-error` is any other error status, `nonzero-exit` is a run
+    apart only by the sentence in the result, and the monthly one has to be
+    tested first because its sentence names the weekly reset inside itself
+    (see `classify_refusal`). `api-error` is any other error status, `nonzero-exit` is a run
     that failed without one, and `silent` is the worst of the five, a run that
     exited 0 and shipped nothing anyway. That last one is incident 3's failure
     mode and the reason the ship-first rule is in every charter.
@@ -279,60 +279,68 @@ UTC = timezone.utc
 
 
 def classify_refusal(result_text, api_error_status):
-    """Which of the provider's three limits refused this run, if one did.
+    """Which of the provider's limits refused this run, if one did.
 
-    All three arrive as `api_error_status: 429` and the only discriminator is
+    They all arrive as `api_error_status: 429` and the only discriminator is
     the sentence, which is the finding
     `INC-2026-10-25-the-weekly-slot-is-scheduled-inside-the-hours-the-weekly-provider-budget-is-spent`
     turns on. A weekly limit resets at a week boundary and a session limit
     resets in hours, so reading them as one refusal makes a lost week look
     like a lost hour.
 
-    **There are three and this function said two until 2026-11-08, when the
-    spend wall had already held the portfolio shut for six days.** The third
-    is the org's monthly spend cap, and the order of the tests below is the
-    whole fix, because the spend sentence contains the weekly wall's name
-    inside a subordinate clause about a different wall:
+    **There are three limits and not two, and the third one spent six days
+    wearing the second one's name** (2026-11-08, engineer seat,
+    `INC-2026-11-08-the-monthly-spend-cap-was-counted-as-the-weekly-pool-for-six-dark-days-because-its-sentence-ends-by-naming-the-weekly-reset`).
+    The org's monthly spend cap refuses with
 
-        You've hit your session limit · resets 5am (UTC)
-        You've hit your weekly limit · resets Nov 8, 11pm (UTC)
-        You've hit your org's monthly spend limit · ask your admin to raise
-         it at claude.ai/admin-settings/usage · your weekly limit resets
-         Nov 8, 11pm (UTC)
+        You've hit your org's monthly spend limit · ask your admin to raise it
+        at claude.ai/admin-settings/usage · your weekly limit resets Nov 8,
+        11pm (UTC)
 
-    So `"weekly" in text` matches every spend refusal, and this function
-    returned `weekly-limit` for **257 of 257** of them across
-    `/srv/asc/state/.epito/logs` — never `unclassified-429`, so the error was
-    a confident wrong answer and not a gap. Seventy-four were cron slots,
-    which is 74 of the 177 slot refusals this file exists to name, and the
-    reading it gave of `alexandria-market`'s 2026-11-06T11:00Z slot is what
+    and that sentence contains the word `weekly` in its closing clause, so the
+    substring test below returned `weekly-limit` for every one of them. 257
+    refusals across the portfolio's six dark days of 2026-11-03 to 2026-11-08
+    were filed as the weekly pool running out when the weekly pool was not
+    what refused them. The costly part is the remedy: a weekly pool is
+    rationed by moving slots and lowering burn, which is what every surface
+    here proposed, and a monthly spend cap is raised in the org's admin
+    settings by the owner and is untouched by any amount of rescheduling.
+
+    So `monthly-spend` is tested first, because it is the only one of the
+    three whose sentence names another limit inside itself. The order is the
+    fix, and a test pins it.
+
+    **It was a confident wrong answer and not a gap, which is why nothing
+    caught it** (measured on this branch, 2026-11-08, and kept here when this
+    branch's own duplicate of the fix gave way to the one above). The old
+    chain returned `weekly-limit` for **257 of 257** spend refusals across
+    `/srv/asc/state/.epito/logs` and `unclassified-429` for none of them, so
+    no surface anywhere had a row to be curious about. Seventy-four of the 257
+    were cron slots, which is 74 of the 177 slot refusals this file exists to
+    name, and `alexandria-market`'s 2026-11-06T11:00Z slot is the one that
     found it: the register asked which wall took the slot, the slot's own log
-    says the monthly spend cap, and this function said the weekly limit.
+    said the monthly spend cap, and this function said the weekly limit.
 
-    Why it matters past accuracy, and it is the same reason the weekly and
-    session split was worth making: **a weekly wall names its own reset and a
-    spend cap has none.** Every remedy that follows from the word "weekly" is
-    "wait for the boundary"; the remedy for a spend cap is a hand on the
-    account. Labelling a spend refusal `weekly-limit` tells the next reader to
-    wait, and waiting is what six dark days were made of.
+    **And the sentence has a second real variant**, quoted in the tests
+    alongside the one above: the same text ending `your weekly limit resets
+    11pm (UTC)`, with no date. Both forms account for all 257.
 
-    This is the fourth reader of the same sentence to get it wrong in the same
-    direction, and the first three are in
-    `INC-2026-11-08-the-third-limit-class-shut-the-portfolio-for-six-days-and-the-classifier-that-names-classes-called-it-the-second`.
-    That entry fixed §2b's published classifier in the charter and named
-    `tools/capacity.py`'s two in the parent repository. It did not know this
-    file carried the identical `if` chain. The general rule it leaves, and the
-    reason the sentence is quoted in full above rather than described: **when a
-    refusal class is added, grep the whole repository for the old class's name
-    rather than fixing the reader that found it** — a classifier is copied far
-    more often than it is imported.
+    **The general rule, because this was the fourth reader of the same
+    sentence to get it wrong in the same direction and the second independent
+    fix for it:** when a refusal class is added, grep the whole repository for
+    the old class's name rather than fixing the reader that found it. A
+    classifier is copied far more often than it is imported --
+    `INC-2026-11-08-the-third-limit-class-shut-the-portfolio-for-six-days-and-the-classifier-that-names-classes-called-it-the-second`
+    fixed the charter's published chain and named `tools/capacity.py`'s two in
+    the parent, and did not know this file carried the identical `if` chain.
+    Two branches then fixed this file at the same time under two different
+    class names, which is the same lesson arriving one layer up.
     """
     if api_error_status != 429:
         return None
     text = (result_text or "").lower()
-    # Before `weekly`, always: the spend sentence names the weekly wall too.
-    if "spend limit" in text or "spend cap" in text:
-        return "spend-limit"
+    if "monthly" in text or "spend limit" in text:
+        return "monthly-spend"
     if "weekly" in text:
         return "weekly-limit"
     if "session" in text or "5-hour" in text or "5 hour" in text:
@@ -369,6 +377,7 @@ def parse_run(path):
         "turns": None,
         "api_error_status": None,
         "refusal": None,
+        "refusal_text": None,
         "truncated": True,
         "retry_claimed": False,
         "retried_by": None,
@@ -429,6 +438,13 @@ def parse_run(path):
                 run["turns"] = result.get("num_turns")
             run["refusal"] = classify_refusal(
                 result.get("result"), result.get("api_error_status"))
+            # The sentence as well as the class, because a weekly refusal
+            # announces its own reset instant — `resets Nov 8, 11pm (UTC)` —
+            # and that is the only authoritative statement of where the
+            # provider cycle's boundary falls. `tools/provider_cycle.py` reads
+            # it rather than assuming the Sunday rule.
+            if run["refusal"]:
+                run["refusal_text"] = result.get("result")
 
     return run
 

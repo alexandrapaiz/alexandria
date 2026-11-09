@@ -95,17 +95,30 @@ ENTRY = re.compile(r"^##(?!#)\s+(.*\S)\s*$")
 # The id scheme of 2026-09-24 (incident 29). The date is the day the incident was
 # observed, which is why the id is not always today's date.
 #
-# The lookahead is the set of characters that may end a slug, and `:` joined it
-# on 2026-11-02 because the register already contained one. The security seat's
-# `INC-2026-11-02-the-dispatch-prompt-now-instructs-the-branch-prefix-its-own-charter-holds-back`
-# separates its id from its summary with `: ` where every other entry uses ` - `,
-# and the cost of that was not cosmetic: the match failed, so `heading_key` fell
-# through to keying the entry on its whole heading. A charter citing the id would
-# not have found it, and a second filing of the same id would not have collided
-# with it, which is the one thing this id scheme exists to guarantee. A slug is
-# `[a-z0-9-]` by construction, so a delimiter added here can only let more real
-# headings parse; it cannot swallow part of a slug.
-INC_ID = re.compile(r"^(INC-(\d{4})-(\d{2})-(\d{2})-[a-z0-9][a-z0-9-]*?)(?=$|[\s—–:])")
+# **The boundary is the slug's own alphabet, and not a list of the punctuation
+# marks seen so far** (2026-11-08, engineer seat, and the id for it is
+# `INC-2026-11-08-the-id-delimiter-list-was-extended-once-and-the-next-separator-broke-it-six-days-later`).
+# This used to end on a lookahead naming the characters allowed to follow a
+# slug, `(?=$|[\s—–:])`, and `:` was added to that set on 2026-11-02 because the
+# register had come to contain one. Six days later a heading separated its id
+# from its summary with `, `, the match failed in exactly the same way, and the
+# register's own parse gate went red on `main`.
+#
+# The cost is the same both times and it is not cosmetic. A heading that does
+# not match here falls through to `heading_key` keying the entry on its whole
+# heading, so a charter citing the id finds nothing and a second filing of the
+# same id does not collide with the first, which is the one guarantee the
+# `INC-YYYY-MM-DD-slug` scheme makes.
+#
+# Enumerating delimiters is incident 26's shape, "a gate written as a list
+# catches only what already shipped", and this list caught precisely what had
+# already shipped, twice running. A slug is `[a-z0-9-]` by construction, so the
+# id is simply its longest prefix in that alphabet, and whatever follows is
+# prose no matter which mark introduces it. Requiring the slug to *end*
+# alphanumeric is what keeps a trailing hyphen out of the id without naming any
+# separator at all. Measured over all 331 INC headings on `main`: every one
+# parses, and exactly one id moves, which is the one that was failing.
+INC_ID = re.compile(r"^(INC-(\d{4})-(\d{2})-(\d{2})-[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)")
 
 # A legacy heading keyed by its sequential number, which is what collided.
 LEGACY_NUMBER = re.compile(r"^Incident\s+(\d+)\b")

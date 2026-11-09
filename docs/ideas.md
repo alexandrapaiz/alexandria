@@ -26491,3 +26491,483 @@ ingestion target rather than a skill target.
   rewording being wrong.
 - Cost: $0
 - Status: proposed
+
+### 2026-11-08 - The heading ban's proposed remedy would not have caught the heading that shipped next, because the defect was never which list (writer seat, for the engineer, correcting an open entry)
+- Trigger: the grade of `2026-W44` in `docs/voice/reviews/2026-11-08.md`. Its
+  reading list prints `## What to read yourself` and
+  `check_voice.py slotheads` reported `OK  5 heading(s), none of them a
+  framework name`.
+- Corrects, and does not duplicate: "2026-11-01 - The pre-send heading ban and
+  the voice canon's heading ban share no phrase, and four live headings walked
+  through both", still `proposed`. That entry is right about the drift and its
+  measurement stands. Its remedy is to have the pre-send gate read the ban from
+  the quoted list inside `prompts/digest.md` rather than from a hand-kept
+  tuple, "because a derived list cannot drift".
+- Why that is insufficient as written, measured rather than argued. The derived
+  list already held the phrase. `97de5c8b` added `what to read` to the
+  generator's quoted ban on 2026-11-01, the same day that entry was filed and
+  for the same reason, so by the time `2026-W44` was written the list was
+  correct and both voice-side gates were deriving from it. The heading still
+  passed, because `slot_heading` tested membership with `==` and
+  `what to read yourself` is not `what to read`. A derived list matched by
+  equality drifts exactly as fast as a hand-kept one: by one word, per print.
+- So the ask has two halves now, and the second is the one nobody has filed.
+  Keep the derivation, which is still right. And have whatever the pre-send
+  gate ends up calling test the PREFIX, not the whole string: a banned phrasing
+  followed only by a remainder that would be true of every issue is the banned
+  phrasing. The voice side of that landed in this run at
+  `docs/voice/check_voice.py` and it is the reference implementation, including
+  the boundary case that has to keep passing, so the gate does not need to
+  invent the reading.
+- The count, because it is the argument for doing this now rather than next.
+  **Three of the four editions the product serves print a framework name as a
+  heading**, verified live against the served pages rather than against
+  `site/content/issues/`, which holds two of the four:
+  ```
+  2026-W39  clean
+  2026-W40  ## What is gaining ground: ...   ## What is genuinely new: ...   ## What fell behind: ...
+  2026-W42  ## What to read
+  2026-W44  ## What to read yourself
+  ```
+  This is canon law 12, the one ruling the owner has given twice, recorded as
+  incident 20. It has now shipped to readers in three consecutive editions.
+- The structural half, which is the writer charter's structure-watch step and
+  the reason this entry exists rather than a seventh phrasing. The generator's
+  rule for this slot is right, explicit, and was in the file that wrote the
+  violation: "Build the heading from the papers underneath it and never from
+  the act of recommending them." The generator also says why it keeps failing,
+  in its own words: "This slot fails more often than the other three and the
+  reason is structural. The first three sections are named after the day's
+  news. This one is named after something the issue does every time it runs,
+  so a generic line is always available here." A slot whose correct answer is
+  never forced by the material is a slot the press should compose or refuse,
+  the way `ensure_fresh_title` already refuses a reused title and asks the
+  model again. That is the lever. Three prompt attempts on this one heading
+  have now shipped three violations.
+- Why this is the engineer's and not this seat's: `tools/` and `pipeline/` are
+  pipeline code and the writer charter's boundary says never pipeline code.
+  This seat owns the ban's wording and the voice gate, and both are correct as
+  of this run. Neither reaches a send.
+- Status: `proposed`
+
+### 2026-11-08 - The press cannot refuse a figure dump, because law 14's fourth count has three thresholds and the pre-send gate holds none of them (writer seat, for the engineer)
+- Trigger: the grade of `2026-W44` in `docs/voice/reviews/2026-11-08.md` named
+  that edition's figure dump as the single biggest weakness of the newest
+  issue the product serves, and had to count it by hand. `check_voice.py
+  figures`, built in `docs/voice/reviews/2026-11-08-message.md`, is the count
+  as a command.
+- The rule, verbatim from `prompts/digest.md` under law 14's hard gate:
+  "Numbers in the heaviest paragraph: past three, cut every number that does
+  not change what the reader would do." It sits in one sentence group with
+  three siblings, and the one before it, "the longest paragraph: over about
+  100 words", has had a row in this seat's instrument since 2026-10-06.
+- The measurement, and it is the argument for doing this at all. Every edition
+  the press has published fails the rule:
+  ```
+  2026-W39  heaviest 8,  target 3, paragraphs past it 2 of 14
+  2026-W40  heaviest 9,  target 3, paragraphs past it 7 of 17
+  2026-W42  heaviest 10, target 3, paragraphs past it 5 of 21
+  2026-W44  heaviest 16, target 3, paragraphs past it 4 of 16
+  ```
+  `2026-W39` is the edition the canon treats as the cleanest and it carries a
+  141-word paragraph with eight figures in it. This is not one bad Monday and
+  it is not a wording problem: the rule was in the generator, deployed, with
+  its number in it, in the file that wrote every one of those paragraphs.
+- The ask. `tools/check_digest_quality.py` gains the count as a rule that can
+  hold a send. It already carries `bare-number` as a WARN, which is the
+  generator's EIGHTH count and a different rule about a figure with no
+  comparison beside it, so this is an addition rather than a widening of that
+  one. `docs/voice/check_voice.py figures` is the reference implementation and
+  the two readings that make it defensible are stated in the code beside it: a
+  figure is a maximal digit run with its own decimal point, so "21 of 25" is
+  two, and the digits inside a name are not figures, because "Qwen3.5-4B" is
+  not a number anybody can cut. Standalone lines and lists are outside the
+  count on purpose, since law 14 asks the writer for "a line carrying the
+  number that matters" and a count that fired on it would punish the issue for
+  obeying the same law.
+- Whether it blocks or warns is the engineer's call and this seat has no
+  standing to spend it. The honest reading is that every published edition
+  fails it today, so a BLOCK rule switched on now refuses every send until the
+  generator's own rule starts being obeyed, and a WARN that nobody reads is
+  the state ban list 150 names. The useful middle is a BLOCK with the
+  threshold set where the press can meet it and tightened toward three, with
+  the number in the rule's own text as the target it moves to.
+- Why this is the engineer's and not this seat's: `tools/` is pipeline code
+  and the writer charter's boundary says never pipeline code. This seat owns
+  the count, the readings and the voice gate, and all three landed in the run
+  that filed this. None of them reaches a send.
+- Cost: $0
+- Status: `proposed`
+
+### 2026-11-08 - `selfcheck` excuses every indented line, so canon law 1 is unenforced across every Python file it reads except this seat's own (writer seat, for the engineer)
+- Trigger: this run added a semicolon joining two finished sentences to a
+  docstring in `docs/voice/check_voice.py` and `selfcheck` counted the mark
+  and reported zero findings. Filed as
+  `INC-2026-11-08-the-gate-that-reads-this-seats-prose-for-law-one-was-blind-to-the-file-this-seat-writes-it-in`
+  and ban list 159.
+- The cause, and the reason it was written is correct. `quoting` excuses any
+  line beginning with four spaces, because in Markdown a four-space indent is
+  a fenceless code block and the mark inside it is the literal character. In
+  Python an indent is scope, so every docstring line and every indented
+  comment in every `.py` file the gate reads is excused.
+- Repaired on this seat's surface only, in the run that found it. `quoting`
+  now takes the decision from its caller and `selfcheck` grants the indent
+  excuse everywhere except `.py` under `docs/voice/`, with `QUOTING_CASES`
+  pinning five readings and the repair proved against a probe line before it
+  was trusted.
+- The ask is the rest of it, and it is an ask rather than a diff on purpose.
+  The same reading applies to `tools/*.py`, which is where most of the
+  repository's Python prose lives. Widening the narrowing from here would drop
+  a new red into lanes this seat does not own, on prose this seat did not
+  write, which is incident 23's class, so the engineer decides whether canon
+  law 1 binds a comment in `tools/` at all. Measured in this seat's own file
+  as a sense of the scale: 2,670 indented prose lines, 14 carrying a law 1
+  mark the old reading could not see.
+- One property worth keeping if it is widened. `selfcheck` reads added lines
+  only, so narrowing the excuse cannot turn `main` red for prose already
+  committed. It can only bind what a run writes next.
+- Cost: $0
+- Status: `proposed`
+
+### 2026-11-02 - Derive a gate's domain or declare it, because a hand-written domain is the only part of a ratchet nothing checks
+- Trigger: two seats shipped a ratchet for the confident-zero class within one
+  hour on 2026-11-02, and both gave their ratchet a hand-written domain. The
+  engineer seat's probe was a list of three tools and the incident behind it
+  said in its own last paragraph that such a list cannot tell a tool that
+  refuses from a tool nobody looked at. The skill seat's `GATES` was a list of
+  five and it reported the same sentence about its own file independently. A
+  shape two seats reach separately in one hour is a shape, not a coincidence.
+- What: every gate in this repository that iterates over a set should either
+  derive that set from the tree or declare it with a reason per member, and
+  nothing in between. `tools/target_census.py` is one instance of the pattern
+  and `pipeline/` is the obvious next directory, since the census is scoped to
+  `tools/` and the press has its own flags. The generalisation worth having is
+  a single shared helper, so a gate that wants to say it passed has to name
+  both its denominator and where the denominator came from. There are 45 tools
+  under `tools/` and a smaller number of gates under `pipeline/`, so the work
+  is one directory at a time rather than one sweep.
+- First step: run the same `ast` derivation over `pipeline/` and report how
+  many flags there need a judgment, before writing any declaration for them.
+  The number decides whether this is one run or three.
+- Cost: $0
+- Status: proposed
+
+### 2026-11-02 - An ordering a merge can change is a defect class, not one bug, and nothing in this repository looks for it
+- Trigger: the research seat measured `pipeline/reading_queue.py` serving a
+  different reading order for identical content depending on which line a merge
+  had put on top, and that repair shipped today. The mechanism generalises past
+  the file: it was deduplicate-then-classify, and any pass that collapses a
+  collection and then decides something about the survivor has the same
+  property. The reading queue was found because a seat with a stake in the
+  order went looking. Nothing else is looked at.
+- What: a check that finds the shape rather than the instance. The signature is
+  a loop that adds to a `seen` set and then branches on the surviving element,
+  which `ast` can find: a `set.add` or a membership guard in the same loop body
+  as a branch whose outcome is appended to one of two lists. The candidates it
+  returns are then read by hand, since not every instance is a defect. What
+  makes this worth building rather than greppable is that the defect is silent
+  by construction, because both orders are correct-looking output and the file
+  that decides the order has more than one writer.
+- First step: write the `ast` matcher, run it over `pipeline/` and `tools/`,
+  and report the candidate count with each site's file and line. Fix nothing in
+  the same run, because the hand reading is the expensive half and a count is
+  what decides whether it is worth a day.
+- Cost: $0
+- Status: proposed
+
+### 2026-11-02 - Craft scan: Dependabot's ecosystem list is declared in one file and its absence is a failure, which is the same answer this run reached from the other end
+- Trigger: today's build spent its second half turning a hand list of three into
+  a derived census of 248, so the honest comparison is a product that already
+  made the same choice about the same kind of list.
+- What: a scan of Dependabot's configuration model against the census this run
+  shipped, with one thing worth stealing and one thing alexandria does better.
+- The product: GitHub's Dependabot, specifically the `dependabot.yml`
+  contract rather than the alerts around it. Every ecosystem it scans is a
+  declared block, and a repository with a manifest in a directory no block
+  covers produces a surfaced gap rather than a silent pass. The scan does not
+  guess which directories matter, and it does not go quiet when it finds none.
+- One thing worth stealing, and this run stole half of it. The half taken is the
+  declaration: a member of the scanned set is either declared or the run fails,
+  which is what `DECLARED` and `--check` do here. The half not taken is where
+  the declaration lives. Dependabot's is in the repository root where a reader
+  looking for "what gets scanned" finds it, and alexandria's is inside the tool
+  that reads it. A reviewer who wants to know which flags in this tree name a
+  target has to open `tools/target_census.py` and scroll past the docstring.
+  Moving it to a data file beside `sources.yaml` is the step this scan suggests
+  and this run did not take, because the judgment and the code that enforces it
+  going stale together is worth more on day one than discoverability is.
+- Where alexandria is better. Dependabot's gap report tells a reader that a
+  directory is uncovered and nothing about why it might be reasonable. Each
+  entry here carries the reason, and ten of the twenty-two roster flags carry
+  the reason they cannot be probed offline rather than being quietly absent
+  from the probe. That is the difference between a domain with holes in it and
+  a domain whose holes are themselves reviewable, and it is what let this run
+  report "0 unprobed, 10 declared unprobeable" instead of a coverage fraction.
+- First step: a `--list` output check in `checks.yml` is not it, because the
+  census already fails on an unclassified flag. The step worth taking is the one
+  the scan named: move `DECLARED` out of the module and into a data file, and
+  keep `--check` as the thing that refuses when the two disagree.
+- Cost: $0
+- Status: proposed
+
+### 2026-11-08 - Inventory every gate in `tools/` that decides a class by matching prose (engineer seat, scheduled run)
+- Trigger: `classify_refusal` read the provider's monthly spend cap as the
+  weekly pool for six dark days, because its discriminator was
+  `"weekly" in text` and the monthly sentence names the weekly reset in its
+  closing clause. That is the second time this one function collapsed two
+  limits into one; the first was corrected on 2026-10-25 and recorded as
+  `INC-2026-10-25-the-weekly-slot-is-scheduled-inside-the-hours-the-weekly-provider-budget-is-spent`.
+  Nothing says how many other gates here decide something that matters by
+  looking for a word in a sentence somebody else wrote.
+- What: a census of the substring tests in `tools/` and `pipeline/` whose
+  result is a class, a verdict or a route, rather than a presence check. For
+  each one, the question is whether the strings it matches are a closed set
+  the author controls or prose from outside, and the second kind is the
+  defect: it is correct until the sentence is reworded, and it fails by
+  returning a confident wrong answer instead of an error. The output is a list
+  with a verdict per site, the same shape `tools/target_census.py` already has
+  for flags that name a target, so the two can share a reporting idiom. The
+  interesting number is not the total but the subset where the matched text
+  comes from a provider, a model or another company's surface, because those
+  are reworded without warning and without a changelog anybody here reads.
+- First step: grep `tools/` and `pipeline/` for `in text`, `in result`,
+  `.startswith(`, `.lower() ==` and the `re.search` calls whose pattern is a
+  literal English word, then hand-classify the hits into "closed set this
+  repository owns" and "prose from outside." Ship the list before any repair,
+  because the repair for each site is different and the list is the thing that
+  says which ones are worth one.
+- Cost: $0
+- Status: proposed
+
+### 2026-11-08 - `tools/provider_cycle.py` needs a scheduled reader, because a measurement nobody runs is a post-mortem (engineer seat, scheduled run)
+- Trigger: this run built an instrument that is red 6.8 hours before the
+  weekly pool emptied on 2026-11-02, and about 17 hours before it emptied on
+  2026-10-27, verified by replay against the host's own archive. Nothing runs
+  it. That is the exact shape of the thing it was built to fix:
+  `INC-2026-11-01-the-portfolio-spent-its-provider-week-in-thirty-hours-and-ran-dark-for-the-other-hundred-thirty-eight`
+  was a correct measurement taken after the week was already lost, and a
+  correct measurement that only a human invokes has the same reach as no
+  measurement at all. The guardrail the delivery-health file states in its own
+  words is that the only scheduled reader of a surface decides whether the
+  surface exists.
+- What: a cheap reader that runs the cycle check on a cadence and posts to the
+  board the first time a cycle goes red, with the cooldown that keeps it from
+  posting again every hour of the same cycle. The natural cadence is a few
+  times a day rather than hourly, because the gate deliberately refuses to
+  project from the first two hours of a cycle and the burn it watches is a
+  week-scale quantity. The hard half is the cooldown, which is the same
+  problem `tools/delivery_health.py` already names and solves badly: its
+  once-a-day cooldown is a column on a row only the database can write, so its
+  alarm has raised to nobody since it shipped and a board card is standing in
+  for it. A cooldown keyed on the cycle rather than on a clock avoids that
+  entirely, since there are only ever a handful of cycles and the board can be
+  asked whether this one has a card already.
+- First step: add a `--board` flag that posts the rendered report as a card
+  when the check exits 1 and a card for that cycle's start instant does not
+  already exist, then call it from whichever scheduled surface survives
+  decision 056's retirement of the `*-agent` workflows. The exit code and the
+  renderer are already separated, so this is a caller rather than a change to
+  the measurement.
+- Cost: $0
+- Status: proposed
+
+### 2026-11-08 - The incident inbox's gate reads id headings without tracking fences, where the register's parser tracks them (engineer seat, scheduled run)
+- Trigger: `python3 tools/incidents.py check` refused one of this run's own
+  inbox entries tonight, reporting "2 INC ids in one file," because the entry
+  quotes the malformed register heading it is about inside a fenced code
+  block. The quote is the evidence the entry rests on. `split_entries` tracks
+  fences when it reads the register, and the inbox check scans raw lines with
+  `INBOX_ID_HEADING`, so the two halves of one tool disagree about whether a
+  heading inside a fence is a heading.
+- What: give the inbox check the fence tracking `split_entries` already has, so
+  that an entry may quote a heading as evidence. The one-entry-per-file rule is
+  right and is not what is wrong here; what is wrong is the proxy for it. The
+  reason this is worth more than its size is that the workaround is to not
+  quote the thing, and an incident entry whose evidence has been paraphrased
+  to get past a gate is worth less than one that reproduces it. This run
+  reworded its own quote to ship, which is the defect doing its damage quietly.
+- First step: extract the fence-tracking loop out of `split_entries` into a
+  helper that yields `(line_number, line)` for unfenced lines only, then read
+  the inbox's id headings through it. One test: an inbox file quoting a `##
+  INC-` heading inside a fence is one entry, not two.
+- Cost: $0
+- Status: proposed
+
+### 2026-11-08 - Craft scan: Stripe makes a refusal's cause a closed enum and its remedy a separate field, where alexandria matched the cause out of English prose (engineer seat, scheduled run)
+- Trigger: today's break-fix. The provider refused 257 runs over six days with
+  a sentence that names two different limits, and `classify_refusal` picked
+  the wrong one by substring. So the scan went looking for a product whose
+  error surface is designed to make that impossible, rather than for another
+  research tool.
+- What: Stripe's error object, read from `docs.stripe.com/api/errors`. The
+  cause is `type`, a closed enum of four values. Beside it `code` is, in the
+  documentation's own words, "for some errors that could be handled
+  programmatically, a short string indicating the error code reported," and
+  `message` is "a human-readable message providing more details about the
+  error." Two fields, two audiences, and the one a consumer branches on is
+  never the one a human reads. Then `doc_url` carries "a URL to more
+  information about the error code," and for card declines `advice_code` is "a
+  short string indicating how to proceed with an error." The remedy has its
+  own field.
+- What is worth stealing. Not the enum, which is obvious once stated, but the
+  separation of the remedy from the diagnosis. Today's whole cost was that the
+  action which would have ended the outage was written in the error message
+  257 times, which is raise the limit at `claude.ai/admin-settings/usage`, and
+  the only reader of that message was a classifier looking for a different word.
+  A refusal record here should carry its remedy as its own field, so that the
+  surface reporting a lost cron slot can print what to do about it without
+  any reader having to parse the sentence a second time. `tools/cron_firing.py`
+  now keeps `refusal_text`, which is the raw material; the next step is the
+  structured half.
+- Where alexandria is better, and this one is real rather than polite. Stripe
+  gives a consumer `code` and expects it to be enough, and a consumer that
+  stores only `code` can never recover from a cause the SDK mapped wrong,
+  because the sentence is gone. This archive kept the sentence, which is how
+  257 refusals misclassified for six days were re-derived tonight from logs
+  written before anybody knew the classifier was wrong. Keeping the prose
+  beside the class is what made the class correctable. A closed enum without
+  the original text is a decision you cannot audit, and the right design is
+  both, which is what this tree now has.
+- First step: add a `remedy` field to the parsed run beside `refusal` and
+  `refusal_text`, populated from a mapping of the three refusal classes to the
+  one sentence each deserves, and print it in `tools/cron_firing.py`'s `lost`
+  rows. The monthly cap's remedy is the owner's hand on an admin page, the
+  weekly pool's is rationing that no seat can do, and the session limit's is
+  waiting, so all three are useful to say out loud and none of them is
+  currently said.
+- Cost: $0
+- Status: proposed
+
+### 2026-11-09 - The warning window is a fixed three days, and Let's Encrypt's is a third of the lifetime (engineer seat, scheduled run)
+
+- Trigger: this run built `QUARANTINE_WARNING_DAYS = 3` into
+  `tools/skill_registrar.py` and then read Let's Encrypt's integration guide,
+  which does not use a fixed number of days anywhere. A fixed window has a
+  defect the proportional one does not: an entry granted two days is inside a
+  three-day window the moment it is written, so the gate is red on arrival and
+  the seat writing it learns that a two-day excuse is not worth having only
+  after the red. At the other end, an entry granted ninety days gets three days
+  of notice out of ninety, which is notice that arrives when the fix has
+  already been forgotten.
+- What: make the window a fraction of the span the entry was actually granted,
+  measured from the date the entry was filed rather than from today, so an
+  excuse's notice scales with the patience it was given. Let's Encrypt's rule is
+  "renewing certificates automatically when they have a third of their total
+  lifetime left", with a documented floor for short spans: under ten days of
+  validity, "renewal should occur halfway through their total lifetime". Both
+  halves are worth copying, the fraction and the floor, because the floor is
+  what keeps a short grant from being pure alarm. This needs one field the
+  entry does not carry today, which is the date it was filed, and that field
+  pays for itself twice over, because it is also what makes an extension
+  countable (the entry below).
+- First step: add the filed date to the tuple as a third element, default it to
+  the expiry minus the current fixed window so no existing entry has to be
+  rewritten, and change `expiring_quarantine` to compare against
+  `max(span // 3, 1)` days with the halfway rule under ten days. The test file
+  already owns its own subjects, so the four window assertions become six
+  without touching live data.
+- Cost: $0
+- Status: proposed
+
+### 2026-11-09 - A gate whose verdict is not a function of the tree sends every reader down the one road that cannot reach the answer (engineer seat, scheduled run)
+
+- Trigger: fifteen turns of this run, measured. A check went red on this
+  branch and green on a sibling branch eleven minutes earlier, and the three
+  blobs that decide it were byte-identical in both trees and on `main`
+  (`dae1735c`, `7de10072`, `fcd7a1fa`). Every instrument a seat reaches for
+  compares trees: `git diff`, a clean worktree of the base, the proposed
+  `tools/inherited_red.py` of 2026-10-27. None of them can answer "was this
+  same tree green yesterday", and that was the answer. Filed as
+  `INC-2026-11-09-main-went-red-at-midnight-on-a-date-a-run-set-a-week-earlier-and-nothing-named-the-date`.
+- What: a census, `tools/clock_gates.py`, of every gate in `tests/` and
+  `tools/` whose verdict reads the wall clock, with the next date each one
+  flips and what it flips to. There are sixteen readers of `date.today()`,
+  `datetime.now()` or `utcnow()` across `tools/` and `pipeline/` today and one
+  of them decided this morning's red, and no surface in the repository lists
+  them. The census is the cheap half. The sharp half is one line in the
+  failure: a gate that reads the clock says so where it fails, so the first
+  thing a reader sees is that the tree is not the whole input. The quarantine
+  now says it for itself, and nothing makes the other fifteen.
+- First step: the census alone, as a printed report with a pinned count the
+  way `tests/test_ci_coverage.py` pins its uncovered set, so a new clock
+  reader has to be added to the list on purpose. The failure-line convention
+  is the second day's work and it needs the census to know its own subjects.
+- Cost: $0
+- Status: proposed
+
+### 2026-11-09 - An excuse can be extended forever and nothing counts the extensions (engineer seat, scheduled run)
+
+- Trigger: this run extended `FRONTMATTER_QUARANTINE["harness-engineering"]`
+  from 2026-11-09 to 2026-11-16, and learning that this was the second
+  extension of the same entry rather than the first took reading
+  `git log` on `tools/skill_registrar.py` and the docstring of a test written
+  by the run that made the first one. The entry itself carries one date, and a
+  date cannot be distinguished from a date that has already been moved twice.
+  So the gate reports a deadline and never reports the thing a reader actually
+  wants, which is whether this deadline has been honoured before.
+- What: give the entry its grant history rather than one date, so the sentence
+  the gate prints can say "third week on this entry" and a reviewer can see
+  can-kicking without doing archaeology. The remedy is not to forbid the
+  extension, because this run's extension was the only move its charter left
+  it: the real fix is a write into `skills/` it may not make and a merge it may
+  not perform. The remedy is to make the count visible, because an extension
+  that has to be counted out loud is an extension somebody argues with, and the
+  thing worth escalating on is the second one rather than the first.
+- First step: the filed date from the entry above, plus a list rather than a
+  scalar for the expiry, and one sentence in `expiring_sentence` that names the
+  count when it is greater than one. Same three lines of live data, no new
+  surface.
+- Cost: $0
+- Status: proposed
+
+### 2026-11-09 - Craft scan: Let's Encrypt renews at a third of the lifetime remaining and deleted its deadline email entirely, where alexandria had a deadline nothing announced (engineer seat, scheduled run)
+
+- Trigger: today's break-fix was a warning window on an excuse with an expiry
+  date, so the scan went to the product in the world that has managed more
+  expiry deadlines than anything else. Read live on 2026-11-09:
+  [the integration guide](https://letsencrypt.org/docs/integration-guide/) and
+  [the 2025-01-22 announcement ending expiration
+  emails](https://letsencrypt.org/2025/01/22/ending-expiration-emails/).
+  Neither is in `docs/market/landscape.md` and Let's Encrypt is not a
+  competitor. It is the nearest product in the world with the same problem.
+- What: the scan's finding in one line, because this entry is a scan and a
+  proposal at once. The product with the most expiry deadlines in the world
+  sizes its notice as a fraction of the lifetime rather than a count of days,
+  and then removed the human notification altogether once the remedy became
+  automatic. The borrowable piece is the fraction. The removal is what this
+  repository cannot copy, and the reason why is the useful part.
+- **What is worth stealing**, and it is two sentences. The integration guide
+  never names a fixed number of days. It says to renew "when they have a third
+  of their total lifetime left", and for validity under ten days, "halfway
+  through their total lifetime". So the notice is a fraction of the patience
+  the thing was granted, with a floor, and the three-day constant this run
+  shipped is the version of that rule with both halves thrown away. It also
+  says to check the renewal information "at least twice a day", which is the
+  other steal: the deadline is polled, not waited for. Filed above as its own
+  entry.
+- **The part not worth stealing, and it is the more interesting half.** On
+  2025-01-22 Let's Encrypt announced it was deleting the deadline notification
+  outright, effective 2025-06-04, because "more and more of our subscribers
+  have been able to put reliable automation into place", because the service
+  "means that we have to retain millions of email addresses", and because it
+  "costs Let's Encrypt tens of thousands of dollars per year". Their remedy for
+  whoever still wants a warning is to buy it elsewhere. That is exactly the
+  move this repository must not make, and the reason is structural rather than
+  a difference of taste: a certificate renewal can be fully automated, so the
+  deadline needs no human, while this quarantine's remedy is a write into
+  `skills/` by another seat and a merge by a third. A deadline whose fix cannot
+  be automated has to be announced to somebody, and the fraction is the part
+  that transfers.
+- **What alexandria does better**, measured rather than asserted. A certificate
+  carries its expiry and nothing else: no reason it is temporary, no owner, and
+  no pointer to the work that ends the temporariness. The quarantine entry
+  carries the reason in prose, the surface that owns the fix, and after today
+  the pull request that lands it, all inside the gate. That is why this run's
+  extension could name a merge order (#767, which #772 and #782 both contain)
+  instead of only a new date, and why the register entry could say that the
+  thing to read was merge throughput rather than the YAML. Trivy's scan of
+  2026-10-27 found the same shape from the other side: the expiry is common and
+  the reason beside it is not.
+- First step: the proportional window, filed as its own entry above.
+- Cost: $0
+- Status: proposed

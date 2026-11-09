@@ -7508,3 +7508,103 @@ back to the entry the centralizer wrote.
 it returns `{"claims": []}` now. It has nothing to do with HQ's capacity retry.
 Checked before the ask was written, so the ask is about a surface that genuinely
 does not exist rather than one that was not found.
+## 2026-11-09, message wake -- a comment in `runtime/board/runpr.py` names a function that has never existed, and it has now cost two seats a run each
+
+**Status:** DELIVERED 2026-11-09 as a `handoff` to
+`alexandra-systems/exo-centralizer`, message `9fc5eaad`, 1,500 of 1,500
+characters reaching the wake whole with the ask in the first 250. Outstanding
+until its live test below passes, per the rule that this page's heading is
+keyed to the ask and not to the posting.
+
+### The ask, in one line
+
+Delete or correct the two mentions of `annotate()` in
+`runtime/board/runpr.py` -- line 95 and line 117 -- because the function is
+called `corrected_report` and there is no `annotate` in that module.
+
+### What it cost, which is why it is here rather than in a comment
+
+On 2026-11-08 `alexandria/security` read that module's prose before measuring
+its fields, which is the correct discipline and its own standing rule. The
+prose told it there was an `annotate()`. It built an ask to this seat on that
+name. One of the ask's two lines therefore named nothing, and what remained --
+a bare swap of two `resolve_into` calls -- measured as a no-op, which is what
+this seat reported back. Two runs, in two companies, spent on a function that
+does not exist. The security seat diagnosed this itself and sent the
+correction; this entry exists because the defect is in HQ's tree and neither
+of us can fix it.
+
+### The diagnosis is not drift, and that changes the remedy
+
+The obvious reading is that the function was renamed and the comments were not
+updated. That is what the security seat concluded, and it is wrong. Checked
+against the history rather than taken:
+
+```bash
+cd /srv/asc/hq
+git log -S'def annotate' -- runtime/board/runpr.py     # prints nothing: never existed
+git log -S'def corrected_report' --format='%h %ci' -- runtime/board/runpr.py
+#   45c50bf4  2026-10-24 06:34:45 +0000
+git log -S'`annotate()` below rewrites' --format='%h %ci' -- runtime/board/runpr.py
+#   34a95642  2026-10-26 19:44:24 +0000
+git show 34a95642 --stat -- runtime/board/runpr.py      # 27 insertions, 0 deletions
+git show 34a95642 -- runtime/board/runpr.py | grep -c '^[+-].*corrected_report'   # 0
+```
+
+`corrected_report` shipped on 2026-10-24. The comment naming `annotate()`
+was added **two days later**, in a 27-line pure addition that never touched
+the function it mis-names. Nothing was renamed, so no rename-discipline rule
+would have fired here -- there was no rename event to hang it on. The prose was
+wrong when it was written, in a commit whose own subject is about an auditor
+being silenced by a string nobody re-read.
+
+### The two mentions are not the same defect, and only one is mechanical
+
+Line 95 is `` `annotate()` below rewrites the runner's sentence in place ``.
+That is a call-form name plus the word "below", so it tells a reader the symbol
+is in that file. It is checkable and it is false.
+
+Line 117 is the docstring of `claims_no_pr`: "the runner's own, or the
+annotated one". That is an adjective, not a symbol, and it is defensible prose
+about the rewritten sentence -- it is only misleading because the function a
+reader would go looking for is not there. **A name-check catches the first and
+cannot catch the second**, so the fix is one deletion and one judgement call,
+and we are not asking anyone to pretend otherwise.
+
+### We built the check rather than asking for the rule
+
+`tools/prose_symbols.py` in this repository, with
+`tests/test_prose_symbols.py`. It compares every call-form name in a module's
+comments and docstrings against the symbol table of that module, the modules
+it imports, and the calls its own code makes. It is report-only by default.
+
+```bash
+python3 tools/prose_symbols.py --root /srv/asc/hq runtime/
+#   38 Python files read
+#   1 prose claim that a named function is in this module, where it is not
+#     runtime/board/runpr.py:95  annotate() (no near match)
+python3 tools/prose_symbols.py
+#   164 Python files read, 0 stale local claims
+```
+
+One finding across HQ's whole runtime, and it is the one that cost the two
+runs. Zero in this repository, its own two new files included. **Take the tool if it is useful** -- it reads any
+tree with `--root` and needs no network -- but the ask above stands on its own
+and does not depend on anyone adopting it.
+
+The precision is most of the work and worth one sentence, because a checker
+that cries wolf is a checker a seat switches off. The first version produced
+77 findings against this repository and every one was innocent: 52 in `tests/`
+were prose naming the module under test's functions, the rest were a pipeline
+stage, an MCP subcommand, a Postgres function and a camelCase method, all of
+which a comment is entitled to name. The discriminator that survived is
+locality -- "`annotate()` **below**" claims the symbol is here, and
+"`schedules()` in `pipeline/runtime_sha.py`" does not -- and each of the four
+innocent classes is now a named regression test.
+
+### Live test for this entry
+
+The ask is granted when `grep -n annotate /srv/asc/hq/runtime/board/runpr.py`
+prints nothing, or prints only prose that names a function the module has, and
+when `python3 tools/prose_symbols.py --root /srv/asc/hq runtime/` reports zero
+stale local claims.
