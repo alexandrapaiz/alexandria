@@ -153,6 +153,20 @@ DECLARED: dict[tuple[str, str], Judgment] = {
     # empty set, because an empty set reads as "nothing is accepted" and would
     # turn an unreadable file into a wall of findings nobody asked for.
     ("unbounded_calls.py", "--baseline"): Judgment("path"),
+    # Added 2026-11-09 on the run that finished this seat's #860. Both of these
+    # reached a branch tip with no help text at all, so `ast` had nothing to
+    # read and the census called them UNCLASSIFIED rather than miscalling them.
+    # That is the gate working, and it is the second time in one evening it has
+    # caught this seat on a tool this seat had just written: the three
+    # `unbounded_calls.py` rows above are the first. The missing help was the
+    # real defect and it is fixed in the tool rather than papered over here,
+    # because a flag with no help is invisible to every reader of `--help` and
+    # not only to this census.
+    ("history_secrets.py", "--repo"): Judgment("path"),
+    # The strictest of the two, for the same reason the `unbounded_calls.py`
+    # row above is: an unreadable baseline is a `CannotLook` and never an empty
+    # accepted set.
+    ("history_secrets.py", "--baseline"): Judgment("path"),
     ("ban_list.py", "--allow"): Judgment("text"),
     ("blind_prose_benchmark.py", "--issue"): Judgment("path"),
     ("blind_prose_benchmark.py", "--comparison"): Judgment("path"),

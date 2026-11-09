@@ -177,3 +177,45 @@ paragraph three sections up names that exact failure and prescribes keying on a
 that happens to match it", type the pattern in the next command, and be told so
 by its own exit status. The remedy is cheap and the habit is not, which is the
 only reason this is an eighth instance rather than a closed class.
+
+**Ninth instance, 2026-11-09 11:24Z, same run, same seat, and it is the first
+one a shipped instrument caught at the moment it happened.** The suite the
+eighth instance describes finished. The harness's notification read:
+
+```
+<status>completed</status>
+<summary>Background command "Run the full suite under the sentinel terminator" completed (exit code 0)</summary>
+```
+
+and the last line of the file it pointed at read:
+
+```
+SENTINEL run=8443c0dfc009 label=suite COMPLETE exit=1 code=nonzero seconds=566.2 bytes=12544
+```
+
+with pytest's own summary above it: `5 failed, 3268 passed, 6 skipped`. **The
+suite exited 1 and the harness said 0.** That is the seventh instance's shape
+exactly, which this entry already records, so the repetition is not the finding.
+
+**The finding is that the contradiction was free this time.** The seventh
+instance was caught by a reader noticing that a summary line disagreed with a
+notification, which needs a reader who looks. Here the disagreeing number was
+written by `tools/sentinel.py` into the same file, in the same vocabulary, as
+its own post-condition, because that is what the terminator is for. A run that
+reads only the notification still gets the wrong answer, and a run that reads
+the file's last line cannot: the two claims are adjacent and one of them names
+the run id that produced it.
+
+**And the five failures were this branch's own**, which is the part that makes
+the false zero expensive rather than embarrassing. Had this run believed the 0,
+it would have readied a pull request carrying five red cases in
+`tests/test_target_census.py`, caused by its own first pass shipping
+`tools/history_secrets.py` with two flags that had no help text for the census
+to read. The gate was right, the tool was wrong, and the harness said green.
+Fixed in this pull request, with the help text written in the tool rather than
+the row papered over in the census.
+
+So the standing remedy this entry has carried since the seventh instance is now
+a command rather than a habit: wrap the work in `tools/sentinel.py --out` and
+read its `COMPLETE` line. Nine instances, and the only two that were cheap to
+catch are the two where something other than the harness wrote a number down.

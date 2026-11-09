@@ -660,10 +660,20 @@ def main(argv: list[str] | None = None) -> int:
                     "this clone tell?")
     ap.add_argument("--worktree", action="store_true",
                     help="the working tree only, which needs no history")
-    ap.add_argument("--repo", type=Path, default=ROOT)
-    ap.add_argument("--baseline", type=Path, default=None)
-    ap.add_argument("--json", action="store_true", dest="as_json")
-    ap.add_argument("--self-check", action="store_true", dest="self_check")
+    ap.add_argument("--repo", type=Path, default=ROOT,
+                    help="the checkout to read, defaulting to this repository; "
+                         "a path that is not a git checkout is a refusal to "
+                         "answer rather than an answer of clean")
+    ap.add_argument("--baseline", type=Path, default=None,
+                    help="the accepted set of triaged false positives; a file "
+                         "that cannot be read or does not parse is a refusal, "
+                         "never an empty set, because an empty set reads as "
+                         "\"nothing is accepted\" and turns an unreadable "
+                         "baseline into a wall of findings")
+    ap.add_argument("--json", action="store_true", dest="as_json",
+                    help="the findings and the denominator as JSON")
+    ap.add_argument("--self-check", action="store_true", dest="self_check",
+                    help="print the properties this tool claims, and nothing else")
     args = ap.parse_args(argv)
 
     if args.self_check:
