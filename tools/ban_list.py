@@ -160,7 +160,85 @@ def smoke() -> int:
         print(("ok:   " if passed else "FAIL: ")
               + f"{label}: {got} findings, expected {expected}"
               + ("" if passed else f" ({[f['found'] for f in found]})"))
+    return 0 if (ok and smoke_expand() == 0) else 1
+
+
+def smoke_expand() -> int:
+    """The path-expansion cases, which are about arguments rather than prose.
+
+    Here rather than in a `tests/test_ban_list.py`, because this tool has never
+    had one: `--smoke` is its suite, and a new test file would land in the
+    `UNCOVERED` pin list in `tests/test_ci_coverage.py` that no workflow runs
+    and that `INC-2026-10-17-the-pin-list-grew-for-the-seventh-time-in-nine-days`
+    is already about. A case beside the ones above runs on every invocation of
+    `--smoke` instead, which is reachable by any seat and by the deploy gate.
+    """
+    import tempfile
+    ok = True
+
+    def case(label, passed):
+        nonlocal ok
+        ok = ok and passed
+        print(("ok:   " if passed else "FAIL: ") + f"expand: {label}")
+
+    with tempfile.TemporaryDirectory() as root:
+        top = pathlib.Path(root)
+        (top / "a.md").write_text("Plain prose.\n")
+        (top / "nested").mkdir()
+        (top / "nested" / "b.md").write_text("More plain prose.\n")
+        (top / "ignored.txt").write_text("not markdown\n")
+        names, failing = expand([str(top)])
+        case("a directory is walked for its Markdown, nested included",
+             [pathlib.Path(n).name for n in names] == ["a.md", "b.md"])
+        case("a directory holding Markdown is not itself a failure", not failing)
+        case("a non-Markdown file in the directory is not read",
+             all(not n.endswith(".txt") for n in names))
+
+        one = str(top / "a.md")
+        case("a file argument is passed through untouched",
+             expand([one]) == ([one], False))
+
+        empty = top / "empty"
+        empty.mkdir()
+        names, failing = expand([str(empty)])
+        case("an empty directory fails rather than passing quiet (L-A21)",
+             names == [] and failing)
+
+        missing = str(top / "nope.md")
+        case("a missing path is still reported by name rather than expanded",
+             expand([missing]) == ([missing], False))
+        case("and the CLI exits 1 on it", main([missing]) == 1)
+        case("the CLI reads a directory end to end", main([str(top / "nested")]) == 0)
+
     return 0 if ok else 1
+
+
+def expand(paths) -> tuple[list[str], bool]:
+    """Every file to read, with directories walked for their Markdown.
+
+    A directory is what a caller means by `docs/ideas/inbox/`, and before
+    2026-11-09 it meant `IsADirectoryError` with a traceback: `read_text()` was
+    called on whatever the argument named, and only a missing path had an
+    honest answer. A gate that dies on a plausible invocation is a gate the
+    next seat stops running.
+
+    An empty directory is a failure rather than a pass, per L-A21: a check that
+    saw nothing must not read like a check that saw nothing wrong.
+    """
+    out: list[str] = []
+    failing = False
+    for name in paths:
+        path = pathlib.Path(name)
+        if path.is_dir():
+            found = sorted(str(p) for p in path.rglob("*.md") if p.is_file())
+            if not found:
+                print(f"failing: {name} is a directory holding no .md file, so "
+                      f"there was nothing to check")
+                failing = True
+            out.extend(found)
+            continue
+        out.append(name)
+    return out, failing
 
 
 def main(argv=None) -> int:
@@ -178,8 +256,10 @@ def main(argv=None) -> int:
     if not args.paths:
         ap.error("a path, or --smoke")
 
-    out, failing = {}, False
-    for name in args.paths:
+    names, failing = expand(args.paths)
+
+    out = {}
+    for name in names:
         path = pathlib.Path(name)
         if not path.exists():
             print(f"failing: {name} does not exist")

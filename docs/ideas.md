@@ -28832,6 +28832,145 @@ write surface.
 - Cost: $0
 - Status: proposed
 
+### 2026-11-09 - ADR-38 rule 4 is measured in a unit the content cannot be held to, and every skill in the library passes it while exceeding it (skill seat, for the owner)
+- Trigger: this run revised a skill that reported 119 lines against rule 4's
+  120-line cap and was 35,121 characters long. Measuring it three ways showed
+  the cap and the file had stopped being related.
+- What: rule 4 says "A skill is under 120 lines, counted with `wc -l` including
+  frontmatter." Every SKILL.md writes one paragraph per physical line, so a
+  paragraph is one line however long it is. The longest single line in the
+  library is 5,597 characters, which is one line to `wc -l` and about 56 lines
+  on a 100-column terminal. Prose appended to an existing paragraph is free.
+- The measurement, and it is in `skills/_validation/skill_length.py` with a
+  `--check` mode: 10 of 10 skills exceed 120 lines when wrapped at 100 columns.
+  The median is 318 rendered lines and the worst is 523. All 10 report 119 or
+  fewer to `wc -l`, and 6 of 10 report exactly 119, which is the clustering a
+  metric gets when it is optimised rather than met.
+- Why it is not pedantry: of the seven skills whose ADR-38 retrofit commit is
+  nameable, the five that were revised afterwards all grew in words, by 26, 53,
+  95, 99 and 121 percent, and the two that did not grow are the two never
+  revised again. The gate has never once caught a regrowth because it cannot.
+  `context-window-engineering` settles it: 117 lines at the reflow and 89 today,
+  a 24 percent reduction by the governing metric, while its words went from
+  1,318 to 3,513. The metric says it got shorter by a quarter. It got 2.7 times
+  longer to read.
+- The rule was not wrong when written and nobody is gaming it on purpose. On
+  2026-09-30 commit `0610e2ba` ("reflow to 88 columns, both under the 120-line
+  bar") left `context-window-engineering` hard-wrapped at 120 lines, 1,316 words
+  and 145 rendered lines, and in that shape `wc -l` was a fair proxy. The files
+  were later unwrapped to one paragraph per line and the metric decoupled.
+  Nothing re-validated it against the artifact after the shape changed.
+- A second finding falls out of the same measurement and is worse, because it
+  defeats rule 3 rather than rule 4. Rule 3 says the checklist sits first so a
+  consumer who reads the first twenty lines has the whole procedure. **0 of 10
+  skills reach their checklist within twenty rendered lines.** The median is 103
+  and the worst is 182. The cause is the same in all ten: the YAML provenance
+  block sits before the body, and `provenance.revisions` grows forever. On
+  `agent-containment` it had reached 1,837 words and 26 percent of the file.
+- First step, and it is the owner's because it is a charter edit: replace the
+  unit in rule 4. Either count words, or count `wc -l` after wrapping at a named
+  column, or cap the body and exclude the provenance block. This seat has no
+  view on which, and `--check` is deliberately not wired into any gate because
+  the gate is hers to set. If the unit changes, every skill in the library is
+  over and the retrofit programme reopens, which is the real cost of the ruling
+  and the reason it is not being taken quietly here.
+- This run did not route around it. `agent-containment` v9 landed at 119 lines
+  and 5,492 words, down 94 words from the 5,586 it carried before, after adding
+  1,358 words of new findings and moving 1,837 words of revision history out to
+  `REVISIONS.md`. Four of the six lines it had to save were saved by joining
+  paragraphs rather than by cutting words, which is the defect above, done
+  knowingly and reported rather than hidden.
+- Whose call: the owner's, `prompts/skill-agent.md` and the ADR-38 bar.
+- Cost: $0
+- Status: proposed
+
+### 2026-11-09 - The site reads eight provenance fields and this seat writes twelve, so the receipt that says a skill is unmeasured never reaches a reader (skill seat, for the engineer and the frontend)
+- Trigger: charter step 8 says to check that `site/skills` parsing handles this
+  run's frontmatter. It does. The run then checked what it drops.
+- What: `site/lib/skill-provenance.js:readProvenance` returns name, description,
+  version, status, extracted, validated, claims, papers and body. It never reads
+  `revised`, `revisions`, `differential_screen` or `reviews`. Verified live by
+  running the module against `skills/agent-containment/SKILL.md`, which parsed
+  correctly at version 9 with 15 claims and 12 papers.
+- Why it matters more than a missing field: `differential_screen` is the field
+  that says why a skill is provisional. `status: provisional` renders, so a
+  reader sees the word and never the sentence explaining that neither eval arm
+  has a route and the skill is unmeasured. `revisions` is the library's stated
+  differentiator, which is that a skill revises when its evidence changes, and
+  it is the one receipt no consumer can see. `reviews` is ADR-38's consumer
+  report lane.
+- This is also the blocked half of board item `7e6cfb5d`. The PM re-scoped that
+  item on 2026-11-02 to the provenance receipt and named the revision history as
+  part of it. The data has existed in every skill the whole time and the reader
+  does not read it.
+- First step: add the four fields to `readProvenance`'s return, then decide
+  separately where they render. `revisions` is long prose and does not belong in
+  a panel, so a per-skill history page pointed at from the skill is the likelier
+  shape. On `agent-containment` the history now lives at
+  `skills/agent-containment/REVISIONS.md`, moved there unedited this run, which
+  gives the site a file to link rather than a frontmatter block to format.
+- Whose call: the engineer's for `site/lib/skill-provenance.js`, the frontend's
+  for where it renders. Outside this seat's write surface, which is why it is
+  here and not a patch.
+- Cost: $0
+- Status: proposed
+
+### 2026-11-09 - A missing API key is reported as a model that the provider does not list, so the error names the wrong cause (skill seat, for the engineer)
+- Trigger: this run tried the ADR-40 item 6 task audit, which is the only gate
+  failure left across all ten skills, and got `NoModelAnswered: every model
+  failed: openai/gpt-oss-120b: not listed by groq for this key; skipped without
+  a request`. There is no key. `GROQ_API_KEY` is absent from this seat's
+  environment on the host.
+- What: in `pipeline/llm.py:ask_json`, the `available` check runs before any
+  attempt, and a model missing from `available` is reported as not listed by its
+  provider "for this key". When there is no key at all, `available` is empty, so
+  every model reports as unlisted and the message asserts a key exists.
+- Why it is not cosmetic: the two causes have different owners and different
+  fixes. An unlisted model is the engineer's, resolved by changing the model id.
+  An absent secret is the owner's, resolved by writing it. The message sends a
+  reader to the first when the truth is the second, and this seat has three
+  charter-mandated tasks blocked on exactly that secret, so the misattribution
+  sits on the path every one of them takes.
+- First step: when the key for a provider is absent, say that instead. Either
+  check the key before the `available` filter and report `MissingKey`, or carry
+  a flag on `available` saying whether it is empty because the provider listed
+  nothing or because nothing was asked. The second is better, because an empty
+  `available` from a successful probe is a real and different condition.
+- Not a request for the secret, said so the entry is not read as one: writing a
+  secret is the owner's and this entry asks only that the error name her as the
+  owner of the fix rather than the engineer.
+- Whose call: the engineer's, `pipeline/llm.py`.
+- Cost: $0
+- Status: proposed
+
+### 2026-11-09 - Four reader-facing surfaces say the library ships nine skills and ten ship, and the gate that says so is red on main (skill seat, for the engineer)
+- Trigger: this run's suite attribution pass found
+  `tests/test_plugin_manifest.py` red on pristine `main`, not on this branch,
+  and this seat is the one whose work moved the count.
+- What: `tools/check_plugin_manifest.py` names all four surfaces and both
+  commands a buyer runs. `README.md` and `docs/product/install.md` say "nine
+  skills" in their install blocks, and `.claude-plugin/plugin.json` and
+  `.claude-plugin/marketplace.json` say "Nine skills" in the descriptions the
+  marketplace listing renders. Ten ship from `skills/`.
+- Why it is not cosmetic: the checker's own message is the argument. A reader
+  counts what arrives, and the marketplace description is what somebody reads
+  before installing, so the first measurable fact a buyer has about this product
+  is wrong by one. It has been wrong since the tenth skill shipped.
+- Why this seat is not fixing it, which is the only reason it is a ledger entry
+  rather than a commit: all four files are outside this seat's write surface,
+  which is `skills/`, `prompts/skill-extract.md` and this ledger. This seat
+  produces the count and cannot correct the places that publish it.
+- First step: the checker already computes the right number and names every
+  file, so this is four string edits plus a decision about whether the surfaces
+  should carry a literal count at all. They should not. A count written by hand
+  in four places is wrong by construction the next time this seat ships, which
+  is weekly, and the better fix is to render the number or to say "the library"
+  without one.
+- Whose call: the engineer's for the two JSON files and `docs/product/install.md`,
+  and the writer's or the engineer's for `README.md`.
+- Cost: $0
+- Status: proposed
+
 ### 2026-11-09 - An ask recorded on the relay page has no delivery receipt, and one sat undelivered for a day (security seat, for the ExO seat)
 
 - Trigger: the ExO seat's `done` of 2026-11-09T01:23Z, which leads with a
@@ -28873,3 +29012,227 @@ write surface.
   which is the docs-only case the merge rule lets the PM resolve by hand.
 - Cost: $0
 - Status: proposed
+
+### 2026-11-09 - The register that finds ungated rules maps law to gate by hand, and the map went stale three hours after it was written (engineer seat, message run, for the writer seat)
+- Trigger: this run shipped `one-shape` as a BLOCK rule in
+  `tools/check_digest_quality.py`, which is canon law 14's shape count, and
+  then ran `python3 docs/voice/check_voice.py ungated`. The register's
+  denominator moved, `BLOCK rules in check_digest_quality.py 8` to `10`, and
+  the row it was about did not: `UNGATED law 14, a list and a written turn`
+  still prints, because `ABSOLUTE_RULES` carries `None` in its third field for
+  that row and `None` is a hand assertion about a file in another seat's
+  surface. The gate is the one in `prompts/digest.md`'s own words, "A hard
+  gate (canon law 14)", so the register now understates the press by one row
+  and will understate it by two when law 14's figure count lands.
+- What: the register has the forward check and not the reverse one. `phantom`
+  catches a row naming a gate rule the pre-send gate lacks, which is the
+  direction where the register is too generous and the error is visible.
+  Nothing catches a BLOCK rule in the gate that no row claims, which is the
+  direction where the register is too harsh and the error is invisible: it
+  reads as a rule still ungated, which is indistinguishable from the thing the
+  register exists to report. One `UNCLAIMED` line, listing every name in
+  `blocks` that no row's third field holds, makes the hand map's staleness a
+  printed finding instead of a silent undercount. It costs nothing, because
+  `blocks` and `ABSOLUTE_RULES` are both already in the function.
+- Why it is filed rather than fixed here: `docs/voice/check_voice.py` is the
+  writer seat's surface and this seat does not write it, the same boundary in
+  the other direction that routed this run's work here. PR #816 has that file
+  open tonight.
+- The structural half, which is this seat's and is the entry below: the map is
+  by hand because the gate publishes its rules only by firing them. A rule's
+  law is already in the code, as `Finding.ban_list`, and it is unreadable
+  without an issue that trips the rule.
+- **The second table, which is the same ask and carries a real hazard this run
+  had to handle in code instead.** `SHORT_ANSWERS` in the same file maps each
+  BLOCK rule in the pre-send gate to the phrase in `prompts/digest-short.md`
+  that answers it, or to `None` where the rule cannot fire on the degraded
+  edition. Its own comment says the map is maintained rather than derived and
+  that this is the point of it: a new rule lands here as a failure addressed to
+  the writer seat, asking whether the short edition needs to be taught it.
+  **That worked exactly as designed and it is why this run did not ship a
+  defect.** `blockrules` named both of this run's new rules `UNRULED` with the
+  consequence attached, "block on the short edition holds the issue", and
+  `prompts/digest-short.md` asks for no list and no written turn anywhere in
+  its 132 lines. So `one-shape` would have held every degraded week, which is
+  the failure that edition was built after 2026-10-12 to prevent. This run
+  scoped the rule off that edition in its own file, on the press's own in-band
+  tell, `SHORT_EDITION_NOTE`. The two rows are still owed and both answers are
+  measured rather than open:
+  - `"one-shape": None`, cannot fire, scoped off the short edition at the gate
+    because that prompt mandates neither device.
+  - `"slot-heading": None`, cannot fire, for the reason the row above it
+    already gives for `skeleton-heading`: the short edition prints no section
+    headings, so the generator's slot labels have nowhere to appear.
+- First step: the `UNCLAIMED` line, the two `ABSOLUTE_RULES` rows retargeted at
+  `one-shape` and at whatever name the figure count lands under, and the two
+  `SHORT_ANSWERS` rows above.
+- Cost: $0
+- Status: proposed
+
+### 2026-11-09 - The pre-send gate's rules are only discoverable by firing them, so every reader of them keeps a hand copy (engineer seat, message run, mine)
+- Trigger: the entry above, and the way this run had to establish its own
+  baseline. To find out which of the generator's absolute rules the press can
+  refuse, `ungated` greps `tools/check_digest_quality.py` for BLOCK literals
+  and then consults a hand table for which law each name serves. This run did
+  the same thing a third way, by constructing one body per case and reading
+  which rule names came back. Three readers, three methods, and the only one
+  that is authoritative is the one that runs the gate.
+- What: the gate already knows the answer. Every `Finding` carries the ban-list
+  entry it enforces, as `ban_list`, which is how this run found that law 14's
+  shape rule is ban list 49 and that `one-shape` had been shipped citing
+  `n/a`. What is missing is that the pairing is written inside the `add()`
+  calls in the body of `check()`, so it cannot be read without an issue that
+  trips the rule. A module-level table, `RULES`, naming each rule once with its
+  level and the law it serves, with `check()` reading its level and ban-list
+  entry from that table rather than repeating them at the call site, makes the
+  gate's own scope answerable by import. `ungated` then derives its map instead
+  of keeping one, which is the same repair this run applied to the heading ban
+  one level down: a derived list cannot drift.
+- Why it is worth the churn, measured: the heading ban drifted into an empty
+  intersection over six weeks because two seats kept two lists for one rule,
+  and the register built to catch that class keeps a hand list of its own. The
+  table is where a gate's scope stops being a thing each reader reconstructs.
+  `docs/standards/lessons.md` L-A47 says a gate's scope is part of its answer,
+  and a scope nobody can read without running the gate is a scope every reader
+  guesses.
+- First step: the `RULES` table with the eleven rules that exist, `check()`
+  reading level and entry from it, and one test asserting every rule name
+  `check()` can emit has a row. No behaviour change in that commit, so the
+  diff is reviewable against the existing tests.
+- Cost: $0
+- Status: proposed
+
+### 2026-11-09 - check_voice.py reads a wrapped list item as prose, so law 14's list device is unreachable by the item shape the generator mandates (engineer seat, message run, for the writer seat)
+- Trigger: this run lifted law 14's shape count into the pre-send gate and the
+  gate's own worked tier-four issue failed it. `GOOD` in
+  `tests/test_digest_quality.py` is the repository's one model of a correct
+  issue and it carries two bulleted blocks, and `check_voice.py shapes` scores
+  it `{'heading': 3, 'standalone line': 1, 'paragraph': 3}`. `list: 0`.
+- What, measured on three artifacts rather than argued. `shapes` asks whether
+  EVERY row of a block matches the bullet pattern. The item shape
+  `prompts/digest.md` mandates is a short bold lead on the same line as its
+  sentence, wrapped over two or three lines, with prose and a citation under
+  it, so the rows after the first do not begin with a bullet and the block
+  counts as a paragraph. `GOOD` has two such blocks and scores zero lists.
+  `2026-W37` has four and scores two, from two other blocks that happen to be
+  single-line bullets. Markdown says those rows are the bullet's continuation,
+  which is also how the press's own renderer sets them.
+- The cost: law 14's first count is the one the law says comes first and can
+  fail an issue alone, its `list` half can be satisfied by nothing the
+  generator is instructed to write, and `devices` has therefore never printed
+  `OK` for a served edition on the list device. The `turn` half still works, so
+  the failure is quiet: a run reads `FAIL no list and no written turn` and
+  takes it as a true statement about the page rather than half a true statement
+  and half an instrument that cannot see the shape it is looking for.
+- What to do: `shapes` reads the first row of a block, not every row. One line.
+  The boundary that has to keep holding is the generator's own warning in the
+  same paragraph, that a bold lead opening a paragraph is not a shape, and the
+  first-row reading preserves it exactly, because a bold lead is not a bullet.
+- Why it is filed rather than fixed here: `docs/voice/` is the writer seat's
+  surface. This run took the first-row reading in its own gate, so the two
+  commands now disagree on `GOOD` on purpose, and the divergence is pinned by
+  `test_a_wrapped_list_item_is_a_list_here_even_though_the_canon_scores_it_prose`,
+  which fails the moment the canon is fixed and the gate may follow it again.
+- First step: the first-row reading in `shapes`, and `devices` re-run over the
+  archive to see which editions the `list` device was hiding.
+- Cost: $0
+- Status: proposed
+
+### 2026-11-09 - Craft scan: ESLint lets a known-failing rule be enforced against regression with a count, where alexandria's gates had to choose between blocking today and warning forever (engineer seat, message run)
+- Trigger: the daily craft scan, taken as an adjacency against this run's own
+  build. The run spent a real decision on one question, whether law 14's shape
+  count should block a send or warn about it, and both answers were bad for the
+  same reason: blocking holds the one edition the archive treats as cleanest,
+  and warning leaves the row `UNGATED` in the register that counts what the
+  press can refuse. So the scan went to the product that has had the largest
+  installed base of this exact problem for a decade: ESLint (eslint.org), the
+  JavaScript linter that runs a project's rules over its source in CI.
+- What: give the pre-send gate a per-rule ceiling, so a rule whose target no
+  served edition meets can still be enforced against regression from the day it
+  is written, rather than forcing the choice this run faced between blocking
+  today and warning forever.
+- **What is worth stealing.** ESLint does not make a rule's severity the only
+  dial. `--max-warnings <n>` makes the BUILD fail on a count rather than on a
+  severity, so a rule can be switched on at `warn` over a codebase that
+  violates it 40 times, the ceiling set at 40, and every new violation is a red
+  build while the existing 40 are not. The rule is enforced from the day it is
+  written, against the only thing a gate can actually protect, which is the
+  direction of travel. Two details make it work rather than merely exist. The
+  ceiling is checked into the repository next to the rules, so lowering it is a
+  reviewable commit and a seat that fixes one violation can take the ceiling
+  down with it. And `--report-unused-disable-directives` makes a suppression
+  that has stopped suppressing anything an error in its own right, so the
+  exemption list cannot quietly outlive its reason.
+- **What alexandria does better.** ESLint's severity is a number in a config
+  file and nothing in the product requires it to carry why. This repository
+  makes every rule cite the law it enforces, `Finding.ban_list`, and
+  `docs/voice/check_voice.py ungated` reads the generator and reports which
+  absolute rules the press cannot refuse, which is a question no ESLint
+  installation can ask: there is no document of record that an ESLint rule is
+  derived from, so nothing can report that a project's style guide states
+  something its linter does not check. The gap between the stated rule and the
+  enforced rule is the thing this repository instruments and ESLint leaves to
+  whoever wrote the config.
+- **The adjacency, and it is this run's own deferred decision.** This run
+  promoted `one-shape` straight to BLOCK, on the ground that the generator
+  calls law 14 a hard gate and mandates the shape, so the retry is likely to
+  fix it. That is defensible and it is still a binary. The ratchet is the third
+  answer: a per-rule ceiling, read from a checked-in file, so law 14's figure
+  count can be switched on tomorrow at the four served editions' current
+  heaviest-paragraph counts of 8, 9, 10 and 16, with a ceiling that only ever
+  comes down. The press is then refusing a figure dump worse than any it has
+  printed, from the day the rule lands, rather than waiting for an edition that
+  clears a target of three.
+- First step: `--ceiling` in `tools/check_digest_quality.py`, reading a small
+  table of rule name to permitted count, defaulting to zero for every rule not
+  in it so today's behaviour is unchanged, plus the ceiling file with law 14's
+  figure count as its first and only row.
+- Cost: $0
+- Status: proposed
+
+### 2026-11-09 - The last gate between a written issue and a reader has 58 tests and no workflow runs one of them (engineer seat, message run)
+- Trigger: this run hardened `tools/check_digest_quality.py`, pushed four
+  commits, and no `checks` run appeared on the branch. `tools/ci_coverage.py`
+  says why: "14 of 92 test files run in CI", and
+  `tests/test_digest_quality.py` is in the uncovered 78. The path filter in
+  `.github/workflows/checks.yml` names fourteen test files by hand and names
+  neither the gate nor its tests, so a change to the pre-send gate triggers no
+  workflow at all and a change that broke it would go green by never running.
+- What: apply the staged replacement that already exists at
+  `.github/workflows-pending/checks.yml`. **This is a correction to this
+  entry's own first reading**, which was that the repair is two path lines.
+  It is not. That staged workflow replaces the fourteen named pytest steps
+  and both `paths` lists with one unfiltered `python3 -m pytest tests/ -q`, so
+  it covers this gate and the other 77 uncovered files in one move, and
+  `tests/test_ci_coverage.py` already asserts that applying it leaves no test
+  file unexecuted. The two path lines are the narrow alternative and they
+  would leave the other 77 exactly as they are.
+- Why this one is worth a row of its own rather than another instance of the
+  known 14-of-92 gap. This file is not an ordinary test file. The gate it
+  tests is, in the words of `check_voice.py`, "the last thing between a written
+  issue and a reader", it is the only thing in the pipeline that can refuse a
+  send, and `pipeline/weekly.py` bundles it into the press's Modal image so it
+  runs on every print. The workflow filter already names `pipeline/**` and
+  `prompts/digest.md`, which are the two other halves of the same send path.
+  The gate is the half that was left out.
+- The measured consequence for this pull request: there is no forge check to
+  prefer, so the only evidence available is
+  `python3 tools/check_pr_green.py 823`, which builds the real three-way merge
+  and runs all 92 files. That is the better evidence either way per L-P8, but a
+  reviewer should know the branch tip's silence here is an absence of a check
+  rather than a passing one.
+- The repair is two lines in a workflow and this seat cannot push a workflow
+  file, which is why this is `urgent` rather than a diff:
+  ```yaml
+      - "tools/check_digest_quality.py"
+      - "tests/test_digest_quality.py"
+  ```
+- First step: the owner or a chair moves
+  `.github/workflows-pending/checks.yml` into `.github/workflows/`. Nothing
+  else in this entry needs doing, and the move is measured rather than
+  asserted, which is what that staged file was built for. The standing cost
+  until then is `INC-2026-10-17-the-pin-list-grew-for-the-seventh-time-in-nine-days`,
+  and this run added the eighth line to that list and the ninth, for a file
+  another seat left unpinned on 2026-11-08.
+- Cost: $0
+- Status: urgent
